@@ -3,19 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ruta de Fuentes</title>
+<title>Ichnos</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ichnos">
+<meta name="application-name" content="Ichnos">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#fc5200">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAMAAAAKE/YAAAAAYFBMVEX//////fz/+ff/9vL+8Or/7OT/59z/4dP/3Mz/2Mb+0r7+y7P+wqX+t5b+qYH9onb9nG79lWP9ilP9g0n8fUD8djb8cC38bCb8Zx/8Yxn8XhL8Wgz8WAn8VAP8UgH8UgDe4PoHAAAD+0lEQVR42u3ciZKbMAwGYHNDwn2FM3r/t2w7yaYB7CzZ4ub3jPwE3zBC2JKwIAOXYDSjGc1oRjOa0YxmNKMZzWhGM5rRjGY0oxnNaEajoccyiTzb8U9pczUEPaSOeKygvBqAHrMn8p8V1vDoayrWy2vQ0YnYLrvFRhdCtrwOGd3ZUrQ4I6NjoVgVLrpRmUUww6KVD1qIBhbtq9E5Knq21OgYFd2pza/zxwfRzekFOoBE16/ImOgqEq8XXni035HxXsQxsb41o6W8whU7Vo+EbsI95G92TP8XPafWLrNocdB9tI+MtDWt3Z1mnEPAnO4kAx23FKHhn4EPtp0n/ViXM5WroIl6lBJCLzNHFXSxppds9/0SuywmMdvpRNAFSIn51BF21XTYmO2cwEu9Q7CJ5pbQ0Zv8nEyEjs5XZKck+E7AZVWt8y6Ej15tn92O8NHZynwhfPSqlHuQWS/6Gmox60Vnesxa0cMyOGoyAb180AmZgL4u9tDeaAS61BQcWtHR7tocDrpdZI7RDHS8u56Ig+6fC2D2aAY615TutKIX0dEZgnb21xNh0O3+TjcO+jmkfTIE/RzSqSloR2N06EIvQno0BJ3vbb4ioc/6viz60M8hXRqCbjV+DrWhn0PaJUPQka7tv0b0YgqsMAQd6w1pLeha6A1pHeh+0RhMjUAv2xXWYAJ6DITQmzuOR1/8dwY3MND5qltxInh06b87BPFxdBW+N/MFgJaQDz+FH4sectlUsTsAoy+JdGjGbQkWXZ9/Nj31OfRcqoYD/Q71h7NCOSC/YxLpI+hrGSin1NKZINEvyH5NhIju1IPmbjETInpKbRXZySYiRPRF+f456UgEiS5Uj9nLBiJMtOrnpaAgQv0xWPEBPFVEqOhROpxrxS0RLHqQJWcn6Ylw0WMgSxgDETJ6G8928t/Jb6K3A/JxR4SNLjdJriYCR7frb0o8ETK6zU6+s37OBREwupblZrsmYPQk/Ww7DQGje+kh0LsQMHqQ7kLtC/JNKnP0/i+OH0c/hhjtME5Orr7O8YHo4Z7nrPtfKZX38XT3Pfr+oL3HxnO8p5IQGB1uRi7H+7PGzR6dZIzg3m/LYNGlrG8SaC09/zv61pe3Zsm5NoJFp7Jhr0zPBNhh6JvPJsklRAEsupC15CONvbYj0K1snsfW1vI+KE/fvtvhvB2aqXDR8SZRN7exaGvCRX9NbsT3asw1d3SNrR24yzs/qs6//zPuH10hu0dGd3+Ps05gyn6aqh9cCvH5M2ImabdN8BdXljA1mnfqHu2ikeUVREZcEVqdv97HKJvImHtN57rMs6IaiPgyVkYzmtGMZjSjGc1oRjOa0YxmNKMZzWhGM5rRe9cvfAQw0ccsgwsAAAAASUVORK5CYII=">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Ichnos","short_name":"Ichnos","start_url":"./","display":"standalone","background_color":"%23fc5200","theme_color":"%23fc5200","icons":[{"src":"data:image/png;base64,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","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}'>
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
 <style>
-/* Mapa a pantalla completa; buscador y modalidades flotando arriba; ficha de la ruta flotando (izquierda en ordenador, abajo en móvil) */
 :root{
   --bg:#ffffff; --card:#ffffff; --soft:#f2f2f0; --ink:#1b1b1b; --muted:#6d6d6d; --line:#e6e6e3;
   --accent:#fc5200; --accent-ink:#ffffff; --water:#1677c9; --water-soft:#eaf3fb; --warn:#e07b00; --good:#1f9d55;
   --route:#fc5200; --shadow:0 4px 18px rgba(0,0,0,.16);
   --display:"Barlow Condensed","Arial Narrow",sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --navh:calc(62px + env(safe-area-inset-bottom,0px));
 }
 @media (prefers-color-scheme: dark){
   :root{ --bg:#101113; --card:#17191c; --soft:#22252a; --ink:#f2f2f2; --muted:#9a9ea6; --line:#2a2e34;
@@ -24,77 +33,117 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0}
-body{font-family:var(--body);background:var(--bg);color:var(--ink);font-size:15px;overflow:hidden}
-#map{position:fixed;inset:0;background:#dfe3e0}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);font-size:15px;overflow:hidden;-webkit-tap-highlight-color:transparent}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* barra superior */
-.top{position:fixed;z-index:1000;top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));
+/* páginas */
+.page{position:fixed;left:0;right:0;top:0;bottom:var(--navh)}
+.page.off{visibility:hidden;pointer-events:none}
+#map{position:absolute;inset:0;background:#dfe3e0}
+#map.crear{cursor:crosshair}
+
+/* barra de abajo: Perfil / Mapa */
+.bnav{position:fixed;z-index:1500;left:0;right:0;bottom:0;height:var(--navh);padding-bottom:env(safe-area-inset-bottom,0px);
+  background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center}
+.bnav button{flex:1;max-width:220px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  color:var(--muted);font-weight:700;font-size:12.5px;letter-spacing:.3px}
+.bnav button svg{width:25px;height:25px}
+.bnav button.on{color:var(--accent)}
+
+/* perfil */
+#pgPerfil{overflow-y:auto;background:var(--soft);padding:0 0 28px}
+.phead{background:var(--accent);color:#fff;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 118px;display:flex;align-items:center;gap:10px}
+.phead img{width:34px;height:34px;border-radius:9px;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+.phead b{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:1px;text-transform:uppercase}
+.pcard{position:relative;margin:-54px auto 0;width:calc(100% - 32px);max-width:440px;background:var(--card);border-radius:20px;box-shadow:var(--shadow);
+  padding:0 20px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.avatar{width:112px;height:112px;border-radius:50%;margin-top:-56px;background:var(--soft) center/cover no-repeat;border:5px solid var(--card);
+  box-shadow:0 2px 10px rgba(0,0,0,.18);display:grid;place-items:center;color:var(--muted);overflow:hidden}
+.avatar svg{width:60px;height:60px}
+.avatar.pick{cursor:pointer;position:relative}
+.avatar.pick span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:600;padding:5px 4px 9px}
+.pcard h2{margin:4px 0 0;font-family:var(--display);font-weight:800;font-size:32px;line-height:1;letter-spacing:.3px}
+.pcity{margin:0;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:5px}
+.pcity svg{width:16px;height:16px;color:var(--accent)}
+.fld{width:100%;display:flex;flex-direction:column;gap:5px;text-align:left;font-size:13px;font-weight:600;color:var(--muted)}
+.fld input{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink);font-weight:500}
+.btn-main{border:0;border-radius:14px;padding:13px 18px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:16px;width:100%}
+.btn-ghost{border:1px solid var(--line);border-radius:14px;padding:11px 18px;background:var(--card);font-weight:700;font-size:15px;width:100%}
+.gomap{display:block;margin:18px auto 0;width:calc(100% - 32px);max-width:440px;padding:16px;font-size:18px}
+
+/* mapa: buscador y modalidades */
+.top{position:absolute;z-index:1000;top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));
   width:380px;max-width:calc(100% - 24px);display:flex;flex-direction:column;gap:8px}
 .search{position:relative}
-.search input{width:100%;border:0;border-radius:999px;background:var(--card);box-shadow:var(--shadow);
-  padding:13px 18px 13px 44px;font-size:16px;font-weight:500}
+.search input{width:100%;border:0;border-radius:999px;background:var(--card);box-shadow:var(--shadow);padding:13px 18px 13px 44px;font-size:16px;font-weight:500}
 .search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
-.results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border-radius:14px;box-shadow:var(--shadow);
-  list-style:none;margin:0;padding:6px;max-height:50vh;overflow:auto}
+.results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border-radius:14px;box-shadow:var(--shadow);list-style:none;margin:0;padding:6px;max-height:50vh;overflow:auto}
 .results li{padding:10px 12px;border-radius:10px;cursor:pointer}
-.results li:hover,.results li.sel{background:var(--soft)}
+.results li:hover{background:var(--soft)}
 .results b{display:block;font-weight:600}
 .results small{color:var(--muted)}
 .chips{display:flex;gap:6px}
-.chips button{flex:1;border:0;border-radius:999px;background:var(--card);box-shadow:var(--shadow);padding:9px 6px;
-  font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.6px;text-transform:uppercase}
+.chips button{flex:1;border:0;border-radius:999px;background:var(--card);box-shadow:var(--shadow);padding:9px 6px;font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.6px;text-transform:uppercase}
 .chips button.on{background:var(--accent);color:var(--accent-ink)}
 
+/* pestañas-interruptor abajo */
+.lbar{position:absolute;z-index:1001;left:0;right:0;bottom:10px;display:flex;gap:8px;overflow-x:auto;padding:4px 12px;scrollbar-width:none}
+.lbar::-webkit-scrollbar{display:none}
+.lbar button{flex:none;border:0;border-radius:999px;background:var(--card);box-shadow:var(--shadow);padding:11px 15px;font-weight:700;font-size:14.5px;
+  display:flex;align-items:center;gap:7px;white-space:nowrap}
+.lbar button i{width:10px;height:10px;border-radius:50%;border:2px solid var(--muted);flex:none}
+.lbar button.on{background:var(--ink);color:var(--bg)}
+.lbar button.on i{background:var(--accent);border-color:var(--accent)}
+.lbar button.make{color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent),var(--shadow)}
+.lbar button.make svg{width:16px;height:16px}
+.lbar button.make.on{background:var(--accent);color:#fff}
+@media (min-width:761px){.lbar{justify-content:center}}
+
 /* ficha */
-.sheet{position:fixed;z-index:999;left:max(12px,env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));
-  bottom:calc(12px + env(safe-area-inset-bottom,0px));width:380px;background:var(--card);border-radius:18px;box-shadow:var(--shadow);
-  display:flex;flex-direction:column;overflow:hidden}
+.sheet{position:absolute;z-index:999;left:max(12px,env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));bottom:70px;width:380px;
+  background:var(--card);border-radius:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
 .handle{display:none}
-.sheet-head{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
-.brand{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.brand h1{margin:0;font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:.3px;text-transform:uppercase}
-.brand h1 span{color:var(--accent)}
+.sheet-body{overflow-y:auto;flex:1;padding:4px 0 10px}
+.sec{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.sec:last-child{border-bottom:0}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.sec-h h3{margin:0;font-family:var(--display);font-weight:800;font-size:21px;text-transform:uppercase;letter-spacing:.4px}
 .status{font-size:13px;color:var(--muted);text-align:right;min-width:0}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .stat{min-width:0}
-.stat b{display:block;font-family:var(--display);font-weight:800;font-size:27px;line-height:1;font-variant-numeric:tabular-nums}
+.stat b{display:block;font-family:var(--display);font-weight:800;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
 .stat b em{font-style:normal;font-size:15px;font-weight:600;margin-left:2px;color:var(--muted)}
 .stat small{display:block;margin-top:3px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px;line-height:1.2}
 .stat.alert b{color:var(--warn)}
-.actions{display:flex;gap:6px}
-.actions button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 6px;font-weight:600;font-size:14px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.actions button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 6px;font-weight:600;font-size:14px;min-width:70px}
 .actions button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.actions button.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .actions button:disabled{opacity:.4;cursor:default}
-.segs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:132px;overflow-y:auto}
+.actions button.confirm{background:#c62828;border-color:#c62828;color:#fff}
+.segs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto}
 .segs li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:var(--soft);font-size:14px}
 .segs li .n{font-family:var(--display);font-weight:800;font-size:16px;color:var(--accent);width:22px}
 .segs li .d{flex:1;min-width:0}
 .segs li .d small{color:var(--muted)}
 .segs li button{border:0;background:none;color:#c62828;font-weight:700;font-size:13px;padding:4px 6px;border-radius:8px}
-.segs li button:hover{background:rgba(198,40,40,.1)}
 .segbtn{margin-top:6px;border:0;background:#c62828;color:#fff;font-weight:700;border-radius:8px;padding:7px 10px;cursor:pointer;width:100%}
-.actions button.confirm{background:#c62828;border-color:#c62828;color:#fff}
-.tabs{display:flex;border-bottom:1px solid var(--line);padding:0 10px}
-.tabs button{flex:1;border:0;background:none;padding:12px 4px 10px;font-weight:700;font-size:14px;color:var(--muted);border-bottom:3px solid transparent}
-.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
-.tabpanes{overflow-y:auto;flex:1;padding:14px 18px 20px}
-.pane{display:flex;flex-direction:column;gap:12px}
 .note{font-size:14px;color:var(--muted);margin:0;line-height:1.45}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .row label{font-size:13px;color:var(--muted)}
 .row select{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:7px 10px;font-size:14px}
 .list,.routes{display:flex;flex-direction:column;margin:0;padding:0;list-style:none}
 .list li,.routes li{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line);cursor:pointer}
-.routes li{grid-template-columns:1fr}
+.routes li{grid-template-columns:1fr auto}
 .list li:hover,.routes li:hover{background:var(--soft)}
 .list .km{font-family:var(--display);font-weight:800;font-size:22px;color:var(--water);font-variant-numeric:tabular-nums}
 .list .km em{font-style:normal;font-size:12px;color:var(--muted);margin-left:1px}
-.list .t,.routes li{min-width:0}
+.list .t,.routes li span{min-width:0}
 .list .t div,.routes b{font-weight:600;display:block}
 .list small,.routes small{color:var(--muted);font-size:13px}
+.routes li button{border:0;background:none;color:#c62828;font-weight:700;font-size:13px;padding:6px;border-radius:8px}
 .photos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .photo{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink)}
 .photo img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;background:var(--soft)}
@@ -104,38 +153,65 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13px}
 .legend span{display:flex;align-items:center;gap:8px}
 .legend i{display:inline-block;width:24px;height:5px;border-radius:3px}
-.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px;font-weight:600}
-.small-status{font-size:13px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600}
+.big-sum{display:flex;gap:18px}
+.big-sum div b{display:block;font-family:var(--display);font-weight:800;font-size:28px;line-height:1}
+.big-sum div small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+.rec-live{display:flex;align-items:center;gap:10px;background:#fdecea;color:#b71c1c;border-radius:12px;padding:10px 12px;font-weight:700}
+.rec-live i{width:12px;height:12px;border-radius:50%;background:#e53935;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+details.help{font-size:13.5px;color:var(--muted);line-height:1.45}
+details.help summary{cursor:pointer;font-weight:700;color:var(--ink)}
+details.help p{margin:6px 0 0}
 
-.toast{position:fixed;z-index:1001;left:50%;transform:translateX(-50%);top:calc(122px + env(safe-area-inset-top,0px));
-  background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:var(--shadow);max-width:calc(100% - 24px);text-align:center}
-@media (min-width:761px){.toast{left:calc(50% + 200px)}}
-/* candado */
-.lock{position:fixed;inset:0;z-index:5000;background:var(--bg);display:grid;place-items:center;
-  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+/* avisos y preguntas */
+.toast{position:fixed;z-index:3000;left:50%;transform:translateX(-50%);top:calc(122px + env(safe-area-inset-top,0px));
+  background:var(--ink);color:var(--bg);padding:9px 15px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:var(--shadow);max-width:calc(100% - 24px);text-align:center}
+.modal{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:20px}
+.modal .box{width:100%;max-width:360px;background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:22px 20px 18px;display:flex;flex-direction:column;gap:10px;text-align:center}
+.modal .ico{width:54px;height:54px;margin:0 auto}
+.modal h4{margin:0;font-family:var(--display);font-weight:800;font-size:24px;line-height:1.1}
+.modal p{margin:0;color:var(--muted);line-height:1.4}
+.modal .btns{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+
+/* marca, pantalla de inicio y candado */
+.splash{position:fixed;inset:0;z-index:6000;background:#fc5200;display:grid;place-items:center;transition:opacity .45s}
+.splash div{display:flex;flex-direction:column;align-items:center;gap:14px}
+.splash img{width:120px;height:120px;border-radius:28px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
+.splash b{font-family:var(--display);font-weight:800;font-size:44px;letter-spacing:2px;color:#fff;text-transform:uppercase}
+.splash.out{opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.splash{transition:none}}
+.lock{position:fixed;inset:0;z-index:5000;background:var(--bg);display:grid;place-items:center;padding:16px}
 .lock form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;text-align:center}
+.lock img{width:64px;height:64px;border-radius:16px;margin:0 auto}
 .lock h2{margin:0;font-family:var(--display);font-weight:800;font-size:32px;text-transform:uppercase;letter-spacing:.5px}
 .lock h2 span{color:var(--accent)}
 .lock p{margin:0;color:var(--muted)}
 .lock input{border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:17px;background:var(--card);text-align:center}
 .lock button{border:0;border-radius:12px;padding:13px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px}
 .lock .err{color:#c62828;font-size:14px;min-height:1.2em}
-/* botones flotantes del mapa */
-.fab{position:fixed;z-index:999;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(110px + env(safe-area-inset-bottom,0px));
-  width:46px;height:46px;border-radius:50%;border:0;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center}
+
+/* botón de ubicación y controles del mapa */
+.fab{position:absolute;z-index:1000;right:max(12px,env(safe-area-inset-right,0px));bottom:74px;width:48px;height:48px;border-radius:50%;border:0;
+  background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center}
 .fab svg{width:22px;height:22px;color:var(--accent)}
 .leaflet-control-zoom a,.leaflet-control-layers{border:0!important;box-shadow:var(--shadow)!important}
 .leaflet-control-zoom{border:0!important;border-radius:12px!important;overflow:hidden}
 .leaflet-control-layers{border-radius:12px!important}
 .leaflet-top.leaflet-right{top:env(safe-area-inset-top,0px)}
+.leaflet-bottom{bottom:62px}
+.leaflet-bottom.leaflet-right .leaflet-control-zoom{margin-bottom:66px}
 
 /* iconos del mapa */
-.tap{width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid #1677c9;box-shadow:0 1px 4px rgba(0,0,0,.4);display:grid;place-items:center}
-.tap svg{width:20px;height:20px}
 .tapdrop svg{width:32px;height:40px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
 .pin{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:grid;place-items:center;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);font-size:13px}
+.pin.f{background:#1677c9}
+.pin.f svg{width:14px;height:14px}
+.arr{width:16px;height:16px;display:grid;place-items:center;pointer-events:none}
+.arr svg{width:16px;height:16px;display:block}
 .thumb{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);background-size:cover;background-position:center}
 .found{width:18px;height:18px;border-radius:50%;background:var(--ink);border:4px solid #fff;box-shadow:0 0 0 2px var(--ink)}
+.me{width:18px;height:18px;border-radius:50%;background:#1677c9;border:3px solid #fff;box-shadow:0 0 0 6px rgba(22,119,201,.25)}
 .leaflet-popup-content-wrapper{border-radius:14px}
 .leaflet-popup-content img{width:220px;border-radius:8px;display:block;margin-bottom:6px}
 .fpop{width:230px;font-family:var(--body)}
@@ -143,23 +219,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .fpop .ph img{width:100%;height:100%;object-fit:cover;margin:0}
 .fpop .tags{font-size:12px;color:#1f9d55;font-weight:600}
 .fpop .cap{font-size:11px;color:#6b7570}
-.trail-name{background:rgba(255,255,255,.9);border:0;box-shadow:none;padding:0 4px;font-size:11px;font-weight:600;color:#222;border-radius:3px}
-.trail-name:before{display:none}
-.leaflet-container:not(.names-on) .trail-name{display:none}
-
-/* nombres de pueblos, barrios y montañas (siempre sobre el mapa claro) */
-.lbl{white-space:nowrap;line-height:1;text-align:center;pointer-events:none;color:#1b1b1b;font-family:var(--body);
-  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 4px #fff,0 0 1px #fff}
-.lbl.city{font-family:var(--display);font-size:24px;font-weight:800;letter-spacing:.5px}
-.lbl.town{font-family:var(--display);font-size:20px;font-weight:800}
-.lbl.village{font-size:14px;font-weight:700}
-.lbl.suburb{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#4a4a4a}
-.lbl.hood{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1.2px;color:#5a5a5a}
-.lbl.range{font-family:var(--display);font-size:18px;font-weight:700;font-style:italic;text-transform:uppercase;letter-spacing:3px;color:#2c6b34}
-.lbl.peak{font-size:12px;font-weight:700;color:#6b3f1a}
-.lbl.peak small{display:block;font-size:10.5px;font-weight:500}
-.leaflet-container.sat .lbl{color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 0 5px #000}
-.leaflet-container.sat .lbl.range{color:#b9f0bf}.leaflet-container.sat .lbl.peak{color:#ffd9a8}
+.leaflet-container.sat .lbl{color:#fff}
 
 /* tiempo */
 .wx{background:var(--card);color:var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:10px 12px;width:220px;font-family:var(--body)}
@@ -180,17 +240,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .wind span{background:rgba(20,20,20,.85);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:999px;white-space:nowrap}
 .wind span.head{background:#c62828}.wind span.tail{background:#1f9d55}
 
-/* móvil: ficha abajo, se puede plegar */
+/* móvil: ficha abajo, encima de las pestañas, se puede plegar */
 @media (max-width:760px){
   .top{width:auto;right:max(12px,env(safe-area-inset-right,0px))}
-  .sheet{top:auto;left:0;right:0;bottom:0;width:auto;height:46%;border-radius:18px 18px 0 0;padding-bottom:env(safe-area-inset-bottom,0px);transition:height .25s}
-  .sheet.closed{height:calc(150px + env(safe-area-inset-bottom,0px))}
-  .handle{display:block;border:0;background:none;padding:8px 0 0;width:100%}
+  .sheet{top:auto;left:0;right:0;bottom:62px;width:auto;max-height:44%;border-radius:18px 18px 0 0;transition:max-height .25s}
+  .sheet.closed{max-height:118px}
+  .handle{display:block;border:0;background:none;padding:8px 0 2px;width:100%;flex:none}
   .handle i{display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto}
-  .sheet-head{padding:6px 16px 10px}
-  .tabpanes{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-  .fab{bottom:calc(46% + 12px)}
-  .sheet.closed ~ .fab{bottom:calc(162px + env(safe-area-inset-bottom,0px))}
+  .sec{padding:10px 16px}
   .wx{width:180px}
   .leaflet-top.leaflet-right{top:calc(112px + env(safe-area-inset-top,0px))}
 }
@@ -198,9 +255,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 </style>
 </head>
 <body>
+<div class="splash" id="splash"><div><img src="data:image/png;base64,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" alt=""><b>Ichnos</b></div></div>
+<script>setTimeout(function(){var s=document.getElementById('splash');if(s){s.classList.add('out');setTimeout(function(){s.hidden=true;},500);}},1300);</script>
 <div class="lock" id="lock">
   <form id="lockForm" autocomplete="off">
-    <h2>Ruta de <span>Fuentes</span></h2>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAMAAADDpiTIAAAAYFBMVEX//////f3/+/r/9/T/9O//8On/6uD/5Nj/3Mz/1sP+0rz+yrH+wKP+t5b+roj9o3j9nG79lWP9j1r9iVH9gkj8fD78djb8byv8aSL8ZBv8XxT8Ww78WAr8VAP8UgH8UgAU5lbMAAANyElEQVR42u2da5OquhJAA8hLQRRFQMD8/395p86pulX7jM7mpUOn1/q89wenF0mnk3SMBdUY/gQIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIgAD8CRAAfo/uei7yLI2DIE6zvDhfOwTQQ3Pa++Y/+PtTgwAKGKpjbF4QH6sBAdwO/zkyPxKVAwK4yyU2fyW5IoCj3FIzivSGAA5SH8xoDjUCuEbpmQl4ZwRwisfRTOT4QACHkv+DmUw2IIAr3FMzg/SOAG7QRGYWcYMALtDFZiZxhwAO5H97M5vDAwHEczQLOCKAdM5mESUCyObmLxMgqBBAMm1oFhK2CCCYg1nMAQHkUpkVqBFALOkaAuwRQPUAYEyFAJoHgK9NAQSQycWsxBUBRJKsJUCCABKpzWrUCCCQYj0BCgTQPAO8ZQ5AgHfTeusJ4LUIYJVtA/7JGQHEsV9TgD0CSKPz1xTA7xBAGDezKjcEsErLgP9yQQBhnNYV4IQAVtFZ0A+cDkWAN5OtK0CGALIY4nUF2COAJPpTtG781y8GI8D7uB93Zm12CCAn/OYNIICY8AfviL+JEUBz+N9wLhABJIWfZaDy8BuTI8C26d6Q+b/1UBgCrFr2Ob03/G84EYIA9rMdYLd2OwgBVqNO3h5+DoRslzbz3h9/joRtlf6tqT+HQjfO4xx+JPwcC9c7+XMxZMOjv/+p+HM1bINcI/M5uBy6Ne7ZB8O//lYgAizkvPtk/GkQsTGa9KPhp0XMxtZ+J/+z8Tc3BNhS5e/Dn/+7OkUiwDwuu0/H36NR5HboMvNxcosAW+EWfT7+0R0BNsJw9D4f/6CmXfxWFn+J+QV4MGIrXIPfiD9Pxmge/nk0ajvZ//43ws+zcVuhjn4l/jsejtwG5cLab3ic9XLMobMIsIXpP1+4kD/1Mx4Pf/vz4QgwdvpfVvsPT/NGkaC0PB+/BdpFdz6i8//fgL9NOj8a1hYBJD/8/d/w/3N7cPQg4B87iwBb4LZbK/z/2DQuF/Sy5gM/DQHeW/0LT8MzoUaUk5PbR34bAvydy+zqX/BqDH+Uf5lTovJhEcDKbvbqZT9c5Bmq48u8Mj5Ww6d+HQK8Lf7pXzP4pki/DS5eWjSf/HkI8Kb4x+POcA9NVRb5Id7t4kNenKtm+PDvQ4C3xD88D0J+IALY9R/88fJOzC9EgJ8oZ+X/H1rAIcA2139BMVgE0Bv/fSPrRyLAS6oZ2/9hKe1XIsDLRfpua2c3EOCT3Kfv/wVngb8TAV4UaKaf/k8aiwCu8Jh8es+XlfwjgF33sbfoJvSXIoBdowCY9xYB3OE2cQHol3J/KwIsXwCEN4sALiWAE+9/xa1FAJcoJhZ/eosATiUA3pYu7iDAp2nDbTRuQIDfYZh0A8y/WgRQnAAElUUAt6j9TV3cQ4AtbwGFjUUAxROA7OU/AiydAJK7RQDFE0DaWQRQPAEkvUUAxRNAfLcI4BzjJ4CwtQjgHOX4+s/NIoBz9KP3APzKIoBVfArwYhHAPVr/F1/vRIDfZ/Qx8MwigINUoxeAPQI4yGNsH9CgsQigeQl4sQjgIEP8u0+3IYCQASAZEEDzALBrLQIoHgC8q0UAzQNAbhFA8wAQdQigegC4WgTQPAAcLAK4ybgBILgjgJvcxg0AZ4sAbpKNKwFZBHCTbtQ5AL9BAKv5KHhhEcBRRrUDCgcEcJRm1ABwsghgFR8FjQYEcJRhp3oJiACl+gFAuQB7FX2gEOAVrad+ANAtQMEAoFuAMfeBY4sAzs4ADAC6BRjzLOyuRwBnGdMU9GgRwFXuY9YADQJYze/C7C0CWM1VoBIBnKXzdO8DqxegJAXULcCIw4BeiwDuEpICqhagIQXULcCIRaDXIYDqFCC1CKA6BTghgLvUlIF1C3DmJIBuATKqQLoFGHEj6IYA7tKN2Ad4IIC7XPV1hUYAO+08cIkAunPABgGs5sZAoUUAd+n1dgVDADvufYgCAazqGwEVAqjOAb0eAVTngIlFANU5YI4AVnUd8IIAVnVrqBoBrOa+AP6AAO5yN+SAqgUo2QrULUDOeVDdAsScBlItwIgnIrwBAazml+L15IAKBWg8ckDVAuSGHFCzAF1gqANqFmBMe9jQIoCrDKFhK1CzAEfFr8QiwFcNYExzSD07QeoE6Ec9Era3CKB4Cej4G0GqBahGxd/vEcDREkA4SoDMIoBV/E60mhsB6gQ4jou/kr4A+gQYGX8lnWH0CZCPjL9/RwDN8VdVBtYjwGN0/L0GAfTm/4raAqgSoE1Gx1/TSQA1AlzD8fHfWwRwjPv44V/jAOC6AI/zbkr8M4sATlEnU8JvgjsCuESXe5Pir+kwsAIBhlM4LfwmGhDAncm/jM1UrhYBnFn6JZPDrzEDdFWAKp0efhP1CODI1z8n/Ma/WQTQG349rWEdF2DO3P/vhfABAeQv/Mq54TdhaxFAOP0pmht+E9QWAWTTHcPZ4Tfe1SKAaOosMAs4WQQQPfWnZhGZRQC53JeM/f/Gf0AAwWO/b5bG/2ERQCaP694sJtcdf8EC9KfYrBB/axFA5tS/WyH8uvM/wQI0ebBG+NWP/0IFqA7eKuH3TxaMmu2+b+wqwi9OgOGSrBR+k7REX5oAj0u8VvhNPhB8aQKs9/Wb4ELopQlwXS/8Jm2IvDAB6v164Q8Khn9hArSZt178Ez5/YQJ0ub9e+H0+f2EC9MXOMPvrFeASrRj+qCTisgRoV8z9jH/sCbgoAYYiWC/8XsboL0yAKl7x8z/UBFuWAH22YvgTNn6kCVCtmPzFFH6lCdDn61V+EsIvToDbep9/eiXI0gQYjmt9/t7hRojFCdCmqy38yPwFCnBZqfIb5Bz5kShAvk74w6IjuAIF6NY59RGf2fITKUCzSva/J/EXKkC1I/PTLMCZzE+zAI/j4vBHZH5yBegPi0u+JZmfXAH6dGnNj/0+yQIsjL+fc9hDtADL4h8cyfxkC7Ao/tT8xAuwJP5hwUFP6QIsiD/hd0CAYfbJ7/BE+B0QIOfrVy3AaW7mT+rnhABXb966/07onBDgNuvqT8a63xEB2jmNnhMOeroiQBdzwVe1AAcu+KoWYPoCIOW0j0MC1FMTwN2ZeDkkQD81AdiT+zslQM7nr1qAy8TZn8/fDQG667nIszSeNv979HZzQoC6SH0auysVoL/mc6/9xAz/4gUYFnR7TNn3Ey/Akj7/GdO/dAHqBVd+vYIYSRegWNDwxWPrR7oAw5IrX8RfvABtQvw1C3Bb8rS3R/VXugDlopceyP+kC3DkXV/VAizr+LFn/S9cgGpRv8+Es1/CBWgWdXwKOfgvXIBu0WsPHvt/wgUYFrZ82T+IjWgBFnd8PRIbyQJUP23v56dL3XX15ZT/NE1w/0eyAC8ngH35R3bXli//ZUpw5ApwnfB4z8uzAnT8lStAMqm2W7yoBBAdqQJcJh7trJ6fEeaxJ6ECPJ4O6tEPvRzrp+dFY8IjU4CnS4Dox9LePWIh4I4AzzYBd3/p5doE1AKcESCaU9p91iyIOUCkAPWTbzm3s2qHtICWKMCTVd1uxN2O7snu4YkACRTgSW3vPLNhyJ4AyROg82bO5cP31aPHrTB5AlQzB4CnR8g4FiBPgPJ7GEee7mm//08uBsgToJhf1E/IAh0Q4Di/nnOkFOSAANn8TZ0LdwMcECCdX9K/sQ50QIB4fj2voRjsgADfd3VGX/Hpvr8LQYQcEGD0HZ8eARwQIGIKIAmcmQRWHA12QIDDmsvAAxESJ0C+ZiEoJ0IOVAIXlIJpEiJPgO/b+t7IzaD77H1E2JAAlzW3g7kaIE+AdvYdnyfXCWgTLfBIWDLzQy65HeaGAE+uBcQjqsFDRKM4NwS4mVlZwImrQa5cDHnSHTSo5zwiFxIfkQI8u+IRtjNeEaYMJFOAp+0h4p8vh8a0iHBHgOHpVd+onnw9nF6hTjWICF5+0FcaRKhoEeNlTxOBNvPoEuWYANXL19+/3fXqjj594txrE/fynZhd/sdtryp/2VGYowCSBah/6gOdn65139XXU/7TeyI1wVHdKpYagGwBljUL/1oCcjFceLv4Jlz0XAD7wOIfjLgteDAqIAFw4MmYy+wnYzxqwE48GlXMFYCTgLqfjaMpgDMPR55n5AE+379LT8dOfjospALs1OPRzcR6QMz6z7Hn4/v9lPgfeC7SNQHs4zy6JBSVPBbnngBfg8AxGFX9Kfj83RTg9ZmPP06L8FisuwJ8LQf+8pJoQvHXbQG+jggU6YthwEsLwu++AF/cz4dv2UBwODP2axHgn3SgKov8EAe7+JAXZcWyX5sAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAFvnf6lt3lXzCympAAAAAElFTkSuQmCC" alt=""><h2>Ich<span>nos</span></h2>
     <p>App en pruebas. Escribe la contraseña para entrar.</p>
     <input id="lockPw" type="password" placeholder="Contraseña" aria-label="Contraseña" autocapitalize="off" autocorrect="off">
     <button type="submit">Entrar</button>
@@ -221,95 +280,217 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   });
 })();
 </script>
-<div id="map"></div>
 
-<div class="top">
-  <div class="search">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-    <input id="q" type="search" placeholder="Buscar pueblo, calle, montaña…" autocomplete="off" aria-label="Buscar un sitio">
-    <ul class="results" id="results" hidden></ul>
-  </div>
-  <div class="chips" id="modes" role="group" aria-label="Tipo de bici">
-    <button data-mode="road">Carretera</button>
-    <button data-mode="gravel">Gravel</button>
-    <button data-mode="mtb" class="on">BTT</button>
-  </div>
-</div>
+<!-- ============ PÁGINA 1: PERFIL ============ -->
+<main class="page" id="pgPerfil">
+  <header class="phead"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAMAAADDpiTIAAAAYFBMVEX//////f3/+/r/9/T/9O//8On/6uD/5Nj/3Mz/1sP+0rz+yrH+wKP+t5b+roj9o3j9nG79lWP9j1r9iVH9gkj8fD78djb8byv8aSL8ZBv8XxT8Ww78WAr8VAP8UgH8UgAU5lbMAAANyElEQVR42u2da5OquhJAA8hLQRRFQMD8/395p86pulX7jM7mpUOn1/q89wenF0mnk3SMBdUY/gQIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIgAD8CRAAfo/uei7yLI2DIE6zvDhfOwTQQ3Pa++Y/+PtTgwAKGKpjbF4QH6sBAdwO/zkyPxKVAwK4yyU2fyW5IoCj3FIzivSGAA5SH8xoDjUCuEbpmQl4ZwRwisfRTOT4QACHkv+DmUw2IIAr3FMzg/SOAG7QRGYWcYMALtDFZiZxhwAO5H97M5vDAwHEczQLOCKAdM5mESUCyObmLxMgqBBAMm1oFhK2CCCYg1nMAQHkUpkVqBFALOkaAuwRQPUAYEyFAJoHgK9NAQSQycWsxBUBRJKsJUCCABKpzWrUCCCQYj0BCgTQPAO8ZQ5AgHfTeusJ4LUIYJVtA/7JGQHEsV9TgD0CSKPz1xTA7xBAGDezKjcEsErLgP9yQQBhnNYV4IQAVtFZ0A+cDkWAN5OtK0CGALIY4nUF2COAJPpTtG781y8GI8D7uB93Zm12CCAn/OYNIICY8AfviL+JEUBz+N9wLhABJIWfZaDy8BuTI8C26d6Q+b/1UBgCrFr2Ob03/G84EYIA9rMdYLd2OwgBVqNO3h5+DoRslzbz3h9/joRtlf6tqT+HQjfO4xx+JPwcC9c7+XMxZMOjv/+p+HM1bINcI/M5uBy6Ne7ZB8O//lYgAizkvPtk/GkQsTGa9KPhp0XMxtZ+J/+z8Tc3BNhS5e/Dn/+7OkUiwDwuu0/H36NR5HboMvNxcosAW+EWfT7+0R0BNsJw9D4f/6CmXfxWFn+J+QV4MGIrXIPfiD9Pxmge/nk0ajvZ//43ws+zcVuhjn4l/jsejtwG5cLab3ic9XLMobMIsIXpP1+4kD/1Mx4Pf/vz4QgwdvpfVvsPT/NGkaC0PB+/BdpFdz6i8//fgL9NOj8a1hYBJD/8/d/w/3N7cPQg4B87iwBb4LZbK/z/2DQuF/Sy5gM/DQHeW/0LT8MzoUaUk5PbR34bAvydy+zqX/BqDH+Uf5lTovJhEcDKbvbqZT9c5Bmq48u8Mj5Ww6d+HQK8Lf7pXzP4pki/DS5eWjSf/HkI8Kb4x+POcA9NVRb5Id7t4kNenKtm+PDvQ4C3xD88D0J+IALY9R/88fJOzC9EgJ8oZ+X/H1rAIcA2139BMVgE0Bv/fSPrRyLAS6oZ2/9hKe1XIsDLRfpua2c3EOCT3Kfv/wVngb8TAV4UaKaf/k8aiwCu8Jh8es+XlfwjgF33sbfoJvSXIoBdowCY9xYB3OE2cQHol3J/KwIsXwCEN4sALiWAE+9/xa1FAJcoJhZ/eosATiUA3pYu7iDAp2nDbTRuQIDfYZh0A8y/WgRQnAAElUUAt6j9TV3cQ4AtbwGFjUUAxROA7OU/AiydAJK7RQDFE0DaWQRQPAEkvUUAxRNAfLcI4BzjJ4CwtQjgHOX4+s/NIoBz9KP3APzKIoBVfArwYhHAPVr/F1/vRIDfZ/Qx8MwigINUoxeAPQI4yGNsH9CgsQigeQl4sQjgIEP8u0+3IYCQASAZEEDzALBrLQIoHgC8q0UAzQNAbhFA8wAQdQigegC4WgTQPAAcLAK4ybgBILgjgJvcxg0AZ4sAbpKNKwFZBHCTbtQ5AL9BAKv5KHhhEcBRRrUDCgcEcJRm1ABwsghgFR8FjQYEcJRhp3oJiACl+gFAuQB7FX2gEOAVrad+ANAtQMEAoFuAMfeBY4sAzs4ADAC6BRjzLOyuRwBnGdMU9GgRwFXuY9YADQJYze/C7C0CWM1VoBIBnKXzdO8DqxegJAXULcCIw4BeiwDuEpICqhagIQXULcCIRaDXIYDqFCC1CKA6BTghgLvUlIF1C3DmJIBuATKqQLoFGHEj6IYA7tKN2Ad4IIC7XPV1hUYAO+08cIkAunPABgGs5sZAoUUAd+n1dgVDADvufYgCAazqGwEVAqjOAb0eAVTngIlFANU5YI4AVnUd8IIAVnVrqBoBrOa+AP6AAO5yN+SAqgUo2QrULUDOeVDdAsScBlItwIgnIrwBAazml+L15IAKBWg8ckDVAuSGHFCzAF1gqANqFmBMe9jQIoCrDKFhK1CzAEfFr8QiwFcNYExzSD07QeoE6Ec9Era3CKB4Cej4G0GqBahGxd/vEcDREkA4SoDMIoBV/E60mhsB6gQ4jou/kr4A+gQYGX8lnWH0CZCPjL9/RwDN8VdVBtYjwGN0/L0GAfTm/4raAqgSoE1Gx1/TSQA1AlzD8fHfWwRwjPv44V/jAOC6AI/zbkr8M4sATlEnU8JvgjsCuESXe5Pir+kwsAIBhlM4LfwmGhDAncm/jM1UrhYBnFn6JZPDrzEDdFWAKp0efhP1CODI1z8n/Ma/WQTQG349rWEdF2DO3P/vhfABAeQv/Mq54TdhaxFAOP0pmht+E9QWAWTTHcPZ4Tfe1SKAaOosMAs4WQQQPfWnZhGZRQC53JeM/f/Gf0AAwWO/b5bG/2ERQCaP694sJtcdf8EC9KfYrBB/axFA5tS/WyH8uvM/wQI0ebBG+NWP/0IFqA7eKuH3TxaMmu2+b+wqwi9OgOGSrBR+k7REX5oAj0u8VvhNPhB8aQKs9/Wb4ELopQlwXS/8Jm2IvDAB6v164Q8Khn9hArSZt178Ez5/YQJ0ub9e+H0+f2EC9MXOMPvrFeASrRj+qCTisgRoV8z9jH/sCbgoAYYiWC/8XsboL0yAKl7x8z/UBFuWAH22YvgTNn6kCVCtmPzFFH6lCdDn61V+EsIvToDbep9/eiXI0gQYjmt9/t7hRojFCdCmqy38yPwFCnBZqfIb5Bz5kShAvk74w6IjuAIF6NY59RGf2fITKUCzSva/J/EXKkC1I/PTLMCZzE+zAI/j4vBHZH5yBegPi0u+JZmfXAH6dGnNj/0+yQIsjL+fc9hDtADL4h8cyfxkC7Ao/tT8xAuwJP5hwUFP6QIsiD/hd0CAYfbJ7/BE+B0QIOfrVy3AaW7mT+rnhABXb966/07onBDgNuvqT8a63xEB2jmNnhMOeroiQBdzwVe1AAcu+KoWYPoCIOW0j0MC1FMTwN2ZeDkkQD81AdiT+zslQM7nr1qAy8TZn8/fDQG667nIszSeNv979HZzQoC6SH0auysVoL/mc6/9xAz/4gUYFnR7TNn3Ey/Akj7/GdO/dAHqBVd+vYIYSRegWNDwxWPrR7oAw5IrX8RfvABtQvw1C3Bb8rS3R/VXugDlopceyP+kC3DkXV/VAizr+LFn/S9cgGpRv8+Es1/CBWgWdXwKOfgvXIBu0WsPHvt/wgUYFrZ82T+IjWgBFnd8PRIbyQJUP23v56dL3XX15ZT/NE1w/0eyAC8ngH35R3bXli//ZUpw5ApwnfB4z8uzAnT8lStAMqm2W7yoBBAdqQJcJh7trJ6fEeaxJ6ECPJ4O6tEPvRzrp+dFY8IjU4CnS4Dox9LePWIh4I4AzzYBd3/p5doE1AKcESCaU9p91iyIOUCkAPWTbzm3s2qHtICWKMCTVd1uxN2O7snu4YkACRTgSW3vPLNhyJ4AyROg82bO5cP31aPHrTB5AlQzB4CnR8g4FiBPgPJ7GEee7mm//08uBsgToJhf1E/IAh0Q4Di/nnOkFOSAANn8TZ0LdwMcECCdX9K/sQ50QIB4fj2voRjsgADfd3VGX/Hpvr8LQYQcEGD0HZ8eARwQIGIKIAmcmQRWHA12QIDDmsvAAxESJ0C+ZiEoJ0IOVAIXlIJpEiJPgO/b+t7IzaD77H1E2JAAlzW3g7kaIE+AdvYdnyfXCWgTLfBIWDLzQy65HeaGAE+uBcQjqsFDRKM4NwS4mVlZwImrQa5cDHnSHTSo5zwiFxIfkQI8u+IRtjNeEaYMJFOAp+0h4p8vh8a0iHBHgOHpVd+onnw9nF6hTjWICF5+0FcaRKhoEeNlTxOBNvPoEuWYANXL19+/3fXqjj594txrE/fynZhd/sdtryp/2VGYowCSBah/6gOdn65139XXU/7TeyI1wVHdKpYagGwBljUL/1oCcjFceLv4Jlz0XAD7wOIfjLgteDAqIAFw4MmYy+wnYzxqwE48GlXMFYCTgLqfjaMpgDMPR55n5AE+379LT8dOfjospALs1OPRzcR6QMz6z7Hn4/v9lPgfeC7SNQHs4zy6JBSVPBbnngBfg8AxGFX9Kfj83RTg9ZmPP06L8FisuwJ8LQf+8pJoQvHXbQG+jggU6YthwEsLwu++AF/cz4dv2UBwODP2axHgn3SgKov8EAe7+JAXZcWyX5sAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAFvnf6lt3lXzCympAAAAAElFTkSuQmCC" alt=""><b>Ichnos</b></header>
+  <section class="pcard" id="pView">
+    <div class="avatar" id="pAvatar"></div>
+    <h2 id="pApodo"></h2>
+    <p class="pcity" id="pCiudad"></p>
+    <button class="btn-ghost" id="pEdit">Editar perfil</button>
+  </section>
+  <form class="pcard" id="pForm" hidden autocomplete="off">
+    <label class="avatar pick" id="pPick"><input type="file" accept="image/*" id="pFile" hidden><span>Toca para cambiar la foto</span></label>
+    <label class="fld">Apodo<input id="fApodo" maxlength="30" placeholder="Cómo quieres que te llamen"></label>
+    <label class="fld">Ciudad<input id="fCiudad" maxlength="40" placeholder="Dónde vives"></label>
+    <button type="submit" class="btn-main">Guardar</button>
+    <button type="button" class="btn-ghost" id="pCancel">Cancelar</button>
+  </form>
+  <button class="btn-main gomap" id="goMap">Ir al mapa</button>
+</main>
 
-<aside class="sheet" id="sheet">
-  <button class="handle" id="handle" aria-label="Abrir o plegar la ficha"><i></i></button>
-  <div class="sheet-head">
-    <div class="brand"><h1>Ruta de <span>Fuentes</span></h1><div class="status" id="status">Toca el mapa para empezar</div></div>
-    <div class="stats">
-      <div class="stat"><b id="sKm">–</b><small>Distancia</small></div>
-      <div class="stat"><b id="sUp">–</b><small>Desnivel</small></div>
-      <div class="stat"><b id="sF">–</b><small>Fuentes</small></div>
-      <div class="stat" id="gapBox"><b id="sGap">–</b><small>Máx. sin agua</small></div>
+<!-- ============ PÁGINA 2: MAPA ============ -->
+<section class="page off" id="pgMapa">
+  <div id="map"></div>
+  <div class="top">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input id="q" type="search" placeholder="Buscar pueblo, calle, montaña…" autocomplete="off" aria-label="Buscar un sitio">
+      <ul class="results" id="results" hidden></ul>
     </div>
-    <div class="actions">
-      <button id="undo" disabled>Quitar último</button>
-      <button id="clear" disabled>Borrar ruta</button>
-      <button id="gpx" class="primary" disabled>GPX</button>
+    <div class="chips" id="modes" role="group" aria-label="Tipo de bici">
+      <button data-mode="road">Carretera</button>
+      <button data-mode="gravel">Gravel</button>
+      <button data-mode="mtb" class="on">BTT</button>
     </div>
-    <ul class="segs" id="segs" hidden></ul>
   </div>
-  <nav class="tabs" role="tablist">
-    <button class="on" data-tab="tFuentes">Fuentes</button>
-    <button data-tab="tLugares">Lugares</button>
-    <button data-tab="tTrialeras">Trialeras</button>
-    <button data-tab="tRutas">Rutas</button>
-  </nav>
-  <div class="tabpanes">
-    <section class="pane" id="tFuentes">
-      <p class="note">Toca el mapa para poner la salida y luego por dónde quieres pasar. Los grifos son fuentes de agua potable y públicas.</p>
-      <div class="row"><label for="radius">Fuentes a menos de</label>
-        <select id="radius"><option value="100">100 m</option><option value="250" selected>250 m</option><option value="500">500 m</option></select>
-        <label>de la ruta</label></div>
-      <ul class="list" id="fList"></ul>
-      <p class="empty" id="fEmpty"></p>
-    </section>
-    <section class="pane" id="tLugares" hidden>
-      <div class="photos" id="pList"></div>
-      <p class="empty" id="pEmpty">Haz una ruta y aquí salen los sitios bonitos por donde pasas.</p>
-    </section>
-    <section class="pane" id="tTrialeras" hidden>
-      <p class="note">En <b>BTT</b> y <b>Gravel</b> los caminos salen siempre en el mapa. Acercando más salen sus nombres. Toca uno para ver su dificultad y el estado del suelo. En Gravel se resaltan las pistas en marrón.</p>
-      <div class="legend">
-        <span><i style="background:#2e9d3a"></i>Muy fácil (S0)</span>
-        <span><i style="background:#1f6fd1"></i>Fácil (S1)</span>
-        <span><i style="background:#d62a1e"></i>Media (S2)</span>
-        <span><i style="background:#111"></i>Difícil (S3)</span>
-        <span><i style="background:#8b2fc9"></i>Muy difícil (S4+)</span>
-        <span><i style="background:repeating-linear-gradient(90deg,#8a6a3a 0 5px,transparent 5px 8px)"></i>Pista</span>
-      </div>
-      <div class="small-status" id="tStatus"></div>
-    </section>
-    <section class="pane" id="tRutas" hidden>
-      <p class="note">Rutas marcadas que hace la gente en la zona que estás mirando.</p>
-      <div class="row"><button class="btn" id="findRoutes">Buscar rutas aquí</button></div>
-      <ul class="routes" id="rList"></ul>
-    </section>
+
+  <aside class="sheet" id="sheet" hidden>
+    <button class="handle" id="handle" aria-label="Abrir o plegar la ficha"><i></i></button>
+    <div class="sheet-body">
+      <section class="sec" id="secCrear" hidden>
+        <div class="sec-h"><h3>Tu ruta</h3><span class="status" id="status">Toca el mapa para poner la salida</span></div>
+        <div class="stats">
+          <div class="stat"><b id="sKm">–</b><small>Distancia</small></div>
+          <div class="stat"><b id="sUp">–</b><small>Desnivel</small></div>
+          <div class="stat"><b id="sF">–</b><small>Fuentes</small></div>
+          <div class="stat" id="gapBox"><b id="sGap">–</b><small>Máx. sin agua</small></div>
+        </div>
+        <div class="actions">
+          <button id="undo" disabled>Quitar último</button>
+          <button id="clear" disabled>Borrar ruta</button>
+          <button id="gpx" class="primary" disabled>GPX</button>
+          <button id="done" class="dark" hidden>Terminar ruta</button>
+        </div>
+        <ul class="segs" id="segs" hidden></ul>
+      </section>
+      <section class="sec" id="secFuentes" hidden>
+        <div class="sec-h"><h3>Fuentes de tu ruta</h3></div>
+        <div class="row"><label for="radius">Fuentes a menos de</label>
+          <select id="radius"><option value="100">100 m</option><option value="250" selected>250 m</option><option value="500">500 m</option></select>
+          <label>de la ruta</label></div>
+        <ul class="list" id="fList"></ul>
+        <p class="empty" id="fEmpty"></p>
+      </section>
+      <section class="sec" id="secTrialeras" hidden>
+        <div class="sec-h"><h3>Trialeras</h3><span class="status">Toca una para ver su dificultad</span></div>
+        <div class="legend">
+          <span><i style="background:#2e9d3a"></i>Muy fácil (S0)</span>
+          <span><i style="background:#1f6fd1"></i>Fácil (S1)</span>
+          <span><i style="background:#d62a1e"></i>Media (S2)</span>
+          <span><i style="background:#111"></i>Difícil (S3)</span>
+          <span><i style="background:#8b2fc9"></i>Muy difícil (S4+)</span>
+          <span><i style="background:repeating-linear-gradient(90deg,#8a6a3a 0 5px,transparent 5px 8px)"></i>Pista</span>
+        </div>
+      </section>
+      <section class="sec" id="secLugares" hidden>
+        <div class="sec-h"><h3>Lugares</h3><span class="status" id="pStatus"></span></div>
+        <div class="photos" id="pList"></div>
+        <p class="empty" id="pEmpty"></p>
+      </section>
+      <section class="sec" id="secRutas" hidden>
+        <div class="sec-h"><h3>Rutas de la gente</h3></div>
+        <p class="note">Las rutas marcadas salen dibujadas en el mapa. Pulsa el botón para ver la lista de esta zona y cargar una.</p>
+        <div class="row"><button class="btn" id="findRoutes">Ver rutas de esta zona</button></div>
+        <ul class="routes" id="rList"></ul>
+      </section>
+      <section class="sec" id="secHechas" hidden>
+        <div class="sec-h"><h3>Rutas realizadas</h3></div>
+        <div class="big-sum"><div><b id="hN">0</b><small>Rutas</small></div><div><b id="hKm">0</b><small>Km en total</small></div></div>
+        <div class="rec-live" id="recLive" hidden><i></i><span id="recInfo">Grabando…</span></div>
+        <div class="actions">
+          <button id="recBtn" class="primary">● Grabar ruta</button>
+          <button id="impBtn">Traer de Strava / Coros</button>
+          <input type="file" id="impFile" accept=".gpx,.tcx,.fit,.gz" multiple hidden>
+        </div>
+        <details class="help"><summary>¿Cómo saco el archivo de Strava o Coros?</summary>
+          <p><b>Strava:</b> abre la actividad en el ordenador (strava.com), pulsa los tres puntos (···) y elige <b>Exportar GPX</b>. Para traer todas de golpe: Ajustes → Mi cuenta → <b>Descargar o eliminar tu cuenta</b> → Solicitar archivo. Te llega un zip con la carpeta <i>activities</i>; selecciona todos los archivos de dentro.</p>
+          <p><b>Coros:</b> en la app, abre la actividad, pulsa compartir (arriba a la derecha) y elige <b>Exportar archivo → GPX o FIT</b>.</p>
+          <p>Luego pulsa <b>Traer de Strava / Coros</b> y elige los archivos. Puedes elegir muchos a la vez.</p>
+        </details>
+        <ul class="routes" id="hList"></ul>
+      </section>
+    </div>
+  </aside>
+
+  <div class="lbar" id="lbar" role="group" aria-label="Qué ver en el mapa">
+    <button class="make" data-t="crear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Crear ruta</button>
+    <button data-t="fuentes"><i></i>Fuentes</button>
+    <button data-t="lugares"><i></i>Lugares</button>
+    <button data-t="trialeras" class="on"><i></i>Trialeras</button>
+    <button data-t="rutas"><i></i>Rutas</button>
+    <button data-t="hechas"><i></i>Rutas realizadas</button>
   </div>
-</aside>
+
+  <button class="fab" id="locate" aria-label="Ir a mi ubicación" title="Mi ubicación">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.5l7.5 2.9L13.4 21z"/></svg>
+  </button>
+</section>
+
+<nav class="bnav" id="bnav">
+  <button data-pg="pgPerfil" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Perfil</span></button>
+  <button data-pg="pgMapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Mapa</span></button>
+</nav>
 
 <div class="toast" id="toast" hidden></div>
-
-<button class="fab" id="locate" aria-label="Ir a mi ubicación" title="Mi ubicación">
-  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.5l7.5 2.9L13.4 21z"/></svg>
-</button>
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="box">
+    <svg class="ico" viewBox="0 0 32 40"><path d="M16 2s-13 15.5-13 24a13 13 0 0 0 26 0c0-8.5-13-24-13-24z" fill="#1677c9"/><path d="M11 25.5h6.5a3 3 0 0 1 3 3v.7M11 23v4.2M14.6 25.5v-3M12.5 22h4.4" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>
+    <h4 id="mTitle"></h4>
+    <p id="mText"></p>
+    <div class="btns"><button class="btn-main" id="mYes"></button><button class="btn-ghost" id="mNo"></button></div>
+  </div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.js"></script>
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <script>
 const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store = {
+  get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+let toastTimer=null;
+function toast(t,ms=3200){ const el=$('toast'); el.textContent=t; el.hidden=!t; clearTimeout(toastTimer); if(t) toastTimer=setTimeout(()=>el.hidden=true,ms); }
+// Pregunta con dos botones. Devuelve true (sí) o false (no).
+function ask(title,text,yes,no){
+  return new Promise(res=>{
+    $('mTitle').textContent=title; $('mText').textContent=text; $('mYes').textContent=yes; $('mNo').textContent=no;
+    $('modal').hidden=false; $('mYes').focus();
+    const done=v=>{ $('modal').hidden=true; $('mYes').onclick=$('mNo').onclick=null; res(v); };
+    $('mYes').onclick=()=>done(true); $('mNo').onclick=()=>done(false);
+  });
+}
+
+// ================= PERFIL =================
+const USER_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+const PIN_SVG='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
+let perfil=store.get('ichnos-perfil',{});
+let fotoNueva=null;
+function paintAvatar(el,foto){ el.style.backgroundImage=foto?`url("${foto}")`:''; el.querySelectorAll('svg').forEach(s=>s.remove()); if(!foto) el.insertAdjacentHTML('afterbegin',USER_SVG); }
+function renderPerfil(){
+  paintAvatar($('pAvatar'),perfil.foto);
+  $('pApodo').textContent=perfil.apodo||'Sin apodo';
+  $('pCiudad').innerHTML=PIN_SVG+esc(perfil.ciudad||'Sin ciudad');
+}
+function editPerfil(on){
+  $('pView').hidden=on; $('pForm').hidden=!on; $('goMap').hidden=on;
+  if(on){ fotoNueva=perfil.foto||null; paintAvatar($('pPick'),fotoNueva); $('fApodo').value=perfil.apodo||''; $('fCiudad').value=perfil.ciudad||''; }
+}
+$('pEdit').onclick=()=>editPerfil(true);
+$('pCancel').onclick=()=>editPerfil(false);
+$('pFile').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const img=new Image(), url=URL.createObjectURL(f);
+  img.onload=()=>{ // recortar en cuadrado y hacerla pequeña para que quepa en el móvil
+    const s=Math.min(img.width,img.height), c=document.createElement('canvas'); c.width=c.height=320;
+    c.getContext('2d').drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,320,320);
+    fotoNueva=c.toDataURL('image/jpeg',0.85); paintAvatar($('pPick'),fotoNueva); URL.revokeObjectURL(url);
+  };
+  img.onerror=()=>toast('No se ha podido abrir esa foto. Prueba con otra.');
+  img.src=url;
+};
+$('pForm').onsubmit=e=>{
+  e.preventDefault();
+  perfil={foto:fotoNueva,apodo:$('fApodo').value.trim(),ciudad:$('fCiudad').value.trim()};
+  if(!store.set('ichnos-perfil',perfil)) toast('No se ha podido guardar el perfil en este navegador.');
+  renderPerfil(); editPerfil(false);
+};
+renderPerfil();
+if(!perfil.apodo && !perfil.foto) editPerfil(true);
+
+// ================= PÁGINAS =================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
+  document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
+  if(id==='pgMapa' && window.map){ setTimeout(()=>{ map.invalidateSize(); try{ glMap.resize(); }catch(e){} },30); }
+}
+document.querySelectorAll('#bnav button').forEach(b=>b.onclick=()=>showPage(b.dataset.pg));
+$('goMap').onclick=()=>showPage('pgMapa');
+
+// ================= MAPA =================
 if(!window.L){
-  document.getElementById('map').innerHTML='<p style="padding:24px;font-size:18px">No se ha podido cargar el mapa. Comprueba que el Mac tiene internet y vuelve a abrir el archivo con Safari o Chrome.</p>';
+  $('map').innerHTML='<p style="padding:24px;font-size:18px">No se ha podido cargar el mapa. Comprueba que tienes internet y vuelve a abrir la app.</p>';
   throw new Error('Leaflet no cargado');
 }
 const map = L.map('map',{zoomControl:false}).setView([41.535,2.235],13); // Mollet / Serralada de Marina
+window.map=map;
 
-// ---------- mapa base (OpenFreeMap): calles, pueblos, montañas y trialeras con dificultad, todo de una vez ----------
+// ---------- mapa base (OpenFreeMap) con calles, pueblos, montañas y trialeras por dificultad ----------
 const F_REG=['Noto Sans Regular'], F_BOLD=['Noto Sans Bold'], F_IT=['Noto Sans Italic'];
 const SCV=['to-string',['coalesce',['get','mtb_scale'],'']];
 const SC=['slice',SCV,0,1];
@@ -370,6 +551,7 @@ const LABEL_LAYERS=['road-names','park-labels','peaks','place-small','place-subu
 const TRAIL_LAYERS=['trail-halo','trail-track','trail-path','trail-rated','trail-names'];
 const glLayer=L.maplibreGL({style:glStyle}).addTo(map);
 const glMap=glLayer.getMaplibreMap();
+window.glMap=glMap;
 let glReady=false, currentBase='Mapa', namesOn=true;
 const glDefaults={};
 function glSet(fn){ if(glReady) try{ fn(); }catch(e){ console.warn(e); } }
@@ -385,75 +567,153 @@ function setBase(name){
       glMap.setPaintProperty(id,'text-color',name==='Satélite'?'#ffffff':glDefaults[id]);
       glMap.setPaintProperty(id,'text-halo-color',name==='Satélite'?'#111111':'#ffffff');
     });
-    glMap.setPaintProperty('trail-names','text-halo-color',name==='Satélite'?'#ffffff':'#ffffff');
     glMap.setPaintProperty('trail-halo','line-opacity',name==='Satélite'?0.85:0.6);
   });
 }
 glMap.on('load',()=>{
   glReady=true;
   LABEL_LAYERS.forEach(id=>glDefaults[id]=glMap.getPaintProperty(id,'text-color'));
-  setBase(currentBase); applyMode();
+  setBase(currentBase); applyTrails();
 });
-L.control.zoom({position:'bottomright'}).addTo(map);
+if(window.matchMedia('(min-width:761px)').matches) L.control.zoom({position:'bottomright'}).addTo(map);
 const base={'Mapa':L.layerGroup(),'Satélite':L.layerGroup(),'Relieve':L.layerGroup()};
 base['Mapa'].addTo(map);
 const namesToggle=L.layerGroup().addTo(map);
-const overlays = {
-  'Nombres de pueblos, calles y montañas': namesToggle,
-  'Rutas BTT marcadas': L.tileLayer('https://tile.waymarkedtrails.org/mtb/{z}/{x}/{y}.png',{maxZoom:18,opacity:.8,attribution:'Waymarked Trails'}),
-  'Rutas ciclistas marcadas': L.tileLayer('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png',{maxZoom:18,opacity:.8,attribution:'Waymarked Trails'})
-};
 map.on('baselayerchange',e=>setBase(e.name));
 map.on('overlayadd',e=>{ if(e.layer===namesToggle){ namesOn=true; setBase(currentBase); } });
 map.on('overlayremove',e=>{ if(e.layer===namesToggle){ namesOn=false; setBase(currentBase); } });
-const layersCtl=L.control.layers(base,overlays).addTo(map);
+L.control.layers(base,{'Nombres de pueblos, calles y montañas':namesToggle}).addTo(map);
 
-let points=[], pinLayer=L.layerGroup().addTo(map), routeLayer=L.layerGroup().addTo(map),
-    fLayer=L.layerGroup().addTo(map), pLayer=L.layerGroup().addTo(map);
-let route=null; // {coords:[[lat,lon,ele]], cum:[m], length, up}
-let fountains=[], places=[], reqId=0;
+// capas propias (de abajo a arriba)
+map.createPane('heat'); map.getPane('heat').style.zIndex=405;
+map.createPane('arrows'); map.getPane('arrows').style.zIndex=450; map.getPane('arrows').style.pointerEvents='none';
+map.createPane('taps'); map.getPane('taps').style.zIndex=620;
+const heatRenderer=L.canvas({pane:'heat',padding:0.5});
+const hLayer=L.layerGroup().addTo(map);           // rutas realizadas (mapa de calor)
+const routeLayer=L.layerGroup().addTo(map);       // tu ruta
+const arrowLayer=L.layerGroup().addTo(map);       // flechitas de sentido
+const pinLayer=L.layerGroup().addTo(map);         // puntos que pones
+const fLayer=L.layerGroup().addTo(map);           // fuentes
+const pLayer=L.layerGroup().addTo(map);           // lugares
+const windLayer=L.layerGroup().addTo(map);        // viento sobre la ruta
+const recLayer=L.layerGroup().addTo(map);         // grabación en directo
+const peopleRoutes={
+  mtb:L.tileLayer('https://tile.waymarkedtrails.org/mtb/{z}/{x}/{y}.png',{maxZoom:18,opacity:.85,attribution:'Waymarked Trails'}),
+  cycling:L.tileLayer('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png',{maxZoom:18,opacity:.85,attribution:'Waymarked Trails'})
+};
 
-// ---------- consultas a OpenStreetMap: de una en una y con servidores de reserva ----------
-const OVERPASS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
-let opChain=Promise.resolve();
-function overpass(q){
-  const run=async()=>{
-    for(let a=0;a<OVERPASS.length;a++){
-      try{
-        const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),30000);
-        const r=await fetch(OVERPASS[a%OVERPASS.length],{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctl.signal});
-        clearTimeout(to);
-        if(r.ok) return await r.json();
-      }catch(e){}
-      await new Promise(res=>setTimeout(res,700));
-    }
-    throw new Error('overpass');
-  };
-  const p=opChain.then(run,run); opChain=p.catch(()=>{}); return p;
-}
+// ---------- estado ----------
+// T = pestañas encendidas. Se pueden tener varias a la vez; se apagan tocándolas otra vez.
+const T={crear:false,fuentes:false,lugares:false,trialeras:true,rutas:false,hechas:false};
+let mode='mtb', trialLegend=false;
+let points=[];          // [lat, lon, 'f' si es una fuente añadida]
+let route=null;         // {coords:[[lat,lon,ele]], cum:[m], length, up, idx:[índice de cada punto]}
+let reqId=0, routeVer=0, askedVer=-1;
+let askedIds=new Set(); // fuentes marcadas al terminar la ruta
+let places=[];
 
 // ---------- utilidades ----------
-function dist(a,b){ // metros
-  const R=6371000, r=Math.PI/180;
-  const dLa=(b[0]-a[0])*r, dLo=(b[1]-a[1])*r;
-  const h=Math.sin(dLa/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLo/2)**2;
-  return 2*R*Math.asin(Math.sqrt(h));
-}
-function nearestOnRoute(p){ // distancia mínima y km donde está
-  let best=Infinity, at=0; const c=route.coords;
-  for(let i=0;i<c.length;i++){ const d=dist(p,c[i]); if(d<best){best=d;at=route.cum[i];} }
-  return {d:best,km:at/1000};
-}
+function dist(a,b){ const R=6371000, r=Math.PI/180, dLa=(b[0]-a[0])*r, dLo=(b[1]-a[1])*r;
+  const h=Math.sin(dLa/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+function nearestOnRoute(p){ let best=Infinity, at=0; const c=route.coords;
+  for(let i=0;i<c.length;i++){ const d=dist(p,c[i]); if(d<best){best=d;at=route.cum[i];} } return {d:best,km:at/1000}; }
+function bearing(a,b){const r=Math.PI/180,y=Math.sin((b[1]-a[1])*r)*Math.cos(b[0]*r),x=Math.cos(a[0]*r)*Math.sin(b[0]*r)-Math.sin(a[0]*r)*Math.cos(b[0]*r)*Math.cos((b[1]-a[1])*r);return (Math.atan2(y,x)/r+360)%360;}
 const fmtKm = k => k.toFixed(1).replace('.',',');
-function toast(t){ const el=$('toast'); if(!el) return; el.textContent=t; el.hidden=!t; }
 function setStatus(t){ $('status').textContent=t; }
-function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-// ---------- puntos ----------
-map.on('click', e => {
-  if(!$('tTrialeras').hidden){ const info=trailAt(e.latlng); if(info){ L.popup().setLatLng(e.latlng).setContent(info).openOn(map); return; } }
-  points.push([e.latlng.lat,e.latlng.lng]); drawPins(); calc();
+// ================= PESTAÑAS-INTERRUPTOR =================
+document.querySelectorAll('#lbar button').forEach(b=>b.onclick=()=>setToggle(b.dataset.t,!T[b.dataset.t]));
+async function setToggle(k,on){
+  T[k]=on;
+  document.querySelector(`#lbar [data-t="${k}"]`).classList.toggle('on',on);
+  if(k==='crear'){
+    $('map').classList.toggle('crear',on); drawPins();
+    if(on){ toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
+    else if(route && points.length>=2 && askedVer!==routeVer) await finishRoute();
+  }
+  if(k==='trialeras'){ trialLegend=on; applyTrails(); }
+  if(k==='fuentes'){ if(on) loadViewFountains(); else renderFountains(); }
+  if(k==='lugares'){ if(on) refreshPlaces(); else { places=[]; renderPlaces(); } }
+  if(k==='rutas') applyPeopleRoutes();
+  if(k==='hechas') drawHeat();
+  updateSheet();
+}
+function updateSheet(){
+  const showCrear=T.crear || !!route || points.length>0;
+  $('secCrear').hidden=!showCrear;
+  $('done').hidden=!(T.crear && points.length>=2);
+  $('secFuentes').hidden=!(route && fuentesAsked);
+  $('secTrialeras').hidden=!(T.trialeras && trialLegend && mode!=='road');
+  $('secLugares').hidden=!T.lugares;
+  $('secRutas').hidden=!T.rutas;
+  $('secHechas').hidden=!T.hechas && !rec;
+  const any=[...document.querySelectorAll('.sec')].some(s=>!s.hidden);
+  $('sheet').hidden=!any;
+  placeFab();
+}
+// En el móvil el botón de ubicación se coloca justo encima de la ficha
+function placeFab(){
+  const mob=window.matchMedia('(max-width:760px)').matches, sh=$('sheet');
+  $('locate').style.bottom = (mob && !sh.hidden) ? (sh.offsetHeight+74)+'px' : '74px';
+}
+if(window.ResizeObserver) new ResizeObserver(placeFab).observe($('sheet'));
+$('handle').onclick=()=>{ $('sheet').classList.toggle('closed'); setTimeout(placeFab,300); };
+
+// ================= MODALIDADES =================
+// Cada modalidad prueba perfiles de BRouter en orden. Todos son de bici y respetan las calles de sentido único.
+const MODES = {
+  road:   {label:'Carretera', profiles:['fastbike-lowtraffic','fastbike'], people:'cycling'},
+  gravel: {label:'Gravel',    profiles:['trekking'], people:'mtb'},
+  mtb:    {label:'BTT',       profiles:['mtb-zossebart','trekking'], people:'mtb'}
+};
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelector('#lbar [data-t="trialeras"]').hidden = mode==='road';   // en Carretera no hay trialeras
+  applyTrails(); applyPeopleRoutes(); updateSheet();
+  if(points.length>=2) calc();
 });
+
+// ================= TRIALERAS =================
+const KIND={track:'Pista',path:'Sendero',footway:'Camino peatonal',cycleway:'Carril bici',bridleway:'Camino de herradura',steps:'Escaleras'};
+const DIFF=[['Muy fácil','#2e9d3a'],['Fácil','#1f6fd1'],['Media','#d62a1e'],['Difícil','#111111'],['Muy difícil','#8b2fc9'],['Extrema','#8b2fc9'],['Extrema','#8b2fc9']];
+function applyTrails(){
+  glSet(()=>{
+    const show=mode!=='road' && T.trialeras;
+    TRAIL_LAYERS.forEach(id=>glMap.setLayoutProperty(id,'visibility',show?'visible':'none'));
+    const gr=mode==='gravel';
+    glMap.setPaintProperty('trail-track','line-color',gr?'#8a5a1f':'#8a6a3a');
+    glMap.setPaintProperty('trail-track','line-width',gr?W(2.2,4,6):W(1.4,2.6,4));
+    glMap.setPaintProperty('trail-track','line-dasharray',gr?[1,0]:[3,2]);
+    glMap.setPaintProperty('trail-rated','line-opacity',gr?0.45:1);
+    glMap.setPaintProperty('trail-path','line-opacity',gr?0.45:1);
+  });
+}
+function trailAt(latlng){
+  if(!glReady||mode==='road'||!T.trialeras) return null;
+  const pt=glMap.project([latlng.lng,latlng.lat]);
+  const hit=glMap.queryRenderedFeatures([[pt.x-7,pt.y-7],[pt.x+7,pt.y+7]],{layers:['trail-rated','trail-track','trail-path']});
+  if(!hit.length) return null;
+  const p=hit[0].properties;
+  const nm=glMap.queryRenderedFeatures([[pt.x-40,pt.y-40],[pt.x+40,pt.y+40]],{layers:['trail-names']}).map(f=>f.properties.name).find(Boolean);
+  const v=String(p.mtb_scale??''), sc=parseInt(v,10);
+  const info=[`<b>${esc(nm||KIND[p.subclass]||KIND[p.class]||'Camino')}</b>`, KIND[p.subclass]||KIND[p.class]||''];
+  if(!isNaN(sc)) info.push(`Dificultad: <b style="color:${DIFF[Math.min(sc,6)][1]}">${DIFF[Math.min(sc,6)][0]} (S${esc(v)})</b>`);
+  else info.push('Dificultad: sin apuntar');
+  if(p.surface) info.push(`Suelo: ${p.surface==='unpaved'?'tierra o grava':p.surface==='paved'?'asfalto':esc(p.surface)}`);
+  return info.filter(Boolean).join('<br>');
+}
+
+// ================= TOCAR EL MAPA =================
+let hintShown=false;
+map.on('click', e => {
+  if(T.crear){ points.push([e.latlng.lat,e.latlng.lng]); drawPins(); calc(); return; }
+  const info=trailAt(e.latlng);
+  if(info){ L.popup().setLatLng(e.latlng).setContent(info).openOn(map); return; }
+  if(!hintShown){ hintShown=true; toast('Para hacer una ruta, toca "Crear ruta" abajo'); }
+});
+
+// ================= CREAR RUTA =================
 $('undo').onclick = () => { points.pop(); drawPins(); calc(); };
 let clearTimer=null;
 $('clear').onclick = () => {
@@ -462,49 +722,38 @@ $('clear').onclick = () => {
   clearTimeout(clearTimer); b.classList.remove('confirm'); b.textContent='Borrar ruta';
   points=[]; drawPins(); calc();
 };
-// Borrar un tramo (entre el punto k y el k+1). El primero quita la salida; los demás quitan el punto donde acaba el tramo.
-function deleteSeg(k){
-  map.closePopup();
-  if(k===0) points.splice(0,1); else points.splice(k+1,1);
-  drawPins(); calc();
-}
+$('done').onclick = () => setToggle('crear',false);
+function deleteSeg(k){ map.closePopup(); if(k===0) points.splice(0,1); else points.splice(k+1,1); drawPins(); calc(); }
 function deletePoint(i){ map.closePopup(); points.splice(i,1); drawPins(); calc(); }
-// Tres modalidades. Cada una prueba perfiles de ruta en orden por si alguno no está disponible.
-const MODES = {
-  road:   {label:'Carretera', profiles:['fastbike-lowtraffic','fastbike']},
-  gravel: {label:'Gravel',    profiles:['trekking']},
-  mtb:    {label:'BTT',       profiles:['mtb-zossebart','mtb','hiking-beta','trekking']}
-};
-let mode='mtb';
-document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
-  mode=b.dataset.mode;
-  if(typeof restyleTrails==='function'){ restyleTrails(); loadTrails(); }
-  document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
-  calc();
-});
-$('radius').onchange = () => { if(route){ renderFountains(); } };
 
+const TAP_W='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h9a4 4 0 0 1 4 4v1M4 8v6M9 11V7M6 6h6"/></svg>';
+function pointName(i){ if(i===0) return 'Salida'; if(i===points.length-1) return 'Llegada'; return points[i][2]==='f'?'Fuente':'Punto '+i; }
 function drawPins(){
   pinLayer.clearLayers();
   points.forEach((p,i)=>{
-    const label = i===0 ? 'S' : (i===points.length-1 && points.length>1 ? 'F' : i);
-    L.marker(p,{icon:L.divIcon({className:'',html:`<div class="pin">${label}</div>`,iconSize:[26,26],iconAnchor:[13,13]}),
-      draggable:true}).on('dragend',ev=>{const ll=ev.target.getLatLng();points[i]=[ll.lat,ll.lng];calc();})
-      .bindPopup(()=>{const d=document.createElement('div');d.innerHTML=`<b>${i===0?'Salida':(i===points.length-1?'Llegada':'Punto '+i)}</b><br><small>Arrástralo para cambiar la ruta</small>`;
-        const bt=document.createElement('button');bt.className='segbtn';bt.textContent='Quitar este punto';bt.onclick=()=>deletePoint(i);d.appendChild(bt);return d;})
-      .addTo(pinLayer);
+    const isF=p[2]==='f' && i>0 && i<points.length-1;
+    const label = i===0 ? 'S' : (i===points.length-1 && points.length>1 ? 'F' : (isF?TAP_W:i));
+    const m=L.marker([p[0],p[1]],{icon:L.divIcon({className:'',html:`<div class="pin${isF?' f':''}">${label}</div>`,iconSize:[26,26],iconAnchor:[13,13]}),
+      draggable:T.crear}).addTo(pinLayer);
+    m.on('dragend',ev=>{const ll=ev.target.getLatLng();points[i]=[ll.lat,ll.lng];calc();});
+    m.bindPopup(()=>{const d=document.createElement('div');d.innerHTML=`<b>${pointName(i)}</b>`+(T.crear?'<br><small>Arrástralo para cambiar la ruta</small>':'');
+      if(T.crear){ const bt=document.createElement('button');bt.className='segbtn';bt.textContent='Quitar este punto';bt.onclick=()=>deletePoint(i);d.appendChild(bt); }
+      return d;});
   });
-  $('undo').disabled = points.length===0; $('clear').disabled = points.length===0;
+  $('undo').disabled = points.length===0 || !T.crear; $('clear').disabled = points.length===0;
 }
 
-// ---------- ruta (BRouter) ----------
+// ---------- calcular la ruta (BRouter) ----------
 async function calc(){
   const my=++reqId;
-  routeLayer.clearLayers(); fLayer.clearLayers(); pLayer.clearLayers(); if(typeof windLayer!=='undefined') windLayer.clearLayers();
-  route=null; places=[]; $('segs').hidden=true; renderStats(); renderFountains(); renderPlaces();
-  $('gpx').disabled=true;
-  if(points.length<2){ if(typeof loadWeather==='function') loadWeather(); setStatus(points.length? 'Toca la llegada o el siguiente punto' : 'Toca el mapa para empezar'); return; }
-  setStatus('Calculando…');
+  routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers();
+  route=null; $('segs').hidden=true; $('gpx').disabled=true; renderStats();
+  if(points.length<2){
+    askedIds=new Set(); fuentesAsked=false; askedVer=-1; renderFountains();
+    if(T.lugares) refreshPlaces();
+    loadWeather(); setStatus(points.length? 'Toca el siguiente punto o la llegada' : 'Toca el mapa para poner la salida'); updateSheet(); return;
+  }
+  setStatus('Calculando…'); updateSheet();
   try{
     const ll = points.map(p=>p[1].toFixed(6)+','+p[0].toFixed(6)).join('|');
     let gj=null;
@@ -522,138 +771,124 @@ async function calc(){
     const coords = f.geometry.coordinates.map(c=>[c[1],c[0],c[2]||0]);
     await useRoute(coords, +f.properties['filtered ascend']||0, MODES[mode].label, my);
   }catch(err){
-    if(my===reqId) setStatus('No se ha podido calcular la ruta. Comprueba que tienes internet y prueba otra vez.');
+    if(my===reqId) setStatus('No se ha podido calcular la ruta. Comprueba internet y prueba otra vez.');
   }
 }
 
-// ---------- la ruta dividida en tramos (entre cada dos puntos que has puesto) ----------
+// la ruta dividida en tramos (entre cada dos puntos que has puesto)
 function drawRouteSegments(coords, cum){
   const col=getComputedStyle(document.documentElement).getPropertyValue('--route').trim()||'#fc5200';
   L.polyline(coords.map(c=>[c[0],c[1]]),{color:'#fff',weight:9,opacity:.95,interactive:false}).addTo(routeLayer);
   const ul=$('segs'); ul.innerHTML='';
-  if(points.length<2){ // ruta de la gente: una sola pieza
-    L.polyline(coords.map(c=>[c[0],c[1]]),{color:col,weight:5}).addTo(routeLayer); ul.hidden=true; return;
-  }
-  // dónde cae cada punto sobre la línea, en orden
+  if(points.length<2){ L.polyline(coords.map(c=>[c[0],c[1]]),{color:col,weight:5}).addTo(routeLayer); ul.hidden=true; route.idx=[0,coords.length-1]; return; }
   const idx=[0]; let from=0;
   for(let p=1;p<points.length-1;p++){
     let best=Infinity, at=from;
     for(let i=from;i<coords.length;i++){ const d=dist(points[p],coords[i]); if(d<best){best=d;at=i;} }
     idx.push(at); from=at;
   }
-  idx.push(coords.length-1);
-  const name=i=>i===0?'Salida':(i===points.length-1?'Llegada':'Punto '+i);
+  idx.push(coords.length-1); route.idx=idx;
   for(let k=0;k<idx.length-1;k++){
     const part=coords.slice(idx[k],idx[k+1]+1).map(c=>[c[0],c[1]]), km=(cum[idx[k+1]]-cum[idx[k]])/1000;
     const line=L.polyline(part,{color:col,weight:5,bubblingMouseEvents:false}).addTo(routeLayer);
-    const pop=()=>{const d=document.createElement('div');d.innerHTML=`<b>Tramo ${k+1}</b><br>${name(k)} → ${name(k+1)} · ${fmtKm(km)} km`;
-      const bt=document.createElement('button');bt.className='segbtn';bt.textContent='Borrar este tramo';bt.onclick=()=>deleteSeg(k);d.appendChild(bt);return d;};
-    line.bindPopup(pop);
-    line.on('mouseover',()=>line.setStyle({weight:8})).on('mouseout',()=>line.setStyle({weight:5}));
+    line.bindPopup(()=>{const d=document.createElement('div');d.innerHTML=`<b>Tramo ${k+1}</b><br>${pointName(k)} → ${pointName(k+1)} · ${fmtKm(km)} km`;
+      if(T.crear){ const bt=document.createElement('button');bt.className='segbtn';bt.textContent='Borrar este tramo';bt.onclick=()=>deleteSeg(k);d.appendChild(bt); }
+      return d;});
     const li=document.createElement('li');
-    li.innerHTML=`<span class="n">${k+1}</span><span class="d">${name(k)} → ${name(k+1)}<br><small>${fmtKm(km)} km</small></span>`;
-    const bt=document.createElement('button'); bt.textContent='Borrar'; bt.onclick=()=>deleteSeg(k); li.appendChild(bt);
-    li.onmouseenter=()=>line.setStyle({weight:9}); li.onmouseleave=()=>line.setStyle({weight:5});
+    li.innerHTML=`<span class="n">${k+1}</span><span class="d">${pointName(k)} → ${pointName(k+1)}<br><small>${fmtKm(km)} km</small></span>`;
+    const bt=document.createElement('button'); bt.textContent='Borrar'; bt.onclick=()=>deleteSeg(k); if(T.crear) li.appendChild(bt);
     ul.appendChild(li);
   }
   ul.hidden=false;
 }
 
+// flechitas pequeñas a lo largo de la ruta que marcan hacia dónde se va
+const ARROW_SVG='<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.2" fill="#fff"/><path d="M4.4 10.2 8 5.6l3.6 4.6" fill="none" stroke="#fc5200" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function drawArrows(){
+  arrowLayer.clearLayers();
+  if(!route) return;
+  const c=route.coords, gap=90; let acc=gap*0.5, n=0;
+  let prev=map.latLngToLayerPoint([c[0][0],c[0][1]]);
+  for(let i=1;i<c.length && n<500;i++){
+    const cur=map.latLngToLayerPoint([c[i][0],c[i][1]]), d=prev.distanceTo(cur);
+    acc+=d;
+    if(acc>=gap && d>0){
+      acc=0; n++;
+      const j=Math.min(i+2,c.length-1), a=c[Math.max(0,i-2)];
+      L.marker([c[i][0],c[i][1]],{pane:'arrows',interactive:false,keyboard:false,
+        icon:L.divIcon({className:'',iconSize:[16,16],iconAnchor:[8,8],html:`<div class="arr" style="transform:rotate(${bearing(a,c[j]).toFixed(0)}deg)">${ARROW_SVG}</div>`})}).addTo(arrowLayer);
+    }
+    prev=cur;
+  }
+}
+map.on('zoomend',drawArrows);
+
 async function useRoute(coords, up, label, my){
   const cum=[0]; for(let i=1;i<coords.length;i++) cum.push(cum[i-1]+dist(coords[i-1],coords[i]));
   route={coords,cum,length:cum[cum.length-1],up};
-  drawRouteSegments(coords, cum);
-  $('gpx').disabled=false; renderStats();
-  setStatus('Buscando fuentes…');
-  await Promise.all([loadFountains(my), loadPlaces(my), loadWeather()]);
+  routeVer++;
+  drawRouteSegments(coords, cum); drawArrows();
+  $('gpx').disabled=false; renderStats(); renderFountains();
+  if(T.lugares) refreshPlaces();
+  loadWeather();
   if(my===reqId) setStatus(`${label}: ruta lista.`);
+  updateSheet();
 }
 
-// ---------- trialeras: siempre visibles en BTT y Gravel (no en Carretera) ----------
-const KIND={track:'Pista',path:'Sendero',footway:'Camino peatonal',cycleway:'Carril bici',bridleway:'Camino de herradura',steps:'Escaleras'};
-const DIFF=[['Muy fácil','#2e9d3a'],['Fácil','#1f6fd1'],['Media','#d62a1e'],['Difícil','#111111'],['Muy difícil','#8b2fc9'],['Extrema','#8b2fc9'],['Extrema','#8b2fc9']];
-function applyMode(){
-  glSet(()=>{
-    const show=mode!=='road';
-    TRAIL_LAYERS.forEach(id=>glMap.setLayoutProperty(id,'visibility',show?'visible':'none'));
-    if(mode==='gravel'){
-      glMap.setPaintProperty('trail-track','line-color','#8a5a1f');
-      glMap.setPaintProperty('trail-track','line-width',W(2.2,4,6));
-      glMap.setPaintProperty('trail-track','line-dasharray',[1,0]);
-      glMap.setPaintProperty('trail-rated','line-opacity',0.45);
-      glMap.setPaintProperty('trail-path','line-opacity',0.45);
-    }else{
-      glMap.setPaintProperty('trail-track','line-color','#8a6a3a');
-      glMap.setPaintProperty('trail-track','line-width',W(1.4,2.6,4));
-      glMap.setPaintProperty('trail-track','line-dasharray',[3,2]);
-      glMap.setPaintProperty('trail-rated','line-opacity',1);
-      glMap.setPaintProperty('trail-path','line-opacity',1);
-    }
+// ---------- al terminar la ruta: preguntar por las fuentes ----------
+let fuentesAsked=false;
+async function finishRoute(){
+  askedVer=routeVer;
+  const yes=await ask('¿Te marco las fuentes más cercanas?','Busco fuentes de agua potable y públicas cerca de tu ruta para que sepas dónde llenar los bidones.','Sí, márcalas','No, gracias');
+  if(!yes) return;
+  setStatus('Buscando fuentes…');
+  await loadFountains();
+  if(!route) return;
+  const near=nearRouteFountains();
+  askedIds=new Set(near.map(f=>f.id)); fuentesAsked=true;
+  renderFountains(); updateSheet(); setStatus('Ruta lista.');
+  if(!near.length){ toast('No hay fuentes públicas registradas cerca de esta ruta. Prueba con 500 m.',4500); return; }
+  const off=near.filter(f=>f.d>25);
+  if(!off.length){ toast(`Tu ruta ya pasa por ${near.length===1?'la fuente':'las '+near.length+' fuentes'}.`); return; }
+  const n=near.length;
+  const yes2=await ask(`${n===1?'He encontrado 1 fuente':'He encontrado '+n+' fuentes'}`,
+    `¿Quieres que te cambie la ruta para que pase por ${n===1?'ella':'ellas'}?`,'Sí, cambia la ruta','No, déjala así');
+  if(yes2) await routeThroughFountains(off);
+}
+// mete las fuentes como puntos de paso, cada una en su sitio según el km de la ruta
+async function routeThroughFountains(list){
+  const kmOf=route.idx.map(i=>route.cum[i]/1000);
+  const items=points.map((p,i)=>({p,km:kmOf[i]??0,ord:i}));
+  list.forEach(f=>{
+    const km=Math.min(Math.max(f.km,0.001),kmOf[kmOf.length-1]-0.001);
+    items.push({p:[f.lat,f.lon,'f'],km,ord:0.5});
   });
-  $('tStatus').textContent = mode==='road' ? 'En Carretera no se enseñan trialeras. Pulsa BTT o Gravel para verlas.'
-    : 'Toca una trialera en el mapa (con esta pestaña abierta) para ver su dificultad.';
-}
-const restyleTrails=applyMode;
-function loadTrails(){ applyMode(); }
-function trailAt(latlng){
-  if(!glReady||mode==='road') return null;
-  const pt=glMap.project([latlng.lng,latlng.lat]);
-  const hit=glMap.queryRenderedFeatures([[pt.x-7,pt.y-7],[pt.x+7,pt.y+7]],{layers:['trail-rated','trail-track','trail-path']});
-  if(!hit.length) return null;
-  const p=hit[0].properties;
-  const nm=glMap.queryRenderedFeatures([[pt.x-40,pt.y-40],[pt.x+40,pt.y+40]],{layers:['trail-names']}).map(f=>f.properties.name).find(Boolean);
-  const v=String(p.mtb_scale??''), sc=parseInt(v,10);
-  const info=[`<b>${esc(nm||KIND[p.subclass]||KIND[p.class]||'Camino')}</b>`, KIND[p.subclass]||KIND[p.class]||''];
-  if(!isNaN(sc)) info.push(`Dificultad: <b style="color:${DIFF[Math.min(sc,6)][1]}">${DIFF[Math.min(sc,6)][0]} (S${esc(v)})</b>`);
-  else info.push('Dificultad: sin apuntar');
-  if(p.surface) info.push(`Suelo: ${p.surface==='unpaved'?'tierra o grava':p.surface==='paved'?'asfalto':esc(p.surface)}`);
-  return info.filter(Boolean).join('<br>');
+  const first=items.shift(), last=items.splice(items.findIndex(x=>x.ord===points.length-1),1)[0];
+  items.sort((a,b)=>a.km-b.km||a.ord-b.ord);
+  points=[first.p,...items.map(x=>x.p),last.p];
+  drawPins(); await calc();
+  askedVer=routeVer;
+  toast('Ruta cambiada: ahora pasa por las fuentes.');
 }
 
-// ---------- rutas de la gente (rutas marcadas en OpenStreetMap) ----------
-$('findRoutes').onclick=async()=>{
-  const list=$('rList'), b=map.getBounds();
-  const bb=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(x=>x.toFixed(4)).join(',');
-  list.innerHTML='<li><small>Buscando rutas…</small></li>';
-  try{
-    const q=`[out:json][timeout:25];relation["route"~"^(mtb|bicycle)$"](${bb});out tags;`;
-    const j=await overpass(q);
-    const rs=j.elements.filter(r=>r.tags&&(r.tags.name||r.tags.ref)).slice(0,25);
-    list.innerHTML=rs.length?'':'<li><small>No hay rutas marcadas en esta zona. Aleja un poco el mapa y prueba otra vez.</small></li>';
-    rs.forEach(r=>{
-      const t=r.tags, li=document.createElement('li');
-      li.innerHTML=`<b>${esc(t.name||t.ref)}</b><small>${t.route==='mtb'?'BTT':'Bici'}${t.distance?' · '+esc(t.distance)+' km':''}${t.network?' · red '+esc(t.network):''}</small>`;
-      li.onclick=()=>loadRelation(r.id,t.name||t.ref);
-      list.appendChild(li);
-    });
-  }catch(e){ list.innerHTML='<li><small>No se han podido buscar rutas ahora. Prueba en un momento.</small></li>'; }
+// ---------- GPX para el reloj / ciclocomputador ----------
+$('gpx').onclick = () => {
+  if(!route) return;
+  const wpts=nearRouteFountains().filter(f=>askedIds.has(f.id)).map(f=>`<wpt lat="${f.lat}" lon="${f.lon}"><name>${esc(f.name)} (km ${fmtKm(f.km)})</name><sym>Drinking Water</sym></wpt>`).join('\n');
+  const trk=route.coords.map(c=>`<trkpt lat="${c[0].toFixed(6)}" lon="${c[1].toFixed(6)}"><ele>${Math.round(c[2])}</ele></trkpt>`).join('');
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Ichnos" xmlns="http://www.topografix.com/GPX/1/1">\n${wpts}\n<trk><name>Ruta Ichnos</name><trkseg>${trk}</trkseg></trk>\n</gpx>`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
+  a.download='ruta-ichnos.gpx'; document.body.appendChild(a); a.click(); a.remove();
 };
-async function loadRelation(id,name){
-  const my=++reqId;
-  points=[]; drawPins();
-  routeLayer.clearLayers(); fLayer.clearLayers(); pLayer.clearLayers(); windLayer.clearLayers();
-  setStatus('Cargando la ruta "'+name+'"…');
-  try{
-    const j=await overpass(`[out:json][timeout:25];relation(${id});way(r);out geom;`);
-    if(my!==reqId) return;
-    // unir los trozos en orden: siempre el trozo más cercano al final
-    let segs=j.elements.filter(e=>e.geometry).map(e=>e.geometry.map(g=>[g.lat,g.lon,0]));
-    if(!segs.length) throw 0;
-    let line=segs.shift();
-    while(segs.length){
-      const end=line[line.length-1]; let bi=0, rev=false, bd=Infinity;
-      segs.forEach((sg,i)=>{const a=dist(end,sg[0]),z=dist(end,sg[sg.length-1]);if(a<bd){bd=a;bi=i;rev=false;}if(z<bd){bd=z;bi=i;rev=true;}});
-      let sg=segs.splice(bi,1)[0]; if(rev) sg=sg.slice().reverse(); line=line.concat(sg);
-    }
-    await useRoute(line, null, name, my);
-    map.fitBounds(L.latLngBounds(line.map(c=>[c[0],c[1]])),{padding:[30,30]});
-  }catch(e){ if(my===reqId) setStatus('No se ha podido cargar esa ruta.'); }
+function renderStats(){
+  $('sKm').innerHTML = route ? fmtKm(route.length/1000)+'<em>km</em>' : '–';
+  $('sUp').innerHTML = route && route.up!=null ? Math.round(route.up)+'<em>m</em>' : '–';
+  if(!route || !fuentesAsked){ $('sF').textContent='–'; $('sGap').textContent='–'; $('gapBox').classList.remove('alert'); }
 }
 
-// ---------- fuentes de agua potable (del mapa OpenFreeMap / OpenStreetMap) ----------
+// ================= FUENTES =================
 const DROP_SVG='<svg viewBox="0 0 32 40"><path d="M16 2s-13 15.5-13 24a13 13 0 0 0 26 0c0-8.5-13-24-13-24z" fill="#1677c9" stroke="#ffffff" stroke-width="2.2"/><g transform="translate(6.6 16.5) scale(0.78)"><path d="M4 11h9a4 4 0 0 1 4 4v1M4 8v6M9 11V7M6 6h6" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 19.5c0 .8-.7 1.5-1.5 1.5S14 20.3 14 19.5c0-1 1.5-2.5 1.5-2.5S17 18.5 17 19.5z" fill="#ffffff"/></g></svg>';
-const TAP_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#1677c9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h9a4 4 0 0 1 4 4v1"/><path d="M4 8v6"/><path d="M9 11V7"/><path d="M6 6h6"/><path d="M17 19.5c0 .8-.7 1.5-1.5 1.5S14 20.3 14 19.5c0-1 1.5-2.5 1.5-2.5S17 18.5 17 19.5z" fill="#1677c9" stroke="none"/></svg>';
-// Lector mínimo de teselas vectoriales (MVT) para sacar puntos de una capa
+// lector mínimo de teselas vectoriales (MVT) para sacar los puntos de una capa
 function mvtPoints(buf, layerName, z, tx, ty){
   const b=new Uint8Array(buf); let p=0;
   const varint=()=>{let r=0,s=0,c;do{c=b[p++];r+= (c&0x7f)*Math.pow(2,s);s+=7;}while(c&0x80);return r;};
@@ -696,16 +931,13 @@ function mvtPoints(buf, layerName, z, tx, ty){
           const n2=Math.pow(2,z), X=(tx+x/extent)/n2, Y=(ty+y/extent)/n2;
           out.push({lon:X*360-180, lat:Math.atan(Math.sinh(Math.PI*(1-2*Y)))*180/Math.PI, props});
         }
-        p=end;
       }
       p=end;
     } else skip(w);
   }
   return out;
 }
-
 const fStore=new Map(); let fViewTimer=null, omtTiles=null; const tileCache=new Map();
-map.createPane('taps'); map.getPane('taps').style.zIndex=620;
 const tX=(lon)=>Math.floor((lon+180)/360*16384);
 const tY=(lat)=>{const r=lat*Math.PI/180;return Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*16384);};
 async function omtUrl(){ if(!omtTiles){ const j=await (await fetch('https://tiles.openfreemap.org/planet')).json(); omtTiles=j.tiles[0]; } return omtTiles; }
@@ -729,41 +961,33 @@ async function loadTileSet(keys){
     if(!fStore.has(id)) fStore.set(id,{id,lat:p.lat,lon:p.lon,tags:{},name:p.props.name||'Fuente de agua potable',photo:undefined});
   });
 }
-// fuentes de la zona que estás mirando (sin necesidad de ruta)
+// fuentes de la zona que estás mirando (solo con la pestaña Fuentes encendida)
 async function loadViewFountains(){
-  if(map.getZoom()<12.5) return;
+  if(!T.fuentes) return;
+  if(map.getZoom()<12.5){ renderFountains(); toast('Acerca el mapa para ver las fuentes'); return; }
   const b=map.getBounds().pad(0.1), keys=new Set();
   for(let x=tX(b.getWest());x<=tX(b.getEast());x++) for(let y=tY(b.getNorth());y<=tY(b.getSouth());y++) keys.add(x+'/'+y);
   if(keys.size>120) return;
   await loadTileSet(keys); renderFountains();
 }
 map.on('moveend',()=>{ clearTimeout(fViewTimer); fViewTimer=setTimeout(loadViewFountains,400); });
-setTimeout(loadViewFountains,50);
-// fuentes a lo largo de la ruta entera
-async function loadFountains(my){
+// fuentes a lo largo de toda la ruta
+async function loadFountains(){
+  if(!route) return;
   const keys=new Set();
   route.coords.forEach((c,i)=>{ if(i%3) return;
     for(const dl of [-0.004,0,0.004]) for(const dn of [-0.005,0,0.005]) keys.add(tX(c[1]+dn)+'/'+tY(c[0]+dl)); });
-  try{ await loadTileSet(keys); }catch(e){ setStatus('No se han podido cargar todas las fuentes.'); }
-  if(my!==reqId) return;
-  renderFountains();
+  try{ await loadTileSet(keys); }catch(e){ toast('No se han podido cargar todas las fuentes.'); }
 }
-function nearFountains(){
+function nearRouteFountains(){
   if(!route) return [];
   const maxD=+$('radius').value;
-  return [...fStore.values()].filter(f=>f.d<=maxD).sort((a,b)=>a.km-b.km);
+  return [...fStore.values()].map(f=>{ const n=nearestOnRoute([f.lat,f.lon]); f.d=n.d; f.km=n.km; return f; })
+    .filter(f=>f.d<=maxD).sort((a,b)=>a.km-b.km);
 }
+$('radius').onchange = () => { if(route && fuentesAsked){ askedIds=new Set(nearRouteFountains().map(f=>f.id)); renderFountains(); } };
 
-// Foto de la fuente: 1) la que tiene puesta en el mapa, 2) una foto de Wikimedia hecha a menos de 40 m
 async function findPhoto(f){
-  const t=f.tags;
-  const file=(t.wikimedia_commons||'').replace(/^File:/,'');
-  if(file) return {src:`https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=460`,cap:'Foto de la fuente'};
-  if(t.image && /^https?:\/\//.test(t.image)){
-    const m=t.image.match(/commons\.wikimedia\.org\/wiki\/File:(.+)$/);
-    if(m) return {src:`https://commons.wikimedia.org/wiki/Special:FilePath/${m[1]}?width=460`,cap:'Foto de la fuente'};
-    if(/\.(jpe?g|png|webp)(\?|$)/i.test(t.image)) return {src:t.image,cap:'Foto de la fuente'};
-  }
   try{
     const u=`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=geosearch&ggsnamespace=6&ggscoord=${f.lat}|${f.lon}&ggsradius=40&ggslimit=5&prop=imageinfo&iiprop=url&iiurlwidth=460`;
     const j=await (await fetch(u)).json();
@@ -772,103 +996,310 @@ async function findPhoto(f){
   }catch(e){}
   return null;
 }
-
 function fountainHtml(f){
-  const t=f.tags, notes=['Agua potable','Acceso público'];
-  if(t.seasonal && t.seasonal!=='no') notes.push('Puede cerrar en invierno');
-  if(t.bottle==='yes') notes.push('Se pueden llenar bidones');
   let ph;
   if(f.photo===undefined) ph='<div class="ph">Buscando foto…</div>';
   else if(f.photo) ph=`<div class="ph"><img src="${f.photo.src}" alt="Foto de la fuente"></div><div class="cap">${f.photo.cap}</div>`;
   else ph='<div class="ph">Todavía no hay foto de esta fuente</div>';
   const sv=`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${f.lat},${f.lon}`;
-  return `<div class="fpop">${ph}<b>${esc(f.name)}</b><br>${route&&f.d!=null?`Km ${fmtKm(f.km)} · a ${Math.round(f.d)} m de la ruta<br>`:''}
-    <span class="tags">${notes.join(' · ')}</span><br><a href="${sv}" target="_blank" rel="noopener">Verla en Street View</a></div>`;
+  return `<div class="fpop">${ph}<b>${esc(f.name)}</b><br>${route&&askedIds.has(f.id)?`Km ${fmtKm(f.km)} · a ${Math.round(f.d)} m de la ruta<br>`:''}
+    <span class="tags">Agua potable · Acceso público</span><br><a href="${sv}" target="_blank" rel="noopener">Verla en Street View</a></div>`;
 }
-
+// En el mapa salen: todas las fuentes si la pestaña Fuentes está encendida, y siempre las que se han marcado para tu ruta
 function renderFountains(){
   fLayer.clearLayers(); const list=$('fList'); list.innerHTML='';
   const mk={};
-  fStore.forEach(f=>{
-    if(route){ const n=nearestOnRoute([f.lat,f.lon]); f.d=n.d; f.km=n.km; } else { f.d=null; f.km=null; }
+  const routeF = (route && fuentesAsked) ? nearRouteFountains().filter(f=>askedIds.has(f.id)) : [];
+  const shownIds=new Set(routeF.map(f=>f.id));
+  if(T.fuentes) fStore.forEach(f=>shownIds.add(f.id));
+  shownIds.forEach(id=>{
+    const f=fStore.get(id);
     const m=L.marker([f.lat,f.lon],{pane:'taps',title:f.name,icon:L.divIcon({className:'',html:`<div class="tapdrop">${DROP_SVG}</div>`,iconSize:[32,40],iconAnchor:[16,27],popupAnchor:[0,-22]})})
       .bindPopup(()=>fountainHtml(f),{minWidth:230}).addTo(fLayer);
     m.on('popupopen',async()=>{ if(f.photo!==undefined) return; f.photo=await findPhoto(f); m.setPopupContent(fountainHtml(f)); });
-    mk[f.id]=m;
+    mk[id]=m;
   });
-  const shown=nearFountains();
-  shown.forEach(f=>{
+  routeF.forEach(f=>{
     const li=document.createElement('li');
-    li.innerHTML=`<span class="km">${fmtKm(f.km)}<em>km</em></span><span class="t"><div>${esc(f.name)}</div><small>a ${Math.round(f.d)} m de la ruta</small></span>`;
+    li.innerHTML=`<span class="km">${fmtKm(f.km)}<em>km</em></span><span class="t"><div>${esc(f.name)}</div><small>${f.d<25?'en la ruta':'a '+Math.round(f.d)+' m de la ruta'}</small></span>`;
     li.onclick=()=>{map.setView([f.lat,f.lon],16);mk[f.id].openPopup();};
     list.appendChild(li);
   });
-  $('fEmpty').hidden = shown.length>0;
-  $('fEmpty').textContent = route ? 'No hay fuentes públicas registradas tan cerca de esta ruta. Prueba con 500 m.' : 'Haz una ruta y aquí verás las fuentes que te pillan de camino. En el mapa salen todas.';
-  if(route){
-    const kms=[0,...shown.map(f=>f.km),route.length/1000];
+  $('fEmpty').hidden = routeF.length>0;
+  $('fEmpty').textContent = 'No hay fuentes públicas registradas tan cerca de esta ruta. Prueba con 500 m.';
+  if(route && fuentesAsked){
+    const kms=[0,...routeF.map(f=>f.km),route.length/1000];
     let gap=0; for(let i=1;i<kms.length;i++) gap=Math.max(gap,kms[i]-kms[i-1]);
-    $('sF').textContent=shown.length; $('sGap').innerHTML=fmtKm(gap)+'<em>km</em>';
+    $('sF').textContent=routeF.length; $('sGap').innerHTML=fmtKm(gap)+'<em>km</em>';
     $('gapBox').classList.toggle('alert',gap>25);
-  }
+  } else renderStats();
 }
 
-// ---------- sitios con fotos (Wikipedia) ----------
-async function loadPlaces(my){
-  const step=4000, samples=[]; let next=0;
-  for(let i=0;i<route.coords.length;i++){ if(route.cum[i]>=next){samples.push(route.coords[i]);next+=step;} }
-  samples.push(route.coords[route.coords.length-1]);
-  const pts=samples.slice(0,25), found=new Map();
+// ================= LUGARES (sitios con foto de Wikipedia) =================
+let pTimer=null;
+async function wikiAround(pts, radius, found){
   const jobs=[];
   for(const lang of ['ca','es']) for(const p of pts){
-    const u=`https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=geosearch&ggscoord=${p[0]}|${p[1]}&ggsradius=3000&ggslimit=10&prop=pageimages|coordinates&piprop=thumbnail&pithumbsize=400`;
+    const u=`https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=geosearch&ggscoord=${p[0]}|${p[1]}&ggsradius=${radius}&ggslimit=20&prop=pageimages|coordinates&piprop=thumbnail&pithumbsize=400`;
     jobs.push(fetch(u).then(r=>r.json()).then(j=>{
       Object.values(j.query?.pages||{}).forEach(pg=>{
-        if(!pg.thumbnail||!pg.coordinates) return;
+        if(!pg.thumbnail||!pg.coordinates||/^(Categoría|Categoria|Plantilla)/.test(pg.title)) return;
         const c=[pg.coordinates[0].lat,pg.coordinates[0].lon], key=c[0].toFixed(3)+','+c[1].toFixed(3);
         if(found.has(key)) return;
         found.set(key,{title:pg.title,img:pg.thumbnail.source,lat:c[0],lon:c[1],url:`https://${lang}.wikipedia.org/?curid=${pg.pageid}`});
       });
     }).catch(()=>{}));
   }
-  await Promise.all(jobs); if(my!==reqId) return;
-  places=[...found.values()].map(p=>({...p,...nearestOnRoute([p.lat,p.lon])}))
-    .filter(p=>p.d<=1200 && !/^(Categoría|Categoria|Plantilla)/.test(p.title))
-    .sort((a,b)=>a.km-b.km).slice(0,30);
+  await Promise.all(jobs);
+}
+async function refreshPlaces(){
+  if(!T.lugares) return;
+  const my=++placesReq, found=new Map();
+  if(route){ // a lo largo de tu ruta
+    $('pStatus').textContent='Buscando por tu ruta…';
+    const step=4000, samples=[]; let next=0;
+    for(let i=0;i<route.coords.length;i++){ if(route.cum[i]>=next){samples.push(route.coords[i]);next+=step;} }
+    samples.push(route.coords[route.coords.length-1]);
+    await wikiAround(samples.slice(0,25),3000,found); if(my!==placesReq) return;
+    places=[...found.values()].map(p=>({...p,...nearestOnRoute([p.lat,p.lon])})).filter(p=>p.d<=1200).sort((a,b)=>a.km-b.km).slice(0,30);
+    $('pStatus').textContent='Por donde pasa tu ruta';
+  }else{     // en la zona que estás mirando
+    if(map.getZoom()<11){ places=[]; renderPlaces(); $('pStatus').textContent=''; $('pEmpty').textContent='Acerca el mapa para ver los lugares de la zona.'; return; }
+    $('pStatus').textContent='Buscando en esta zona…';
+    const c=map.getCenter(), b=map.getBounds();
+    const r=Math.min(10000,Math.max(1000,Math.round(dist([b.getNorth(),b.getWest()],[b.getSouth(),b.getEast()])/2)));
+    await wikiAround([[c.lat,c.lng]],r,found); if(my!==placesReq) return;
+    places=[...found.values()].slice(0,40);
+    $('pStatus').textContent='En la zona que miras';
+  }
   renderPlaces();
 }
-
+let placesReq=0;
 function renderPlaces(){
   pLayer.clearLayers(); const box=$('pList'); box.innerHTML='';
   places.forEach(p=>{
     L.marker([p.lat,p.lon],{icon:L.divIcon({className:'',html:`<div class="thumb" style="background-image:url('${p.img}')"></div>`,iconSize:[40,40],iconAnchor:[20,20]})})
-      .bindPopup(`<img src="${p.img}" alt=""><b>${esc(p.title)}</b><br>Km ${fmtKm(p.km)} · <a href="${p.url}" target="_blank" rel="noopener">Más info</a>`).addTo(pLayer);
+      .bindPopup(`<img src="${p.img}" alt=""><b>${esc(p.title)}</b><br>${p.km!=null?'Km '+fmtKm(p.km)+' · ':''}<a href="${p.url}" target="_blank" rel="noopener">Más info</a>`).addTo(pLayer);
     const a=document.createElement('a'); a.className='photo'; a.href=p.url; a.target='_blank'; a.rel='noopener';
-    a.innerHTML=`<img src="${p.img}" alt="" loading="lazy"><span>${esc(p.title)}</span><small>Km ${fmtKm(p.km)}</small>`;
+    a.innerHTML=`<img src="${p.img}" alt="" loading="lazy"><span>${esc(p.title)}</span>${p.km!=null?`<small>Km ${fmtKm(p.km)}</small>`:''}`;
     box.appendChild(a);
   });
   $('pEmpty').hidden = places.length>0;
-  $('pEmpty').textContent = route ? 'No hay sitios conocidos con foto cerca de esta ruta.' : 'Aún no hay ruta.';
+  if(!places.length) $('pEmpty').textContent = route ? 'No hay sitios conocidos con foto cerca de esta ruta.' : 'No hay sitios conocidos con foto en esta zona.';
+}
+map.on('moveend',()=>{ if(!T.lugares||route) return; clearTimeout(pTimer); pTimer=setTimeout(refreshPlaces,600); });
+
+// ================= RUTAS DE LA GENTE =================
+function applyPeopleRoutes(){
+  Object.values(peopleRoutes).forEach(l=>map.removeLayer(l));
+  if(T.rutas) peopleRoutes[MODES[mode].people].addTo(map);
+}
+const OVERPASS=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.private.coffee/api/interpreter'];
+let opChain=Promise.resolve();
+function overpass(q){
+  const run=async()=>{
+    for(let a=0;a<OVERPASS.length;a++){
+      try{
+        const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),30000);
+        const r=await fetch(OVERPASS[a],{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctl.signal});
+        clearTimeout(to);
+        if(r.ok) return await r.json();
+      }catch(e){}
+      await new Promise(res=>setTimeout(res,700));
+    }
+    throw new Error('overpass');
+  };
+  const p=opChain.then(run,run); opChain=p.catch(()=>{}); return p;
+}
+$('findRoutes').onclick=async()=>{
+  const list=$('rList'), b=map.getBounds();
+  const bb=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(x=>x.toFixed(4)).join(',');
+  list.innerHTML='<li><small>Buscando rutas…</small></li>';
+  const kind=mode==='road'?'bicycle':'mtb|bicycle';
+  try{
+    const j=await overpass(`[out:json][timeout:25];relation["route"~"^(${kind})$"](${bb});out tags;`);
+    const rs=j.elements.filter(r=>r.tags&&(r.tags.name||r.tags.ref)).slice(0,25);
+    list.innerHTML=rs.length?'':'<li><small>No hay rutas marcadas en esta zona. Aleja un poco el mapa y prueba otra vez.</small></li>';
+    rs.forEach(r=>{
+      const t=r.tags, li=document.createElement('li');
+      li.innerHTML=`<span><b>${esc(t.name||t.ref)}</b><small>${t.route==='mtb'?'BTT':'Bici'}${t.distance?' · '+esc(t.distance)+' km':''}</small></span>`;
+      li.onclick=()=>loadRelation(r.id,t.name||t.ref);
+      list.appendChild(li);
+    });
+  }catch(e){ list.innerHTML='<li><small>No se han podido buscar rutas ahora. Prueba en un momento.</small></li>'; }
+};
+async function loadRelation(id,name){
+  const my=++reqId;
+  askedVer=routeVer;
+  if(T.crear) setToggle('crear',false);
+  points=[]; drawPins(); askedIds=new Set(); fuentesAsked=false;
+  routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers();
+  $('secCrear').hidden=false; setStatus('Cargando "'+name+'"…');
+  try{
+    const j=await overpass(`[out:json][timeout:25];relation(${id});way(r);out geom;`);
+    if(my!==reqId) return;
+    let segs=j.elements.filter(e=>e.geometry).map(e=>e.geometry.map(g=>[g.lat,g.lon,0]));
+    if(!segs.length) throw 0;
+    let line=segs.shift();
+    while(segs.length){
+      const end=line[line.length-1]; let bi=0, rev=false, bd=Infinity;
+      segs.forEach((sg,i)=>{const a=dist(end,sg[0]),z=dist(end,sg[sg.length-1]);if(a<bd){bd=a;bi=i;rev=false;}if(z<bd){bd=z;bi=i;rev=true;}});
+      let sg=segs.splice(bi,1)[0]; if(rev) sg=sg.slice().reverse(); line=line.concat(sg);
+    }
+    map.fitBounds(L.latLngBounds(line.map(c=>[c[0],c[1]])),{padding:[30,30]});
+    await useRoute(line, null, name, my);
+    askedVer=routeVer;
+  }catch(e){ if(my===reqId) setStatus('No se ha podido cargar esa ruta.'); }
 }
 
-function renderStats(){
-  $('sKm').innerHTML = route ? fmtKm(route.length/1000)+'<em>km</em>' : '–';
-  $('sUp').innerHTML = route && route.up!=null ? Math.round(route.up)+'<em>m</em>' : '–';
-  if(!route){ $('sF').textContent='–'; $('sGap').textContent='–'; $('gapBox').classList.remove('alert'); }
+// ================= RUTAS REALIZADAS =================
+// Se guardan en el propio móvil/ordenador (IndexedDB).
+let rides=[];
+function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open('ichnos',1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('rides',{keyPath:'id'}); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function ridesTx(mode,fn){ const db=await idb(); return new Promise((res,rej)=>{ const tx=db.transaction('rides',mode), st=tx.objectStore('rides');
+  const out=fn(st); tx.oncomplete=()=>res(out&&out.result!==undefined?out.result:out); tx.onerror=()=>rej(tx.error); }); }
+async function loadRides(){ try{ rides=(await ridesTx('readonly',st=>st.getAll()))||[]; }catch(e){ rides=[]; } rides.sort((a,b)=>(b.date||0)-(a.date||0)); renderRides(); drawHeat(); }
+async function saveRides(list){ await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); await loadRides(); }
+async function delRide(id){ await ridesTx('readwrite',st=>st.delete(id)); await loadRides(); }
+function lineKm(c){ let m=0; for(let i=1;i<c.length;i++) m+=dist(c[i-1],c[i]); return m/1000; }
+function thin(c){ const out=[]; for(const p of c){ if(!out.length||dist(out[out.length-1],p)>=10) out.push([+p[0].toFixed(5),+p[1].toFixed(5)]); } return out; }
+function drawHeat(){
+  hLayer.clearLayers();
+  if(!T.hechas) return;
+  // cada ruta se pinta semitransparente: por donde más veces pasas, más intenso sale
+  rides.forEach(r=>L.polyline(r.coords,{renderer:heatRenderer,color:'#ff2a00',weight:3.2,opacity:.38,interactive:false,lineJoin:'round'}).addTo(hLayer));
+}
+function renderRides(){
+  $('hN').textContent=rides.length;
+  $('hKm').textContent=Math.round(rides.reduce((s,r)=>s+(r.km||0),0)).toLocaleString('es-ES');
+  const ul=$('hList'); ul.innerHTML='';
+  rides.slice(0,200).forEach(r=>{
+    const li=document.createElement('li'), d=r.date?new Date(r.date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'';
+    li.innerHTML=`<span><b>${esc(r.name)}</b><small>${fmtKm(r.km||0)} km${d?' · '+d:''} · ${esc(r.source)}</small></span>`;
+    const bt=document.createElement('button'); bt.textContent='Borrar';
+    bt.onclick=async e=>{ e.stopPropagation(); if(await ask('¿Borrar esta ruta?',r.name,'Sí, bórrala','No')) delRide(r.id); };
+    li.appendChild(bt);
+    li.onclick=()=>{ if(!T.hechas) setToggle('hechas',true); map.fitBounds(L.latLngBounds(r.coords),{padding:[30,30]}); };
+    ul.appendChild(li);
+  });
 }
 
-// ---------- tiempo y viento (Open-Meteo, gratis y sin key) ----------
-const windLayer=L.layerGroup().addTo(map);
+// ---------- traer archivos de Strava / Coros (GPX, TCX o FIT) ----------
+function parseXmlTrack(text,isTcx){
+  const x=new DOMParser().parseFromString(text,'application/xml'), c=[];
+  if(isTcx){ x.querySelectorAll('Trackpoint').forEach(tp=>{ const la=tp.querySelector('LatitudeDegrees'), lo=tp.querySelector('LongitudeDegrees'); if(la&&lo) c.push([+la.textContent,+lo.textContent]); }); }
+  else x.querySelectorAll('trkpt,rtept').forEach(p=>c.push([+p.getAttribute('lat'),+p.getAttribute('lon')]));
+  const nm=x.querySelector(isTcx?'Activity > Notes':'trk > name, metadata > name');
+  const tm=x.querySelector(isTcx?'Activity > Id':'trkpt > time, metadata > time');
+  return {coords:c.filter(p=>isFinite(p[0])&&isFinite(p[1])), name:nm?nm.textContent.trim():'', date:tm?Date.parse(tm.textContent):null};
+}
+function parseFit(buf){
+  const dv=new DataView(buf), out=[]; let start=null;
+  const hs=dv.getUint8(0), end=Math.min(buf.byteLength,hs+dv.getUint32(4,true)); let p=hs; const defs={};
+  const readMsg=(d)=>{ let lat=null,lon=null,ts=null;
+    for(const [num,size] of d.fields){
+      if(d.gnum===20 && size===4){ if(num===0) lat=dv.getInt32(p,d.little); else if(num===1) lon=dv.getInt32(p,d.little); else if(num===253) ts=dv.getUint32(p,d.little); }
+      p+=size; }
+    p+=d.dev;
+    if(d.gnum===20 && lat!==null && lon!==null && lat!==0x7fffffff && lon!==0x7fffffff && !(lat===0&&lon===0)){
+      out.push([lat*180/2147483648, lon*180/2147483648]); if(start===null&&ts) start=(ts+631065600)*1000; } };
+  while(p<end){
+    const h=dv.getUint8(p++);
+    if(h&0x80){ const d=defs[(h>>5)&3]; if(!d) break; readMsg(d); continue; }
+    const lt=h&0x0f;
+    if(h&0x40){
+      p++; const little=dv.getUint8(p++)===0, gnum=dv.getUint16(p,little); p+=2;
+      const nf=dv.getUint8(p++), fields=[]; for(let i=0;i<nf;i++){ fields.push([dv.getUint8(p),dv.getUint8(p+1)]); p+=3; }
+      let dev=0; if(h&0x20){ const nd=dv.getUint8(p++); for(let i=0;i<nd;i++){ dev+=dv.getUint8(p+1); p+=3; } }
+      defs[lt]={little,gnum,fields,dev};
+    }else{ const d=defs[lt]; if(!d) break; readMsg(d); }
+  }
+  return {coords:out,name:'',date:start};
+}
+async function readTrackFile(file){
+  let name=file.name, buf;
+  if(/\.gz$/i.test(name)){
+    if(!window.DecompressionStream) throw new Error('gz');
+    buf=await new Response(file.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); name=name.replace(/\.gz$/i,'');
+  } else buf=await file.arrayBuffer();
+  let t;
+  if(/\.fit$/i.test(name)) t=parseFit(buf);
+  else t=parseXmlTrack(new TextDecoder().decode(buf),/\.tcx$/i.test(name));
+  return {...t, file:name};
+}
+$('impBtn').onclick=()=>$('impFile').click();
+$('impFile').onchange=async e=>{
+  const files=[...e.target.files]; e.target.value=''; if(!files.length) return;
+  toast(`Leyendo ${files.length} archivo${files.length>1?'s':''}…`,60000);
+  const ok=[]; let bad=0;
+  for(const f of files){
+    try{
+      const t=await readTrackFile(f), c=thin(t.coords);
+      if(c.length<2){ bad++; continue; }
+      const src=/\.fit/i.test(t.file)?'Coros / Strava (FIT)':'Strava / Coros';
+      ok.push({id:'imp-'+t.file+'-'+c.length+'-'+c[0].join(','),name:t.name||t.file.replace(/\.(gpx|tcx|fit)$/i,''),date:t.date||f.lastModified,source:src,coords:c,km:lineKm(c)});
+    }catch(err){ bad++; }
+  }
+  if(ok.length){ await saveRides(ok); if(!T.hechas) setToggle('hechas',true); else drawHeat();
+    const b=L.latLngBounds(ok.flatMap(r=>r.coords)); map.fitBounds(b,{padding:[30,30]}); }
+  toast(ok.length?`${ok.length} ruta${ok.length>1?'s':''} añadida${ok.length>1?'s':''}${bad?` (${bad} archivo${bad>1?'s':''} sin recorrido)`:''}`:'No he encontrado recorridos en esos archivos.',4500);
+};
+
+// ---------- grabar una ruta con la app ----------
+let rec=null, wakeLock=null, recTick=null;
+async function startRec(){
+  if(!navigator.geolocation){ toast('Este navegador no deja usar el GPS.'); return; }
+  rec={coords:[],t0:Date.now()};
+  recLayer.clearLayers(); rec.line=L.polyline([],{color:'#1f9d55',weight:5}).addTo(recLayer);
+  rec.watch=navigator.geolocation.watchPosition(onRecPos,err=>{ toast('No llega la señal del GPS. Revisa los permisos de ubicación.',5000); },{enableHighAccuracy:true,maximumAge:0,timeout:30000});
+  try{ if(navigator.wakeLock) wakeLock=await navigator.wakeLock.request('screen'); }catch(e){}
+  recTick=setInterval(paintRec,1000); paintRec(); updateSheet();
+  toast('Grabando. Deja la app abierta con la pantalla encendida.',5000);
+}
+function onRecPos(pos){
+  if(!rec) return;
+  const c=pos.coords; if(c.accuracy>50) return;
+  const p=[c.latitude,c.longitude], last=rec.coords[rec.coords.length-1];
+  if(last && dist(last,p)<8) return;
+  rec.coords.push(p); rec.line.addLatLng(p);
+  if(rec.coords.length===1) map.setView(p,Math.max(map.getZoom(),15));
+  if(rec.coords.length%15===0) store.set('ichnos-rec',{t0:rec.t0,coords:rec.coords});
+}
+function paintRec(){
+  if(!rec) return;
+  const s=Math.floor((Date.now()-rec.t0)/1000), hh=Math.floor(s/3600), mm=Math.floor(s/60)%60, ss=s%60;
+  $('recInfo').textContent=`Grabando · ${hh?hh+'h ':''}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')} · ${fmtKm(lineKm(rec.coords))} km`;
+  $('recLive').hidden=false; $('recBtn').textContent='■ Parar y guardar'; $('recBtn').classList.remove('primary'); $('recBtn').classList.add('dark');
+}
+async function stopRec(){
+  if(!rec) return;
+  navigator.geolocation.clearWatch(rec.watch); clearInterval(recTick);
+  try{ wakeLock&&wakeLock.release(); }catch(e){} wakeLock=null;
+  const r=rec; rec=null; recLayer.clearLayers(); store.del('ichnos-rec');
+  $('recLive').hidden=true; $('recBtn').textContent='● Grabar ruta'; $('recBtn').classList.add('primary'); $('recBtn').classList.remove('dark');
+  await saveGrab(r.coords,r.t0);
+  updateSheet();
+}
+async function saveGrab(coords,t0){
+  const c=thin(coords);
+  if(c.length<2){ toast('La ruta es demasiado corta para guardarla.'); return; }
+  const d=new Date(t0);
+  await saveRides([{id:'rec-'+t0,name:'Ruta del '+d.toLocaleDateString('es-ES',{day:'numeric',month:'long'}),date:t0,source:'Grabada con Ichnos',coords:c,km:lineKm(c)}]);
+  if(!T.hechas) setToggle('hechas',true);
+  toast(`Ruta guardada: ${fmtKm(lineKm(c))} km`);
+}
+$('recBtn').onclick=()=>rec?stopRec():startRec();
+document.addEventListener('visibilitychange',async()=>{ if(rec && document.visibilityState==='visible' && navigator.wakeLock){ try{ wakeLock=await navigator.wakeLock.request('screen'); }catch(e){} } });
+
+// ================= TIEMPO Y VIENTO (Open-Meteo) =================
 let wxData=null, wxPts=[], wxWhere='', wxTimer=null;
 const WMO={0:'Despejado',1:'Casi despejado',2:'Algo nublado',3:'Nublado',45:'Niebla',48:'Niebla',51:'Llovizna',53:'Llovizna',55:'Llovizna',56:'Llovizna helada',57:'Llovizna helada',61:'Lluvia débil',63:'Lluvia',65:'Lluvia fuerte',66:'Lluvia helada',67:'Lluvia helada',71:'Nieve',73:'Nieve',75:'Nieve fuerte',77:'Nieve',80:'Chubascos',81:'Chubascos',82:'Chubascos fuertes',85:'Chubascos de nieve',86:'Chubascos de nieve',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta con granizo'};
 const DIRS=[['Norte','Tramuntana'],['Nordeste','Gregal'],['Este','Llevant'],['Sudeste','Xaloc'],['Sur','Migjorn'],['Sudoeste','Garbí'],['Oeste','Ponent'],['Noroeste','Mestral']];
 const dirName=d=>DIRS[Math.round(d/45)%8];
 const arrow=(deg,color)=>`<svg viewBox="0 0 24 24" style="transform:rotate(${deg}deg)"><path d="M12 2l6 9h-4v11h-4V11H6z" fill="${color}" stroke="#fff" stroke-width="1.2"/></svg>`;
-function bearing(a,b){const r=Math.PI/180,y=Math.sin((b[1]-a[1])*r)*Math.cos(b[0]*r),x=Math.cos(a[0]*r)*Math.sin(b[0]*r)-Math.sin(a[0]*r)*Math.cos(b[0]*r)*Math.cos((b[1]-a[1])*r);return (Math.atan2(y,x)/r+360)%360;}
 const pad2=n=>String(n).padStart(2,'0');
 const isoHour=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:00`;
-
-// Cuadro del tiempo encima del mapa
 const WxCtl=L.Control.extend({onAdd(){
   const div=L.DomUtil.create('div','wx'); div.id='wx';
   L.DomEvent.disableClickPropagation(div); L.DomEvent.disableScrollPropagation(div);
@@ -877,7 +1308,6 @@ const WxCtl=L.Control.extend({onAdd(){
   return div;
 }});
 new WxCtl({position:'topright'}).addTo(map);
-
 function hourOptions(){
   const now=new Date(), opts=[];
   for(let h=0;h<=8;h++){const d=new Date(now.getTime()+h*3600e3);opts.push([isoHour(d),h===0?'Ahora':`A las ${d.getHours()}:00`]);}
@@ -886,18 +1316,14 @@ function hourOptions(){
   return opts;
 }
 let wxHour=isoHour(new Date());
-
 async function loadWeather(){
   let pts;
   if(route){
-    // salida + 4 puntos repartidos por la ruta + llegada
     pts=[]; const c=route.coords, L1=route.cum[route.cum.length-1];
     for(let k=0;k<=5;k++){const target=L1*k/5;let i=route.cum.findIndex(x=>x>=target);if(i<0)i=c.length-1;
       const j=Math.min(i+5,c.length-1), a=c[Math.max(0,j-10)];pts.push({p:[c[i][0],c[i][1]],brg:bearing(a,c[j]),km:target/1000});}
     wxWhere='Salida de la ruta';
-  }else{
-    const ce=map.getCenter(); pts=[{p:[ce.lat,ce.lng]}]; wxWhere='Centro del mapa';
-  }
+  }else{ const ce=map.getCenter(); pts=[{p:[ce.lat,ce.lng]}]; wxWhere='Centro del mapa'; }
   try{
     const u=`https://api.open-meteo.com/v1/forecast?latitude=${pts.map(x=>x.p[0].toFixed(3)).join(',')}&longitude=${pts.map(x=>x.p[1].toFixed(3)).join(',')}`+
       `&hourly=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,precipitation_probability&wind_speed_unit=kmh&timezone=auto&forecast_days=2`;
@@ -905,9 +1331,8 @@ async function loadWeather(){
     wxData=j; wxPts=pts; renderWeather();
   }catch(e){ $('wx').innerHTML='<div class="where">Tiempo</div><div>No se ha podido cargar el tiempo.</div>'; }
 }
-
 function renderWeather(){
-  if(!wxData) return;
+  if(!wxData||!wxData[0].hourly) return;
   const h=wxData[0].hourly; let i=h.time.indexOf(wxHour); if(i<0) i=0;
   const v=k=>h[k][i], dn=dirName(v('wind_direction_10m'));
   const opts=hourOptions().map(([val,lab])=>`<option value="${val}"${val===wxHour?' selected':''}>${lab}</option>`).join('');
@@ -923,9 +1348,9 @@ function renderWeather(){
     <select id="wxHour" aria-label="Hora">${opts}</select>`;
   $('wxHour').onchange=e=>{wxHour=e.target.value;renderWeather();};
   $('wxMore').onclick=()=>{ $('wx').classList.toggle('mini'); renderWeather(); };
-  // flechas de viento sobre la ruta
   windLayer.clearLayers();
   if(route) wxPts.forEach((pt,k)=>{
+    if(!pt.brg && pt.brg!==0) return;
     const hh=(wxData[k]||wxData[0]).hourly, sp=Math.round(hh.wind_speed_10m[i]), wd=hh.wind_direction_10m[i];
     const goes=(wd+180)%360, diff=Math.abs(((goes-pt.brg)+540)%360-180);
     const rel = sp<6 ? ['','flojo'] : diff<50 ? ['tail','a favor'] : diff>130 ? ['head','de cara'] : ['','lateral'];
@@ -934,29 +1359,8 @@ function renderWeather(){
   });
 }
 map.on('moveend',()=>{ if(route) return; clearTimeout(wxTimer); wxTimer=setTimeout(loadWeather,700); });
-loadWeather();
 
-// ---------- GPX para el reloj / ciclocomputador ----------
-$('gpx').onclick = () => {
-  if(!route) return;
-  const maxD=+$('radius').value;
-  const wpts=nearFountains().map(f=>`<wpt lat="${f.lat}" lon="${f.lon}"><name>${esc(f.name)} (km ${fmtKm(f.km)})</name><sym>Drinking Water</sym></wpt>`).join('\n');
-  const trk=route.coords.map(c=>`<trkpt lat="${c[0].toFixed(6)}" lon="${c[1].toFixed(6)}"><ele>${Math.round(c[2])}</ele></trkpt>`).join('');
-  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Ruta de Fuentes" xmlns="http://www.topografix.com/GPX/1/1">\n${wpts}\n<trk><name>Ruta de Fuentes</name><trkseg>${trk}</trkseg></trk>\n</gpx>`;
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
-  a.download='ruta-fuentes.gpx'; document.body.appendChild(a); a.click(); a.remove();
-};
-
-// ---------- pestañas y ficha ----------
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelectorAll('.pane').forEach(p=>p.hidden=p.id!==b.dataset.tab);
-  $('sheet').classList.remove('closed');
-  if(b.dataset.tab==='tTrialeras'){ if(mode==='road') toast('Pulsa BTT o Gravel para ver las trialeras'); else loadTrails(); }
-});
-$('handle').onclick=()=>{ $('sheet').classList.toggle('closed'); setTimeout(()=>map.invalidateSize(),300); };
-
-// ---------- buscador de sitios ----------
+// ================= BUSCADOR =================
 let qTimer=null, qRes=[], foundMk=null;
 $('q').addEventListener('input',()=>{ clearTimeout(qTimer); qTimer=setTimeout(searchPlaces,350); });
 $('q').addEventListener('keydown',e=>{ if(e.key==='Enter'&&qRes[0]){ e.preventDefault(); goTo(qRes[0]); } if(e.key==='Escape') $('results').hidden=true; });
@@ -986,13 +1390,25 @@ function goTo(f){
   $('results').hidden=true; $('q').blur();
 }
 
-// ---------- mi ubicación ----------
+// ================= MI UBICACIÓN =================
+let meMk=null;
 $('locate').onclick=()=>{
-  if(!navigator.geolocation){ setStatus('Este navegador no deja saber tu ubicación.'); return; }
-  navigator.geolocation.getCurrentPosition(p=>map.setView([p.coords.latitude,p.coords.longitude],15),
-    ()=>setStatus('No se ha podido saber tu ubicación. Revisa los permisos del navegador.'),{enableHighAccuracy:true,timeout:10000});
+  if(!navigator.geolocation){ toast('Este navegador no deja saber tu ubicación.'); return; }
+  navigator.geolocation.getCurrentPosition(p=>{ const ll=[p.coords.latitude,p.coords.longitude]; map.setView(ll,15);
+      if(meMk) meMk.remove(); meMk=L.marker(ll,{interactive:false,icon:L.divIcon({className:'',html:'<div class="me"></div>',iconSize:[18,18],iconAnchor:[9,9]})}).addTo(map); },
+    ()=>toast('No se ha podido saber tu ubicación. Revisa los permisos.'),{enableHighAccuracy:true,timeout:10000});
 };
-if(window.matchMedia('(max-width:760px)').matches) $('sheet').classList.add('closed');
+
+// ================= ARRANQUE =================
+updateSheet(); loadWeather(); loadRides();
+// si se cerró la app grabando, ofrecer guardar lo que había
+(async()=>{
+  const pend=store.get('ichnos-rec',null);
+  if(pend && pend.coords && pend.coords.length>1){
+    const yes=await ask('Tienes una grabación sin terminar','¿La guardo en tus rutas realizadas?','Sí, guárdala','No, bórrala');
+    store.del('ichnos-rec'); if(yes) saveGrab(pend.coords,pend.t0);
+  }
+})();
 </script>
 </body>
 </html>
