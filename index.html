@@ -68,6 +68,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .pcity{margin:0;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:5px}
 .pcity svg{width:16px;height:16px;color:var(--accent)}
 .fld{width:100%;display:flex;flex-direction:column;gap:5px;text-align:left;font-size:13px;font-weight:600;color:var(--muted)}
+.fld select{border:1px solid var(--line);border-radius:12px;padding:12px 10px;font-size:15px;background:var(--bg);color:var(--ink)}
+.fnote{margin:-4px 0 2px;font-size:12px;color:var(--muted);text-align:left;width:100%;line-height:1.35}
+.phome{margin:0;font-size:13px;color:var(--muted)}
+.home-ic{width:26px;height:26px;border-radius:8px;background:#1b1b1b;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.home-ic svg{width:15px;height:15px}
 .fld input{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink);font-weight:500}
 .btn-main{border:0;border-radius:14px;padding:13px 18px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:16px;width:100%}
 .btn-ghost{border:1px solid var(--line);border-radius:14px;padding:11px 18px;background:var(--card);font-weight:700;font-size:15px;width:100%}
@@ -102,7 +107,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 @media (min-width:761px){.lbar{justify-content:center}}
 
 /* ficha */
-.sheet{position:absolute;z-index:999;left:max(12px,env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));bottom:70px;width:380px;
+.sheet{position:absolute;z-index:1001;left:max(12px,env(safe-area-inset-left,0px));top:calc(130px + env(safe-area-inset-top,0px));bottom:70px;width:380px;
   background:var(--card);border-radius:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
 .handle{display:none}
 .sheet-body{overflow-y:auto;flex:1;padding:4px 0 10px}
@@ -163,6 +168,52 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 details.help{font-size:13.5px;color:var(--muted);line-height:1.45}
 details.help summary{cursor:pointer;font-weight:700;color:var(--ink)}
 details.help p{margin:6px 0 0}
+
+/* recuadro de colores de trialeras */
+.lgbox{position:absolute;z-index:1000;left:max(12px,env(safe-area-inset-left,0px));top:calc(120px + env(safe-area-inset-top,0px));width:206px;
+  background:var(--card);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;font-size:13px}
+.lg-head{width:100%;border:0;background:none;display:flex;align-items:center;gap:8px;padding:9px 11px;font-weight:700;font-size:13px}
+.lg-head b{margin-left:auto;font-size:12px;color:var(--muted);transition:transform .2s}
+.lgbox.min .lg-head b{transform:rotate(-90deg)}
+.lgbox.min{width:auto}
+.lgbox.min .lg-body{display:none}
+.dots{display:flex;gap:3px}.dots i{width:9px;height:9px;border-radius:50%}
+.lg-body{max-height:min(46vh,420px);overflow-y:auto;border-top:1px solid var(--line)}
+.lg-row{width:100%;border:0;background:none;display:flex;align-items:center;gap:8px;padding:7px 11px;text-align:left;font-size:13px}
+.lg-row:hover{background:var(--soft)}
+.lg-row .sw{width:22px;height:6px;border-radius:3px;flex:none;position:relative}
+.lg-row .sw.dbl:after{content:"";position:absolute;inset:2px 3px;background:repeating-linear-gradient(90deg,#fff 0 3px,transparent 3px 6px)}
+.lg-row span{flex:1;min-width:0;font-weight:600}
+.lg-row small{color:var(--muted);font-size:11px;margin-left:2px;font-weight:500}
+.lg-row b{color:var(--muted);font-size:11px;transition:transform .2s}
+.lg-row[aria-expanded="true"] b{transform:rotate(90deg)}
+.lg-tip{padding:0 11px 9px 41px;color:var(--muted);line-height:1.4;font-size:12.5px}
+@media (min-width:761px){.lgbox{left:auto;top:auto;right:max(12px,env(safe-area-inset-right,0px));bottom:150px}}
+.ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
+.tpop{font-family:var(--body);min-width:190px;line-height:1.45}
+.tpop .lv{font-weight:700}
+.tpop .segbtn{background:var(--accent)}
+.tpop .segbtn.del{background:none;color:#c62828;padding:4px;margin-top:2px}
+
+/* opciones de crear ruta */
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts>label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.segc{display:flex;gap:4px;background:var(--soft);border-radius:12px;padding:3px}
+.segc button{flex:1;border:0;background:none;border-radius:9px;padding:8px 4px;font-weight:700;font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px}
+.segc button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.segc.lvls button i{width:10px;height:10px;border-radius:50%;flex:none}
+.segc.lvls button{font-size:12px;padding:8px 2px}
+/* tarjeta del buscador: crear ruta desde casa */
+.dest{position:absolute;z-index:1003;top:calc(118px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));width:380px;max-width:calc(100% - 24px);
+  background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.dest-t{display:flex;align-items:center;gap:8px}
+.dest-t b{flex:1;font-family:var(--display);font-weight:800;font-size:21px;line-height:1.1}
+.dest-t button{border:0;background:var(--soft);border-radius:50%;width:30px;height:30px;font-size:18px;line-height:1}
+.dest-b{display:flex;gap:6px}
+.dest-b button{flex:1;padding:11px 8px;font-size:14px}
+.dest-b .btn-main{flex:1.5}
+.dest small{color:var(--muted);font-size:12.5px}
+@media (max-width:760px){.dest{right:max(12px,env(safe-area-inset-right,0px));width:auto}}
 
 /* avisos y preguntas */
 .toast{position:fixed;z-index:3000;left:50%;transform:translateX(-50%);top:calc(122px + env(safe-area-inset-top,0px));
@@ -288,12 +339,18 @@ details.help p{margin:6px 0 0}
     <div class="avatar" id="pAvatar"></div>
     <h2 id="pApodo"></h2>
     <p class="pcity" id="pCiudad"></p>
+    <p class="phome" id="pHome"></p>
     <button class="btn-ghost" id="pEdit">Editar perfil</button>
   </section>
   <form class="pcard" id="pForm" hidden autocomplete="off">
     <label class="avatar pick" id="pPick"><input type="file" accept="image/*" id="pFile" hidden><span>Toca para cambiar la foto</span></label>
     <label class="fld">Apodo<input id="fApodo" maxlength="30" placeholder="Cómo quieres que te llamen"></label>
     <label class="fld">Ciudad<input id="fCiudad" maxlength="40" placeholder="Dónde vives"></label>
+    <label class="fld">Tu casa (calle y número)<input id="fCasa" maxlength="80" placeholder="Ej.: Carrer de Sant Jaume 10"></label>
+    <p class="fnote">Solo se guarda en este móvil. Sirve para que el mapa se abra en casa y para crear rutas desde casa.</p>
+    <label class="fld">Esconder tu casa en las rutas
+      <select id="fPriv"><option value="0">No esconder</option><option value="500">Esconder 500 m alrededor de casa</option><option value="1000">Esconder 1 km alrededor de casa</option></select></label>
+    <p class="fnote">En tus rutas guardadas y en el GPX no se dibuja ese trozo, así nadie sabe dónde vives. Los kilómetros cuentan la ruta entera.</p>
     <button type="submit" class="btn-main">Guardar</button>
     <button type="button" class="btn-ghost" id="pCancel">Cancelar</button>
   </form>
@@ -316,11 +373,27 @@ details.help p{margin:6px 0 0}
     </div>
   </div>
 
+  <div class="dest" id="destCard" hidden>
+    <div class="dest-t"><b id="destName"></b><button id="destX" aria-label="Cerrar">×</button></div>
+    <div class="dest-b"><button class="btn-main" id="destGo">Crear ruta desde casa</button><button class="btn-ghost" id="destRound">Ida y vuelta</button></div>
+    <small id="destMode"></small>
+  </div>
+
   <aside class="sheet" id="sheet" hidden>
     <button class="handle" id="handle" aria-label="Abrir o plegar la ficha"><i></i></button>
     <div class="sheet-body">
       <section class="sec" id="secCrear" hidden>
         <div class="sec-h"><h3>Tu ruta</h3><span class="status" id="status">Toca el mapa para poner la salida</span></div>
+        <div class="opts" id="optGravel" hidden>
+          <label>Tipo de camino</label>
+          <div class="segc" id="segGravel"><button data-g="pista">Solo pista</button><button data-g="mixta" class="on">Mixta</button><button data-g="carretera">Solo carretera</button></div>
+        </div>
+        <div class="opts" id="optLevel" hidden>
+          <label>Tu nivel de trialeras</label>
+          <div class="segc lvls" id="segLevel"></div>
+          <p class="note" id="lvlNote"></p>
+          <ul class="routes" id="lvlList"></ul>
+        </div>
         <div class="stats">
           <div class="stat"><b id="sKm">–</b><small>Distancia</small></div>
           <div class="stat"><b id="sUp">–</b><small>Desnivel</small></div>
@@ -342,22 +415,6 @@ details.help p{margin:6px 0 0}
           <label>de la ruta</label></div>
         <ul class="list" id="fList"></ul>
         <p class="empty" id="fEmpty"></p>
-      </section>
-      <section class="sec" id="secTrialeras" hidden>
-        <div class="sec-h"><h3>Trialeras</h3><span class="status">Toca una para ver su dificultad</span></div>
-        <div class="legend">
-          <span><i style="background:#2e9d3a"></i>Muy fácil (S0)</span>
-          <span><i style="background:#1f6fd1"></i>Fácil (S1)</span>
-          <span><i style="background:#d62a1e"></i>Media (S2)</span>
-          <span><i style="background:#111"></i>Difícil (S3)</span>
-          <span><i style="background:#8b2fc9"></i>Muy difícil (S4+)</span>
-          <span><i style="background:repeating-linear-gradient(90deg,#8a6a3a 0 5px,transparent 5px 8px)"></i>Pista</span>
-        </div>
-      </section>
-      <section class="sec" id="secLugares" hidden>
-        <div class="sec-h"><h3>Lugares</h3><span class="status" id="pStatus"></span></div>
-        <div class="photos" id="pList"></div>
-        <p class="empty" id="pEmpty"></p>
       </section>
       <section class="sec" id="secRutas" hidden>
         <div class="sec-h"><h3>Rutas de la gente</h3></div>
@@ -387,10 +444,14 @@ details.help p{margin:6px 0 0}
   <div class="lbar" id="lbar" role="group" aria-label="Qué ver en el mapa">
     <button class="make" data-t="crear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Crear ruta</button>
     <button data-t="fuentes"><i></i>Fuentes</button>
-    <button data-t="lugares"><i></i>Lugares</button>
     <button data-t="trialeras" class="on"><i></i>Trialeras</button>
     <button data-t="rutas"><i></i>Rutas</button>
     <button data-t="hechas"><i></i>Rutas realizadas</button>
+  </div>
+
+  <div class="lgbox" id="lgBox" hidden>
+    <button class="lg-head" id="lgHead" aria-expanded="true"><span class="dots"><i style="background:#2e9d3a"></i><i style="background:#1f6fd1"></i><i style="background:#d62a1e"></i><i style="background:#111"></i></span>Colores <b>▾</b></button>
+    <div class="lg-body" id="lgBody"></div>
   </div>
 
   <button class="fab" id="locate" aria-label="Ir a mi ubicación" title="Mi ubicación">
@@ -404,6 +465,15 @@ details.help p{margin:6px 0 0}
 </nav>
 
 <div class="toast" id="toast" hidden></div>
+<div class="modal" id="nModal" hidden role="dialog" aria-modal="true" aria-labelledby="nTitle">
+  <form class="box" id="nForm" autocomplete="off">
+    <h4 id="nTitle">Ponle nombre a esta trialera</h4>
+    <p>Escríbelo o elige uno de la lista. Solo se guarda en este móvil.</p>
+    <input id="nInput" list="nList" maxlength="60" placeholder="Nombre de la trialera" class="ninput">
+    <datalist id="nList"></datalist>
+    <div class="btns"><button type="submit" class="btn-main">Guardar nombre</button><button type="button" class="btn-ghost" id="nCancel">Cancelar</button></div>
+  </form>
+</div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
   <div class="box">
     <svg class="ico" viewBox="0 0 32 40"><path d="M16 2s-13 15.5-13 24a13 13 0 0 0 26 0c0-8.5-13-24-13-24z" fill="#1677c9"/><path d="M11 25.5h6.5a3 3 0 0 1 3 3v.7M11 23v4.2M14.6 25.5v-3M12.5 22h4.4" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>
@@ -442,14 +512,22 @@ const PIN_SVG='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0
 let perfil=store.get('ichnos-perfil',{});
 let fotoNueva=null;
 function paintAvatar(el,foto){ el.style.backgroundImage=foto?`url("${foto}")`:''; el.querySelectorAll('svg').forEach(s=>s.remove()); if(!foto) el.insertAdjacentHTML('afterbegin',USER_SVG); }
+if(perfil.priv==null) perfil.priv=500;
 function renderPerfil(){
   paintAvatar($('pAvatar'),perfil.foto);
   $('pApodo').textContent=perfil.apodo||'Sin apodo';
   $('pCiudad').innerHTML=PIN_SVG+esc(perfil.ciudad||'Sin ciudad');
+  $('pHome').textContent = perfil.home&&perfil.homeExact ? `Casa guardada · ${+perfil.priv?'se esconde '+(perfil.priv>=1000?'1 km':perfil.priv+' m')+' en tus rutas':'no se esconde en tus rutas'}` : 'Sin casa guardada';
+}
+// buscar coordenadas de una dirección (Photon / OpenStreetMap)
+async function geocode(q){
+  const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1&lat=41.54&lon=2.21`);
+  const j=await r.json(); const f=j.features&&j.features[0];
+  return f?{lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]}:null;
 }
 function editPerfil(on){
   $('pView').hidden=on; $('pForm').hidden=!on; $('goMap').hidden=on;
-  if(on){ fotoNueva=perfil.foto||null; paintAvatar($('pPick'),fotoNueva); $('fApodo').value=perfil.apodo||''; $('fCiudad').value=perfil.ciudad||''; }
+  if(on){ fotoNueva=perfil.foto||null; paintAvatar($('pPick'),fotoNueva); $('fApodo').value=perfil.apodo||''; $('fCiudad').value=perfil.ciudad||''; $('fCasa').value=perfil.casa||''; $('fPriv').value=String(perfil.priv??500); }
 }
 $('pEdit').onclick=()=>editPerfil(true);
 $('pCancel').onclick=()=>editPerfil(false);
@@ -464,20 +542,37 @@ $('pFile').onchange=e=>{
   img.onerror=()=>toast('No se ha podido abrir esa foto. Prueba con otra.');
   img.src=url;
 };
-$('pForm').onsubmit=e=>{
+$('pForm').onsubmit=async e=>{
   e.preventDefault();
-  perfil={foto:fotoNueva,apodo:$('fApodo').value.trim(),ciudad:$('fCiudad').value.trim()};
-  if(!store.set('ichnos-perfil',perfil)) toast('No se ha podido guardar el perfil en este navegador.');
+  const old=perfil;
+  perfil={foto:fotoNueva,apodo:$('fApodo').value.trim(),ciudad:$('fCiudad').value.trim(),casa:$('fCasa').value.trim(),priv:+$('fPriv').value,
+          home:old.home,homeExact:old.homeExact};
+  const changed=perfil.casa!==old.casa||perfil.ciudad!==old.ciudad||!old.home;
   renderPerfil(); editPerfil(false);
+  if(changed && (perfil.casa||perfil.ciudad)){
+    try{
+      const q=perfil.casa?`${perfil.casa}, ${perfil.ciudad}`:perfil.ciudad;
+      const g=await geocode(q);
+      if(g){ perfil.home=g; perfil.homeExact=!!perfil.casa; mapCentered=false; }
+      else toast(perfil.casa?'No he encontrado tu calle. Revisa cómo está escrita.':'No he encontrado tu ciudad.',4500);
+    }catch(err){ toast('No he podido buscar tu casa ahora. Comprueba internet y vuelve a guardar.',4500); }
+  }
+  if(!perfil.casa){ perfil.homeExact=false; }
+  if(!store.set('ichnos-perfil',perfil)) toast('No se ha podido guardar el perfil en este navegador.');
+  renderPerfil(); if(window.drawHome) drawHome(); if(window.drawHeat) drawHeat();
 };
 renderPerfil();
 if(!perfil.apodo && !perfil.foto) editPerfil(true);
 
 // ================= PÁGINAS =================
+let mapCentered=false;
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
   document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
-  if(id==='pgMapa' && window.map){ setTimeout(()=>{ map.invalidateSize(); try{ glMap.resize(); }catch(e){} },30); }
+  if(id==='pgMapa' && window.map){
+    setTimeout(()=>{ map.invalidateSize(); try{ glMap.resize(); }catch(e){} },30);
+    if(!mapCentered && perfil.home && !route){ map.setView([perfil.home.lat,perfil.home.lon],perfil.homeExact?14:13); mapCentered=true; }
+  }
 }
 document.querySelectorAll('#bnav button').forEach(b=>b.onclick=()=>showPage(b.dataset.pg));
 $('goMap').onclick=()=>showPage('pgMapa');
@@ -487,7 +582,8 @@ if(!window.L){
   $('map').innerHTML='<p style="padding:24px;font-size:18px">No se ha podido cargar el mapa. Comprueba que tienes internet y vuelve a abrir la app.</p>';
   throw new Error('Leaflet no cargado');
 }
-const map = L.map('map',{zoomControl:false}).setView([41.535,2.235],13); // Mollet / Serralada de Marina
+const map = L.map('map',{zoomControl:false}).setView(perfil.home?[perfil.home.lat,perfil.home.lon]:[41.535,2.235],perfil.home?14:13); // tu casa, o Mollet / Serralada de Marina
+mapCentered=!!perfil.home;
 window.map=map;
 
 // ---------- mapa base (OpenFreeMap) con calles, pueblos, montañas y trialeras por dificultad ----------
@@ -495,7 +591,17 @@ const F_REG=['Noto Sans Regular'], F_BOLD=['Noto Sans Bold'], F_IT=['Noto Sans I
 const SCV=['to-string',['coalesce',['get','mtb_scale'],'']];
 const SC=['slice',SCV,0,1];
 const HAS_SC=['!=',SCV,''];
-const DIFF_COLOR=['match',SC,'0','#2e9d3a','1','#1f6fd1','2','#d62a1e','3','#111111','#8b2fc9'];
+// Escala Ichnos (un escalón más fácil que OpenStreetMap): S0–S1 verde, S2 azul, S3 roja, S4 negra, S5+ doble negra
+const LEVELS=[
+  {key:'verde', pl:'verdes', col:'verde', name:'Verde',       color:'#2e9d3a', sc:'S0–S1', tip:'Para empezar. Senderos anchos y pistas sin obstáculos: tierra lisa, alguna piedra suelta pequeña. Perfecto si estás aprendiendo, vas con niños o con bici de gravel.'},
+  {key:'azul', pl:'azules', col:'azul',  name:'Azul',        color:'#1f6fd1', sc:'S2',    tip:'Rider con algo de experiencia. Raíces y piedras pequeñas, curvas cerradas fáciles y algún escaloncito. Hay que saber frenar bien y echar el peso atrás en las bajadas.'},
+  {key:'roja', pl:'rojas', col:'rojo',  name:'Roja',        color:'#d62a1e', sc:'S3',    tip:'Rider con buena técnica. Escalones, piedras grandes, raíces y pendiente fuerte. Recomendable bici de trail o enduro con buena suspensión y tija telescópica.'},
+  {key:'negra', pl:'negras', col:'negro', name:'Negra',       color:'#111111', sc:'S4',    tip:'Rider avanzado. Pasos muy técnicos, escalones altos, curvas de herradura muy cerradas y roca suelta. Mejor con protecciones y conociendo la zona.'},
+  {key:'doble', pl:'doble negras', col:'doble negro', name:'Doble negra', color:'#111111', sc:'S5+',   tip:'Solo expertos. Tramos casi de trial o enduro extremo; mucha gente los baja andando. Ve siempre acompañado.'}
+];
+const levelOf=sc=>sc<=1?0:Math.min(sc-1,4);   // S0,S1→0 · S2→1 · S3→2 · S4→3 · S5+→4
+const DIFF_COLOR=['match',SC,['0','1'],'#2e9d3a','2','#1f6fd1','3','#d62a1e','#111111'];
+const IS_DOUBLE=['in',SC,['literal',['5','6']]];
 const IS_TRAIL=['in',['get','class'],['literal',['path','track']]];
 const W=(a,b,c)=>['interpolate',['linear'],['zoom'],12,a,15,b,18,c];
 const ROADW=(k)=>['interpolate',['exponential',1.5],['zoom'],10,['*',k,['match',['get','class'],['motorway','trunk'],2.4,['primary','secondary'],1.8,['tertiary'],1.3,0.8]],
@@ -529,10 +635,12 @@ const glStyle={version:8, glyphs:'https://tiles.openfreemap.org/fonts/{fontstack
     paint:{'line-color':'#4a4a4a','line-width':W(1.1,2.2,3.5),'line-dasharray':[2,2]}},
   {id:'trail-rated',type:'line',source:'omt','source-layer':'transportation',filter:['all',IS_TRAIL,HAS_SC],layout:{'line-join':'round','line-cap':'round'},
     paint:{'line-color':DIFF_COLOR,'line-width':W(2,4,6.5)}},
+  {id:'trail-double',type:'line',source:'omt','source-layer':'transportation',filter:['all',IS_TRAIL,HAS_SC,IS_DOUBLE],layout:{'line-join':'round'},
+    paint:{'line-color':'#ffffff','line-width':W(0.8,1.4,2.2),'line-dasharray':[2,2]}},
   {id:'road-names',type:'symbol',source:'omt','source-layer':'transportation_name',minzoom:13,filter:['!',IS_TRAIL],
     layout:{'symbol-placement':'line','text-field':['get','name'],'text-font':F_REG,'text-size':['interpolate',['linear'],['zoom'],13,11,17,14]},paint:LABEL('#3a3a3a')},
-  {id:'trail-names',type:'symbol',source:'omt','source-layer':'transportation_name',minzoom:13,filter:IS_TRAIL,
-    layout:{'symbol-placement':'line','symbol-spacing':180,'text-max-angle':60,'text-field':['get','name'],'text-font':F_BOLD,'text-size':['interpolate',['linear'],['zoom'],13,11,17,14]},paint:LABEL('#1e4620')},
+  {id:'trail-names',type:'symbol',source:'omt','source-layer':'transportation_name',minzoom:12,filter:IS_TRAIL,
+    layout:{'symbol-placement':'line','symbol-spacing':160,'text-max-angle':60,'text-field':['get','name'],'text-font':F_BOLD,'text-size':['interpolate',['linear'],['zoom'],12,12.5,15,15,18,18]},paint:LABEL('#1e4620')},
   {id:'park-labels',type:'symbol',source:'omt','source-layer':'park',minzoom:9,filter:['==',['geometry-type'],'Point'],
     layout:{'text-field':['get','name'],'text-font':F_IT,'text-transform':'uppercase','text-letter-spacing':0.15,'text-max-width':9,'text-size':['interpolate',['linear'],['zoom'],9,11,14,15]},paint:LABEL('#2c6b34')},
   {id:'peaks',type:'symbol',source:'omt','source-layer':'mountain_peak',minzoom:11,filter:['all',['==',['get','class'],'peak'],['has','name']],
@@ -548,7 +656,7 @@ const glStyle={version:8, glyphs:'https://tiles.openfreemap.org/fonts/{fontstack
  ]};
 const VECTOR_FILLS=['bg','landcover','landuse','park','water','waterway','building','road-casing','road'];
 const LABEL_LAYERS=['road-names','park-labels','peaks','place-small','place-suburb','place-village','place-city'];
-const TRAIL_LAYERS=['trail-halo','trail-track','trail-path','trail-rated','trail-names'];
+const TRAIL_LAYERS=['trail-halo','trail-track','trail-path','trail-rated','trail-double','trail-names','my-names'];
 const glLayer=L.maplibreGL({style:glStyle}).addTo(map);
 const glMap=glLayer.getMaplibreMap();
 window.glMap=glMap;
@@ -571,6 +679,12 @@ function setBase(name){
   });
 }
 glMap.on('load',()=>{
+  try{
+    glMap.addSource('mynames',{type:'geojson',data:myNamesGeo()});
+    glMap.addLayer({id:'my-names',type:'symbol',source:'mynames',minzoom:12,
+      layout:{'symbol-placement':'line','symbol-spacing':160,'text-max-angle':60,'text-field':['get','name'],'text-font':F_BOLD,'text-size':['interpolate',['linear'],['zoom'],12,12.5,15,15,18,18]},
+      paint:{'text-color':'#7a2e00','text-halo-color':'#ffffff','text-halo-width':2}});
+  }catch(e){ console.warn(e); }
   glReady=true;
   LABEL_LAYERS.forEach(id=>glDefaults[id]=glMap.getPaintProperty(id,'text-color'));
   setBase(currentBase); applyTrails();
@@ -594,7 +708,6 @@ const routeLayer=L.layerGroup().addTo(map);       // tu ruta
 const arrowLayer=L.layerGroup().addTo(map);       // flechitas de sentido
 const pinLayer=L.layerGroup().addTo(map);         // puntos que pones
 const fLayer=L.layerGroup().addTo(map);           // fuentes
-const pLayer=L.layerGroup().addTo(map);           // lugares
 const windLayer=L.layerGroup().addTo(map);        // viento sobre la ruta
 const recLayer=L.layerGroup().addTo(map);         // grabación en directo
 const peopleRoutes={
@@ -604,13 +717,12 @@ const peopleRoutes={
 
 // ---------- estado ----------
 // T = pestañas encendidas. Se pueden tener varias a la vez; se apagan tocándolas otra vez.
-const T={crear:false,fuentes:false,lugares:false,trialeras:true,rutas:false,hechas:false};
-let mode='mtb', trialLegend=false;
+const T={crear:false,fuentes:false,trialeras:true,rutas:false,hechas:false};
+let mode='mtb';
 let points=[];          // [lat, lon, 'f' si es una fuente añadida]
 let route=null;         // {coords:[[lat,lon,ele]], cum:[m], length, up, idx:[índice de cada punto]}
 let reqId=0, routeVer=0, askedVer=-1;
 let askedIds=new Set(); // fuentes marcadas al terminar la ruta
-let places=[];
 
 // ---------- utilidades ----------
 function dist(a,b){ const R=6371000, r=Math.PI/180, dLa=(b[0]-a[0])*r, dLo=(b[1]-a[1])*r;
@@ -627,13 +739,12 @@ async function setToggle(k,on){
   T[k]=on;
   document.querySelector(`#lbar [data-t="${k}"]`).classList.toggle('on',on);
   if(k==='crear'){
-    $('map').classList.toggle('crear',on); drawPins();
+    $('map').classList.toggle('crear',on); drawPins(); applyTrails(); setTimeout(recommendTrails,50);
     if(on){ toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
     else if(route && points.length>=2 && askedVer!==routeVer) await finishRoute();
   }
-  if(k==='trialeras'){ trialLegend=on; applyTrails(); }
+  if(k==='trialeras') applyTrails();
   if(k==='fuentes'){ if(on) loadViewFountains(); else renderFountains(); }
-  if(k==='lugares'){ if(on) refreshPlaces(); else { places=[]; renderPlaces(); } }
   if(k==='rutas') applyPeopleRoutes();
   if(k==='hechas') drawHeat();
   updateSheet();
@@ -642,13 +753,17 @@ function updateSheet(){
   const showCrear=T.crear || !!route || points.length>0;
   $('secCrear').hidden=!showCrear;
   $('done').hidden=!(T.crear && points.length>=2);
+  $('optGravel').hidden=!(T.crear && mode==='gravel');
+  $('optLevel').hidden=!(T.crear && mode!=='road');
+  if(!$('optLevel').hidden) paintLevel();
   $('secFuentes').hidden=!(route && fuentesAsked);
-  $('secTrialeras').hidden=!(T.trialeras && trialLegend && mode!=='road');
-  $('secLugares').hidden=!T.lugares;
+  $('lgBox').hidden=!(T.trialeras && mode!=='road');
   $('secRutas').hidden=!T.rutas;
   $('secHechas').hidden=!T.hechas && !rec;
   const any=[...document.querySelectorAll('.sec')].some(s=>!s.hidden);
+  const wasHidden=$('sheet').hidden;
   $('sheet').hidden=!any;
+  if(any && wasHidden && window.matchMedia('(max-width:760px)').matches) $('lgBox').classList.add('min');
   placeFab();
 }
 // En el móvil el botón de ubicación se coloca justo encima de la ficha
@@ -666,17 +781,162 @@ const MODES = {
   gravel: {label:'Gravel',    profiles:['trekking'], people:'mtb'},
   mtb:    {label:'BTT',       profiles:['mtb-zossebart','trekking'], people:'mtb'}
 };
+const GRAVEL={pista:'Solo pista',mixta:'Mixta',carretera:'Solo carretera'};
+let gravelType=store.get('ichnos-gravel','mixta');
+let levels=store.get('ichnos-nivel',{gravel:1,mtb:2});   // 0 verde · 1 azul · 2 roja · 3 negra · 4 doble negra
+const curLevel=()=>mode==='road'?null:levels[mode];
+// --- perfil de ruta propio para BRouter: solo bici, nunca contra dirección, y sin trialeras más difíciles que tu nivel ---
+function brfText(kind,maxScale){
+  const hard=[];
+  if(maxScale!=null) for(let n=maxScale+1;n<=6;n++) hard.push(String(n));
+  const B={
+    road:`if highway=cycleway then 1
+    else if highway=primary|primary_link then 1.6
+    else if highway=secondary|secondary_link then 1.3
+    else if highway=tertiary|tertiary_link then 1.1
+    else if highway=unclassified|residential|living_street|service|road then 1.2
+    else if highway=trunk|trunk_link then 3
+    else if and highway=track|path|bridleway|footway|pedestrian ispaved then 2.5
+    else 100000`,
+    mixta:`if highway=cycleway then 1
+    else if highway=track then ( if ispaved then 1.3 else 1.1 )
+    else if highway=path|bridleway then 1.8
+    else if highway=footway then 2.5
+    else if highway=pedestrian then 3
+    else if highway=unclassified|residential|living_street|service|road then 1.3
+    else if highway=tertiary|tertiary_link then 1.5
+    else if highway=secondary|secondary_link then 2.2
+    else if highway=primary|primary_link then 3.5
+    else if highway=trunk|trunk_link then 10
+    else 100000`,
+    pista:`if highway=track then ( if ispaved then 2 else 1 )
+    else if highway=path|bridleway then 1.6
+    else if highway=cycleway then 1.8
+    else if highway=footway then 3
+    else if highway=unclassified|residential|living_street|service|road then 2.2
+    else if highway=tertiary|tertiary_link then 3
+    else if highway=secondary|secondary_link then 4.5
+    else if highway=primary|primary_link then 7
+    else if highway=trunk|trunk_link then 20
+    else 100000`,
+    mtb:`if highway=path|bridleway then 1
+    else if highway=track then 1.1
+    else if highway=footway then 1.5
+    else if highway=cycleway then 1.4
+    else if highway=unclassified|residential|living_street|service|road then 1.5
+    else if highway=tertiary|tertiary_link then 2
+    else if highway=secondary|secondary_link then 3
+    else if highway=primary|primary_link then 5
+    else if highway=trunk|trunk_link then 20
+    else if highway=steps then 6
+    else if highway=pedestrian then 3
+    else 100000`};
+  return `---context:global
+assign downhillcost 0
+assign downhillcutoff 1.5
+assign uphillcost 0
+assign uphillcutoff 1.5
+assign validForBikes 1
+assign validForFoot 0
+assign validForCars 0
+
+---context:way
+assign ispaved or surface=paved|asphalt|concrete|paving_stones tracktype=grade1
+assign nobike if bicycle=yes|designated|permissive then 0 else or bicycle=no|private access=no|private
+assign badoneway if reversedirection=yes then ( if oneway:bicycle=yes then 1 else if oneway= then junction=roundabout else oneway=yes|true|1 ) else oneway=-1
+assign onewaypenalty if badoneway then ( if oneway:bicycle=no then 0 else if cycleway=opposite|opposite_lane|opposite_track then 0 else 100000 ) else 0
+assign hardpenalty ${hard.length?`if mtb:scale=${hard.join('|')} then 100000 else 0`:'0'}
+assign accesspenalty if nobike then 100000 else if highway=motorway|motorway_link then 100000 else 0
+assign basecost ${B[kind]}
+assign costfactor add basecost max onewaypenalty max hardpenalty accesspenalty
+assign turncost 0
+assign initialcost 0
+
+---context:node
+assign initialcost 0
+`;
+}
+const profCache={};
+async function customProfile(kind,maxScale,fresh){
+  const key=kind+'-'+maxScale;
+  if(profCache[key] && !fresh) return profCache[key];
+  const r=await fetch('https://brouter.de/brouter/profile',{method:'POST',body:brfText(kind,maxScale)});
+  const j=await r.json();
+  if(!j.profileid || j.error) throw new Error(j.error||'perfil');
+  return profCache[key]=j.profileid;
+}
+function routeKind(){ return mode==='road'?'road':mode==='mtb'?'mtb':(gravelType==='carretera'?'road':gravelType); }
+function fallbackProfiles(){
+  if(mode==='gravel' && gravelType==='carretera') return MODES.road.profiles;
+  return MODES[mode].profiles;
+}
+// lee la dificultad más alta por la que pasa la ruta (BRouter la devuelve en los datos de cada tramo)
+function maxScaleOf(gj){
+  try{
+    const msg=gj.features[0].properties.messages; if(!msg) return null;
+    const col=msg[0].indexOf('WayTags'); let mx=-1;
+    for(let i=1;i<msg.length;i++){ const m=/mtb:scale=(\d)/.exec(msg[i][col]||''); if(m) mx=Math.max(mx,+m[1]); }
+    return mx;
+  }catch(e){ return null; }
+}
+
+// --- elegir tipo de gravel y nivel ---
+document.querySelectorAll('#segGravel button').forEach(b=>{
+  b.classList.toggle('on',b.dataset.g===gravelType);
+  b.onclick=()=>{ gravelType=b.dataset.g; store.set('ichnos-gravel',gravelType);
+    document.querySelectorAll('#segGravel button').forEach(x=>x.classList.toggle('on',x===b)); if(points.length>=2) calc(); };
+});
+$('segLevel').innerHTML=LEVELS.map((l,i)=>`<button data-l="${i}"><i style="background:${l.color}"></i>${l.name}</button>`).join('');
+document.querySelectorAll('#segLevel button').forEach(b=>b.onclick=()=>{
+  levels[mode]=+b.dataset.l; store.set('ichnos-nivel',levels); paintLevel(); applyTrails(); recommendTrails(); if(points.length>=2) calc();
+});
+function paintLevel(){
+  const lv=curLevel();
+  document.querySelectorAll('#segLevel button').forEach(b=>b.classList.toggle('on',+b.dataset.l===lv));
+  if(lv!=null) $('lvlNote').textContent=`Resalto en el mapa las trialeras ${LEVELS[lv].pl} y la ruta no te meterá por ninguna más difícil.`;
+}
+// recomendaciones: trialeras de tu nivel en la zona que estás mirando
+const LVL_EXPR=['match',SC,['0','1'],0,'2',1,'3',2,'4',3,4];
+let recTimer=null;
+function recommendTrails(){
+  const ul=$('lvlList'); ul.innerHTML='';
+  const lv=curLevel(); if(lv==null||!T.crear||!glReady) return;
+  if(map.getZoom()<12){ ul.innerHTML='<li><small>Acerca el mapa para ver qué trialeras de tu nivel hay por aquí.</small></li>'; return; }
+  let feats=[]; try{ feats=glMap.queryRenderedFeatures({layers:['trail-rated']}); }catch(e){}
+  let names=[]; try{ names=glMap.queryRenderedFeatures({layers:['trail-names']}).filter(f=>f.properties.name).map(f=>({name:f.properties.name,c:lineOf(f)})).filter(x=>x.c); }catch(e){}
+  const c=map.getCenter(), groups=new Map();
+  feats.forEach(f=>{
+    const sc=parseInt(String(f.properties.mtb_scale??''),10); if(isNaN(sc)||levelOf(sc)!==lv) return;
+    const line=lineOf(f); if(!line||line.length<2) return;
+    const mid=line[Math.floor(line.length/2)], ll=[mid[1],mid[0]];
+    const mine=myNameAt({lat:ll[0],lng:ll[1]});
+    let nm=mine?mine.name:null;
+    if(!nm){ let bd=60; names.forEach(n=>{ const d=distToLine(ll,n.c); if(d<bd){bd=d;nm=n.name;} }); }
+    let len=0; for(let i=1;i<line.length;i++) len+=dist([line[i-1][1],line[i-1][0]],[line[i][1],line[i][0]]);
+    const key=nm||('sin-'+mid[0].toFixed(3)+mid[1].toFixed(3));
+    const g=groups.get(key)||{name:nm,len:0,ll,d:dist(ll,[c.lat,c.lng])};
+    g.len+=len; groups.set(key,g);
+  });
+  const list=[...groups.values()].filter(g=>g.len>80).sort((a,b)=>(a.name?0:1)-(b.name?0:1)||a.d-b.d).slice(0,10);
+  if(!list.length){ ul.innerHTML=`<li><small>No veo trialeras ${LEVELS[lv].pl} en esta zona. Mueve el mapa o prueba otro nivel.</small></li>`; return; }
+  list.forEach(g=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<span><b>${esc(g.name||'Trialera sin nombre')}</b><small>${g.len>=1000?fmtKm(g.len/1000)+' km':Math.round(g.len)+' m'} · a ${fmtKm(g.d/1000)} km de aquí</small></span>`;
+    li.onclick=()=>map.setView(g.ll,16);
+    ul.appendChild(li);
+  });
+}
+map.on('moveend',()=>{ clearTimeout(recTimer); recTimer=setTimeout(recommendTrails,500); });
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
   mode=b.dataset.mode;
   document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelector('#lbar [data-t="trialeras"]').hidden = mode==='road';   // en Carretera no hay trialeras
-  applyTrails(); applyPeopleRoutes(); updateSheet();
+  applyTrails(); applyPeopleRoutes(); updateSheet(); recommendTrails();
   if(points.length>=2) calc();
 });
 
 // ================= TRIALERAS =================
 const KIND={track:'Pista',path:'Sendero',footway:'Camino peatonal',cycleway:'Carril bici',bridleway:'Camino de herradura',steps:'Escaleras'};
-const DIFF=[['Muy fácil','#2e9d3a'],['Fácil','#1f6fd1'],['Media','#d62a1e'],['Difícil','#111111'],['Muy difícil','#8b2fc9'],['Extrema','#8b2fc9'],['Extrema','#8b2fc9']];
 function applyTrails(){
   glSet(()=>{
     const show=mode!=='road' && T.trialeras;
@@ -685,31 +945,105 @@ function applyTrails(){
     glMap.setPaintProperty('trail-track','line-color',gr?'#8a5a1f':'#8a6a3a');
     glMap.setPaintProperty('trail-track','line-width',gr?W(2.2,4,6):W(1.4,2.6,4));
     glMap.setPaintProperty('trail-track','line-dasharray',gr?[1,0]:[3,2]);
-    glMap.setPaintProperty('trail-rated','line-opacity',gr?0.45:1);
     glMap.setPaintProperty('trail-path','line-opacity',gr?0.45:1);
+    const lv=curLevel();
+    if(T.crear && lv!=null){
+      glMap.setPaintProperty('trail-rated','line-opacity',['case',['==',LVL_EXPR,lv],1,['<',LVL_EXPR,lv],0.5,0.13]);
+      glMap.setPaintProperty('trail-rated','line-width',['interpolate',['linear'],['zoom'],12,['case',['==',LVL_EXPR,lv],3.4,2],15,['case',['==',LVL_EXPR,lv],6.5,4],18,['case',['==',LVL_EXPR,lv],9.5,6.5]]);
+      glMap.setPaintProperty('trail-double','line-opacity',lv>=4?1:0.13);
+    }else{
+      glMap.setPaintProperty('trail-rated','line-opacity',gr?0.45:1);
+      glMap.setPaintProperty('trail-rated','line-width',W(2,4,6.5));
+      glMap.setPaintProperty('trail-double','line-opacity',gr?0.45:1);
+    }
   });
 }
+// ---------- nombres que le pones tú a las trialeras (se guardan en este dispositivo) ----------
+let myNames=store.get('ichnos-nombres',[]);
+const STRAVA_NAMES=["Trialera Les Maleses","Cal Dimoni","Cal Dimoni Full Track","La Lápida","Primer tramo La Lápida","Trialera Vigia Coscollada - Coll de les Maleses",
+  "1ª trialera Vigia","Trialera de subida tramo medio Vigia","Trialera hasta cantera","Corriol de les Buriles","Sendero de las piedras","Endimoniada","Mucho flow",
+  "Electrocardiograma","El Collet","Fot-li Avall","Tobogán urbanización Vallensana","Singletrack to Cal Dimoni","Senderillo para Can Franquesa",
+  "Mini Sendero Conreria-Viñas","Senderito viñas - Urb. Conreria","Torres Xtrem","La Charca de los Jabalíes","Los Bancos","Zapatiesto",
+  "Bajando a bloque hasta Santa Maria","2 Ladies","Tubogas","Por las piedras mola más","Sendero izquierda subida","La Mantinguda","Serrucheitor 3000"];
+function myNamesGeo(){ return {type:'FeatureCollection',features:myNames.map(n=>({type:'Feature',properties:{name:n.name,id:n.id},geometry:{type:'LineString',coordinates:n.coords}}))}; }
+function saveMyNames(){ store.set('ichnos-nombres',myNames); glSet(()=>glMap.getSource('mynames').setData(myNamesGeo())); }
+// distancia en metros de un punto a una línea [[lon,lat],...]
+function distToLine(ll,coords){
+  const k=Math.cos(ll[0]*Math.PI/180)*111320, m=111320; let best=Infinity;
+  const P=[ll[1]*k,ll[0]*m];
+  for(let i=0;i<coords.length;i++){
+    const A=[coords[i][0]*k,coords[i][1]*m], B=i+1<coords.length?[coords[i+1][0]*k,coords[i+1][1]*m]:A;
+    const dx=B[0]-A[0], dy=B[1]-A[1], L2=dx*dx+dy*dy;
+    let t=L2?((P[0]-A[0])*dx+(P[1]-A[1])*dy)/L2:0; t=Math.max(0,Math.min(1,t));
+    best=Math.min(best,Math.hypot(P[0]-(A[0]+t*dx),P[1]-(A[1]+t*dy)));
+  }
+  return best;
+}
+function myNameAt(latlng){ let best=null, bd=25; myNames.forEach(n=>{ const d=distToLine([latlng.lat,latlng.lng],n.coords); if(d<bd){bd=d;best=n;} }); return best; }
+function askName(title,def){
+  return new Promise(res=>{
+    $('nTitle').textContent=title; $('nInput').value=def||'';
+    $('nList').innerHTML=STRAVA_NAMES.map(n=>`<option value="${esc(n)}">`).join('');
+    $('nModal').hidden=false; setTimeout(()=>$('nInput').focus(),50);
+    const done=v=>{ $('nModal').hidden=true; $('nForm').onsubmit=null; $('nCancel').onclick=null; res(v); };
+    $('nForm').onsubmit=e=>{ e.preventDefault(); done($('nInput').value.trim()||null); };
+    $('nCancel').onclick=()=>done(null);
+  });
+}
+function lineOf(f){ const g=f.geometry; if(!g) return null; if(g.type==='LineString') return g.coordinates;
+  if(g.type==='MultiLineString') return g.coordinates.reduce((a,b)=>b.length>a.length?b:a,[]); return null; }
+// Lo que sale al tocar una trialera
 function trailAt(latlng){
   if(!glReady||mode==='road'||!T.trialeras) return null;
   const pt=glMap.project([latlng.lng,latlng.lat]);
-  const hit=glMap.queryRenderedFeatures([[pt.x-7,pt.y-7],[pt.x+7,pt.y+7]],{layers:['trail-rated','trail-track','trail-path']});
-  if(!hit.length) return null;
-  const p=hit[0].properties;
-  const nm=glMap.queryRenderedFeatures([[pt.x-40,pt.y-40],[pt.x+40,pt.y+40]],{layers:['trail-names']}).map(f=>f.properties.name).find(Boolean);
+  const hit=glMap.queryRenderedFeatures([[pt.x-8,pt.y-8],[pt.x+8,pt.y+8]],{layers:['trail-rated','trail-track','trail-path']});
+  const mine=myNameAt(latlng);
+  if(!hit.length && !mine) return null;
+  const p=hit.length?hit[0].properties:{};
+  const osm=glMap.queryRenderedFeatures([[pt.x-40,pt.y-40],[pt.x+40,pt.y+40]],{layers:['trail-names']}).map(f=>f.properties.name).find(Boolean);
+  const kind=KIND[p.subclass]||KIND[p.class]||'';
   const v=String(p.mtb_scale??''), sc=parseInt(v,10);
-  const info=[`<b>${esc(nm||KIND[p.subclass]||KIND[p.class]||'Camino')}</b>`, KIND[p.subclass]||KIND[p.class]||''];
-  if(!isNaN(sc)) info.push(`Dificultad: <b style="color:${DIFF[Math.min(sc,6)][1]}">${DIFF[Math.min(sc,6)][0]} (S${esc(v)})</b>`);
-  else info.push('Dificultad: sin apuntar');
-  if(p.surface) info.push(`Suelo: ${p.surface==='unpaved'?'tierra o grava':p.surface==='paved'?'asfalto':esc(p.surface)}`);
-  return info.filter(Boolean).join('<br>');
+  const name=mine?mine.name:osm;
+  const d=document.createElement('div'); d.className='tpop';
+  let h=`<b>${esc(name||'Trialera sin nombre')}</b>${kind?'<br>'+kind:''}`;
+  if(!isNaN(sc)){ const lv=LEVELS[levelOf(sc)]; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${lv.name}</span> <small>(S${esc(v)})</small>`; }
+  else if(p.class==='track') h+='<br>Pista: apta para todos';
+  else h+='<br>Dificultad: sin apuntar';
+  if(p.surface) h+=`<br>Suelo: ${p.surface==='unpaved'?'tierra o grava':p.surface==='paved'?'asfalto':esc(p.surface)}`;
+  d.innerHTML=h;
+  const bt=document.createElement('button'); bt.className='segbtn'; bt.textContent=name?'Cambiar nombre':'Ponerle nombre';
+  bt.onclick=async()=>{
+    map.closePopup();
+    const nn=await askName(name?'Cambiar el nombre':'Ponle nombre a esta trialera',name||'');
+    if(!nn) return;
+    if(mine){ mine.name=nn; }
+    else{ const c=hit.length?lineOf(hit[0]):null; if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
+      myNames.push({id:Date.now(),name:nn,coords:c.map(x=>[+x[0].toFixed(6),+x[1].toFixed(6)])}); }
+    saveMyNames(); toast(`Guardado: "${nn}"`);
+  };
+  d.appendChild(bt);
+  if(mine){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar mi nombre';
+    del.onclick=()=>{ map.closePopup(); myNames=myNames.filter(n=>n!==mine); saveMyNames(); toast('Nombre quitado'); }; d.appendChild(del); }
+  return d;
 }
+
+// ---------- recuadro de colores (al lado, se puede plegar) ----------
+(function buildLegend(){
+  const rows=[...LEVELS.map((l,i)=>({sw:l.color,dbl:i===4,name:l.name,sc:l.sc,tip:l.tip})),
+    {sw:'repeating-linear-gradient(90deg,#8a6a3a 0 5px,transparent 5px 8px)',name:'Pista',sc:'',tip:'Camino ancho de tierra o grava. Lo puede hacer cualquiera y es el terreno típico de gravel.'},
+    {sw:'repeating-linear-gradient(90deg,#4a4a4a 0 4px,transparent 4px 7px)',name:'Sin apuntar',sc:'',tip:'Sendero del que nadie ha apuntado la dificultad. Ve con cuidado la primera vez.'}];
+  $('lgBody').innerHTML=rows.map((r,i)=>`<button class="lg-row" data-i="${i}" aria-expanded="false"><i class="sw${r.dbl?' dbl':''}" style="background:${r.sw}"></i><span>${r.name}${r.sc?` <small>${r.sc}</small>`:''}</span><b>›</b></button><div class="lg-tip" hidden>${r.tip}</div>`).join('');
+  $('lgBody').querySelectorAll('.lg-row').forEach(b=>b.onclick=()=>{ const open=b.getAttribute('aria-expanded')!=='true'; b.setAttribute('aria-expanded',open); b.nextElementSibling.hidden=!open; });
+  if(store.get('ichnos-lgmin',false)) $('lgBox').classList.add('min');
+  $('lgHead').onclick=()=>{ const m=$('lgBox').classList.toggle('min'); $('lgHead').setAttribute('aria-expanded',!m); store.set('ichnos-lgmin',m); };
+})();
 
 // ================= TOCAR EL MAPA =================
 let hintShown=false;
 map.on('click', e => {
   if(T.crear){ points.push([e.latlng.lat,e.latlng.lng]); drawPins(); calc(); return; }
   const info=trailAt(e.latlng);
-  if(info){ L.popup().setLatLng(e.latlng).setContent(info).openOn(map); return; }
+  if(info){ L.popup({minWidth:200}).setLatLng(e.latlng).setContent(info).openOn(map); return; }
   if(!hintShown){ hintShown=true; toast('Para hacer una ruta, toca "Crear ruta" abajo'); }
 });
 
@@ -750,26 +1084,30 @@ async function calc(){
   route=null; $('segs').hidden=true; $('gpx').disabled=true; renderStats();
   if(points.length<2){
     askedIds=new Set(); fuentesAsked=false; askedVer=-1; renderFountains();
-    if(T.lugares) refreshPlaces();
     loadWeather(); setStatus(points.length? 'Toca el siguiente punto o la llegada' : 'Toca el mapa para poner la salida'); updateSheet(); return;
   }
   setStatus('Calculando…'); updateSheet();
   try{
     const ll = points.map(p=>p[1].toFixed(6)+','+p[0].toFixed(6)).join('|');
+    const get=async prof=>{ const r=await fetch(`https://brouter.de/brouter?lonlats=${ll}&profile=${prof}&alternativeidx=0&format=geojson`);
+      if(!r.ok) return null; const j=await r.json(); return j.features&&j.features.length?j:null; };
+    const lv=curLevel(), maxScale=lv==null?null:lv+1, kind=routeKind();
     let gj=null;
-    for(const prof of MODES[mode].profiles){
-      try{
-        const r = await fetch(`https://brouter.de/brouter?lonlats=${ll}&profile=${prof}&alternativeidx=0&format=geojson`);
-        if(!r.ok) continue;
-        const j = await r.json();
-        if(j.features && j.features.length){ gj=j; break; }
-      }catch(e){}
+    // 1) perfil propio de Ichnos (respeta tu nivel y el tipo de gravel)
+    for(const fresh of [false,true]){
+      try{ gj=await get(await customProfile(kind,maxScale,fresh)); }catch(e){ gj=null; }
+      if(gj||my!==reqId) break;
     }
+    // 2) si falla, perfiles normales de bici
+    if(!gj) for(const prof of fallbackProfiles()){ try{ gj=await get(prof); }catch(e){} if(gj||my!==reqId) break; }
     if(my!==reqId) return;
     if(!gj) throw new Error('ruta');
     const f = gj.features[0];
     const coords = f.geometry.coordinates.map(c=>[c[1],c[0],c[2]||0]);
-    await useRoute(coords, +f.properties['filtered ascend']||0, MODES[mode].label, my);
+    const label = MODES[mode].label + (mode==='gravel'?' ('+GRAVEL[gravelType].toLowerCase()+')':'');
+    await useRoute(coords, +f.properties['filtered ascend']||0, label, my);
+    const mx=maxScaleOf(gj);
+    if(maxScale!=null && mx!=null && mx>maxScale) toast(`Ojo: no había otro camino y la ruta pasa por un tramo ${LEVELS[levelOf(mx)].col}, más difícil que tu nivel.`,6000);
   }catch(err){
     if(my===reqId) setStatus('No se ha podido calcular la ruta. Comprueba internet y prueba otra vez.');
   }
@@ -823,14 +1161,15 @@ function drawArrows(){
 }
 map.on('zoomend',drawArrows);
 
+let fitNext=false;
 async function useRoute(coords, up, label, my){
   const cum=[0]; for(let i=1;i<coords.length;i++) cum.push(cum[i-1]+dist(coords[i-1],coords[i]));
   route={coords,cum,length:cum[cum.length-1],up};
   routeVer++;
   drawRouteSegments(coords, cum); drawArrows();
   $('gpx').disabled=false; renderStats(); renderFountains();
-  if(T.lugares) refreshPlaces();
   loadWeather();
+  if(fitNext){ fitNext=false; map.fitBounds(L.latLngBounds(coords.map(c=>[c[0],c[1]])),{padding:[40,40]}); }
   if(my===reqId) setStatus(`${label}: ruta lista.`);
   updateSheet();
 }
@@ -874,9 +1213,11 @@ async function routeThroughFountains(list){
 // ---------- GPX para el reloj / ciclocomputador ----------
 $('gpx').onclick = () => {
   if(!route) return;
-  const wpts=nearRouteFountains().filter(f=>askedIds.has(f.id)).map(f=>`<wpt lat="${f.lat}" lon="${f.lon}"><name>${esc(f.name)} (km ${fmtKm(f.km)})</name><sym>Drinking Water</sym></wpt>`).join('\n');
-  const trk=route.coords.map(c=>`<trkpt lat="${c[0].toFixed(6)}" lon="${c[1].toFixed(6)}"><ele>${Math.round(c[2])}</ele></trkpt>`).join('');
-  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Ichnos" xmlns="http://www.topografix.com/GPX/1/1">\n${wpts}\n<trk><name>Ruta Ichnos</name><trkseg>${trk}</trkseg></trk>\n</gpx>`;
+  const hideR=+perfil.priv||0, hp=perfil.home&&perfil.homeExact?[perfil.home.lat,perfil.home.lon]:null;
+  const wpts=nearRouteFountains().filter(f=>askedIds.has(f.id)&&!(hp&&hideR&&dist([f.lat,f.lon],hp)<=hideR)).map(f=>`<wpt lat="${f.lat}" lon="${f.lon}"><name>${esc(f.name)} (km ${fmtKm(f.km)})</name><sym>Drinking Water</sym></wpt>`).join('\n');
+  // la zona privada de casa no se mete en el GPX
+  const segs=privacyTrim(route.coords).map(run=>'<trkseg>'+run.map(c=>`<trkpt lat="${c[0].toFixed(6)}" lon="${c[1].toFixed(6)}"><ele>${Math.round(c[2]||0)}</ele></trkpt>`).join('')+'</trkseg>').join('');
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Ichnos" xmlns="http://www.topografix.com/GPX/1/1">\n${wpts}\n<trk><name>Ruta Ichnos (${fmtKm(route.length/1000)} km)</name>${segs}</trk>\n</gpx>`;
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
   a.download='ruta-ichnos.gpx'; document.body.appendChild(a); a.click(); a.remove();
 };
@@ -1035,59 +1376,6 @@ function renderFountains(){
   } else renderStats();
 }
 
-// ================= LUGARES (sitios con foto de Wikipedia) =================
-let pTimer=null;
-async function wikiAround(pts, radius, found){
-  const jobs=[];
-  for(const lang of ['ca','es']) for(const p of pts){
-    const u=`https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=geosearch&ggscoord=${p[0]}|${p[1]}&ggsradius=${radius}&ggslimit=20&prop=pageimages|coordinates&piprop=thumbnail&pithumbsize=400`;
-    jobs.push(fetch(u).then(r=>r.json()).then(j=>{
-      Object.values(j.query?.pages||{}).forEach(pg=>{
-        if(!pg.thumbnail||!pg.coordinates||/^(Categoría|Categoria|Plantilla)/.test(pg.title)) return;
-        const c=[pg.coordinates[0].lat,pg.coordinates[0].lon], key=c[0].toFixed(3)+','+c[1].toFixed(3);
-        if(found.has(key)) return;
-        found.set(key,{title:pg.title,img:pg.thumbnail.source,lat:c[0],lon:c[1],url:`https://${lang}.wikipedia.org/?curid=${pg.pageid}`});
-      });
-    }).catch(()=>{}));
-  }
-  await Promise.all(jobs);
-}
-async function refreshPlaces(){
-  if(!T.lugares) return;
-  const my=++placesReq, found=new Map();
-  if(route){ // a lo largo de tu ruta
-    $('pStatus').textContent='Buscando por tu ruta…';
-    const step=4000, samples=[]; let next=0;
-    for(let i=0;i<route.coords.length;i++){ if(route.cum[i]>=next){samples.push(route.coords[i]);next+=step;} }
-    samples.push(route.coords[route.coords.length-1]);
-    await wikiAround(samples.slice(0,25),3000,found); if(my!==placesReq) return;
-    places=[...found.values()].map(p=>({...p,...nearestOnRoute([p.lat,p.lon])})).filter(p=>p.d<=1200).sort((a,b)=>a.km-b.km).slice(0,30);
-    $('pStatus').textContent='Por donde pasa tu ruta';
-  }else{     // en la zona que estás mirando
-    if(map.getZoom()<11){ places=[]; renderPlaces(); $('pStatus').textContent=''; $('pEmpty').textContent='Acerca el mapa para ver los lugares de la zona.'; return; }
-    $('pStatus').textContent='Buscando en esta zona…';
-    const c=map.getCenter(), b=map.getBounds();
-    const r=Math.min(10000,Math.max(1000,Math.round(dist([b.getNorth(),b.getWest()],[b.getSouth(),b.getEast()])/2)));
-    await wikiAround([[c.lat,c.lng]],r,found); if(my!==placesReq) return;
-    places=[...found.values()].slice(0,40);
-    $('pStatus').textContent='En la zona que miras';
-  }
-  renderPlaces();
-}
-let placesReq=0;
-function renderPlaces(){
-  pLayer.clearLayers(); const box=$('pList'); box.innerHTML='';
-  places.forEach(p=>{
-    L.marker([p.lat,p.lon],{icon:L.divIcon({className:'',html:`<div class="thumb" style="background-image:url('${p.img}')"></div>`,iconSize:[40,40],iconAnchor:[20,20]})})
-      .bindPopup(`<img src="${p.img}" alt=""><b>${esc(p.title)}</b><br>${p.km!=null?'Km '+fmtKm(p.km)+' · ':''}<a href="${p.url}" target="_blank" rel="noopener">Más info</a>`).addTo(pLayer);
-    const a=document.createElement('a'); a.className='photo'; a.href=p.url; a.target='_blank'; a.rel='noopener';
-    a.innerHTML=`<img src="${p.img}" alt="" loading="lazy"><span>${esc(p.title)}</span>${p.km!=null?`<small>Km ${fmtKm(p.km)}</small>`:''}`;
-    box.appendChild(a);
-  });
-  $('pEmpty').hidden = places.length>0;
-  if(!places.length) $('pEmpty').textContent = route ? 'No hay sitios conocidos con foto cerca de esta ruta.' : 'No hay sitios conocidos con foto en esta zona.';
-}
-map.on('moveend',()=>{ if(!T.lugares||route) return; clearTimeout(pTimer); pTimer=setTimeout(refreshPlaces,600); });
 
 // ================= RUTAS DE LA GENTE =================
 function applyPeopleRoutes(){
@@ -1152,6 +1440,25 @@ async function loadRelation(id,name){
   }catch(e){ if(my===reqId) setStatus('No se ha podido cargar esa ruta.'); }
 }
 
+// ================= TU CASA Y ZONA PRIVADA =================
+const HOUSE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M6 10v10h12V10"/></svg>';
+let homeMk=null;
+function drawHome(){
+  if(homeMk){ homeMk.remove(); homeMk=null; }
+  if(perfil.home&&perfil.homeExact) homeMk=L.marker([perfil.home.lat,perfil.home.lon],{interactive:false,keyboard:false,
+    icon:L.divIcon({className:'',html:`<div class="home-ic">${HOUSE_SVG}</div>`,iconSize:[26,26],iconAnchor:[13,13]})}).addTo(map);
+}
+window.drawHome=drawHome;
+// Quita del dibujo los puntos que están cerca de casa. Devuelve trozos de línea (la distancia se calcula siempre con la ruta entera).
+function privacyTrim(coords){
+  const r=+perfil.priv||0;
+  if(!r||!perfil.home||!perfil.homeExact) return [coords];
+  const h=[perfil.home.lat,perfil.home.lon], runs=[]; let cur=[];
+  coords.forEach(p=>{ if(dist(p,h)<=r){ if(cur.length>1) runs.push(cur); cur=[]; } else cur.push(p); });
+  if(cur.length>1) runs.push(cur);
+  return runs;
+}
+
 // ================= RUTAS REALIZADAS =================
 // Se guardan en el propio móvil/ordenador (IndexedDB).
 let rides=[];
@@ -1168,7 +1475,7 @@ function drawHeat(){
   hLayer.clearLayers();
   if(!T.hechas) return;
   // cada ruta se pinta semitransparente: por donde más veces pasas, más intenso sale
-  rides.forEach(r=>L.polyline(r.coords,{renderer:heatRenderer,color:'#ff2a00',weight:3.2,opacity:.38,interactive:false,lineJoin:'round'}).addTo(hLayer));
+  rides.forEach(r=>L.polyline(privacyTrim(r.coords),{renderer:heatRenderer,color:'#ff2a00',weight:3.2,opacity:.38,interactive:false,lineJoin:'round'}).addTo(hLayer));
 }
 function renderRides(){
   $('hN').textContent=rides.length;
@@ -1388,7 +1695,29 @@ function goTo(f){
   if(foundMk) foundMk.remove();
   foundMk=L.marker([lat,lon],{interactive:false,icon:L.divIcon({className:'',html:'<div class="found"></div>',iconSize:[18,18],iconAnchor:[9,9]})}).addTo(map);
   $('results').hidden=true; $('q').blur();
+  dest={lat,lon,name:f.properties.name||f.properties.street||$('q').value.trim()};
+  $('destName').textContent=dest.name;
+  $('destMode').textContent=`Se hará en ${MODES[mode].label}${mode==='gravel'?' · '+GRAVEL[gravelType].toLowerCase():''}${curLevel()!=null?' · nivel '+LEVELS[curLevel()].col:''}. Puedes cambiarlo arriba antes de pulsar.`;
+  $('destCard').hidden=false; $('lgBox').classList.add('min');
 }
+let dest=null;
+$('destX').onclick=()=>{ $('destCard').hidden=true; };
+async function routeFromHome(round){
+  if(!perfil.home){
+    const go=await ask('No tienes tu casa guardada','Ponla en tu perfil y podrás crear rutas desde casa.','Ir al perfil','Ahora no');
+    if(go){ showPage('pgPerfil'); editPerfil(true); } return;
+  }
+  const h=[perfil.home.lat,perfil.home.lon];
+  points=round?[h,[dest.lat,dest.lon],h.slice()]:[h,[dest.lat,dest.lon]];
+  $('destCard').hidden=true; fitNext=true;
+  if(!T.crear) await setToggle('crear',true);
+  drawPins(); calc();
+  if(!perfil.homeExact) toast('Sale del centro de tu ciudad. Pon tu calle en el perfil para salir desde la puerta.',5000);
+}
+$('destGo').onclick=()=>routeFromHome(false);
+$('destRound').onclick=()=>routeFromHome(true);
+// al cambiar de modalidad con la tarjeta abierta, actualizar el texto
+document.querySelectorAll('#modes button').forEach(b=>b.addEventListener('click',()=>{ if(dest&&!$('destCard').hidden) $('destMode').textContent=`Se hará en ${MODES[mode].label}${mode==='gravel'?' · '+GRAVEL[gravelType].toLowerCase():''}${curLevel()!=null?' · nivel '+LEVELS[curLevel()].col:''}.`; }));
 
 // ================= MI UBICACIÓN =================
 let meMk=null;
@@ -1400,7 +1729,7 @@ $('locate').onclick=()=>{
 };
 
 // ================= ARRANQUE =================
-updateSheet(); loadWeather(); loadRides();
+updateSheet(); loadWeather(); loadRides(); drawHome();
 // si se cerró la app grabando, ofrecer guardar lo que había
 (async()=>{
   const pend=store.get('ichnos-rec',null);
