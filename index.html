@@ -250,6 +250,44 @@ details.help p{margin:6px 0 0}
 .pin.seg{background:#8b5cf6;color:#fff}
 .segdot{width:12px;height:12px;border-radius:50%;background:#8b5cf6;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)}
 
+/* salida, meta y etapas */
+.pin.st{background:#1f9d55;width:28px;height:28px}
+.pin.st svg{width:12px;height:12px;margin-left:2px}
+.pin.num{color:#1E2328;font-size:12.5px}
+.flagic svg{display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.segbtn.ghost{background:none;color:var(--ink);border:1px solid var(--line);margin-top:4px}
+.tripsum{display:flex;flex-direction:column;gap:2px}
+.tripsum b{font-family:var(--display);font-weight:800;font-size:19px;line-height:1.15}
+.tripsum span{color:var(--muted);font-size:13.5px;font-weight:600}
+.prog{margin:0;font-size:13.5px;font-weight:600}
+.prog.err{color:#c62828}
+.bar{height:5px;border-radius:3px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;width:35%;background:var(--accent);border-radius:3px;animation:slide 1.2s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+@media (prefers-reduced-motion:reduce){.bar i{animation:none;width:100%;opacity:.5}}
+.stages li.stg{grid-template-columns:8px 1fr auto auto;gap:10px;align-items:center}
+.stages li.stg>i{width:8px;height:100%;min-height:38px;border-radius:4px}
+.stages li.stg span{display:flex;flex-direction:column;gap:1px}
+.stages li.stg button{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:6px 9px;font-weight:700;font-size:12.5px;color:var(--ink)}
+.stages li.stg button:disabled{opacity:.45}
+.stages li.stg.on{background:var(--soft)}
+#tripKm button{font-size:12px}
+/* llevar la ruta */
+.cybox{max-width:420px;max-height:92vh;overflow-y:auto}
+.cyopts{display:flex;flex-direction:column;gap:8px;text-align:left}
+.cyo{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px 14px;text-align:left}
+.cyo:hover{background:var(--soft)}
+.cyo svg{width:24px;height:24px;flex:none;color:var(--ink)}
+.cyo span{display:flex;flex-direction:column;gap:2px}
+.cyo b{font-size:15px}.cyo small{color:var(--muted);font-size:12.5px}
+.qrbox{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;border:1px dashed var(--line);border-radius:14px}
+.qrbox #cyQr{background:#fff;padding:8px;border-radius:10px;min-height:60px;display:grid;place-items:center}
+.qrbox small{color:var(--muted);font-size:12.5px;text-align:center}
+.qrbox .row{width:100%;flex-wrap:nowrap}
+.qrbox input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:12px;background:var(--bg);color:var(--ink)}
+.cybox details.help{text-align:left}
+.cybox details.help ol{margin:6px 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+
 /* avisos y preguntas */
 .toast{position:fixed;z-index:3000;left:50%;transform:translateX(-50%);top:calc(122px + env(safe-area-inset-top,0px));
   background:var(--ink);color:var(--bg);padding:9px 15px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:var(--shadow);max-width:calc(100% - 24px);text-align:center}
@@ -439,6 +477,23 @@ details.help p{margin:6px 0 0}
           <button id="clear" disabled>Borrar ruta</button>
           <button id="gpx" class="primary" disabled>GPX</button>
           <button id="done" class="dark" hidden>Terminar ruta</button>
+          <button id="calcCancel" hidden>Cancelar</button>
+          <button id="tripBtn" hidden>Hacer por etapas</button>
+          <button id="tripBack" hidden>← Volver al viaje</button>
+        </div>
+      </section>
+      <section class="sec" id="secViaje" hidden>
+        <div class="sec-h"><h3>Viaje por etapas</h3></div>
+        <div class="tripsum" id="tripSum"></div>
+        <div class="opts"><label>Km por día</label><div class="segc" id="tripKm"></div></div>
+        <p class="prog" id="tripProg" hidden></p>
+        <div class="bar" id="tripBar" hidden><i></i></div>
+        <ul class="routes stages" id="tripList"></ul>
+        <div class="actions">
+          <button id="tripAll" class="primary" hidden>Llevar el viaje entero</button>
+          <button id="tripRetry" hidden>Reintentar</button>
+          <button id="tripCancel" hidden>Cancelar</button>
+          <button id="tripClose" hidden>Cerrar viaje</button>
         </div>
       </section>
       <section class="sec" id="secFuentes" hidden>
@@ -520,6 +575,30 @@ details.help p{margin:6px 0 0}
     <ul class="list fclist" id="fcList"></ul>
     <p class="fcinfo" id="fcInfo"></p>
     <div class="btns"><button class="btn-main" id="fcGo">Cambiar ruta</button><button class="btn-ghost" id="fcNo">No cambiar la ruta</button></div>
+  </div>
+</div>
+<div class="modal" id="cyModal" hidden role="dialog" aria-modal="true" aria-labelledby="cyTitle">
+  <div class="box cybox">
+    <h4 id="cyTitle"></h4>
+    <p id="cySub"></p>
+    <div class="cyopts">
+      <button class="cyo" id="cyDown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span><b>Descargar aquí</b><small>Se guarda en este aparato, en Descargas</small></span></button>
+      <button class="cyo" id="cyShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span><b>Enviar a otro aparato</b><small>AirDrop al iPhone, WhatsApp, correo o la app COROS</small></span></button>
+      <p class="note" id="cyNoShare" hidden>Este navegador no deja enviar archivos. Usa "Abrir en el móvil".</p>
+      <button class="cyo" id="cyQrBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2M20 14v2"/></svg><span><b>Abrir en el móvil</b><small>Con un código QR para la cámara del iPhone</small></span></button>
+    </div>
+    <div class="qrbox" id="cyQrBox" hidden>
+      <div id="cyQr"></div>
+      <small>Apunta la cámara del iPhone al código y toca el aviso que sale. Se abre Ichnos con esto mismo y desde ahí lo pasas a COROS.</small>
+      <div class="row"><input id="cyLink" readonly aria-label="Enlace"><button class="btn" id="cyCopy">Copiar</button></div>
+    </div>
+    <details class="help"><summary>¿Cómo la paso a mi reloj COROS?</summary>
+      <ol><li>En el iPhone, abre el archivo GPX con la app <b>COROS</b> y pulsa <b>Guardar</b>.</li>
+      <li>En la app COROS: <b>Explorar</b> → icono de rutas (arriba a la derecha) → tu ruta → <b>Sincronizar con el dispositivo</b> → <b>Enviar</b>.</li>
+      <li>En el reloj: mantén pulsado <b>Atrás</b> → <b>Toolbox</b> → <b>Navegación</b> → elige la ruta.</li></ol>
+      <p><b>Garmin:</b> abre el GPX en Garmin Connect (web) → Cursos → Importar, y envíalo al dispositivo. <b>Wahoo:</b> abre el GPX con la app ELEMNT.</p>
+    </details>
+    <button class="btn-ghost" id="cyClose">Cerrar</button>
   </div>
 </div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
@@ -805,7 +884,7 @@ async function setToggle(k,on){
   updateSheet();
 }
 function updateSheet(){
-  const showCrear=T.crear || !!route || points.length>0;
+  const showCrear=T.crear || !!route || points.length>0 || !$('calcCancel').hidden;
   $('secCrear').hidden=!showCrear;
   $('done').hidden=!(T.crear && points.length>=2);
   $('optGravel').hidden=!(T.crear && mode==='gravel');
@@ -815,6 +894,9 @@ function updateSheet(){
   $('lgBox').hidden=!(T.trialeras && mode!=='road');
   $('addF').hidden=!T.fuentes;
   $('secRutas').hidden=!T.rutas;
+  $('secViaje').hidden=!trip;
+  $('tripBack').hidden=!(trip&&trip.open!=null);
+  $('tripBtn').hidden=!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
   $('secSeg').hidden=!T.segmentos;
   $('secHechas').hidden=!T.hechas && !rec;
   const any=[...document.querySelectorAll('.sec')].some(s=>!s.hidden);
@@ -919,7 +1001,7 @@ const profCache={};
 async function customProfile(kind,maxScale,fresh){
   const key=kind+'-'+maxScale;
   if(profCache[key] && !fresh) return profCache[key];
-  const r=await fetch('https://brouter.de/brouter/profile',{method:'POST',body:brfText(kind,maxScale)});
+  const r=await fetchT('https://brouter.de/brouter/profile',{method:'POST',body:brfText(kind,maxScale)},15000);
   const j=await r.json();
   if(!j.profileid || j.error) throw new Error(j.error||'perfil');
   return profCache[key]=j.profileid;
@@ -1134,12 +1216,18 @@ function deletePoint(i){ map.closePopup(); points.splice(i,1); drawPins(); calc(
 
 const TAP_W='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h9a4 4 0 0 1 4 4v1M4 8v6M9 11V7M6 6h6"/></svg>';
 function pointName(i){ if(i===0) return 'Salida'; if(i===points.length-1) return 'Llegada'; return points[i][2]==='f'?'Fuente':'Punto '+i; }
+// salida en verde y llegada con bandera de meta
+const START_ICON=L.divIcon({className:'',html:'<div class="pin st"><svg viewBox="0 0 12 12"><path d="M3.5 2.2 10 6l-6.5 3.8z" fill="#fff"/></svg></div>',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-12]});
+const FLAG_ICON=(()=>{ let sq=''; for(let r=0;r<3;r++) for(let c=0;c<5;c++) sq+=`<rect x="${(6.4+c*4.3).toFixed(1)}" y="${(3+r*4.3).toFixed(1)}" width="4.3" height="4.3" fill="${(r+c)%2?'#ffffff':'#111111'}"/>`;
+  return L.divIcon({className:'',html:`<div class="flagic"><svg viewBox="0 0 30 36" width="30" height="36"><rect x="4" y="1.5" width="2.6" height="33.5" rx="1.3" fill="#1E2328"/><rect x="6.4" y="3" width="21.5" height="12.9" fill="#fff"/>${sq}<rect x="6.4" y="3" width="21.5" height="12.9" fill="none" stroke="#1E2328" stroke-width="1"/></svg></div>`,iconSize:[30,36],iconAnchor:[5,34],popupAnchor:[8,-30]}); })();
 function drawPins(){
   pinLayer.clearLayers();
   points.forEach((p,i)=>{
     const isF=p[2]==='f' && i>0 && i<points.length-1;
-    const label = i===0 ? 'S' : (i===points.length-1 && points.length>1 ? 'F' : (isF?TAP_W:i));
-    const m=L.marker([p[0],p[1]],{icon:L.divIcon({className:'',html:`<div class="pin${isF?' f':''}">${label}</div>`,iconSize:[26,26],iconAnchor:[13,13]}),
+    const last=i===points.length-1 && points.length>1;
+    const label = isF?TAP_W:i;
+    const icon = i===0 ? START_ICON : last ? FLAG_ICON : L.divIcon({className:'',html:`<div class="pin${isF?' f':''}">${label}</div>`,iconSize:[26,26],iconAnchor:[13,13]});
+    const m=L.marker([p[0],p[1]],{icon,
       draggable:T.crear}).addTo(pinLayer);
     m.on('dragend',ev=>{const ll=ev.target.getLatLng();points[i]=[ll.lat,ll.lng];calc();});
     m.bindPopup(()=>{const d=document.createElement('div');d.innerHTML=`<b>${pointName(i)}</b>`+(T.crear?'<br><small>Arrástralo para cambiar la ruta</small>':'');
@@ -1149,41 +1237,61 @@ function drawPins(){
   $('undo').disabled = points.length===0 || !T.crear; $('clear').disabled = points.length===0;
 }
 
-// ---------- calcular la ruta (BRouter) ----------
+// ---------- calcular la ruta (BRouter) con límite de espera ----------
+const aborters=new Set();
+async function fetchT(url,opts={},ms=45000){
+  const ctl=new AbortController(); aborters.add(ctl); const to=setTimeout(()=>ctl.abort(),ms);
+  try{ return await fetch(url,{...opts,signal:ctl.signal}); } finally{ clearTimeout(to); aborters.delete(ctl); }
+}
+function cancelAll(){ aborters.forEach(c=>c.abort()); aborters.clear(); }
+async function routeLL(pts,{deadline=Date.now()+60000}={}){
+  const ll=pts.map(p=>(+p[1]).toFixed(6)+','+(+p[0]).toFixed(6)).join('|');
+  const left=()=>deadline-Date.now();
+  const get=async prof=>{ if(left()<3000) throw new Error('timeout');
+    const r=await fetchT(`https://brouter.de/brouter?lonlats=${ll}&profile=${prof}&alternativeidx=0&format=geojson`,{},Math.min(left(),45000));
+    if(!r.ok) return null; const j=await r.json(); return j.features&&j.features.length?j:null; };
+  const lv=curLevel(), maxScale=lv==null?null:lv+1, kind=routeKind();
+  let gj=null;
+  // 1) perfil propio de Ichnos (respeta tu nivel y el tipo de gravel)
+  for(const fresh of [false,true]){ try{ gj=await get(await customProfile(kind,maxScale,fresh)); }catch(e){ if(e.message==='timeout') throw e; } if(gj) break; }
+  // 2) si falla o tarda, perfiles normales de bici (más sencillos)
+  if(!gj) for(const prof of fallbackProfiles()){ try{ gj=await get(prof); }catch(e){ if(e.message==='timeout') throw e; } if(gj) break; }
+  if(!gj) throw new Error(left()<3000?'timeout':'ruta');
+  const f=gj.features[0], coords=f.geometry.coordinates.map(c=>[c[1],c[0],c[2]||0]);
+  return {gj,coords,up:+f.properties['filtered ascend']||0,len:lenOf(coords),maxScale,mx:maxScaleOf(gj)};
+}
+let skipLong=false;
 async function calc(){
-  const my=++reqId;
+  const my=++reqId; cancelAll();
   routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers();
   route=null; $('gpx').disabled=true; renderStats();
   if(points.length<2){
     askedIds=new Set(); fuentesAsked=false; askedVer=-1; renderFountains();
     loadWeather(); setStatus(points.length? 'Toca el siguiente punto o la llegada' : 'Toca el mapa para poner la salida'); updateSheet(); return;
   }
-  setStatus('Calculando…'); updateSheet();
-  try{
-    const ll = points.map(p=>p[1].toFixed(6)+','+p[0].toFixed(6)).join('|');
-    const get=async prof=>{ const r=await fetch(`https://brouter.de/brouter?lonlats=${ll}&profile=${prof}&alternativeidx=0&format=geojson`);
-      if(!r.ok) return null; const j=await r.json(); return j.features&&j.features.length?j:null; };
-    const lv=curLevel(), maxScale=lv==null?null:lv+1, kind=routeKind();
-    let gj=null;
-    // 1) perfil propio de Ichnos (respeta tu nivel y el tipo de gravel)
-    for(const fresh of [false,true]){
-      try{ gj=await get(await customProfile(kind,maxScale,fresh)); }catch(e){ gj=null; }
-      if(gj||my!==reqId) break;
+  // rutas muy largas: mejor por etapas
+  if(points.length===2 && !(trip&&trip.open!=null) && !skipLong){
+    const d=dist(points[0],points[1]);
+    if(d>160000){
+      const yes=await ask('Ruta muy larga',`Son unos ${Math.round(d*1.3/1000)} km. Es demasiado para calcularla de una vez. ¿La preparo como viaje por etapas?`,'Sí, por etapas','No, inténtalo igual');
+      if(my!==reqId) return;
+      if(yes){ const A=points[0], B=points[1]; startTrip(A,B,{to:dest&&dist([dest.lat,dest.lon],B)<500?dest.name:null}); return; }
     }
-    // 2) si falla, perfiles normales de bici
-    if(!gj) for(const prof of fallbackProfiles()){ try{ gj=await get(prof); }catch(e){} if(gj||my!==reqId) break; }
-    if(my!==reqId) return;
-    if(!gj) throw new Error('ruta');
-    const f = gj.features[0];
-    const coords = f.geometry.coordinates.map(c=>[c[1],c[0],c[2]||0]);
-    const label = MODES[mode].label + (mode==='gravel'?' ('+GRAVEL[gravelType].toLowerCase()+')':'');
-    await useRoute(coords, +f.properties['filtered ascend']||0, label, my);
-    const mx=maxScaleOf(gj);
-    if(maxScale!=null && mx!=null && mx>maxScale) toast(`Ojo: no había otro camino y la ruta pasa por un tramo ${LEVELS[levelOf(mx)].col}, más difícil que tu nivel.`,6000);
-  }catch(err){
-    if(my===reqId) setStatus('No se ha podido calcular la ruta. Comprueba internet y prueba otra vez.');
   }
+  skipLong=false;
+  setStatus('Calculando…'); $('calcCancel').hidden=false; updateSheet();
+  try{
+    const res=await routeLL(points,{deadline:Date.now()+60000});
+    if(my!==reqId) return;
+    const label = (trip&&trip.open!=null?`Etapa ${trip.open+1} · `:'') + MODES[mode].label + (mode==='gravel'?' ('+GRAVEL[gravelType].toLowerCase()+')':'');
+    await useRoute(res.coords, res.up, label, my);
+    if(res.maxScale!=null && res.mx!=null && res.mx>res.maxScale) toast(`Ojo: no había otro camino y la ruta pasa por un tramo ${LEVELS[levelOf(res.mx)].col}, más difícil que tu nivel.`,6000);
+  }catch(err){
+    if(my===reqId) setStatus(err.message==='timeout'?'Está tardando demasiado. Pon puntos intermedios o hazla por etapas.':'No se ha podido calcular la ruta. Comprueba internet y prueba otra vez.');
+  }finally{ if(my===reqId){ $('calcCancel').hidden=true; updateSheet(); } }
 }
+$('calcCancel').onclick=()=>{ ++reqId; cancelAll(); $('calcCancel').hidden=true; setStatus('Cálculo cancelado.'); updateSheet(); };
+$('tripBtn').onclick=()=>{ if(points.length>=2) startTrip(points[0],points[points.length-1],{to:dest&&dist([dest.lat,dest.lon],points[points.length-1])<500?dest.name:null}); };
 
 // la ruta dividida en tramos (entre cada dos puntos que has puesto)
 function drawRouteSegments(coords, cum){
@@ -1232,6 +1340,7 @@ async function useRoute(coords, up, label, my){
   const cum=[0]; for(let i=1;i<coords.length;i++) cum.push(cum[i-1]+dist(coords[i-1],coords[i]));
   route={coords,cum,length:cum[cum.length-1],up};
   routeVer++;
+  if(trip&&trip.open!=null) syncOpenStage(coords,up);
   drawRouteSegments(coords, cum); drawArrows();
   $('gpx').disabled=false; renderStats(); renderFountains();
   loadWeather();
@@ -1279,16 +1388,6 @@ async function routeThroughFountains(list,single){
 }
 
 // ---------- GPX para el reloj / ciclocomputador ----------
-$('gpx').onclick = () => {
-  if(!route) return;
-  const hideR=+perfil.priv||0, hp=perfil.home&&perfil.homeExact?[perfil.home.lat,perfil.home.lon]:null;
-  const wpts=nearRouteFountains().filter(f=>askedIds.has(f.id)&&!(hp&&hideR&&dist([f.lat,f.lon],hp)<=hideR)).map(f=>`<wpt lat="${f.lat}" lon="${f.lon}"><name>${esc(nameOf(f))} (km ${fmtKm(f.km)})</name><sym>Drinking Water</sym></wpt>`).join('\n');
-  // la zona privada de casa no se mete en el GPX
-  const segs=privacyTrim(route.coords).map(run=>'<trkseg>'+run.map(c=>`<trkpt lat="${c[0].toFixed(6)}" lon="${c[1].toFixed(6)}"><ele>${Math.round(c[2]||0)}</ele></trkpt>`).join('')+'</trkseg>').join('');
-  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Ichnos" xmlns="http://www.topografix.com/GPX/1/1">\n${wpts}\n<trk><name>Ruta Ichnos (${fmtKm(route.length/1000)} km)</name>${segs}</trk>\n</gpx>`;
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
-  a.download='ruta-ichnos.gpx'; document.body.appendChild(a); a.click(); a.remove();
-};
 function renderStats(){
   $('sKm').innerHTML = route ? fmtKm(route.length/1000)+'<em>km</em>' : '–';
   $('sUp').innerHTML = route && route.up!=null ? Math.round(route.up)+'<em>m</em>' : '–';
@@ -1634,6 +1733,286 @@ function chooseFountains(list){
   });
 }
 
+
+// ================= VIAJE POR ETAPAS =================
+// Divide un viaje largo en etapas de unos km por día que acaban en un pueblo, y las calcula una a una.
+let trip=null, tripReq=0;
+const STAGE_COLS=['#B6E22E','#22c3e6'];
+const tripLayer=L.layerGroup().addTo(map);
+const KM_OPTS=[60,80,100,120,150];
+const defaultKmDay=()=>mode==='road'?120:100;
+function towards(S,E,d){ const D=dist([S.lat,S.lon],[E.lat,E.lon]), f=Math.min(1,d/D); return [S.lat+(E.lat-S.lat)*f,S.lon+(E.lon-S.lon)*f]; }
+// pueblos cerca de un punto, sacados del propio mapa base (rápido y sin servidores extra)
+const placeTileCache=new Map();
+async function placesTile(z,x,y){
+  const k=z+'/'+x+'/'+y;
+  if(!placeTileCache.has(k)) placeTileCache.set(k,(async()=>{
+    const u=(await omtUrl()).replace('{z}',z).replace('{x}',x).replace('{y}',y);
+    const r=await fetchT(u,{},15000); if(!r.ok) return [];
+    return mvtPoints(await r.arrayBuffer(),'place',z,x,y).filter(p=>['city','town','village'].includes(p.props.class)&&p.props.name);
+  })().catch(()=>{ placeTileCache.delete(k); return []; }));
+  return placeTileCache.get(k);
+}
+async function townNear(P,radius){
+  const z=11, n=Math.pow(2,z), r=P[0]*Math.PI/180;
+  const x=Math.floor((P[1]+180)/360*n), y=Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n);
+  const jobs=[]; for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++) jobs.push(placesTile(z,x+dx,y+dy));
+  const all=(await Promise.all(jobs)).flat();
+  let best=null, bs=Infinity;
+  all.forEach(p=>{ const d=dist(P,[p.lat,p.lon]); if(d>radius) return;
+    const sc=d*(p.props.class==='village'?1:0.6);           // mejor un pueblo grande (más sitios para dormir y comer)
+    if(sc<bs){ bs=sc; best={lat:p.lat,lon:p.lon,name:p.props['name:es']||p.props.name}; } });
+  return best;
+}
+async function placeName(lat,lon){
+  try{ const j=await (await fetchT(`https://photon.komoot.io/reverse?lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}&limit=1`,{},10000)).json();
+    const p=j.features&&j.features[0]&&j.features[0].properties; if(p) return p.city||p.town||p.village||p.locality||p.name||null; }catch(e){}
+  return null;
+}
+function thinStage(c){ const out=[]; for(const p of c){ if(!out.length||dist(out[out.length-1],p)>=12) out.push([+p[0].toFixed(5),+p[1].toFixed(5),Math.round(p[2]||0)]); }
+  const l=c[c.length-1]; if(out.length&&dist(out[out.length-1],l)>0) out.push([+l[0].toFixed(5),+l[1].toFixed(5),Math.round(l[2]||0)]); return out; }
+function stageFrom(a,b,res){ const coords=thinStage(res.coords); return {a,b,coords,len:lenOf(coords),up:res.up}; }
+const tripKm=()=>trip?trip.stages.reduce((s,x)=>s+(x.len||0),0)/1000:0;
+const tripUp=()=>trip?trip.stages.reduce((s,x)=>s+(x.up||0),0):0;
+function saveTrip(){ if(trip&&trip.state==='ready') store.set('ichnos-viaje',{kmDay:trip.kmDay,from:trip.from,to:trip.to,mode:trip.mode,stages:trip.stages}); }
+
+async function startTrip(A,B,names={}){
+  cancelAll(); ++reqId;
+  if(T.crear) await setToggle('crear',false);
+  points=[]; route=null; drawPins(); routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers(); fLayer.clearLayers();
+  askedIds=new Set(); fuentesAsked=false;
+  trip={kmDay:trip&&trip.kmDay||store.get('ichnos-kmdia',defaultKmDay()),mode,
+        from:{lat:A[0],lon:A[1],name:names.from||null},to:{lat:B[0],lon:B[1],name:names.to||null},stages:[],state:'calc',open:null};
+  updateSheet(); $('sheet').classList.remove('closed');
+  map.fitBounds(L.latLngBounds([A,B]),{padding:[40,40]});
+  planTrip();
+}
+async function planTrip(){
+  const my=++tripReq, k=trip.kmDay*1000;
+  trip.stages=[]; trip.state='calc'; trip.err=null; tripLayer.clearLayers(); renderTrip();
+  if(!trip.from.name) trip.from.name=perfil.home&&dist([trip.from.lat,trip.from.lon],[perfil.home.lat,perfil.home.lon])<300?(perfil.ciudad||'Casa'):(await placeName(trip.from.lat,trip.from.lon))||'Salida';
+  if(!trip.to.name) trip.to.name=(await placeName(trip.to.lat,trip.to.lon))||'Llegada';
+  if(my!==tripReq) return;
+  let S=trip.from; const E=trip.to;
+  let f=1.3, fs=[];   // cuánto más larga es la ruta que la línea recta (se va ajustando con cada etapa)
+  for(let n=1;n<=40;n++){
+    const rem=dist([S.lat,S.lon],[E.lat,E.lon]), R=rem*f;
+    // reparte lo que queda en días iguales para que no quede una última etapa ridícula
+    const nLeft=Math.max(1,Math.round(R/k)), t=R/nLeft;
+    trip.prog=`Calculando etapa ${n} de unas ${n-1+nLeft}…`; renderTrip();
+    let B=null, res=null;
+    try{
+      if(nLeft===1){ B=E; res=await routeLL([[S.lat,S.lon],[B.lat,B.lon]],{deadline:Date.now()+90000}); }
+      else{
+        let d=t/f;
+        for(let attempt=0;attempt<2;attempt++){
+          const P=towards(S,E,d);
+          const town=await townNear(P,Math.max(6000,t*0.15));
+          B=town||{lat:P[0],lon:P[1],name:(await placeName(P[0],P[1]))||'Punto de paso'};
+          res=await routeLL([[S.lat,S.lon],[B.lat,B.lon]],{deadline:Date.now()+90000});
+          if(my!==tripReq) return;
+          const ratio=res.len/t;
+          if(ratio>=0.85&&ratio<=1.15) break;
+          d=d/ratio;                                   // corrige y prueba otra vez para clavar los km del día
+        }
+      }
+    }catch(e){ res=null; }
+    if(my!==tripReq) return;
+    if(!res){ trip.state='error'; trip.err=`No he podido calcular la etapa ${n}${B&&B.name?' (hasta '+B.name+')':''}. Las anteriores están bien.`; renderTrip(); return; }
+    const straight=dist([S.lat,S.lon],[B.lat,B.lon]); if(straight>1000){ fs.push(res.len/straight); f=Math.min(2,Math.max(1.05,fs.reduce((x,y)=>x+y,0)/fs.length)); }
+    trip.stages.push(stageFrom(S,B,res)); drawTrip(); renderTrip();
+    if(B===E) break;
+    S=B;
+  }
+  trip.state='ready'; trip.prog=''; saveTrip(); drawTrip(); renderTrip(); fitTrip();
+}
+// rehacer un viaje con las etapas ya decididas (por ejemplo al abrirlo con el código QR en el móvil)
+async function tripFromEnds(ends,kmDay){
+  if(T.crear) await setToggle('crear',false);
+  points=[]; route=null; drawPins(); routeLayer.clearLayers();
+  trip={kmDay:kmDay||defaultKmDay(),mode,from:ends[0],to:ends[ends.length-1],stages:[],state:'calc',open:null};
+  updateSheet(); fitTripEnds(ends);
+  const my=++tripReq;
+  for(let i=0;i<ends.length-1;i++){
+    trip.prog=`Calculando etapa ${i+1} de ${ends.length-1}…`; renderTrip();
+    let res=null; try{ res=await routeLL([[ends[i].lat,ends[i].lon],[ends[i+1].lat,ends[i+1].lon]],{deadline:Date.now()+90000}); }catch(e){}
+    if(my!==tripReq) return;
+    if(!res){ trip.state='error'; trip.err=`No he podido calcular la etapa ${i+1}.`; renderTrip(); return; }
+    trip.stages.push(stageFrom(ends[i],ends[i+1],res)); drawTrip(); renderTrip();
+  }
+  trip.state='ready'; trip.prog=''; saveTrip(); drawTrip(); renderTrip(); fitTrip();
+}
+function fitTripEnds(ends){ map.fitBounds(L.latLngBounds(ends.map(e=>[e.lat,e.lon])),{padding:[40,40]}); }
+function fitTrip(){ if(trip&&trip.stages.length) map.fitBounds(L.latLngBounds(trip.stages.flatMap(s=>[s.coords[0],s.coords[s.coords.length-1]]).map(c=>[c[0],c[1]]).concat(trip.stages.flatMap(s=>s.coords.filter((c,i)=>i%50===0).map(c=>[c[0],c[1]])))),{padding:[40,40]}); }
+function stageCol(i){ return STAGE_COLS[i%2]; }
+function numPin(n,col){ return L.divIcon({className:'',html:`<div class="pin num" style="background:${col}">${n}</div>`,iconSize:[26,26],iconAnchor:[13,13]}); }
+function drawTrip(){
+  tripLayer.clearLayers();
+  if(!trip) return;
+  trip.stages.forEach((s,i)=>{
+    if(trip.open===i) return;
+    const ll=s.coords.map(c=>[c[0],c[1]]);
+    L.polyline(ll,{color:'#1E2328',weight:9,opacity:.85,interactive:false}).addTo(tripLayer);
+    L.polyline(ll,{color:stageCol(i),weight:5,bubblingMouseEvents:false}).bindPopup(()=>stagePopup(i),{minWidth:210}).addTo(tripLayer);
+    if(i>0) L.marker(ll[0],{icon:numPin(i+1,stageCol(i)),keyboard:false}).bindPopup(()=>stagePopup(i),{minWidth:210}).addTo(tripLayer);
+  });
+  const st=trip.stages;
+  if(trip.open!==0) L.marker([trip.from.lat,trip.from.lon],{icon:START_ICON,keyboard:false}).bindPopup(`<b>Salida</b><br>${esc(trip.from.name||'')}`).addTo(tripLayer);
+  if(trip.state==='ready' && trip.open!==st.length-1) L.marker([trip.to.lat,trip.to.lon],{icon:FLAG_ICON,keyboard:false}).bindPopup(`<b>Llegada</b><br>${esc(trip.to.name||'')}`).addTo(tripLayer);
+}
+function stagePopup(i){
+  const s=trip.stages[i], d=document.createElement('div'); d.className='tpop';
+  d.innerHTML=`<b>Etapa ${i+1}</b><br>${esc(s.a.name||'')} → ${esc(s.b.name||'')}<br>${fmtKm(s.len/1000)} km · +${Math.round(s.up||0)} m`;
+  const o=document.createElement('button'); o.className='segbtn'; o.textContent='Abrir esta etapa'; o.onclick=()=>{ map.closePopup(); openStage(i); }; d.appendChild(o);
+  const g=document.createElement('button'); g.className='segbtn ghost'; g.textContent='Llevar esta etapa'; g.onclick=()=>{ map.closePopup(); carryStage(i); }; d.appendChild(g);
+  return d;
+}
+function renderTrip(){
+  updateSheet();
+  if(!trip) return;
+  const st=trip.stages, busy=trip.state==='calc';
+  $('tripSum').innerHTML=`<b>${esc(trip.from.name||'Salida')} → ${esc(trip.to.name||'Llegada')}</b>`+
+    (st.length?`<span>${fmtKm(tripKm())} km · +${Math.round(tripUp()).toLocaleString('es-ES')} m · ${st.length} ${st.length===1?'día':'días'}${busy?' (calculando)':''}</span>`:'');
+  $('tripKm').querySelectorAll('button').forEach(b=>{ b.classList.toggle('on',+b.dataset.k===trip.kmDay); b.disabled=busy; });
+  $('tripProg').hidden=!busy&&!trip.err; $('tripProg').textContent=busy?trip.prog:(trip.err||''); $('tripProg').classList.toggle('err',!!trip.err&&!busy);
+  $('tripBar').hidden=!busy;
+  $('tripCancel').hidden=!busy; $('tripRetry').hidden=trip.state!=='error'; $('tripAll').hidden=trip.state!=='ready'; $('tripClose').hidden=busy;
+  const ul=$('tripList'); ul.innerHTML='';
+  st.forEach((s,i)=>{
+    const li=document.createElement('li'); li.className='stg'+(trip.open===i?' on':'');
+    li.innerHTML=`<i style="background:${stageCol(i)}"></i><span><b>Etapa ${i+1}</b><small>${esc(s.a.name||'')} → ${esc(s.b.name||'')}</small><small>${fmtKm(s.len/1000)} km · +${Math.round(s.up||0)} m</small></span>`;
+    const o=document.createElement('button'); o.textContent=trip.open===i?'Abierta':'Abrir'; o.disabled=trip.open===i||busy; o.onclick=e=>{ e.stopPropagation(); openStage(i); };
+    const g=document.createElement('button'); g.textContent='Llevar'; g.disabled=busy; g.onclick=e=>{ e.stopPropagation(); carryStage(i); };
+    li.append(o,g);
+    li.onclick=()=>map.fitBounds(L.latLngBounds(s.coords.map(c=>[c[0],c[1]])),{padding:[40,40]});
+    ul.appendChild(li);
+  });
+}
+$('tripKm').innerHTML=KM_OPTS.map(k=>`<button data-k="${k}">${k} km</button>`).join('');
+$('tripKm').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!trip||trip.state==='calc') return; trip.kmDay=+b.dataset.k; store.set('ichnos-kmdia',trip.kmDay); closeStage(false); planTrip(); });
+$('tripCancel').onclick=()=>{ ++tripReq; cancelAll(); trip.state=trip.stages.length?'error':'error'; trip.err=trip.stages.length?`Cancelado. Tienes ${trip.stages.length} etapa${trip.stages.length>1?'s':''} calculada${trip.stages.length>1?'s':''}.`:'Cancelado.'; renderTrip(); };
+$('tripRetry').onclick=()=>{ if(!trip) return; if(trip.stages.length){ const last=trip.stages[trip.stages.length-1]; continueTrip(last.b); } else planTrip(); };
+async function continueTrip(S){   // sigue desde la última etapa buena sin repetir las anteriores
+  const keep=trip.stages.slice(); const from=trip.from; trip.from=S; await planTrip(); trip.stages=keep.concat(trip.stages); trip.from=from; drawTrip(); saveTrip(); renderTrip();
+}
+$('tripClose').onclick=async()=>{ if(!(await ask('¿Cerrar el viaje?','Se borran las etapas de la pantalla. Puedes volver a crearlo cuando quieras.','Sí, cerrar','No'))) return;
+  ++tripReq; closeStage(false); trip=null; tripLayer.clearLayers(); store.del('ichnos-viaje'); updateSheet(); };
+$('tripAll').onclick=()=>carryTrip();
+$('tripBack').onclick=()=>{ closeStage(true); };
+// abrir una etapa: pasa a ser tu ruta normal (fuentes, viento, GPX…)
+async function openStage(i){
+  if(!trip) return;
+  if(trip.open!=null) closeStage(false);
+  const s=trip.stages[i]; trip.open=i;
+  const my=++reqId;
+  points=[[s.a.lat,s.a.lon],[s.b.lat,s.b.lon]]; askedIds=new Set(); fuentesAsked=false; askedVer=-1;
+  drawPins(); drawTrip();
+  await useRoute(s.coords, s.up, `Etapa ${i+1}`, my);
+  map.fitBounds(L.latLngBounds(s.coords.map(c=>[c[0],c[1]])),{padding:[40,40]});
+  renderTrip();
+  await finishRoute();     // ¿te marco las fuentes de esta etapa?
+}
+function closeStage(fit){
+  if(!trip||trip.open==null) return;
+  trip.open=null; ++reqId; points=[]; route=null; drawPins(); routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers();
+  askedIds=new Set(); fuentesAsked=false; renderFountains(); drawTrip(); renderTrip(); if(fit) fitTrip();
+}
+// si cambias una etapa abierta (por ejemplo para pasar por fuentes), el viaje se actualiza
+function syncOpenStage(coords,up){
+  if(!trip||trip.open==null||!route) return;
+  const s=trip.stages[trip.open], c=thinStage(coords);
+  s.coords=c; s.len=lenOf(c); s.up=up; saveTrip(); renderTrip();
+}
+// recuperar el último viaje guardado
+(function(){ const v=store.get('ichnos-viaje',null); if(v&&v.stages&&v.stages.length){ trip={...v,state:'ready',open:null}; setTimeout(()=>{ drawTrip(); renderTrip(); },0); } })();
+
+// ================= LLEVAR LA RUTA (descargar, compartir, código QR) =================
+function gpxText(tracks,wpts=''){
+  const trk=tracks.map(t=>`<trk><name>${esc(t.name)}</name>`+privacyTrim(t.coords).map(run=>'<trkseg>'+run.map(c=>`<trkpt lat="${(+c[0]).toFixed(6)}" lon="${(+c[1]).toFixed(6)}"><ele>${Math.round(c[2]||0)}</ele></trkpt>`).join('')+'</trkseg>').join('')+'</trk>').join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Ichnos" xmlns="http://www.topografix.com/GPX/1/1">\n${wpts}\n${trk}\n</gpx>`;
+}
+const fileSafe=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase().slice(0,60)||'ruta';
+// enlace para abrir lo mismo en otro aparato (la ruta va dentro del enlace)
+const b64u={enc:s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),
+            dec:s=>decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/'))))};
+const r5=x=>+(+x).toFixed(5);
+function shareLink(obj){ return location.origin+location.pathname+'#ichnos='+b64u.enc(JSON.stringify(obj)); }
+function routeShareObj(){ return {t:'r',m:mode,g:gravelType,l:levels,p:points.map(p=>[r5(p[0]),r5(p[1]),p[2]==='f'?1:0])}; }
+function tripShareObj(){ const e=[trip.stages[0].a,...trip.stages.map(s=>s.b)]; return {t:'v',m:mode,g:gravelType,l:levels,k:trip.kmDay,s:e.map(x=>[r5(x.lat),r5(x.lon),x.name||''])}; }
+
+let carryData=null;
+function openCarry(d){
+  carryData=d;
+  $('cyTitle').textContent=d.title; $('cySub').textContent=d.sub||'';
+  const file=new File([d.gpx],d.file,{type:'application/gpx+xml'});
+  carryData.fileObj=file;
+  const canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+  $('cyShare').hidden=!canShare; $('cyNoShare').hidden=canShare;
+  $('cyQrBox').hidden=true; $('cyQr').innerHTML=''; $('cyLink').value='';
+  $('cyModal').hidden=false;
+}
+$('cyClose').onclick=()=>{ $('cyModal').hidden=true; };
+$('cyDown').onclick=()=>{
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([carryData.gpx],{type:'application/gpx+xml'}));
+  a.download=carryData.file; document.body.appendChild(a); a.click(); a.remove();
+  toast(`Descargado: ${carryData.file}`);
+};
+$('cyShare').onclick=async()=>{
+  try{ await navigator.share({files:[carryData.fileObj],title:carryData.title}); }
+  catch(e){ if(e&&e.name!=='AbortError') toast('No se ha podido compartir. Prueba con "Descargar" o el código QR.',4500); }
+};
+let qrLib=null;
+function loadQrLib(){
+  if(window.QRCode) return Promise.resolve(window.QRCode);
+  if(!qrLib) qrLib=new Promise((res,rej)=>{ const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload=()=>window.QRCode?res(window.QRCode):rej(); s.onerror=()=>{ qrLib=null; rej(); };
+    document.head.appendChild(s); });
+  return qrLib;
+}
+$('cyQrBtn').onclick=async()=>{
+  const link=carryData.link; $('cyQrBox').hidden=false; $('cyLink').value=link; $('cyQr').innerHTML='<small>Preparando el código…</small>';
+  try{ const Q=await loadQrLib(); $('cyQr').innerHTML=''; new Q($('cyQr'),{text:link,width:220,height:220,colorDark:'#1E2328',colorLight:'#ffffff',correctLevel:Q.CorrectLevel.M}); }
+  catch(e){ $('cyQr').innerHTML='<small>No se ha podido dibujar el código. Copia el enlace y mándatelo al móvil.</small>'; }
+};
+$('cyCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText($('cyLink').value); toast('Enlace copiado'); }catch(e){ $('cyLink').select(); toast('Selecciona el enlace y cópialo'); } };
+
+// la ruta actual
+$('gpx').onclick=()=>{
+  if(!route) return;
+  const hideR=+perfil.priv||0, hp=perfil.home&&perfil.homeExact?[perfil.home.lat,perfil.home.lon]:null;
+  const routeF=nearRouteFountains().filter(f=>askedIds.has(f.id)&&(f.d<25||viaIdx(f)>0)&&!(hp&&hideR&&dist([f.lat,f.lon],hp)<=hideR));
+  const wpts=routeF.map(f=>`<wpt lat="${f.lat}" lon="${f.lon}"><name>${esc(nameOf(f))} (km ${fmtKm(f.km)})</name><sym>Drinking Water</sym></wpt>`).join('\n');
+  const isStage=trip&&trip.open!=null, s=isStage?trip.stages[trip.open]:null;
+  const name=isStage?`Etapa ${trip.open+1} ${s.a.name||''} - ${s.b.name||''}`:`Ruta Ichnos ${fmtKm(route.length/1000)} km`;
+  openCarry({title:isStage?`Etapa ${trip.open+1}`:'Tu ruta',sub:`${fmtKm(route.length/1000)} km${route.up!=null?' · +'+Math.round(route.up)+' m':''}${routeF.length?' · '+routeF.length+' fuentes':''}`,
+    gpx:gpxText([{name,coords:route.coords}],wpts),file:fileSafe(name)+'.gpx',link:shareLink(routeShareObj())});
+};
+function carryStage(i){
+  const s=trip.stages[i], name=`Etapa ${i+1} ${s.a.name||''} - ${s.b.name||''}`;
+  const o={t:'r',m:mode,g:gravelType,l:levels,p:[[r5(s.a.lat),r5(s.a.lon),0],[r5(s.b.lat),r5(s.b.lon),0]]};
+  openCarry({title:`Etapa ${i+1}`,sub:`${s.a.name||''} → ${s.b.name||''} · ${fmtKm(s.len/1000)} km · +${Math.round(s.up||0)} m`,
+    gpx:gpxText([{name,coords:s.coords}]),file:fileSafe(name)+'.gpx',link:shareLink(o)});
+}
+function carryTrip(){
+  const name=`Viaje ${trip.from.name||''} - ${trip.to.name||''}`;
+  openCarry({title:'Viaje entero',sub:`${trip.stages.length} etapas · ${fmtKm(tripKm())} km · +${Math.round(tripUp()).toLocaleString('es-ES')} m. Cada etapa va como una ruta aparte dentro del archivo.`,
+    gpx:gpxText(trip.stages.map((s,i)=>({name:`Etapa ${i+1} ${s.a.name||''} - ${s.b.name||''}`,coords:s.coords}))),file:fileSafe(name)+'.gpx',link:shareLink(tripShareObj())});
+}
+// al abrir un enlace o código QR de Ichnos
+async function readShared(){
+  const m=/#ichnos=([\w-]+)/.exec(location.hash); if(!m) return;
+  history.replaceState(null,'',location.pathname+location.search);
+  let o=null; try{ o=JSON.parse(b64u.dec(m[1])); }catch(e){ toast('El enlace de la ruta no es válido.'); return; }
+  if(o.m&&MODES[o.m]){ const b=document.querySelector(`#modes [data-mode="${o.m}"]`); if(b) b.click(); }
+  if(o.g&&GRAVEL[o.g]){ gravelType=o.g; store.set('ichnos-gravel',gravelType); document.querySelectorAll('#segGravel button').forEach(x=>x.classList.toggle('on',x.dataset.g===gravelType)); }
+  if(o.l&&typeof o.l==='object'){ levels={...levels,...o.l}; store.set('ichnos-nivel',levels); }
+  showPage('pgMapa');
+  if(o.t==='r'&&Array.isArray(o.p)&&o.p.length>=2){
+    points=o.p.map(p=>p[2]?[p[0],p[1],'f']:[p[0],p[1]]); fitNext=true; skipLong=true; drawPins(); calc(); toast('Ruta recibida. Pulsa GPX para pasarla al reloj.',5000);
+  }else if(o.t==='v'&&Array.isArray(o.s)&&o.s.length>=2){
+    tripFromEnds(o.s.map(x=>({lat:x[0],lon:x[1],name:x[2]})),o.k); toast('Viaje recibido. Calculando las etapas…',5000);
+  }
+}
 
 // ================= RUTAS DE LA GENTE =================
 function applyPeopleRoutes(){
@@ -2188,7 +2567,7 @@ $('locate').onclick=()=>{
 };
 
 // ================= ARRANQUE =================
-updateSheet(); loadWeather(); loadRides(); drawHome();
+updateSheet(); loadWeather(); loadRides(); drawHome(); readShared();
 // si se cerró la app grabando, ofrecer guardar lo que había
 (async()=>{
   const pend=store.get('ichnos-rec',null);
