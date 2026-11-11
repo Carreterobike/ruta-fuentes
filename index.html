@@ -791,6 +791,79 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
+// ================= COPIA ENTRE APARATOS (Mac ↔ iPhone) =================
+// Lo que cambias en un aparato se guarda en tu puente de Cloudflare y el otro lo coge al abrir Ichnos.
+const SYNC_KEYS=['ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap'];
+const syncRaw={set:store.set.bind(store),del:store.del.bind(store)};
+let syncTimer=null, syncBusy=false, syncReady=false;
+function syncMeta(){ const m=store.get('ichnos-sync',null)||{}; m.mt=m.mt||{}; m.seen=m.seen||{}; m.dirty=m.dirty||[]; return m; }
+function syncSave(m){ const cur=syncMeta();   // por si algo cambió mientras se copiaba
+  Object.keys(cur.mt).forEach(k=>{ if((cur.mt[k]||0)>(m.mt[k]||0)) m.mt[k]=cur.mt[k]; });
+  if(cur.dirtyDel&&!m._pushedDel) m.dirtyDel=true;
+  cur.dirty.forEach(b=>{ if(!m.dirty.includes(b)&&!(m._pushed||[]).includes(b)) m.dirty.push(b); });
+  const o={...m}; delete o._pushed; delete o._pushedDel; syncRaw.set('ichnos-sync',o); }
+const rideBucket=d=>{ const x=new Date(d||0); return 'r-'+x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'); };
+function syncSoon(){ if(!syncReady) return; clearTimeout(syncTimer); syncTimer=setTimeout(()=>syncNow(false),4000); }
+function syncMark(k){ const m=syncMeta(); m.mt[k]=Date.now(); syncRaw.set('ichnos-sync',m); syncSoon(); }
+function syncDirtyRide(date){ const m=syncMeta(), b=rideBucket(date); if(!m.dirty.includes(b)) m.dirty.push(b); syncRaw.set('ichnos-sync',m); syncSoon(); }
+function syncDelRide(id,date){ const d=store.get('ichnos-rdel',[]); if(!d.includes(id)) d.push(id); syncRaw.set('ichnos-rdel',d); const m=syncMeta(); m.dirtyDel=true; syncRaw.set('ichnos-sync',m); syncDirtyRide(date); }
+store.set=(k,v)=>{ const ok=syncRaw.set(k,v); if(syncReady&&SYNC_KEYS.includes(k)) syncMark(k); return ok; };
+store.del=k=>{ syncRaw.del(k); if(syncReady&&SYNC_KEYS.includes(k)) syncMark(k); };
+async function syncReq(path,opt={}){
+  const r=await fetch(sv.u+'/sync'+path,{method:opt.method||'GET',body:opt.body,headers:opt.body?{'X-Ichnos-Key':sv.k,'Content-Type':'application/json'}:{'X-Ichnos-Key':sv.k}});
+  if(r.status===401) throw new Error('clave'); if(r.status===404) throw new Error('viejo'); if(!r.ok&&r.status!==409) throw new Error('http');
+  return r.json();
+}
+const cleanRide=r=>{ const c={...r}; Object.keys(c).forEach(k=>{ if(k.startsWith('_')) delete c[k]; }); return c; };
+async function syncNow(manual){
+  if(!sv||syncBusy) return; syncBusy=true;
+  let gotSettings=false, gotRides=false, err=null;
+  const m=syncMeta(); m._pushed=[];
+  try{
+    const idx=await syncReq('');
+    // 1) bicis, fuentes, nombres, segmentos, viaje, perfil…
+    for(const k of SYNC_KEYS){
+      const rt=idx[k]||0, lt=m.mt[k]||0;
+      if(rt&&rt>lt){ const o=await syncReq('/'+k); if(o){ if(o.v==null) syncRaw.del(k); else syncRaw.set(k,o.v); m.mt[k]=rt; gotSettings=true; } }
+      else if(!rt||lt>rt){ const v=store.get(k,null); if(v==null&&!lt) continue; const t=lt||1; await syncReq('/'+k,{method:'PUT',body:JSON.stringify({t,v})}); m.mt[k]=t; }
+    }
+    // 2) salidas borradas en el otro aparato
+    const dels=new Set(store.get('ichnos-rdel',[]));
+    if((idx.rdel||0)>(m.seen.rdel||0)){ const o=await syncReq('/rdel'); ((o&&o.v)||[]).forEach(id=>dels.add(id)); m.seen.rdel=idx.rdel; }
+    syncRaw.set('ichnos-rdel',[...dels]);
+    const gone=rides.filter(r=>dels.has(r.id));
+    if(gone.length){ await ridesTx('readwrite',st=>gone.forEach(r=>st.delete(r.id))); gotRides=true; }
+    // 3) salidas nuevas o cambiadas en el otro aparato
+    if(!m.rinit){ rides.forEach(r=>{ const b=rideBucket(r.date); if(!m.dirty.includes(b)) m.dirty.push(b); }); m.rinit=true; }
+    const put=[];
+    for(const b of Object.keys(idx).filter(n=>/^r-/.test(n))){
+      if(idx[b]<=(m.seen[b]||0)) continue;
+      const o=await syncReq('/'+b); m.seen[b]=idx[b];
+      ((o&&o.v)||[]).forEach(r=>{ if(dels.has(r.id)) return; const l=rides.find(x=>x.id===r.id); if(!l||(r.mt||0)>(l.mt||0)) put.push(r); });
+    }
+    if(put.length){ await ridesTx('readwrite',st=>put.forEach(r=>st.put(r))); gotRides=true; }
+    if(gotRides) await loadRides();
+    // 4) subir lo que ha cambiado aquí
+    if(m.dirtyDel){ const t=Date.now(); await syncReq('/rdel',{method:'PUT',body:JSON.stringify({t,v:[...dels]})}); m.seen.rdel=t; m.dirtyDel=false; m._pushedDel=true; }
+    for(const b of [...m.dirty]){
+      const list=rides.filter(r=>rideBucket(r.date)===b&&!dels.has(r.id)).map(cleanRide), t=Date.now();
+      await syncReq('/'+b,{method:'PUT',body:JSON.stringify({t,v:list})});
+      m.seen[b]=t; m.dirty=m.dirty.filter(x=>x!==b); m._pushed.push(b); syncSave(m); m._pushed=m._pushed;
+    }
+    m.last=Date.now();
+  }catch(e){ err=e&&e.message; }
+  syncSave(m); syncBusy=false;
+  if(err==='viejo'){ if(manual) toast('Falta poner el código nuevo en Cloudflare para la copia entre aparatos.',6000); }
+  else if(err&&manual) toast('No se ha podido hacer la copia entre aparatos ahora. Prueba en un rato.',5000);
+  if(typeof paintStrava==='function') paintStrava();
+  if(gotSettings){
+    let last=0; try{ last=+sessionStorage.getItem('ichnos-syncrl')||0; }catch(e){}
+    if(Date.now()-last>20000){ try{ sessionStorage.setItem('ichnos-syncrl',Date.now()); }catch(e){} toast('Cambios traídos de tu otro aparato. Recargando…',2500); setTimeout(()=>location.reload(),1200); return; }
+  }
+  if(gotRides) toast('Salidas traídas de tu otro aparato.',3500);
+  else if(manual&&!err) toast('Todo igual en tus aparatos.',3000);
+}
+function syncAgo(){ const m=syncMeta(); return m.last?svAgo(m.last):'todavía no'; }
 let toastTimer=null;
 function toast(t,ms=3200){ const el=$('toast'); el.textContent=t; el.hidden=!t; clearTimeout(toastTimer); if(t) toastTimer=setTimeout(()=>el.hidden=true,ms); }
 // Pregunta con dos botones. Devuelve true (sí) o false (no).
@@ -2316,8 +2389,8 @@ function prepRide(r){
   r.coords.forEach((p,i)=>{ s=Math.min(s,p[0]); n=Math.max(n,p[0]); w=Math.min(w,p[1]); e=Math.max(e,p[1]); if(i) cum.push(cum[i-1]+dist(r.coords[i-1],p)); });
   r._bb=[s,w,n,e]; r._cum=cum;
 }
-async function saveRides(list){ list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old&&old.bike) r.bike=old.bike; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); await loadRides(); }
-async function delRide(id){ await ridesTx('readwrite',st=>st.delete(id)); await loadRides(); }
+async function saveRides(list){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old&&old.bike) r.bike=old.bike; r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); await loadRides(); }
+async function delRide(id){ const r=rides.find(x=>x.id===id); await ridesTx('readwrite',st=>st.delete(id)); syncDelRide(id,r&&r.date); await loadRides(); }
 function lineKm(c){ let m=0; for(let i=1;i<c.length;i++) m+=dist(c[i-1],c[i]); return m/1000; }
 function thin(c){ const out=[]; for(const p of c){ if(!out.length||dist(out[out.length-1],p)>=10) out.push([+p[0].toFixed(5),+p[1].toFixed(5)]); } return out; }
 // igual que thin, pero guardando también la hora (segundos desde el inicio) y la altura de cada punto
@@ -2523,7 +2596,7 @@ function paintStrava(msg){
   const on=!!sv; $('svOff').hidden=on; $('svOn').hidden=!on;
   $('svChip').textContent=on?'Conectado':'Sin conectar'; $('svChip').classList.toggle('on',on);
   if(on){ const n=rides.filter(r=>/^strava-/.test(r.id)).length;
-    $('svInfo').textContent=msg||`Las salidas nuevas llegan solas al abrir Ichnos. Última vez: ${svAgo(sv.last)}.`+(sv.more?' Quedan más por traer: pulsa otra vez en un rato.':''); }
+    $('svInfo').textContent=msg||`Las salidas nuevas llegan solas al abrir Ichnos. Última vez: ${svAgo(sv.last)}.`+(sv.more?' Quedan más por traer: pulsa otra vez en un rato.':'')+` Copia con tu otro aparato (bicis, rutas, fuentes…): ${syncAgo()}.`; }
   $('svNow').disabled=svBusy; $('svNow').textContent=svBusy?'Trayendo…':'Traer salidas nuevas';
 }
 async function stravaSync(manual){
@@ -2565,12 +2638,12 @@ $('svSave').onclick=async()=>{
   const o=svParse($('svCode').value);
   if(!o){ toast('Ese código no vale. Copia el código entero, empieza por ICHNOS-',5000); return; }
   sv={...o,after:null,last:null}; store.set('ichnos-strava',sv); $('svCode').value='';
-  paintStrava(); toast('Strava conectado. Traigo tus salidas del último mes…',4000); stravaSync(true);
+  paintStrava(); toast('Strava conectado. Traigo tus salidas del último mes…',4000); await syncNow(false); stravaSync(true);
 };
-$('svNow').onclick=()=>stravaSync(true);
+$('svNow').onclick=async()=>{ await syncNow(true); stravaSync(true); };
 $('svOut').onclick=async()=>{ if(await ask('¿Desconectar Strava de este aparato?','Las salidas que ya tienes se quedan.','Sí, desconectar','No')){ sv=null; store.del('ichnos-strava'); paintStrava(); } };
 const svAuto=()=>{ if(sv&&!svBusy&&(!sv.last||Date.now()-sv.last>10*60000)) stravaSync(false); };
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') svAuto(); });
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ if(Date.now()-(syncMeta().last||0)>60000) syncNow(false); svAuto(); } });
 paintStrava();
 
 // ---------- grabar una ruta con la app ----------
@@ -2846,7 +2919,7 @@ function chartEl(r,s){
   return box;
 }
 $('rvBack').onclick=()=>{ $('rideView').hidden=true; rideOpen=null; };
-$('rvBike').onchange=async e=>{ const r=rideOpen; if(!r) return; r.bike=e.target.value||null; const copy={...r}; Object.keys(copy).forEach(k=>{ if(k.startsWith('_')) delete copy[k]; }); await ridesTx('readwrite',st=>st.put(copy)); renderBikes(); renderNums(); };
+$('rvBike').onchange=async e=>{ const r=rideOpen; if(!r) return; r.bike=e.target.value||null; const copy={...r}; Object.keys(copy).forEach(k=>{ if(k.startsWith('_')) delete copy[k]; }); copy.mt=r.mt=Date.now(); await ridesTx('readwrite',st=>st.put(copy)); syncDirtyRide(copy.date); renderBikes(); renderNums(); };
 $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden=true; showPage('pgMapa');
   rideHi.clearLayers(); const ll=privacyTrim(r.coords); L.polyline(ll,{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(ll,{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
   map.fitBounds(L.latLngBounds(r.coords),{padding:[30,30]}); };
@@ -3177,7 +3250,7 @@ $('locate').onclick=()=>{
 };
 
 // ================= ARRANQUE =================
-updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(svAuto,1500); }); drawHome(); readShared();
+updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(async()=>{ syncReady=true; await syncNow(false); svAuto(); },1200); }); drawHome(); readShared();
 // si se cerró la app grabando, ofrecer guardar lo que había
 (async()=>{
   const pend=store.get('ichnos-rec',null);
