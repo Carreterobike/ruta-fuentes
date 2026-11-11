@@ -292,6 +292,18 @@ details.help p{margin:6px 0 0}
 .qrbox .row{width:100%;flex-wrap:nowrap}
 .qrbox input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:12px;background:var(--bg);color:var(--ink)}
 .cybox details.help{text-align:left}
+.cystages{text-align:left;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.cystages h5{margin:0;font-size:15px}
+.cystages>small{color:var(--muted);font-size:12.5px;line-height:1.4}
+#cyStList{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+#cyStList li{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+#cyStList li.done{background:color-mix(in srgb,var(--accent) 16%,transparent);border-color:var(--accent)}
+#cyStList .ck{width:26px;height:26px;flex:none;border-radius:50%;border:2px solid var(--line);background:var(--card);display:grid;place-items:center;font-weight:800;color:var(--accent-ink);padding:0}
+#cyStList li.done .ck{background:var(--accent);border-color:var(--accent)}
+#cyStList span{flex:1;min-width:0;display:flex;flex-direction:column}
+#cyStList span b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cyStList span small{color:var(--muted);font-size:12px}
+#cyStList .go{border:0;background:var(--ink);color:var(--bg);border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;flex:none}
 .cybox details.help ol{margin:6px 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
 
 /* tierra / asfalto */
@@ -698,6 +710,12 @@ details.help p{margin:6px 0 0}
       <div id="cyQr"></div>
       <small>Apunta la cámara del iPhone al código y toca el aviso que sale. Se abre Ichnos con esto mismo y desde ahí lo pasas a COROS.</small>
       <div class="row"><input id="cyLink" readonly aria-label="Enlace"><button class="btn" id="cyCopy">Copiar</button></div>
+    </div>
+    <div class="cystages" id="cyStages" hidden>
+      <h5>Todas las etapas al DURA, una a una</h5>
+      <small>Cada etapa va como una ruta aparte, numerada (01, 02…), para que en el DURA solo tengas que elegir la del día. Marca cada una cuando la tengas pasada.</small>
+      <button class="cyo" id="cyAllSep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span><b>Descargar todas por separado</b><small>Un archivo por etapa (si pregunta, deja descargar varios)</small></span></button>
+      <ul id="cyStList"></ul>
     </div>
     <details class="help"><summary>¿Cómo la paso a mi COROS DURA?</summary>
       <ol><li>En el iPhone, abre el archivo GPX con la app <b>COROS</b> y pulsa <b>Guardar</b>.</li>
@@ -2154,6 +2172,7 @@ function openCarry(d){
   const canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));
   $('cyShare').hidden=!canShare; $('cyNoShare').hidden=canShare;
   $('cyQrBox').hidden=true; $('cyQr').innerHTML=''; $('cyLink').value='';
+  $('cyStages').hidden=!d.stages; if(d.stages) renderCyStages();
   $('cyModal').hidden=false;
 }
 $('cyClose').onclick=()=>{ $('cyModal').hidden=true; };
@@ -2188,12 +2207,13 @@ $('gpx').onclick=()=>{
   const routeF=nearRouteFountains().filter(f=>askedIds.has(f.id)&&(f.d<25||viaIdx(f)>0)&&!(hp&&hideR&&dist([f.lat,f.lon],hp)<=hideR));
   const wpts=routeF.map(f=>`<wpt lat="${f.lat}" lon="${f.lon}"><name>${esc(nameOf(f))} (km ${fmtKm(f.km)})</name><sym>Drinking Water</sym></wpt>`).join('\n');
   const isStage=trip&&trip.open!=null, s=isStage?trip.stages[trip.open]:null;
-  const name=isStage?`Etapa ${trip.open+1} ${s.a.name||''} - ${s.b.name||''}`:`Ruta Ichnos ${fmtKm(route.length/1000)} km`;
+  const name=isStage?stName(trip.open):`Ruta Ichnos ${fmtKm(route.length/1000)} km`;
   openCarry({title:isStage?`Etapa ${trip.open+1}`:'Tu ruta',sub:`${fmtKm(route.length/1000)} km${route.up!=null?' · +'+Math.round(route.up)+' m':''}${routeF.length?' · '+routeF.length+' fuentes':''}`,
     gpx:gpxText([{name,coords:route.coords}],wpts),file:fileSafe(name)+'.gpx',link:shareLink(routeShareObj())});
 };
+const stName=i=>{ const s=trip.stages[i]; return `${String(i+1).padStart(2,'0')} ${s.a.name||'Salida'}-${s.b.name||'Llegada'}`; };
 function carryStage(i){
-  const s=trip.stages[i], name=`Etapa ${i+1} ${s.a.name||''} - ${s.b.name||''}`;
+  const s=trip.stages[i], name=stName(i);
   const o={t:'r',m:mode,g:gravelType,l:levels,p:[[r5(s.a.lat),r5(s.a.lon),0],[r5(s.b.lat),r5(s.b.lon),0]]};
   openCarry({title:`Etapa ${i+1}`,sub:`${s.a.name||''} → ${s.b.name||''} · ${fmtKm(s.len/1000)} km · +${Math.round(s.up||0)} m`,
     gpx:gpxText([{name,coords:s.coords}]),file:fileSafe(name)+'.gpx',link:shareLink(o)});
@@ -2201,8 +2221,33 @@ function carryStage(i){
 function carryTrip(){
   const name=`Viaje ${trip.from.name||''} - ${trip.to.name||''}`;
   openCarry({title:'Viaje entero',sub:`${trip.stages.length} etapas · ${fmtKm(tripKm())} km · +${Math.round(tripUp()).toLocaleString('es-ES')} m. Cada etapa va como una ruta aparte dentro del archivo.`,
-    gpx:gpxText(trip.stages.map((s,i)=>({name:`Etapa ${i+1} ${s.a.name||''} - ${s.b.name||''}`,coords:s.coords}))),file:fileSafe(name)+'.gpx',link:shareLink(tripShareObj())});
+    gpx:gpxText(trip.stages.map((s,i)=>({name:stName(i),coords:s.coords}))),file:fileSafe(name)+'.gpx',link:shareLink(tripShareObj()),stages:true});
 }
+// etapas una a una (para dejarlas todas en el DURA antes de salir)
+const tripKey=()=>trip.stages.map(s=>Math.round(s.len||0)).join(',');
+function sentList(){ const o=store.get('ichnos-enviadas',null); return o&&o.k===tripKey()?o.d:[]; }
+function setSent(i,on){ const d=new Set(sentList()); on?d.add(i):d.delete(i); store.set('ichnos-enviadas',{k:tripKey(),d:[...d]}); }
+function stageFile(i){ const name=stName(i); return {name,file:fileSafe(name)+'.gpx',gpx:gpxText([{name,coords:trip.stages[i].coords}])}; }
+function renderCyStages(){
+  const done=new Set(sentList()), ul=$('cyStList'), canShare=!!(navigator.canShare&&navigator.canShare({files:[new File(['x'],'a.gpx',{type:'application/gpx+xml'})]}));
+  ul.innerHTML='';
+  trip.stages.forEach((s,i)=>{
+    const li=document.createElement('li'); li.className=done.has(i)?'done':'';
+    li.innerHTML=`<button class="ck" aria-label="Marcar como pasada">${done.has(i)?'✓':''}</button><span><b>${esc(stName(i))}</b><small>${fmtKm(s.len/1000)} km · +${Math.round(s.up||0)} m</small></span><button class="go">${canShare?'Enviar':'Descargar'}</button>`;
+    li.querySelector('.ck').onclick=()=>{ setSent(i,!done.has(i)); renderCyStages(); };
+    li.querySelector('.go').onclick=async()=>{
+      const f=stageFile(i);
+      if(canShare){ try{ await navigator.share({files:[new File([f.gpx],f.file,{type:'application/gpx+xml'})],title:f.name}); }catch(e){ if(e&&e.name==='AbortError') return; downFile(f); } }
+      else downFile(f);
+      setSent(i,true); renderCyStages(); };
+    ul.appendChild(li);
+  });
+}
+function downFile(f){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([f.gpx],{type:'application/gpx+xml'})); a.download=f.file; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); }
+$('cyAllSep').onclick=async()=>{
+  for(let i=0;i<trip.stages.length;i++){ downFile(stageFile(i)); await new Promise(r=>setTimeout(r,450)); }
+  toast(`${trip.stages.length} archivos descargados (01, 02…). Pásalos a la app COROS.`,5000);
+};
 // al abrir un enlace o código QR de Ichnos
 async function readShared(){
   const m=/#ichnos=([\w-]+)/.exec(location.hash); if(!m) return;
@@ -2485,13 +2530,13 @@ const fmtHc=s=>{ if(s==null) return '–'; s=Math.round(s); const h=Math.floor(s
 const n0=x=>x==null?'–':Math.round(x).toLocaleString('es-ES');
 let stPer='w', stFilt='all';
 function rideTipo(r){ const b=bikeById(r.bike); return b?b.tipo:null; }
-function filtRides(){ return rides.filter(r=>stFilt==='all'||(stFilt.startsWith('bike:')&&r.bike===stFilt.slice(5))||(stFilt.startsWith('tipo:')&&rideTipo(r)===stFilt.slice(5))); }
+function filtRides(){ return rides.filter(r=>stFilt==='all'||(stFilt.startsWith('bike:')&&(stFilt==='bike:'?!bikeById(r.bike):r.bike===stFilt.slice(5)))||(stFilt.startsWith('tipo:')&&rideTipo(r)===stFilt.slice(5))); }
 function weekStart(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
 function renderNums(){
   // filtro
   const sel=$('stFilter'), cur=stFilt;
-  sel.innerHTML=`<option value="all">Todas las salidas</option>`+Object.entries(BIKE_TIPOS).map(([k,v])=>`<option value="tipo:${k}">${v}</option>`).join('')+
-    bikes.map(b=>`<option value="bike:${b.id}">${esc(bikeName(b))}</option>`).join('');
+  sel.innerHTML=`<option value="all">Todas las salidas</option>`+bikes.map(b=>`<option value="bike:${b.id}">${esc(bikeName(b))}</option>`).join('')+
+    (rides.some(r=>!bikeById(r.bike))?`<option value="bike:">Sin bici</option>`:'');
   sel.value=[...sel.options].some(o=>o.value===cur)?cur:'all'; stFilt=sel.value;
   const now=new Date(), from=stPer==='w'?weekStart(now):stPer==='m'?new Date(now.getFullYear(),now.getMonth(),1):stPer==='y'?new Date(now.getFullYear(),0,1):new Date(0);
   const list=filtRides(), inP=list.filter(r=>(r.date||0)>=from.getTime());
