@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
+<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('ichnos-tema')||'"light"')==='dark'?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ichnos</title>
@@ -25,12 +26,11 @@
   --route:#B6E22E; --route-edge:#1E2328; --shadow:0 4px 18px rgba(0,0,0,.16);
   --display:"Barlow Condensed","Arial Narrow",sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --topo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='160' viewBox='0 0 220 160'%3E%3Cg fill='none' stroke='%23B6E22E' stroke-opacity='.16' stroke-width='1.2'%3E%3Cpath d='M-20 20c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 45c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 70c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 95c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 120c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 145c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cellipse cx='160' cy='80' rx='26' ry='14'/%3E%3Cellipse cx='160' cy='80' rx='14' ry='7'/%3E%3C/g%3E%3C/svg%3E");
   --navh:calc(62px + env(safe-area-inset-bottom,0px));
 }
-@media (prefers-color-scheme: dark){
-  :root{ --bg:#101113; --card:#17191c; --soft:#22252a; --ink:#f2f2f2; --muted:#9a9ea6; --line:#2a2e34;
-    --accent:#C4EE3F; --accent-ink:#151819; --accent-strong:#C4EE3F; --brand:#2a3036; --water:#4aa3ec; --water-soft:#152534; --warn:#f0a030; --good:#3ccf7a; --route:#C4EE3F; color-scheme:dark }
-}
+html[data-theme="dark"]:root{ --bg:#0c0d0f; --card:#17191c; --soft:#22252a; --ink:#f2f2f2; --muted:#9a9ea6; --line:#2a2e34;
+    --accent:#C4EE3F; --accent-ink:#151819; --accent-strong:#C4EE3F; --brand:#1E2328; --water:#4aa3ec; --water-soft:#152534; --warn:#f0a030; --good:#3ccf7a; --route:#C4EE3F; color-scheme:dark }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0}
@@ -54,7 +54,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bnav button.on{color:var(--ink);box-shadow:inset 0 3px 0 var(--accent)}
 
 /* perfil */
-#pgPerfil,#pgSalidas,#pgAjustes{overflow-y:auto;background:var(--soft);padding:0 0 28px}
+#pgPerfil,#pgSalidas,#pgAjustes,.rideview{background-color:#232a30;background-image:var(--topo);background-attachment:local}
+#pgPerfil,#pgSalidas,#pgAjustes{overflow-y:auto;padding:0 0 28px}
 .phead.short{padding-bottom:18px}
 .phead .gear{margin-left:auto;border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;width:40px;height:40px;display:grid;place-items:center;padding:0}
 .phead .gear svg{width:22px;height:22px}
@@ -376,15 +377,16 @@ details.help p{margin:6px 0 0}
 .recs em,.routes li em{font-style:normal;font-weight:800;font-family:var(--display);font-size:18px}
 .routes li em.pr{color:#5f8a00}
 .rides{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.rides li{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer}
+.rides li{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer}
 .rides li:hover{background:var(--soft)}
 .rthumb{width:64px;height:64px;background:var(--soft);border-radius:12px}
+.rphoto{width:76px;height:76px;border-radius:12px;object-fit:cover;background:var(--soft)}
 .rides span{display:flex;flex-direction:column;gap:2px;min-width:0}
 .rides b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rides small{color:var(--muted);font-size:12.5px}
 .rnums{display:flex;gap:10px;flex-wrap:wrap}.rnums i{font-style:normal;font-weight:700;color:var(--ink)}
 /* ficha de una salida */
-.rideview{position:fixed;inset:0;z-index:2500;background:var(--bg);overflow-y:auto;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))}
+.rideview{position:fixed;inset:0;z-index:2500;overflow-y:auto;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))}
 .rv-h{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;background:var(--brand);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
 .rv-h button{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;width:38px;height:38px;font-size:20px}
 .rv-h div{display:flex;flex-direction:column;min-width:0}
@@ -392,6 +394,9 @@ details.help p{margin:6px 0 0}
 .rv-h small{color:rgba(255,255,255,.7);font-size:12.5px}
 .rv-body{max-width:680px;margin:0 auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
 .rvmap{width:100%;height:auto;display:block}
+.rvcard{background:var(--card);color:var(--ink);border-radius:16px;padding:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.rvcard:empty{display:none}
+.rvdel{align-items:center;padding:6px}
 .rv-acts{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .rv-acts label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
 .rv-acts select{border:1px solid var(--line);border-radius:10px;padding:7px 8px;font-size:14px;background:var(--card)}
@@ -799,18 +804,18 @@ details.help p{margin:6px 0 0}
 <div class="rideview" id="rideView" hidden role="dialog" aria-modal="true" aria-labelledby="rvName">
   <header class="rv-h"><button id="rvBack" aria-label="Volver">←</button><div><b id="rvName"></b><small id="rvDate"></small></div></header>
   <div class="rv-body">
-    <svg id="rvMap" class="rvmap" role="img" aria-label="Recorrido de la salida"></svg>
+    <div class="rvcard"><svg id="rvMap" class="rvmap" role="img" aria-label="Recorrido de la salida"></svg>
     <div class="rv-acts"><button class="btn" id="rvOnMap">Ver en el mapa</button><label>Bici <select id="rvBike"></select></label></div>
     <div class="rv-grid" id="rvGrid"></div>
-    <div id="rvPhotos"><div class="ch-t">Fotos</div><div class="ph-grid" id="rvPh"></div>
+    <p class="note" id="rvNoData" hidden>Esta salida no tiene horas ni pulso. Si la trajiste con una versión anterior de Ichnos, vuelve a traer su archivo para ver todos los datos.</p></div>
+    <div class="rvcard" id="rvPhotos"><div class="ch-t">Fotos</div><div class="ph-grid" id="rvPh"></div>
       <button class="btn" id="rvPhAdd">📷 Añadir fotos</button><input type="file" id="rvPhFile" accept="image/*" multiple hidden></div>
-    <div id="rvNotes"><div class="ch-t">Comentarios</div><ul class="notes" id="rvNoteList"></ul>
+    <div class="rvcard" id="rvNotes"><div class="ch-t">Comentarios</div><ul class="notes" id="rvNoteList"></ul>
       <div class="note-add"><textarea id="rvNoteTxt" rows="2" placeholder="¿Qué tal la salida? Bares, fuentes, cómo estaba el camino…"></textarea><button class="btn-main" id="rvNoteBtn">Publicar comentario</button></div></div>
-    <p class="note" id="rvNoData" hidden>Esta salida no tiene horas ni pulso. Si la trajiste con una versión anterior de Ichnos, vuelve a traer su archivo para ver todos los datos.</p>
-    <div id="rvCharts"></div>
-    <div id="rvZones"></div>
-    <div id="rvSegs"></div>
-    <button class="btn-out" id="rvDel">Borrar esta salida</button>
+    <div class="rvcard" id="rvCharts"></div>
+    <div class="rvcard" id="rvZones"></div>
+    <div class="rvcard" id="rvSegs"></div>
+    <div class="rvcard rvdel"><button class="btn-out" id="rvDel">Borrar esta salida</button></div>
   </div>
 </div>
 <div class="phview" id="phView" hidden role="dialog" aria-modal="true" aria-label="Foto"><img id="phImg" alt=""><div class="row"><button id="phClose">Cerrar</button><button class="del" id="phDel">Borrar foto</button></div></div>
@@ -999,6 +1004,9 @@ $('goMap').onclick=()=>showPage('pgMapa');
 let ajFrom='pgPerfil';
 document.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>{ const cur=[...document.querySelectorAll('.page')].find(p=>!p.classList.contains('off')); ajFrom=cur&&cur.id!=='pgAjustes'?cur.id:'pgPerfil'; showPage('pgAjustes'); $('pgAjustes').scrollTop=0; });
 $('ajBack').onclick=()=>showPage(ajFrom);
+function paintTema(){ const t=document.documentElement.dataset.theme; document.querySelectorAll('#temaBtns button').forEach(b=>b.classList.toggle('primary',b.dataset.tema===t)); }
+document.querySelectorAll('#temaBtns button').forEach(b=>b.onclick=()=>{ document.documentElement.dataset.theme=b.dataset.tema; syncRaw.set('ichnos-tema',b.dataset.tema); paintTema(); });
+paintTema();
 
 // ================= MAPA =================
 if(!window.L){
@@ -2880,12 +2888,22 @@ function renderRideList(){
     const st=rideStats(r), sh=shapeSvg(r.coords,64,64), li=document.createElement('li');
     li.innerHTML=`<svg viewBox="0 0 64 64" class="rthumb"><path d="${sh.d}" fill="none" stroke="#1E2328" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="${sh.d}" fill="none" stroke="#B6E22E" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
       <span><b>${esc(r.name)}</b><small>${fmtD(r.date)}${r.bike?' · '+esc(bikeName(bikeById(r.bike))):''}</small>
-      <small class="rnums"><i>${fmtKm(st.km)} km</i><i>${fmtH(st.moving)}</i>${st.up!=null?`<i>+${n0(st.up)} m</i>`:''}${st.hr?`<i>♥ ${Math.round(st.hr)}</i>`:''}${(r.fotos||[]).length+(r.sfotos||[]).length?`<i class="ph">📷 ${(r.fotos||[]).length+(r.sfotos||[]).length}</i>`:''}${(r.notas||[]).length?`<i class="ph">💬 ${r.notas.length}</i>`:''}</small></span>`;
+      <small class="rnums"><i>${fmtKm(st.km)} km</i><i>${fmtH(st.moving)}</i>${st.up!=null?`<i>+${n0(st.up)} m</i>`:''}${st.hr?`<i>♥ ${Math.round(st.hr)}</i>`:''}${(r.fotos||[]).length+(r.sfotos||[]).length?`<i class="ph">📷 ${(r.fotos||[]).length+(r.sfotos||[]).length}</i>`:''}${(r.notas||[]).length?`<i class="ph">💬 ${r.notas.length}</i>`:''}</small></span>${mainPhoto(r)?`<img class="rphoto" src="${esc(mainPhoto(r))}" alt="" loading="lazy">`:''}`;
     li.onclick=()=>openRide(r);
     ul.appendChild(li);
   });
   $('rideMore').hidden=list.length<=rideShown;
   $('rideEmpty').hidden=list.length>0;
+  fetchListPhotos(list.slice(0,rideShown));
+}
+const mainPhoto=r=>(r.fotos&&r.fotos[0]&&r.fotos[0].src)||(r.sfotos&&r.sfotos[0])||null;
+// fotos de Strava de las salidas que se ven en la lista (poco a poco, para no pasarse con Strava)
+const phTried=new Set(); let phBusy=false;
+async function fetchListPhotos(list){
+  if(phBusy||!sv) return; phBusy=true; let got=0;
+  try{ for(const r of list){ if(phTried.size>=60) break; if(r.sfotosT||!/^strava-\d+$/.test(r.id||'')||phTried.has(r.id)) continue;
+    phTried.add(r.id); const before=(r.sfotos||[]).length; await loadStravaPhotos(r, true); if(!r.sfotosT) break; if((r.sfotos||[]).length!==before) got++; } }catch(e){}
+  phBusy=false; if(got) renderRideList();
 }
 $('rideMore').onclick=()=>{ rideShown+=20; renderRideList(); };
 
@@ -2976,12 +2994,12 @@ function renderRvNotes(r){
 $('rvNoteBtn').onclick=async()=>{ const r=rideOpen, t=$('rvNoteTxt').value.trim(); if(!r||!t) return;
   (r.notas=r.notas||[]).push({id:'n'+Date.now().toString(36),t:Date.now(),txt:t.slice(0,2000)}); $('rvNoteTxt').value='';
   await saveRideEdit(r); renderRvNotes(r); toast('Comentario guardado'); };
-async function loadStravaPhotos(r){
+async function loadStravaPhotos(r,quiet){
   const m=/^strava-(\d+)$/.exec(r.id||''); if(!m||!sv||r.sfotosT) return;
   try{
     const list=await svGet(`activities/${m[1]}/photos?size=1000&photo_sources=true`);
     r.sfotos=(Array.isArray(list)?list:[]).map(p=>p&&p.urls&&(p.urls['1000']||Object.values(p.urls)[0])).filter(Boolean).slice(0,30);
-    r.sfotosT=Date.now(); await saveRideEdit(r); if(rideOpen===r) renderRvPhotos(r);
+    r.sfotosT=Date.now(); const copy=cleanRide(r); copy.mt=r.mt=Date.now(); await ridesTx('readwrite',st=>st.put(copy)); syncDirtyRide(copy.date); if(rideOpen===r) renderRvPhotos(r); if(!quiet) renderRideList();
   }catch(e){}
 }
 function moveRvDot(i){ const r=rideOpen; if(!r||!rvP) return; const p=rvP(r.coords[i]); const d=document.getElementById('rvDot'); if(d){ d.setAttribute('cx',p[0]); d.setAttribute('cy',p[1]); } }
