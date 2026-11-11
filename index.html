@@ -56,6 +56,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 /* perfil */
 #pgPerfil,#pgSalidas{overflow-y:auto;background:var(--soft);padding:0 0 28px}
 .phead.short{padding-bottom:18px}
+.svchip{font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--soft);color:var(--muted)}
+.svchip.on{background:#FC4C02;color:#fff}
+.svp{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+#svCode{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:10px;font:13px ui-monospace,monospace;background:var(--card);color:var(--ink);resize:vertical}
 .sal-top .actions button{padding:13px 6px;font-size:15px}
 .sal-top .help p{margin:6px 0;font-size:14px;line-height:1.45}
 .sal-top .help summary{cursor:pointer;font-weight:600;color:var(--accent-strong)}
@@ -550,14 +554,27 @@ details.help p{margin:6px 0 0}
     <div class="big-sum"><div><b id="hN">0</b><small>Salidas</small></div><div><b id="hKm">0</b><small>Km en total</small></div></div>
     <div class="actions">
       <button id="recBtn2" class="primary">● Grabar ruta</button>
-      <button id="impBtn">Traer de Strava / COROS</button>
-      <input type="file" id="impFile" accept=".gpx,.tcx,.fit,.gz" multiple hidden>
+      <button id="impBtn">Traer archivos</button>
+      <input type="file" id="impFile" accept=".gpx,.tcx,.fit,.gz,.zip,.csv" multiple hidden>
     </div>
-    <details class="help"><summary>¿Cómo saco el archivo de Strava o COROS?</summary>
-          <p><b>Strava:</b> abre la actividad en el ordenador (strava.com), pulsa los tres puntos (···) y elige <b>Exportar GPX</b>. Para traer todas de golpe: Ajustes → Mi cuenta → <b>Descargar o eliminar tu cuenta</b> → Solicitar archivo. Te llega un zip con la carpeta <i>activities</i>; selecciona todos los archivos de dentro.</p>
+    <details class="help"><summary>¿Cómo traigo todas mis salidas antiguas?</summary>
+          <p><b>Todas de Strava de golpe:</b> en strava.com → Ajustes → Mi cuenta → <b>Descargar o eliminar tu cuenta</b> → Comenzar → <b>Solicitar tu archivo</b>. Te llega un correo con un enlace a un archivo <b>.zip</b>. Pulsa <b>Traer archivos</b> y elige ese .zip tal cual (sin abrirlo). Ichnos coge solo las salidas en bici, con su nombre y su bici.</p>
+          <p><b>Una de Strava:</b> abre la actividad en strava.com, pulsa los tres puntos (···) y elige <b>Exportar GPX</b>.</p>
           <p><b>COROS:</b> en la app, abre la actividad, pulsa compartir (arriba a la derecha) y elige <b>Exportar archivo → GPX o FIT</b>.</p>
           <p>Luego pulsa <b>Traer de Strava / COROS</b> y elige los archivos. Puedes elegir muchos a la vez.</p>
         </details>
+  </section>
+  <section class="pblock" id="svBox">
+    <div class="pb-h"><h3>Strava</h3><span class="svchip" id="svChip">Sin conectar</span></div>
+    <div id="svOff">
+      <p class="svp">Conecta tu Strava y las salidas que grabes con el COROS llegarán solas a Ichnos.</p>
+      <textarea id="svCode" rows="3" placeholder="Pega aquí el código que empieza por ICHNOS-" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+      <button class="btn-main" id="svSave">Conectar</button>
+    </div>
+    <div id="svOn" hidden>
+      <p class="svp" id="svInfo"></p>
+      <div class="actions"><button class="primary" id="svNow">Traer salidas nuevas</button><button id="svOut">Desconectar</button></div>
+    </div>
   </section>
   <section class="pblock" id="pRides">
     <div class="pb-h"><h3>Lista de salidas</h3></div>
@@ -735,7 +752,7 @@ details.help p{margin:6px 0 0}
     <label class="fld">Mote<input id="bkMote" maxlength="30" placeholder="Ej.: La Bestia"></label>
     <div class="row2"><label class="fld">Marca<input id="bkMarca" maxlength="30" placeholder="Ej.: BMC"></label>
     <label class="fld">Modelo<input id="bkModelo" maxlength="40" placeholder="Ej.: Fourstroke"></label></div>
-    <label class="fld">Tipo<select id="bkTipo"><option value="road">Carretera</option><option value="gravel">Gravel</option><option value="mtb">BTT</option></select></label>
+    <label class="fld">Tipo<select id="bkTipo"><option value="road">Carretera</option><option value="gravel">Gravel</option><option value="mtb">BTT</option><option value="ebike">E-bike</option></select></label>
     <label class="chk"><input type="checkbox" id="bkMain"> Bici principal para este tipo (se pone sola en las salidas nuevas)</label>
     <div class="btns"><button type="submit" class="btn-main">Guardar</button><button type="button" class="btn-ghost" id="bkCancel">Cancelar</button>
     <button type="button" class="btn-out" id="bkDel" hidden>Borrar bici</button></div>
@@ -855,6 +872,7 @@ let mapCentered=false;
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
   document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
+  if(id==='pgSalidas' && typeof svAuto==='function') svAuto();
   if(id==='pgMapa' && window.map){
     setTimeout(()=>{ map.invalidateSize(); try{ glMap.resize(); }catch(e){} },30);
     if(!mapCentered && perfil.home && !route){ map.setView([perfil.home.lat,perfil.home.lon],perfil.homeExact?14:13); mapCentered=true; }
@@ -2373,33 +2391,187 @@ function parseFit(buf){
   }
   return {coords:out,times:ts,eles:es,ex:{hr,cad,pw},name:'',date:start};
 }
-async function readTrackFile(file){
-  let name=file.name, buf;
-  if(/\.gz$/i.test(name)){
-    if(!window.DecompressionStream) throw new Error('gz');
-    buf=await new Response(file.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); name=name.replace(/\.gz$/i,'');
-  } else buf=await file.arrayBuffer();
-  let t;
-  if(/\.fit$/i.test(name)) t=parseFit(buf);
-  else t=parseXmlTrack(new TextDecoder().decode(buf),/\.tcx$/i.test(name));
-  return {...t, file:name};
+async function gunzipBuf(buf){
+  if(!window.DecompressionStream) throw new Error('gz');
+  return new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+}
+async function parseTrackBuf(name,buf){
+  if(/\.gz$/i.test(name)){ buf=await gunzipBuf(buf); name=name.replace(/\.gz$/i,''); }
+  const t=/\.fit$/i.test(name)?parseFit(buf):parseXmlTrack(new TextDecoder().decode(buf),/\.tcx$/i.test(name));
+  return {...t,file:name};
+}
+async function readTrackFile(file){ return parseTrackBuf(file.name,await file.arrayBuffer()); }
+// --- leer un .zip (el archivo de Strava) sin abrirlo
+async function unzipList(file){
+  const tl=Math.min(file.size,70000), tail=new DataView(await file.slice(file.size-tl).arrayBuffer());
+  let e=-1; for(let i=tl-22;i>=0;i--) if(tail.getUint32(i,true)===0x06054b50){ e=i; break; }
+  if(e<0) throw new Error('zip');
+  let n=tail.getUint16(e+10,true), cdSize=tail.getUint32(e+12,true), cdOff=tail.getUint32(e+16,true);
+  if(cdOff===0xFFFFFFFF||n===0xFFFF||cdSize===0xFFFFFFFF){
+    const l=e-20; if(l<0||tail.getUint32(l,true)!==0x07064b50) throw new Error('zip64');
+    const zo=Number(tail.getBigUint64(l+8,true)), z=new DataView(await file.slice(zo,zo+56).arrayBuffer());
+    n=Number(z.getBigUint64(32,true)); cdSize=Number(z.getBigUint64(40,true)); cdOff=Number(z.getBigUint64(48,true));
+  }
+  const cd=new DataView(await file.slice(cdOff,cdOff+cdSize).arrayBuffer()), td=new TextDecoder(), out=[]; let p=0;
+  for(let i=0;i<n&&p+46<=cd.byteLength;i++){
+    if(cd.getUint32(p,true)!==0x02014b50) break;
+    const method=cd.getUint16(p+10,true), nl=cd.getUint16(p+28,true), xl=cd.getUint16(p+30,true), cl=cd.getUint16(p+32,true);
+    let csize=cd.getUint32(p+20,true), usize=cd.getUint32(p+24,true), off=cd.getUint32(p+42,true);
+    const name=td.decode(new Uint8Array(cd.buffer,p+46,nl));
+    if(csize===0xFFFFFFFF||usize===0xFFFFFFFF||off===0xFFFFFFFF){
+      let q=p+46+nl; const qe=q+xl;
+      while(q+4<=qe){ const id=cd.getUint16(q,true), sz=cd.getUint16(q+2,true);
+        if(id===1){ let r=q+4; if(usize===0xFFFFFFFF){ usize=Number(cd.getBigUint64(r,true)); r+=8; } if(csize===0xFFFFFFFF){ csize=Number(cd.getBigUint64(r,true)); r+=8; } if(off===0xFFFFFFFF) off=Number(cd.getBigUint64(r,true)); }
+        q+=4+sz; }
+    }
+    out.push({name,method,csize,off}); p+=46+nl+xl+cl;
+  }
+  return out;
+}
+async function unzipRead(file,ent){
+  const h=new DataView(await file.slice(ent.off,ent.off+30).arrayBuffer());
+  const start=ent.off+30+h.getUint16(26,true)+h.getUint16(28,true), blob=file.slice(start,start+ent.csize);
+  if(ent.method===0) return blob.arrayBuffer();
+  if(ent.method===8){ if(!window.DecompressionStream) throw new Error('gz'); return new Response(blob.stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer(); }
+  throw new Error('metodo');
+}
+// --- la lista de Strava (activities.csv): nombre, tipo y bici de cada salida
+function parseCSV(t){
+  const rows=[]; let row=[],f='',q=false;
+  for(let i=0;i<t.length;i++){ const c=t[i];
+    if(q){ if(c==='"'){ if(t[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+    else if(c==='"') q=true; else if(c===','){ row.push(f); f=''; }
+    else if(c==='\n'){ row.push(f); rows.push(row); row=[]; f=''; } else if(c!=='\r') f+=c; }
+  if(f||row.length){ row.push(f); rows.push(row); }
+  return rows;
+}
+function stravaTipo(type){
+  const t=nrm(type).replace(/[_\s]+/g,' ');
+  if(!t||/virtual/.test(t)) return null;
+  if(/e-?mountain|e-?mtb|montana electr|electrica de montana|e ?bike|e-bike|electr/.test(t)) return 'ebike';
+  if(/mountain|montana|mtb|btt/.test(t)) return 'mtb';
+  if(/gravel/.test(t)) return 'gravel';
+  if(/\bride\b|ride$|bici|cicl|velo|handcycle|bike/.test(t)) return 'road';
+  return null;
+}
+function csvInfo(text){
+  const rows=parseCSV(text.replace(/^﻿/,'')); if(rows.length<2) return null;
+  const H=rows[0].map(nrm), col=(re,def)=>{ const i=H.findIndex(h=>re.test(h)); return i>=0?i:def; };
+  const ci={id:col(/^activity id$|^id de (la )?actividad$|^id$/,0),name:col(/^activity name$|nombre/,2),type:col(/^activity type$|^tipo/,3),gear:col(/gear|equipo|material/,-1),file:col(/^filename$|archivo|nombre de archivo/,-1)};
+  if(ci.file<0){ const r=rows.find((r,i)=>i&&r.some(x=>/^activities\//.test(x))); if(r) ci.file=r.findIndex(x=>/^activities\//.test(x)); }
+  const by={};
+  rows.slice(1).forEach(r=>{ const fn=(r[ci.file]||'').trim(); if(!fn) return;
+    by[nrm(fn.replace(/^.*\//,''))]={id:r[ci.id],name:r[ci.name],type:r[ci.type],gear:ci.gear>=0?r[ci.gear]:''}; });
+  return by;
 }
 $('impBtn').onclick=()=>$('impFile').click();
 $('impFile').onchange=async e=>{
   const files=[...e.target.files]; e.target.value=''; if(!files.length) return;
-  toast(`Leyendo ${files.length} archivo${files.length>1?'s':''}…`,60000);
-  const ok=[]; let bad=0;
-  for(const f of files){
+  toast('Leyendo…',60000);
+  const items=[]; let info=null;
+  try{
+    for(const f of files){
+      if(/\.zip$/i.test(f.name)){
+        const ents=await unzipList(f);
+        const c=ents.find(x=>/(^|\/)activities\.csv$/i.test(x.name));
+        if(c) info=csvInfo(new TextDecoder().decode(await unzipRead(f,c)));
+        ents.filter(x=>/\.(gpx|tcx|fit)(\.gz)?$/i.test(x.name)).forEach(x=>items.push({name:x.name,get:()=>unzipRead(f,x)}));
+      }else if(/\.csv$/i.test(f.name)) info=csvInfo(await f.text());
+      else items.push({name:f.name,get:()=>f.arrayBuffer(),mod:f.lastModified});
+    }
+  }catch(err){ toast(err&&err.message==='gz'?'Este navegador no sabe abrir archivos comprimidos. Actualiza Safari.':'No he podido abrir ese .zip. Prueba otra vez o descomprímelo y elige los archivos de la carpeta activities.',6000); return; }
+  const ok=[]; let bad=0, other=0, done=0, total=0;
+  for(const it of items){
+    const base=it.name.replace(/^.*\//,''), meta=info?info[nrm(base)]:null;
+    const tipo=meta?stravaTipo(meta.type):null;
+    if(meta&&!tipo){ other++; continue; }      // correr, caminar, gimnasio… de momento no
+    total++;
+  }
+  for(const it of items){
+    const base=it.name.replace(/^.*\//,''), meta=info?info[nrm(base)]:null;
+    const tipo=meta?stravaTipo(meta.type):null;
+    if(meta&&!tipo) continue;
+    done++; if(done%10===0) toast(`Leyendo ${done} de ${total}…`,60000);
     try{
-      const t=await readTrackFile(f), th=thinFull(t.coords,t.times,t.eles,t.ex), c=th.coords;
+      const t=await parseTrackBuf(base,await it.get()), th=thinFull(t.coords,t.times,t.eles,t.ex), c=th.coords;
       if(c.length<2){ bad++; continue; }
-      const src=/\.fit/i.test(t.file)?'Coros / Strava (FIT)':'Strava / Coros';
-      ok.push({id:'imp-'+t.file+'-'+c.length+'-'+c[0].join(','),name:t.name||t.file.replace(/\.(gpx|tcx|fit)$/i,''),date:t.date||f.lastModified,source:src,coords:c,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike:defaultBike(mode),km:lineKm(c)});
+      const strava=!!meta||!!info;
+      const src=strava?'Strava':/\.fit/i.test(t.file)?'COROS / Strava (FIT)':'Strava / COROS';
+      const id=meta&&meta.id?'strava-'+meta.id:'imp-'+t.file+'-'+c.length+'-'+c[0].join(',');
+      const bike=meta?(bikeByGear(meta.gear)||bikeForTipo(tipo)):defaultBike(mode);
+      ok.push({id,name:(meta&&meta.name)||t.name||t.file.replace(/\.(gpx|tcx|fit)$/i,''),date:t.date||it.mod||Date.now(),source:src,tipo:tipo||null,coords:c,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike,km:lineKm(c)});
+      if(ok.length>=40){ await saveRides(ok.splice(0)); }
     }catch(err){ bad++; }
   }
-  if(ok.length){ await saveRides(ok); drawHeat(); }
-  toast(ok.length?`${ok.length} ruta${ok.length>1?'s':''} añadida${ok.length>1?'s':''}${bad?` (${bad} archivo${bad>1?'s':''} sin recorrido)`:''}`:'No he encontrado recorridos en esos archivos.',4500);
+  const n=done-bad;
+  if(ok.length) await saveRides(ok);
+  if(n) drawHeat();
+  toast(n?`${n} salida${n>1?'s':''} añadida${n>1?'s':''}`+(other?` · ${other} de correr, caminar u otras no se han traído`:'')+(bad?` · ${bad} sin recorrido`:''):(other?'En ese archivo no hay salidas en bici.':'No he encontrado recorridos en esos archivos.'),6500);
 };
+
+// ================= STRAVA (conexión directa) =================
+let sv=store.get('ichnos-strava',null);
+function svParse(c){ const m=/ICHNOS-([A-Za-z0-9+/=_-]+)/.exec(String(c).replace(/\s+/g,'')); if(!m) return null; try{ const o=JSON.parse(atob(m[1])); return o&&o.u&&o.k?{u:o.u.replace(/\/$/,''),k:o.k}:null; }catch(e){ return null; } }
+async function svGet(path){
+  const r=await fetch(sv.u+'/api/'+path,{headers:{'X-Ichnos-Key':sv.k}});
+  if(r.status===401) throw new Error('clave'); if(r.status===429) throw new Error('limite'); if(!r.ok) throw new Error('http');
+  return r.json();
+}
+let svBusy=false;
+function svAgo(t){ if(!t) return 'todavía no'; const m=Math.round((Date.now()-t)/60000); return m<1?'ahora mismo':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:new Date(t).toLocaleDateString('es-ES',{day:'numeric',month:'short'}); }
+function paintStrava(msg){
+  const on=!!sv; $('svOff').hidden=on; $('svOn').hidden=!on;
+  $('svChip').textContent=on?'Conectado':'Sin conectar'; $('svChip').classList.toggle('on',on);
+  if(on){ const n=rides.filter(r=>/^strava-/.test(r.id)).length;
+    $('svInfo').textContent=msg||`Las salidas nuevas llegan solas al abrir Ichnos. Última vez: ${svAgo(sv.last)}.`+(sv.more?' Quedan más por traer: pulsa otra vez en un rato.':''); }
+  $('svNow').disabled=svBusy; $('svNow').textContent=svBusy?'Trayendo…':'Traer salidas nuevas';
+}
+async function stravaSync(manual){
+  if(!sv||svBusy) return; svBusy=true; paintStrava('Mirando si hay salidas nuevas en Strava…');
+  let added=0, more=false, err=null;
+  try{
+    const after=sv.after||Math.floor(Date.now()/1000)-30*86400;
+    const list=(await svGet(`athlete/activities?after=${after}&per_page=60`)).sort((a,b)=>Date.parse(a.start_date)-Date.parse(b.start_date));
+    const gear=store.get('ichnos-gear',{}); let n=0;
+    for(const a of list){
+      const tipo=stravaTipo(a.sport_type||a.type), id='strava-'+a.id;
+      if(tipo&&a.map&&a.map.summary_polyline&&!rides.some(r=>r.id===id)){
+        if(n>=20){ more=true; break; }
+        const s=await svGet(`activities/${a.id}/streams?keys=latlng,time,altitude,heartrate,cadence,watts&key_by_type=true`); n++;
+        const g=k=>s&&s[k]&&s[k].data, ll=g('latlng');
+        if(ll&&ll.length>1){
+          const t0=Date.parse(a.start_date), tm=g('time'), ts=ll.map((_,i)=>tm&&tm[i]!=null?t0+tm[i]*1000:null);
+          const th=thinFull(ll,ts,g('altitude'),{hr:g('heartrate'),cad:g('cadence'),pw:g('watts')});
+          let bike=null;
+          if(a.gear_id){ if(!(a.gear_id in gear)){ try{ gear[a.gear_id]=(await svGet('gear/'+a.gear_id)).name||''; }catch(e){ gear[a.gear_id]=''; } store.set('ichnos-gear',gear); } bike=bikeByGear(gear[a.gear_id]); }
+          await saveRides([{id,name:a.name||'Salida',date:t0,source:'Strava',tipo,coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike:bike||bikeForTipo(tipo),km:lineKm(th.coords)}]);
+          added++;
+        }
+      }
+      sv.after=Math.max(sv.after||after,Math.floor(Date.parse(a.start_date)/1000)); store.set('ichnos-strava',sv);
+    }
+    if(list.length>=60) more=true;
+    sv.last=Date.now(); sv.more=more; store.set('ichnos-strava',sv);
+  }catch(e){ err=e&&e.message; if(sv) store.set('ichnos-strava',sv); }
+  svBusy=false;
+  if(added) drawHeat();
+  paintStrava();
+  if(err==='clave') toast('La conexión con Strava ya no vale. Desconecta y vuelve a pegar el código.',6000);
+  else if(err==='limite') toast('Strava pide esperar un poco. Prueba dentro de 15 minutos.',5000);
+  else if(err&&manual) toast('No se ha podido hablar con Strava ahora. Prueba en un rato.',5000);
+  else if(added||manual) toast(added?`${added} salida${added>1?'s':''} nueva${added>1?'s':''} de Strava`+(more?'. Quedan más: pulsa otra vez en un rato.':''):'No hay salidas nuevas en Strava.',5000);
+}
+$('svSave').onclick=async()=>{
+  const o=svParse($('svCode').value);
+  if(!o){ toast('Ese código no vale. Copia el código entero, empieza por ICHNOS-',5000); return; }
+  sv={...o,after:null,last:null}; store.set('ichnos-strava',sv); $('svCode').value='';
+  paintStrava(); toast('Strava conectado. Traigo tus salidas del último mes…',4000); stravaSync(true);
+};
+$('svNow').onclick=()=>stravaSync(true);
+$('svOut').onclick=async()=>{ if(await ask('¿Desconectar Strava de este aparato?','Las salidas que ya tienes se quedan.','Sí, desconectar','No')){ sv=null; store.del('ichnos-strava'); paintStrava(); } };
+const svAuto=()=>{ if(sv&&!svBusy&&(!sv.last||Date.now()-sv.last>10*60000)) stravaSync(false); };
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') svAuto(); });
+paintStrava();
 
 // ---------- grabar una ruta con la app ----------
 let rec=null, wakeLock=null, recTick=null;
@@ -2449,7 +2621,7 @@ $('recBtn2').onclick=()=>{ if(rec) stopRec(); else { showPage('pgMapa'); startRe
 document.addEventListener('visibilitychange',async()=>{ if(rec && document.visibilityState==='visible' && navigator.wakeLock){ try{ wakeLock=await navigator.wakeLock.request('screen'); }catch(e){} } });
 
 // ================= MIS BICIS =================
-const BIKE_TIPOS={road:'Carretera',gravel:'Gravel',mtb:'BTT'};
+const BIKE_TIPOS={road:'Carretera',gravel:'Gravel',mtb:'BTT',ebike:'E-bike'};
 const BIKE_SVG='<svg viewBox="0 0 48 32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="22" r="8"/><circle cx="38" cy="22" r="8"/><path d="M10 22 18 9h13l7 13M18 9l7 13h-15M28 5h5M17 6h4"/></svg>';
 let bikes=store.get('ichnos-bicis',null);
 if(!bikes){   // primera vez: dejamos puestas tus bicis
@@ -2459,6 +2631,9 @@ if(!bikes){   // primera vez: dejamos puestas tus bicis
 }
 const bikeName=b=>b?(b.mote||`${b.marca} ${b.modelo}`.trim()||'Bici'):'Sin bici';
 const bikeById=id=>bikes.find(b=>b.id===id)||null;
+const bikeForTipo=tipo=>{ if(!tipo) return null; const b=bikes.find(b=>b.tipo===tipo&&b.principal)||bikes.find(b=>b.tipo===tipo); return b?b.id:null; };
+const nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+function bikeByGear(g){ g=nrm(g); if(!g) return null; const b=bikes.find(b=>b.mote&&g.includes(nrm(b.mote)))||bikes.find(b=>b.modelo&&g.includes(nrm(b.modelo)))||bikes.find(b=>b.marca&&g.includes(nrm(b.marca))); return b?b.id:null; }
 function defaultBike(tipo){ return (bikes.find(b=>b.tipo===tipo&&b.principal)||bikes.find(b=>b.tipo===tipo)||bikes[0]||{}).id||null; }
 function saveBikes(){ if(!store.set('ichnos-bicis',bikes)) toast('No se han podido guardar las bicis (¿fotos muy grandes?).',5000); renderBikes(); renderNums(); }
 function renderBikes(){
@@ -2529,7 +2704,7 @@ const fmtH=s=>{ if(s==null) return '–'; s=Math.round(s); const h=Math.floor(s/
 const fmtHc=s=>{ if(s==null) return '–'; s=Math.round(s); const h=Math.floor(s/3600), m=Math.floor(s/60)%60; return `${h}:${String(m).padStart(2,'0')}`; };
 const n0=x=>x==null?'–':Math.round(x).toLocaleString('es-ES');
 let stPer='w', stFilt='all';
-function rideTipo(r){ const b=bikeById(r.bike); return b?b.tipo:null; }
+function rideTipo(r){ const b=bikeById(r.bike); return b?b.tipo:(r.tipo||null); }
 function filtRides(){ return rides.filter(r=>stFilt==='all'||(stFilt.startsWith('bike:')&&(stFilt==='bike:'?!bikeById(r.bike):r.bike===stFilt.slice(5)))||(stFilt.startsWith('tipo:')&&rideTipo(r)===stFilt.slice(5))); }
 function weekStart(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
 function renderNums(){
@@ -3002,7 +3177,7 @@ $('locate').onclick=()=>{
 };
 
 // ================= ARRANQUE =================
-updateSheet(); loadWeather(); loadRides(); drawHome(); readShared();
+updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(svAuto,1500); }); drawHome(); readShared();
 // si se cerró la app grabando, ofrecer guardar lo que había
 (async()=>{
   const pend=store.get('ichnos-rec',null);
