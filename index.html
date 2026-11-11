@@ -608,10 +608,12 @@ details.help p{margin:6px 0 0}
   </section>
   <section class="pblock">
     <div class="pb-h"><h3>Traer salidas de archivos</h3></div>
-    <p class="svp">El .zip de Strava con todas tus salidas antiguas, o archivos GPX, FIT o TCX sueltos de COROS o Strava.</p>
+    <p class="svp">El .zip de Strava con todas tus salidas antiguas, o archivos GPX, FIT o TCX sueltos de COROS o Strava. Si el Mac ya te abrió el .zip y tienes una carpeta, pulsa <b>Elegir carpeta</b> y elige esa carpeta entera.</p>
     <div class="actions">
       <button id="impBtn" class="primary">Traer archivos</button>
+      <button id="impDirBtn">Elegir carpeta</button>
       <input type="file" id="impFile" accept=".gpx,.tcx,.fit,.gz,.zip,.csv" multiple hidden>
+      <input type="file" id="impDir" webkitdirectory multiple hidden>
     </div>
     <details class="help"><summary>¿Cómo traigo todas mis salidas antiguas?</summary>
           <p><b>Todas de Strava de golpe:</b> en strava.com → Ajustes → Mi cuenta → <b>Descargar o eliminar tu cuenta</b> → Comenzar → <b>Solicitar tu archivo</b>. Te llega un correo con un enlace a un archivo <b>.zip</b>. Pulsa <b>Traer archivos</b> y elige ese .zip tal cual (sin abrirlo). Ichnos coge solo las salidas en bici, con su nombre y su bici.</p>
@@ -2592,6 +2594,8 @@ function csvInfo(text){
   return by;
 }
 $('impBtn').onclick=()=>$('impFile').click();
+$('impDirBtn').onclick=()=>$('impDir').click();
+$('impDir').onchange=e=>$('impFile').onchange(e);
 $('impFile').onchange=async e=>{
   const files=[...e.target.files]; e.target.value=''; if(!files.length) return;
   toast('Leyendo…',60000);
@@ -2603,8 +2607,8 @@ $('impFile').onchange=async e=>{
         const c=ents.find(x=>/(^|\/)activities\.csv$/i.test(x.name));
         if(c) info=csvInfo(new TextDecoder().decode(await unzipRead(f,c)));
         ents.filter(x=>/\.(gpx|tcx|fit)(\.gz)?$/i.test(x.name)).forEach(x=>items.push({name:x.name,get:()=>unzipRead(f,x)}));
-      }else if(/\.csv$/i.test(f.name)) info=csvInfo(await f.text());
-      else items.push({name:f.name,get:()=>f.arrayBuffer(),mod:f.lastModified});
+      }else if(/\.csv$/i.test(f.name)){ if(/^activities\.csv$/i.test(f.name)||files.filter(x=>/\.csv$/i.test(x.name)).length===1) info=csvInfo(await f.text()); }
+      else if(/\.(gpx|tcx|fit)(\.gz)?$/i.test(f.name)) items.push({name:f.name,get:()=>f.arrayBuffer(),mod:f.lastModified});
     }
   }catch(err){ toast(err&&err.message==='gz'?'Este navegador no sabe abrir archivos comprimidos. Actualiza Safari.':'No he podido abrir ese .zip. Prueba otra vez o descomprímelo y elige los archivos de la carpeta activities.',6000); return; }
   const ok=[]; let bad=0, other=0, done=0, total=0;
