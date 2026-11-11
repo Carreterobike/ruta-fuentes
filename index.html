@@ -2445,7 +2445,7 @@ function prepRide(r){
   r.coords.forEach((p,i)=>{ s=Math.min(s,p[0]); n=Math.max(n,p[0]); w=Math.min(w,p[1]); e=Math.max(e,p[1]); if(i) cum.push(cum[i-1]+dist(r.coords[i-1],p)); });
   r._bb=[s,w,n,e]; r._cum=cum;
 }
-async function saveRides(list){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old&&old.bike) r.bike=old.bike; r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); await loadRides(); }
+async function saveRides(list){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); await loadRides(); }
 async function delRide(id){ const r=rides.find(x=>x.id===id); await ridesTx('readwrite',st=>st.delete(id)); syncDelRide(id,r&&r.date); await loadRides(); }
 function lineKm(c){ let m=0; for(let i=1;i<c.length;i++) m+=dist(c[i-1],c[i]); return m/1000; }
 function thin(c){ const out=[]; for(const p of c){ if(!out.length||dist(out[out.length-1],p)>=10) out.push([+p[0].toFixed(5),+p[1].toFixed(5)]); } return out; }
@@ -2586,12 +2586,31 @@ function stravaTipo(type){
 function csvInfo(text){
   const rows=parseCSV(text.replace(/^﻿/,'')); if(rows.length<2) return null;
   const H=rows[0].map(nrm), col=(re,def)=>{ const i=H.findIndex(h=>re.test(h)); return i>=0?i:def; };
-  const ci={id:col(/^activity id$|^id de (la )?actividad$|^id$/,0),name:col(/^activity name$|nombre/,2),type:col(/^activity type$|^tipo/,3),gear:col(/gear|equipo|material/,-1),file:col(/^filename$|archivo|nombre de archivo/,-1)};
+  const ci={id:col(/^activity id$|^id de (la )?actividad$|^id$/,0),name:col(/^activity name$|nombre/,2),type:col(/^activity type$|^tipo/,3),gear:col(/gear|equip|material/,-1),file:col(/^filename$|archivo|nombre de archivo/,-1)};
   if(ci.file<0){ const r=rows.find((r,i)=>i&&r.some(x=>/^activities\//.test(x))); if(r) ci.file=r.findIndex(x=>/^activities\//.test(x)); }
   const by={};
   rows.slice(1).forEach(r=>{ const fn=(r[ci.file]||'').trim(); if(!fn) return;
     by[nrm(fn.replace(/^.*\//,''))]={id:r[ci.id],name:r[ci.name],type:r[ci.type],gear:ci.gear>=0?r[ci.gear]:''}; });
   return by;
+}
+// bicis de Strava (bikes.csv del archivo): mote de Strava → marca, modelo y tipo
+function bikesCsv(text){
+  const rows=parseCSV(text.replace(/^﻿/,'')); if(rows.length<2) return [];
+  return rows.slice(1).filter(r=>r[0]).map(r=>{ const sp=nrm(r[3]||''); let tipo=/montana|mountain/.test(sp)?'mtb':/gravel/.test(sp)?'gravel':/electr|e-?bike/.test(sp)?'ebike':/bici|ride/.test(sp)?'road':null;
+    if(!tipo) tipo=/scale|spark|epic|stumpjumper|fourstroke|four stroke|oiz|anthem|trance|lux|mtb|btt|29/.test(nrm(r[1]+' '+r[2]))?'mtb':'road';
+    return {name:r[0],marca:r[1]||'',modelo:r[2]||'',tipo}; });
+}
+// busca (o crea) la bici de Ichnos que corresponde a una bici de Strava
+function gearToBike(g,list){
+  if(!g) return null; const sb=(list||[]).find(x=>nrm(x.name)===nrm(g));
+  let b=bikes.find(b=>(b.alias||[]).some(a=>nrm(a)===nrm(g)));
+  if(!b&&sb){ const mk=nrm(sb.marca), md=nrm(sb.modelo);
+    b=bikes.find(b=>mk&&nrm(b.marca)===mk&&md&&(nrm(b.modelo).includes(md.split(' ')[0])||md.includes(nrm(b.modelo).split(' ')[0])))||bikes.find(b=>mk&&nrm(b.marca)===mk&&b.tipo===sb.tipo); }
+  if(!b){ const id=bikeByGear(g); b=id?bikeById(id):null; }
+  if(!b&&sb){ b={id:'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),mote:sb.name,marca:sb.marca,modelo:sb.modelo,tipo:sb.tipo,principal:!bikes.some(x=>x.tipo===sb.tipo),foto:null}; bikes.push(b); }
+  if(!b) return null;
+  if(!(b.alias||[]).some(a=>nrm(a)===nrm(g))) b.alias=[...(b.alias||[]),g];
+  return b;
 }
 $('impBtn').onclick=()=>$('impFile').click();
 $('impDirBtn').onclick=()=>$('impDir').click();
@@ -2599,15 +2618,17 @@ $('impDir').onchange=e=>$('impFile').onchange(e);
 $('impFile').onchange=async e=>{
   const files=[...e.target.files]; e.target.value=''; if(!files.length) return;
   toast('Leyendo…',60000);
-  const items=[]; let info=null;
+  const items=[]; let info=null, sbikes=[];
   try{
     for(const f of files){
       if(/\.zip$/i.test(f.name)){
         const ents=await unzipList(f);
         const c=ents.find(x=>/(^|\/)activities\.csv$/i.test(x.name));
         if(c) info=csvInfo(new TextDecoder().decode(await unzipRead(f,c)));
+        const bc=ents.find(x=>/(^|\/)bikes\.csv$/i.test(x.name)); if(bc) sbikes=bikesCsv(new TextDecoder().decode(await unzipRead(f,bc)));
         ents.filter(x=>/\.(gpx|tcx|fit)(\.gz)?$/i.test(x.name)).forEach(x=>items.push({name:x.name,get:()=>unzipRead(f,x)}));
-      }else if(/\.csv$/i.test(f.name)){ if(/^activities\.csv$/i.test(f.name)||files.filter(x=>/\.csv$/i.test(x.name)).length===1) info=csvInfo(await f.text()); }
+      }else if(/^bikes\.csv$/i.test(f.name)){ sbikes=bikesCsv(await f.text()); }
+      else if(/\.csv$/i.test(f.name)){ if(/^activities\.csv$/i.test(f.name)||files.filter(x=>/\.csv$/i.test(x.name)).length===1) info=csvInfo(await f.text()); }
       else if(/\.(gpx|tcx|fit)(\.gz)?$/i.test(f.name)) items.push({name:f.name,get:()=>f.arrayBuffer(),mod:f.lastModified});
     }
   }catch(err){ toast(err&&err.message==='gz'?'Este navegador no sabe abrir archivos comprimidos. Actualiza Safari.':'No he podido abrir ese .zip. Prueba otra vez o descomprímelo y elige los archivos de la carpeta activities.',6000); return; }
@@ -2629,13 +2650,16 @@ $('impFile').onchange=async e=>{
       const strava=!!meta||!!info;
       const src=strava?'Strava':/\.fit/i.test(t.file)?'COROS / Strava (FIT)':'Strava / COROS';
       const id=meta&&meta.id?'strava-'+meta.id:'imp-'+t.file+'-'+c.length+'-'+c[0].join(',');
-      const bike=meta?(bikeByGear(meta.gear)||bikeForTipo(tipo)):defaultBike(mode);
-      ok.push({id,name:(meta&&meta.name)||t.name||t.file.replace(/\.(gpx|tcx|fit)$/i,''),date:t.date||it.mod||Date.now(),source:src,tipo:tipo||null,coords:c,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike,km:lineKm(c)});
+      const gb=meta&&meta.gear?gearToBike(meta.gear,sbikes):null;
+      const bike=meta?(gb?gb.id:bikeForTipo(tipo)):defaultBike(mode);
+      const rtipo=gb?gb.tipo:tipo;
+      ok.push({id,name:(meta&&meta.name)||t.name||t.file.replace(/\.(gpx|tcx|fit)$/i,''),date:t.date||it.mod||Date.now(),source:src,tipo:rtipo||null,coords:c,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike,km:lineKm(c)});
       if(ok.length>=40){ await saveRides(ok.splice(0)); }
     }catch(err){ bad++; }
   }
   const n=done-bad;
   if(ok.length) await saveRides(ok);
+  if(sbikes.length||bikes.some(b=>b.alias)){ store.set('ichnos-bicis',bikes); renderBikes(); }
   if(n) drawHeat();
   toast(n?`${n} salida${n>1?'s':''} añadida${n>1?'s':''}`+(other?` · ${other} de correr, caminar u otras no se han traído`:'')+(bad?` · ${bad} sin recorrido`:''):(other?'En ese archivo no hay salidas en bici.':'No he encontrado recorridos en esos archivos.'),6500);
 };
@@ -2766,7 +2790,7 @@ const bikeName=b=>b?(b.mote||`${b.marca} ${b.modelo}`.trim()||'Bici'):'Sin bici'
 const bikeById=id=>bikes.find(b=>b.id===id)||null;
 const bikeForTipo=tipo=>{ if(!tipo) return null; const b=bikes.find(b=>b.tipo===tipo&&b.principal)||bikes.find(b=>b.tipo===tipo); return b?b.id:null; };
 const nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-function bikeByGear(g){ g=nrm(g); if(!g) return null; const b=bikes.find(b=>b.mote&&g.includes(nrm(b.mote)))||bikes.find(b=>b.modelo&&g.includes(nrm(b.modelo)))||bikes.find(b=>b.marca&&g.includes(nrm(b.marca))); return b?b.id:null; }
+function bikeByGear(g){ g=nrm(g); if(!g) return null; const b=bikes.find(b=>(b.alias||[]).some(a=>nrm(a)===g))||bikes.find(b=>b.mote&&g.includes(nrm(b.mote)))||bikes.find(b=>b.modelo&&g.includes(nrm(b.modelo)))||bikes.find(b=>b.marca&&g.includes(nrm(b.marca))); return b?b.id:null; }
 function defaultBike(tipo){ return (bikes.find(b=>b.tipo===tipo&&b.principal)||bikes.find(b=>b.tipo===tipo)||bikes[0]||{}).id||null; }
 function saveBikes(){ if(!store.set('ichnos-bicis',bikes)) toast('No se han podido guardar las bicis (¿fotos muy grandes?).',5000); renderBikes(); renderNums(); }
 function renderBikes(){
