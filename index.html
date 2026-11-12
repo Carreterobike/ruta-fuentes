@@ -723,7 +723,7 @@ details.help p{margin:6px 0 0}
         </div>
         <p class="note" id="capasNote" hidden>Acércate un poco más en el mapa para ver los sitios.</p>
         <div class="addp"><select id="apCat" aria-label="Tipo de sitio"><option value="taller">Tienda / taller de bici</option><option value="comer">Bar / restaurante</option><option value="dormir">Alojamiento</option><option value="salud">Hospital / urgencias</option><option value="farmacia">Farmacia</option><option value="super">Supermercado</option></select><button id="apBtn">＋ Añadir sitio</button></div>
-        <p class="note">¿Falta alguno o ya no existe? Añádelo aquí, o toca el sitio y pulsa "Ya no existe".</p>
+        <p class="note">¿Falta alguno o ya no existe? Añádelo aquí, o toca el sitio y pulsa "Ya no existe". Sitios: © OpenStreetMap y Overture Maps.</p>
       </section>
       <section class="sec" id="secCrear" hidden>
         <div class="sec-h"><h3>Tu ruta</h3><span class="status" id="status">Toca el mapa para poner la salida</span></div>
@@ -1954,10 +1954,56 @@ function addTilePlaces(pts){ pts.forEach(q=>{ const c=q.props.class||'', sc=q.pr
   const id='t'+q.lat.toFixed(5)+','+q.lon.toFixed(5); if(pStore.has(id)) return;
   const tags={}; if(/^(restaurant|bar|cafe|pub|fast_food|biergarten)$/.test(sc)) tags.amenity=sc; else if(c==='beer') tags.amenity='pub'; else if(c==='lodging'||c==='campsite') tags.tourism=sc; else if(c==='hospital'||sc==='clinic') tags.amenity=sc; else if(cat==='farmacia') tags.amenity='pharmacy'; else if(cat==='taller') tags.shop='bicycle'; else if(cat==='super') tags.shop=sc;
   const nm=q.props['name:es']||q.props.name||'';
-  pStore.set(id,{id,lat:q.lat,lon:q.lon,cat,tags,name:nm||SUBT[sc]||PCAT[cat].t}); }); }
+  const pl={id,lat:q.lat,lon:q.lon,cat,tags,name:nm||SUBT[sc]||PCAT[cat].t}; pStore.set(id,pl); gridAdd(pl); }); }
+// --- rejilla para encontrar sitios repetidos (el mismo bar en dos fuentes de datos)
+const pGrid=new Map(); const gKey=(la,lo)=>Math.round(la*1000)+':'+Math.round(lo*1000);
+function gridAdd(p){ const k=gKey(p.lat,p.lon); if(!pGrid.has(k)) pGrid.set(k,[]); pGrid.get(k).push(p); }
+function nearSame(lat,lon,cat,name){ const a=Math.round(lat*1000), b=Math.round(lon*1000), n=nrm(name);
+  for(let i=-1;i<=1;i++) for(let j=-1;j<=1;j++){ const l=pGrid.get((a+i)+':'+(b+j)); if(!l) continue;
+    for(const q of l){ if(q.cat!==cat) continue; const d=dist([lat,lon],[q.lat,q.lon]); const qn=nrm(q.name);
+      if(d<25||(d<120&&n&&qn&&(qn.includes(n)||n.includes(qn)))) return q; } }
+  return null; }
+// --- Overture Maps: base de datos abierta de sitios (Meta, Microsoft, Foursquare…). Tiene muchos negocios que no están en OpenStreetMap
+let ovtP=null, ovtRel=null; const ovtCache=new Map();
+async function ovtSource(){
+  if(ovtP) return ovtP;
+  if(!window.pmtiles) await new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/pmtiles@3.2.1/dist/pmtiles.js'; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
+  let rel=null; const c=store.get('ichnos-ovt',null);
+  if(c&&c.t>Date.now()-5*86400000) rel=c.rel;
+  if(!rel){ try{ rel=(await (await fetch('https://stac.overturemaps.org/catalog.json')).json()).latest; syncRaw.set('ichnos-ovt',{rel,t:Date.now()}); }catch(e){ rel=(c&&c.rel)||'2026-10-21.0'; } }
+  ovtRel=rel; ovtP=new pmtiles.PMTiles(`https://overturemaps-extras-us-west-2.s3.us-west-2.amazonaws.com/tiles/${rel}/places.pmtiles`);
+  return ovtP;
+}
+function ovtCat(H){
+  const has=k=>H.includes(k), h0=H[0]||'';
+  if(H.some(k=>/bike|bicycle|cycl/.test(k))) return 'taller';
+  if(h0==='food_and_drink'&&!H.some(k=>/bakery|candy|dessert|ice_cream|juice/.test(k))) return 'comer';
+  if(h0==='lodging') return 'dormir';
+  if(has('pharmacy')) return 'farmacia';
+  if(has('hospital')||has('emergency_room')||has('urgent_care_clinic')||(h0==='health_care'&&H[1]==='outpatient_care_facility')) return 'salud';
+  if(has('grocery_store')||has('supermarket')||has('convenience_store')) return 'super';
+  return null;
+}
+const jp=v=>{ try{ return typeof v==='string'?JSON.parse(v):v; }catch(e){ return null; } };
+async function ovtTile(x,y){
+  const k=x+'/'+y; if(ovtCache.has(k)) return ovtCache.get(k);
+  const pr=(async()=>{ const P=await ovtSource(); const t=await P.getZxy(14,x,y); return t&&t.data?mvtPoints(t.data,'place',14,x,y):[]; })().catch(()=>{ ovtCache.delete(k); return []; });
+  ovtCache.set(k,pr); return pr;
+}
+function addOvtPlaces(pts){ pts.forEach(q=>{ const pr=q.props||{}; if(/closed/.test(pr.operating_status||'')) return; if((pr.confidence??1)<0.35) return;
+  const tx=jp(pr.taxonomy)||{}, H=tx.hierarchy||[tx.primary||pr.basic_category||'']; const cat=ovtCat(H); if(!cat) return;
+  const name=pr['@name']||(jp(pr.names)||{}).primary||''; if(!name) return;
+  const ad=(jp(pr.addresses)||[])[0]||{}, ph=(jp(pr.phones)||[])[0]||'', web=(jp(pr.websites)||[])[0]||'';
+  const extra={addr:[ad.freeform,ad.locality].filter(Boolean).join(', '),phone:ph,web,sub:(tx.primary||'').replace(/_/g,' ')};
+  const same=nearSame(q.lat,q.lon,cat,name);
+  if(same){ same.extra={...extra,...(same.extra||{})}; if(!same.extra.phone) same.extra.phone=ph; return; }
+  const id='o'+(pr.id||(q.lat.toFixed(5)+','+q.lon.toFixed(5))); if(pStore.has(id)) return;
+  const pl={id,lat:q.lat,lon:q.lon,cat,tags:{},name,extra}; pStore.set(id,pl); gridAdd(pl); }); }
 async function loadTilesAround(x0,x1,y0,y1){
   const keys=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) keys.push([x,y]);
-  for(let i=0;i<keys.length;i+=6){ const part=await Promise.all(keys.slice(i,i+6).map(([x,y])=>tilePois(x,y))); part.forEach(addTilePlaces); }
+  for(let i=0;i<keys.length;i+=6){ const sl=keys.slice(i,i+6);
+    const [a,b]=await Promise.all([Promise.all(sl.map(([x,y])=>tilePois(x,y))),Promise.all(sl.map(([x,y])=>ovtTile(x,y)))]);
+    a.forEach(addTilePlaces); b.forEach(addOvtPlaces); }
 }
 function placeCat(t){
   if(/^(restaurant|bar|cafe|pub|fast_food|biergarten)$/.test(t.amenity||'')) return 'comer';
@@ -2019,7 +2065,8 @@ function placeEl(p){
   const sub=SUBT[t.amenity||t.tourism||t.shop||t.healthcare]||PCAT[p.cat].t;
   const extra=[t.cuisine?String(t.cuisine).replace(/_/g,' ').replace(/;/g,', '):'', t.opening_hours?'Horario: '+t.opening_hours:''].filter(Boolean).map(esc).join('<br>');
   let where=''; if(route){ const nr=nearestOnRoute([p.lat,p.lon]); where=`<br><small>Km ${fmtKm(nr.km)} · ${nr.d<60?'en tu ruta':'a '+(nr.d<1000?Math.round(nr.d)+' m':fmtKm(nr.d/1000)+' km')+' de tu ruta'}</small>`; }
-  d.innerHTML=`<b class="t">${esc(p.name)}</b><br><small>${esc(sub)}</small>${where}${extra?`<br><small>${extra}</small>`:''}${t.phone?`<br><a href="tel:${esc(t.phone)}">${esc(t.phone)}</a>`:''}`;
+  const ex=p.extra||{}, tel=t.phone||ex.phone, web=t.website||ex.web;
+  d.innerHTML=`<b class="t">${esc(p.name)}</b><br><small>${esc(sub)}</small>${where}${ex.addr?`<br><small>${esc(ex.addr)}</small>`:''}${extra?`<br><small>${extra}</small>`:''}${tel?`<br><a href="tel:${esc(tel)}">📞 ${esc(tel)}</a>`:''}${web?`<br><a href="${esc(/^https?:/.test(web)?web:'https://'+web)}" target="_blank" rel="noopener">🌐 Web</a>`:''}`;
   if(o.t) d.insertAdjacentHTML('beforeend',`<div class="mine"><b>Tu opinión:</b> ${esc(opTxt(o)||'sin nota')}${o.txt?'<br>'+esc(o.txt):''}<br><small>${new Date(o.t).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</small></div>`);
   const f=document.createElement('div');
   f.innerHTML=`<small>${o.t?'Cambiar tu opinión':'¿Has estado? Ponle nota'}</small><div class="stars">${[1,2,3,4,5].map(k=>`<button type="button" data-k="${k}" class="${(o.nota||0)>=k?'on':''}">★</button>`).join('')}</div>
