@@ -128,8 +128,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .results small{color:var(--muted)}
 .mbar{display:flex;gap:2px;background:var(--brand);border-radius:16px;padding:4px;box-shadow:var(--shadow);overflow-x:auto;scrollbar-width:none}
 .mbar::-webkit-scrollbar{display:none}
-.mbar button{flex:1 1 42px;min-width:0;border:0;background:none;color:#cfd3d6;border-radius:12px;padding:5px 1px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;font-family:var(--body);font-weight:700;font-size:9px;letter-spacing:-.2px;line-height:1.1;white-space:nowrap}
-.mbar button svg{width:24px;height:24px}
+.mbar button{flex:1 1 42px;min-width:0;border:0;background:none;color:#cfd3d6;border-radius:12px;padding:6px 1px 5px;display:flex;flex-direction:column;align-items:center;gap:1px;font-family:var(--body);font-weight:700;font-size:9.5px;letter-spacing:-.2px;line-height:1.1;white-space:nowrap}
+.mbar button svg{width:31px;height:31px}
 .mbar button.on{background:var(--accent);color:var(--accent-ink)}
 .mbar .msep{flex:none;width:1px;margin:6px 2px;background:rgba(255,255,255,.18)}
 .chips{display:flex;gap:6px}
@@ -782,7 +782,7 @@ details.help p{margin:6px 0 0}
   </div>
 
   <div class="lgbox" id="lgBox" hidden>
-    <button class="lg-head" id="lgHead" aria-expanded="true"><span class="dots"><i style="background:#2e9d3a"></i><i style="background:#1f6fd1"></i><i style="background:#d62a1e"></i><i style="background:#111"></i></span>Colores <b>▾</b></button>
+    <button class="lg-head" id="lgHead" aria-expanded="true"><span class="dots"><i style="background:#2e9d3a"></i><i style="background:#1f6fd1"></i><i style="background:#d62a1e"></i><i style="background:#111"></i></span>Dificultad <b>▾</b></button>
     <div class="lg-body" id="lgBody"></div>
   </div>
 
@@ -2743,7 +2743,7 @@ function prepRide(r){
   r.coords.forEach((p,i)=>{ s=Math.min(s,p[0]); n=Math.max(n,p[0]); w=Math.min(w,p[1]); e=Math.max(e,p[1]); if(i) cum.push(cum[i-1]+dist(r.coords[i-1],p)); });
   r._bb=[s,w,n,e]; r._cum=cum;
 }
-async function saveRides(list){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); await loadRides(); }
+async function saveRides(list,quiet){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); if(!quiet) await loadRides(); }
 async function delRide(id){ const r=rides.find(x=>x.id===id); await ridesTx('readwrite',st=>st.delete(id)); syncDelRide(id,r&&r.date); await loadRides(); }
 function lineKm(c){ let m=0; for(let i=1;i<c.length;i++) m+=dist(c[i-1],c[i]); return m/1000; }
 function thin(c){ const out=[]; for(const p of c){ if(!out.length||dist(out[out.length-1],p)>=10) out.push([+p[0].toFixed(5),+p[1].toFixed(5)]); } return out; }
@@ -2958,7 +2958,7 @@ $('impFile').onchange=async e=>{
       const bike=meta?(gb?gb.id:bikeForTipo(tipo)):defaultBike(mode);
       const rtipo=gb?gb.tipo:tipo;
       ok.push({id,name:(meta&&meta.name)||t.name||t.file.replace(/\.(gpx|tcx|fit)$/i,''),date:t.date||it.mod||Date.now(),source:src,tipo:rtipo||null,coords:c,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike,km:lineKm(c)});
-      if(ok.length>=40){ await saveRides(ok.splice(0)); }
+      if(ok.length>=40){ await saveRides(ok.splice(0),true); }
     }catch(err){ bad++; }
   }
   const n=done-bad;
