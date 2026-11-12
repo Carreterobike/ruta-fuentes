@@ -556,7 +556,6 @@ details.help p{margin:6px 0 0}
     <button type="submit" class="btn-main">Guardar</button>
     <button type="button" class="btn-ghost" id="pCancel">Cancelar</button>
   </form>
-  <button class="btn-main gomap" id="goMap">Ir al mapa</button>
 
   <section class="pblock" id="pBikes">
     <div class="pb-h"><h3>Mis bicis</h3><button class="pb-btn" id="bikeAdd">＋ Añadir</button></div>
@@ -946,7 +945,7 @@ async function geocode(q){
   return f?{lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]}:null;
 }
 function editPerfil(on){
-  $('pView').hidden=on; $('pForm').hidden=!on; $('goMap').hidden=on;
+  $('pView').hidden=on; $('pForm').hidden=!on;
   if(on){ fotoNueva=perfil.foto||null; paintAvatar($('pPick'),fotoNueva); $('fApodo').value=perfil.apodo||''; $('fCiudad').value=perfil.ciudad||''; $('fCasa').value=perfil.casa||''; $('fPriv').value=String(perfil.priv??500); $('fHrmax').value=perfil.hrmax||''; }
 }
 $('pEdit').onclick=()=>editPerfil(true);
@@ -1002,7 +1001,6 @@ function showPage(id){
   }
 }
 document.querySelectorAll('#bnav button').forEach(b=>b.onclick=()=>showPage(b.dataset.pg));
-$('goMap').onclick=()=>showPage('pgMapa');
 let ajFrom='pgPerfil';
 document.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>{ const cur=[...document.querySelectorAll('.page')].find(p=>!p.classList.contains('off')); ajFrom=cur&&cur.id!=='pgAjustes'?cur.id:'pgPerfil'; showPage('pgAjustes'); $('pgAjustes').scrollTop=0; });
 $('ajBack').onclick=()=>showPage(ajFrom);
