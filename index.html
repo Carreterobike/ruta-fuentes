@@ -141,6 +141,22 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .lbar button.make{color:var(--ink);box-shadow:inset 0 0 0 2.5px var(--accent),var(--shadow)}
 .lbar button.make svg{width:16px;height:16px}
 .lbar button.make.on{background:var(--accent);color:var(--accent-ink)}
+.lbar button.capas svg{width:17px;height:17px}
+.lbar button.capas b{background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:12px;padding:0 7px;min-width:20px}
+.lbar button.capas b:empty{display:none}
+.lbar button.capas.on{background:var(--ink);color:var(--bg)}
+.sec-h .x{color:var(--ink);margin-left:auto}
+.capgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.capgrid button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:9px 10px;display:flex;gap:8px;align-items:center;font-weight:700;font-size:13.5px;text-align:left;line-height:1.2}
+.capgrid button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.capgrid .ic{width:28px;height:28px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:14px}
+.pmk{width:30px;height:30px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;color:#fff;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.35);position:relative}
+.pmk em{position:absolute;left:22px;top:-8px;background:#1E2328;color:#B6E22E;font-style:normal;font-size:11px;font-weight:800;border-radius:6px;padding:1px 5px;white-space:nowrap}
+.ppop b.t{font-size:15px}.ppop small{color:var(--muted)}
+.ppop .stars{display:flex;gap:2px;margin:6px 0}.ppop .stars button{border:0;background:none;font-size:22px;padding:0 2px;color:#c9c9c4}.ppop .stars button.on{color:#f2b100}
+.ppop input,.ppop textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;margin:3px 0}
+.ppop .mine{background:var(--soft);border-radius:8px;padding:6px 8px;margin:6px 0;font-size:13px}
+.pin.b{background:#e8590c;color:#fff}
 @media (min-width:761px){.lbar{justify-content:center}}
 
 /* ficha */
@@ -656,6 +672,21 @@ details.help p{margin:6px 0 0}
   <aside class="sheet" id="sheet" hidden>
     <button class="handle" id="handle" aria-label="Abrir o plegar la ficha"><i></i></button>
     <div class="sheet-body">
+      <section class="sec" id="secCapas" hidden>
+        <div class="sec-h"><h3>Qué ver en el mapa</h3><button class="qbtn x" id="capasX" aria-label="Cerrar">✕</button></div>
+        <div class="capgrid">
+          <button data-t="fuentes"><span class="ic" style="background:#1677c9">💧</span>Fuentes</button>
+          <button data-t="trialeras"><span class="ic" style="background:#2e9d3a">⛰</span>Trialeras</button>
+          <button data-t="segmentos"><span class="ic" style="background:#1E2328">⏱</span>Segmentos</button>
+          <button data-p="comer"><span class="ic" style="background:#e8590c">🍴</span>Bares y restaurantes</button>
+          <button data-p="dormir"><span class="ic" style="background:#7048e8">🛏</span>Hoteles y hostales</button>
+          <button data-p="salud"><span class="ic" style="background:#e03131">✚</span>Hospitales y urgencias</button>
+          <button data-p="farmacia"><span class="ic" style="background:#2b8a3e">💊</span>Farmacias</button>
+          <button data-p="taller"><span class="ic" style="background:#1c7ed6">🔧</span>Tiendas y talleres de bici</button>
+          <button data-p="super"><span class="ic" style="background:#5c940d">🛒</span>Supermercados</button>
+        </div>
+        <p class="note" id="capasNote" hidden>Acércate un poco más en el mapa para ver los sitios.</p>
+      </section>
       <section class="sec" id="secCrear" hidden>
         <div class="sec-h"><h3>Tu ruta</h3><span class="status" id="status">Toca el mapa para poner la salida</span></div>
         <div class="opts" id="optGravel" hidden>
@@ -681,7 +712,14 @@ details.help p{margin:6px 0 0}
           <button id="calcCancel" hidden>Cancelar</button>
           <button id="tripBtn" hidden>Hacer por etapas</button>
           <button id="tripBack" hidden>← Volver al viaje</button>
+          <button id="almBtn" hidden>🍴 Almuerzo</button>
         </div>
+      </section>
+      <section class="sec" id="secAlm" hidden>
+        <div class="sec-h"><h3>¿Dónde almuerzas?</h3><button class="qbtn x" id="almX" aria-label="Cerrar">✕</button></div>
+        <div class="segc" id="almWhere"><button data-w="mitad" class="on">En ruta (a mitad)</button><button data-w="final">Al final</button></div>
+        <p class="note" id="almNote"></p>
+        <ul class="routes" id="almList"></ul>
       </section>
       <section class="sec" id="secViaje" hidden>
         <div class="sec-h"><h3>Viaje por etapas</h3></div>
@@ -718,9 +756,7 @@ details.help p{margin:6px 0 0}
 
   <div class="lbar" id="lbar" role="group" aria-label="Qué ver en el mapa">
     <button class="make" data-t="crear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Crear ruta</button>
-    <button data-t="fuentes"><i></i>Fuentes</button>
-    <button data-t="trialeras"><i></i>Trialeras</button>
-    <button data-t="segmentos"><i></i>Segmentos</button>
+    <button id="capasBtn" class="capas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5z"/><path d="m2 13 10 5 10-5"/></svg>Capas<b id="capasN"></b></button>
   </div>
 
   <div class="lgbox" id="lgBox" hidden>
@@ -846,7 +882,7 @@ const store = {
 };
 // ================= COPIA ENTRE APARATOS (Mac ↔ iPhone) =================
 // Lo que cambias en un aparato se guarda en tu puente de Cloudflare y el otro lo coge al abrir Ichnos.
-const SYNC_KEYS=['ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap'];
+const SYNC_KEYS=['ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap','ichnos-lugares'];
 const syncRaw={set:store.set.bind(store),del:store.del.bind(store)};
 let syncTimer=null, syncBusy=false, syncReady=false;
 function syncMeta(){ const m=store.get('ichnos-sync',null)||{}; m.mt=m.mt||{}; m.seen=m.seen||{}; m.dirty=m.dirty||[]; return m; }
@@ -1168,10 +1204,10 @@ const fmtKm = k => k.toFixed(1).replace('.',',');
 function setStatus(t){ $('status').textContent=t; }
 
 // ================= PESTAÑAS-INTERRUPTOR =================
-document.querySelectorAll('#lbar button').forEach(b=>b.onclick=()=>setToggle(b.dataset.t,!T[b.dataset.t]));
+document.querySelectorAll('#lbar button[data-t], #secCapas [data-t]').forEach(b=>b.onclick=()=>setToggle(b.dataset.t,!T[b.dataset.t]));
 async function setToggle(k,on){
   T[k]=on;
-  document.querySelector(`#lbar [data-t="${k}"]`).classList.toggle('on',on);
+  document.querySelectorAll(`[data-t="${k}"]`).forEach(b=>b.classList.toggle('on',on)); paintCapas();
   if(k==='crear'){
     $('map').classList.toggle('crear',on); drawPins(); applyTrails(); setTimeout(recommendTrails,50);
     if(on){ toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
@@ -1196,6 +1232,9 @@ function updateSheet(){
   $('tripBack').hidden=!(trip&&trip.open!=null);
   $('tripBtn').hidden=!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
   $('secSeg').hidden=!T.segmentos;
+  $('secCapas').hidden=!capasOpen;
+  $('almBtn').hidden=!(route && points.length>=2 && !trip);
+  $('secAlm').hidden=!(almOpen && route);
   $('secHechas').hidden=!rec;
   const any=[...document.querySelectorAll('.sec')].some(s=>!s.hidden);
   const wasHidden=$('sheet').hidden;
@@ -1369,7 +1408,7 @@ map.on('moveend',()=>{ clearTimeout(recTimer); recTimer=setTimeout(recommendTrai
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
   mode=b.dataset.mode;
   document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelector('#lbar [data-t="trialeras"]').hidden = mode==='road';   // en Carretera no hay trialeras
+  document.querySelector('#secCapas [data-t="trialeras"]').hidden = mode==='road';   // en Carretera no hay trialeras
   applyTrails(); updateSheet(); recommendTrails();
   if(points.length>=2) calc();
 });
@@ -1521,10 +1560,10 @@ const FLAG_ICON=(()=>{ let sq=''; for(let r=0;r<3;r++) for(let c=0;c<5;c++) sq+=
 function drawPins(){
   pinLayer.clearLayers();
   points.forEach((p,i)=>{
-    const isF=p[2]==='f' && i>0 && i<points.length-1;
+    const isF=p[2]==='f' && i>0 && i<points.length-1, isB=p[2]==='b' && i>0 && i<points.length-1;
     const last=i===points.length-1 && points.length>1;
     const label = isF?TAP_W:i;
-    const icon = i===0 ? START_ICON : last ? FLAG_ICON : L.divIcon({className:'',html:`<div class="pin${isF?' f':''}">${label}</div>`,iconSize:[26,26],iconAnchor:[13,13]});
+    const icon = i===0 ? START_ICON : last ? FLAG_ICON : L.divIcon({className:'',html:`<div class="pin${isF?' f':''}${isB?' b':''}">${isB?'🍴':label}</div>`,iconSize:[26,26],iconAnchor:[13,13]});
     const m=L.marker([p[0],p[1]],{icon,
       draggable:T.crear}).addTo(pinLayer);
     m.on('dragend',ev=>{const ll=ev.target.getLatLng();points[i]=[ll.lat,ll.lng];calc();});
@@ -1749,6 +1788,136 @@ function renderStats(){
   $('sUp').innerHTML = route && route.up!=null ? Math.round(route.up)+'<em>m</em>' : '–';
   $('sSurf').innerHTML = route ? surfBar(route.coords) : '';
 }
+
+// ================= CAPAS Y LUGARES (bares, alojamiento, salud, talleres…) =================
+let capasOpen=false, almOpen=false;
+const PCAT={
+  comer:{t:'Bar / restaurante',col:'#e8590c',ic:'🍴',q:'nwr["amenity"~"^(restaurant|bar|cafe|pub|fast_food|biergarten)$"](BB);'},
+  dormir:{t:'Alojamiento',col:'#7048e8',ic:'🛏',q:'nwr["tourism"~"^(hotel|hostel|guest_house|motel|alpine_hut|camp_site|apartment|wilderness_hut)$"](BB);'},
+  salud:{t:'Hospital / urgencias',col:'#e03131',ic:'✚',q:'nwr["amenity"~"^(hospital|clinic)$"](BB);nwr["healthcare"~"^(hospital|centre)$"](BB);'},
+  farmacia:{t:'Farmacia',col:'#2b8a3e',ic:'💊',q:'nwr["amenity"="pharmacy"](BB);'},
+  taller:{t:'Tienda / taller de bici',col:'#1c7ed6',ic:'🔧',q:'nwr["shop"="bicycle"](BB);nwr["amenity"="bicycle_repair_station"](BB);'},
+  super:{t:'Supermercado',col:'#5c940d',ic:'🛒',q:'nwr["shop"~"^(supermarket|convenience)$"](BB);'},
+};
+const SUBT={restaurant:'Restaurante',bar:'Bar',cafe:'Cafetería',pub:'Pub',fast_food:'Comida rápida',biergarten:'Terraza',hotel:'Hotel',hostel:'Albergue',guest_house:'Casa de huéspedes',motel:'Motel',alpine_hut:'Refugio',camp_site:'Camping',apartment:'Apartamentos',wilderness_hut:'Refugio libre',hospital:'Hospital',clinic:'Centro de salud',centre:'Centro de salud',pharmacy:'Farmacia',bicycle:'Tienda de bici',bicycle_repair_station:'Punto de reparación',supermarket:'Supermercado',convenience:'Tienda'};
+function placeCat(t){
+  if(/^(restaurant|bar|cafe|pub|fast_food|biergarten)$/.test(t.amenity||'')) return 'comer';
+  if(/^(hotel|hostel|guest_house|motel|alpine_hut|camp_site|apartment|wilderness_hut)$/.test(t.tourism||'')) return 'dormir';
+  if(/^(hospital|clinic)$/.test(t.amenity||'')||/^(hospital|centre)$/.test(t.healthcare||'')) return 'salud';
+  if(t.amenity==='pharmacy') return 'farmacia';
+  if(t.shop==='bicycle'||t.amenity==='bicycle_repair_station') return 'taller';
+  if(/^(supermarket|convenience)$/.test(t.shop||'')) return 'super';
+  return null;
+}
+let placesOn=new Set(store.get('ichnos-capas',[]).filter(k=>PCAT[k]));
+let opin=store.get('ichnos-lugares',{})||{};
+const pStore=new Map(), pLoaded=new Set();
+const placeLayer=L.layerGroup().addTo(map);
+function addPlaces(j){ (j&&j.elements||[]).forEach(e=>{ const t=e.tags||{}, cat=placeCat(t); if(!cat) return; const lat=e.lat??(e.center&&e.center.lat), lon=e.lon??(e.center&&e.center.lon); if(lat==null) return;
+  const id=e.type[0]+e.id; if(!pStore.has(id)) pStore.set(id,{id,lat,lon,cat,tags:t,name:t.name||SUBT[t.amenity||t.tourism||t.shop||t.healthcare]||PCAT[cat].t}); }); }
+const pTile=(lat,lon)=>[Math.floor((lon+180)/360*1024),Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*1024)];
+const tLon=x=>x/1024*360-180, tLat=y=>Math.atan(Math.sinh(Math.PI*(1-2*y/1024)))*180/Math.PI;
+let pTimer=null, pBusy=false;
+async function loadPlaces(){
+  const need=[...placesOn]; $('capasNote').hidden=true;
+  if(!need.length){ renderPlaces(); return; }
+  if(map.getZoom()<12){ $('capasNote').hidden=false; renderPlaces(); return; }
+  if(pBusy) return; pBusy=true;
+  try{
+    const b=map.getBounds(), [x0,y0]=pTile(b.getNorth(),b.getWest()), [x1,y1]=pTile(b.getSouth(),b.getEast());
+    const tiles=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) tiles.push([x,y]);
+    for(const [x,y] of tiles.slice(0,6)){
+      const cats=need.filter(c=>!pLoaded.has(c+'|'+x+'|'+y)); if(!cats.length) continue;
+      const bb=`${tLat(y+1).toFixed(5)},${tLon(x).toFixed(5)},${tLat(y).toFixed(5)},${tLon(x+1).toFixed(5)}`;
+      try{ const j=await overpass(`[out:json][timeout:25];(${cats.map(c=>PCAT[c].q.replaceAll('BB',bb)).join('')});out center tags;`,25000);
+        addPlaces(j); cats.forEach(c=>pLoaded.add(c+'|'+x+'|'+y)); renderPlaces(); }catch(e){ toast('No he podido cargar los sitios ahora. Prueba en un rato.',4000); break; }
+    }
+  }finally{ pBusy=false; }
+  renderPlaces();
+}
+const opTxt=o=>o?[o.nota?'★'+o.nota:'',o.precio?String(o.precio).replace('.',',')+' €':''].filter(Boolean).join(' · '):'';
+function renderPlaces(){
+  placeLayer.clearLayers(); if(!placesOn.size&&!points.some(p=>p[2]==='b')) return;
+  const b=map.getBounds().pad(0.2); let n=0;
+  const lunchIds=new Set(points.filter(p=>p[2]==='b').map(p=>p[3]));
+  pStore.forEach(p=>{ if(!(placesOn.has(p.cat)||lunchIds.has(p.id))) return; if(!b.contains([p.lat,p.lon])||n>400) return; n++;
+    const o=opin[p.id], lab=opTxt(o);
+    L.marker([p.lat,p.lon],{pane:'taps',title:p.name,icon:L.divIcon({className:'',html:`<div class="pmk" style="background:${PCAT[p.cat].col}">${PCAT[p.cat].ic}${lab?`<em>${lab}</em>`:''}</div>`,iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-14]})})
+      .bindPopup(()=>placeEl(p),{minWidth:240,maxWidth:280}).addTo(placeLayer);
+  });
+}
+function placeEl(p){
+  const t=p.tags||{}, o=opin[p.id]||{}, d=document.createElement('div'); d.className='ppop';
+  const sub=SUBT[t.amenity||t.tourism||t.shop||t.healthcare]||PCAT[p.cat].t;
+  const extra=[t.cuisine?String(t.cuisine).replace(/_/g,' ').replace(/;/g,', '):'', t.opening_hours?'Horario: '+t.opening_hours:''].filter(Boolean).map(esc).join('<br>');
+  let where=''; if(route){ const nr=nearestOnRoute([p.lat,p.lon]); where=`<br><small>Km ${fmtKm(nr.km)} · ${nr.d<60?'en tu ruta':'a '+(nr.d<1000?Math.round(nr.d)+' m':fmtKm(nr.d/1000)+' km')+' de tu ruta'}</small>`; }
+  d.innerHTML=`<b class="t">${esc(p.name)}</b><br><small>${esc(sub)}</small>${where}${extra?`<br><small>${extra}</small>`:''}${t.phone?`<br><a href="tel:${esc(t.phone)}">${esc(t.phone)}</a>`:''}`;
+  if(o.t) d.insertAdjacentHTML('beforeend',`<div class="mine"><b>Tu opinión:</b> ${esc(opTxt(o)||'sin nota')}${o.txt?'<br>'+esc(o.txt):''}<br><small>${new Date(o.t).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</small></div>`);
+  const f=document.createElement('div');
+  f.innerHTML=`<small>${o.t?'Cambiar tu opinión':'¿Has estado? Ponle nota'}</small><div class="stars">${[1,2,3,4,5].map(k=>`<button type="button" data-k="${k}" class="${(o.nota||0)>=k?'on':''}">★</button>`).join('')}</div>
+    ${p.cat==='comer'?'<input inputmode="decimal" placeholder="Precio del almuerzo (€)" class="pr">':''}<textarea rows="2" placeholder="¿Qué tal? Comida, trato, si es caro…" class="tx"></textarea><button class="segbtn sv">Guardar opinión</button>`;
+  let nota=o.nota||0; if(f.querySelector('.pr')) f.querySelector('.pr').value=o.precio||''; f.querySelector('.tx').value=o.txt||'';
+  f.querySelectorAll('.stars button').forEach(b=>b.onclick=()=>{ nota=+b.dataset.k; f.querySelectorAll('.stars button').forEach(x=>x.classList.toggle('on',+x.dataset.k<=nota)); });
+  f.querySelector('.sv').onclick=()=>{ const pr=f.querySelector('.pr'), precio=pr?parseFloat(pr.value.replace(',','.'))||null:null;
+    opin[p.id]={nota:nota||null,precio,txt:f.querySelector('.tx').value.trim().slice(0,1000),t:Date.now(),name:p.name,lat:p.lat,lon:p.lon,cat:p.cat};
+    store.set('ichnos-lugares',opin); map.closePopup(); renderPlaces(); if(almOpen) renderLunch(); toast('Opinión guardada'); };
+  d.appendChild(f);
+  if(p.cat==='comer'||p.cat==='dormir'){
+    const isLunch=points.some(q=>q[2]==='b'&&q[3]===p.id);
+    const bt=document.createElement('button'); bt.className='segbtn'+(isLunch?' del2':'');
+    bt.textContent=isLunch?'Quitar de la ruta':(p.cat==='comer'?'Almorzar aquí':'Pasar por aquí');
+    bt.onclick=()=>{ map.closePopup(); if(isLunch) removeLunch(); else lunchAt(p,false); };
+    d.appendChild(bt);
+  }
+  return d;
+}
+function removeLunch(){ const i=points.findIndex((q,k)=>q[2]==='b'&&k>0&&k<points.length-1); if(i>0){ points.splice(i,1); drawPins(); calc(); toast('Parada quitada de la ruta.'); } }
+async function lunchAt(p,final){
+  if(!route||points.length<2){ toast('Primero crea tu ruta y luego elige dónde almorzar.',4000); return; }
+  points=points.filter((q,k)=>!(q[2]==='b'&&k>0&&k<points.length-1));
+  if(final){ points[points.length-1]=[p.lat,p.lon,'b',p.id]; }
+  else{
+    const nr=nearestOnRoute([p.lat,p.lon]), kmOf=route.idx.map(i=>route.cum[i]/1000);
+    let at=points.length-1; for(let i=1;i<points.length;i++){ if((kmOf[i]??Infinity)>=nr.km){ at=i; break; } }
+    points.splice(at,0,[p.lat,p.lon,'b',p.id]);
+  }
+  if(!pStore.has(p.id)) pStore.set(p.id,p);
+  almOpen=false; drawPins(); await calc(); renderPlaces();
+  toast(final?`La ruta ahora acaba en ${p.name}.`:`La ruta ahora pasa por ${p.name} para almorzar.`,4500);
+}
+// ---- almuerzo al crear la ruta: en ruta (a mitad) o al final
+let almWhere='mitad', almRes=[], almReq=0;
+function routeAt(m){ const c=route.coords, cum=route.cum; let i=cum.findIndex(x=>x>=m); if(i<0) i=c.length-1; return c[i]; }
+async function searchLunch(){
+  if(!route) return; const my=++almReq;
+  const pt=almWhere==='final'?route.coords[route.coords.length-1]:routeAt(route.length/2);
+  $('almNote').textContent='Buscando bares…'; $('almList').innerHTML='';
+  try{
+    const j=await overpass(`[out:json][timeout:25];(${PCAT.comer.q.replaceAll('BB','around:2500,'+(+pt[0]).toFixed(5)+','+(+pt[1]).toFixed(5))});out center tags;`,25000);
+    if(my!==almReq) return; addPlaces(j);
+    almRes=[...pStore.values()].filter(p=>p.cat==='comer').map(p=>{ const nr=nearestOnRoute([p.lat,p.lon]); return {p,dPt:dist([p.lat,p.lon],pt),dRoute:nr.d,km:nr.km}; })
+      .filter(x=>x.dPt<=2500).sort((a,b)=>((opin[b.p.id]&&opin[b.p.id].nota)||0)-((opin[a.p.id]&&opin[a.p.id].nota)||0)||a.dRoute-b.dRoute).slice(0,15);
+    renderLunch();
+  }catch(e){ if(my===almReq) $('almNote').textContent='No he podido buscar bares ahora. Prueba en un rato.'; }
+}
+function renderLunch(){
+  const ul=$('almList'); ul.innerHTML='';
+  $('almNote').textContent=almRes.length?(almWhere==='final'?'Bares cerca del final de tu ruta. Los que tienen tu nota salen primero.':`Bares cerca de la mitad (km ${fmtKm(route.length/2000)}). Los que tienen tu nota salen primero.`):'No hay bares registrados cerca de ese punto.';
+  almRes.forEach(x=>{ const o=opin[x.p.id], li=document.createElement('li'); li.className='fli';
+    li.innerHTML=`<span class="km">${fmtKm(x.km)}<em>km</em></span><span class="t"><div>${esc(x.p.name)}</div><small>${x.dRoute<60?'En tu ruta':'A '+(x.dRoute<1000?Math.round(x.dRoute)+' m':fmtKm(x.dRoute/1000)+' km')+' de la ruta'}${o?' · '+esc(opTxt(o)):''}</small></span>`;
+    const b=document.createElement('button'); b.className='qbtn'; b.style.color='var(--ink)'; b.textContent=almWhere==='final'?'Acabar aquí':'Almorzar aquí';
+    b.onclick=e=>{ e.stopPropagation(); lunchAt(x.p,almWhere==='final'); };
+    li.appendChild(b); li.onclick=()=>map.setView([x.p.lat,x.p.lon],16); ul.appendChild(li); });
+}
+function paintCapas(){ const n=['fuentes','trialeras','segmentos'].filter(k=>T[k]).length+placesOn.size; $('capasN').textContent=n||''; $('capasBtn').classList.toggle('on',capasOpen); document.querySelectorAll('#secCapas [data-p]').forEach(b=>b.classList.toggle('on',placesOn.has(b.dataset.p))); }
+$('capasBtn').onclick=()=>{ capasOpen=!capasOpen; paintCapas(); updateSheet(); };
+$('capasX').onclick=()=>{ capasOpen=false; paintCapas(); updateSheet(); };
+document.querySelectorAll('#secCapas [data-p]').forEach(b=>b.onclick=()=>{ const k=b.dataset.p; placesOn.has(k)?placesOn.delete(k):placesOn.add(k); syncRaw.set('ichnos-capas',[...placesOn]); paintCapas(); loadPlaces(); });
+$('almBtn').onclick=()=>{ almOpen=!almOpen; updateSheet(); if(almOpen) searchLunch(); };
+$('almX').onclick=()=>{ almOpen=false; updateSheet(); };
+document.querySelectorAll('#almWhere button').forEach(b=>b.onclick=()=>{ almWhere=b.dataset.w; document.querySelectorAll('#almWhere button').forEach(x=>x.classList.toggle('on',x===b)); searchLunch(); });
+map.on('moveend',()=>{ clearTimeout(pTimer); pTimer=setTimeout(loadPlaces,600); });
+setTimeout(()=>{ paintCapas(); if(placesOn.size) loadPlaces(); },800);
 
 // ================= FUENTES =================
 const DROP_SVG='<svg viewBox="0 0 32 40"><path d="M16 2s-13 15.5-13 24a13 13 0 0 0 26 0c0-8.5-13-24-13-24z" fill="#1677c9" stroke="#ffffff" stroke-width="2.2"/><g transform="translate(6.6 16.5) scale(0.78)"><path d="M4 11h9a4 4 0 0 1 4 4v1M4 8v6M9 11V7M6 6h6" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 19.5c0 .8-.7 1.5-1.5 1.5S14 20.3 14 19.5c0-1 1.5-2.5 1.5-2.5S17 18.5 17 19.5z" fill="#ffffff"/></g></svg>';
