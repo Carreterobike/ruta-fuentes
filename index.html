@@ -57,6 +57,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 #pgPerfil,#pgSalidas,#pgAjustes,.rideview{background-color:#232a30;background-image:var(--topo);background-attachment:local}
 #pgPerfil,#pgSalidas,#pgAjustes{overflow-y:auto;padding:0 0 28px}
 .phead.short{padding-bottom:18px}
+.bk-old-h{margin:10px 0 2px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bike.old{opacity:.75}
+.bike.old .bk-ph{filter:grayscale(1)}
 .phead .gear{margin-left:auto;border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;width:40px;height:40px;display:grid;place-items:center;padding:0}
 .phead .gear svg{width:22px;height:22px}
 .aj-back{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;width:40px;height:40px;font-size:20px}
@@ -798,6 +801,7 @@ details.help p{margin:6px 0 0}
     <label class="fld">Modelo<input id="bkModelo" maxlength="40" placeholder="Ej.: Fourstroke"></label></div>
     <label class="fld">Tipo<select id="bkTipo"><option value="road">Carretera</option><option value="gravel">Gravel</option><option value="mtb">BTT</option><option value="ebike">E-bike</option></select></label>
     <label class="chk"><input type="checkbox" id="bkMain"> Bici principal para este tipo (se pone sola en las salidas nuevas)</label>
+    <label class="chk"><input type="checkbox" id="bkOld"> Ya no la tengo (pasa a "Anteriores bicis")</label>
     <div class="btns"><button type="submit" class="btn-main">Guardar</button><button type="button" class="btn-ghost" id="bkCancel">Cancelar</button>
     <button type="button" class="btn-out" id="bkDel" hidden>Borrar bici</button></div>
   </form>
@@ -2786,16 +2790,22 @@ if(!bikes){   // primera vez: dejamos puestas tus bicis
 }
 const bikeName=b=>b?(b.mote||`${b.marca} ${b.modelo}`.trim()||'Bici'):'Sin bici';
 const bikeById=id=>bikes.find(b=>b.id===id)||null;
-const bikeForTipo=tipo=>{ if(!tipo) return null; const b=bikes.find(b=>b.tipo===tipo&&b.principal)||bikes.find(b=>b.tipo===tipo); return b?b.id:null; };
+const bikeForTipo=tipo=>{ if(!tipo) return null; const b=bikes.find(b=>b.tipo===tipo&&b.principal&&!b.retirada)||bikes.find(b=>b.tipo===tipo&&!b.retirada); return b?b.id:null; };
 const nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 function bikeByGear(g){ g=nrm(g); if(!g) return null; const b=bikes.find(b=>(b.alias||[]).some(a=>nrm(a)===g))||bikes.find(b=>b.mote&&g.includes(nrm(b.mote)))||bikes.find(b=>b.modelo&&g.includes(nrm(b.modelo)))||bikes.find(b=>b.marca&&g.includes(nrm(b.marca))); return b?b.id:null; }
-function defaultBike(tipo){ return (bikes.find(b=>b.tipo===tipo&&b.principal)||bikes.find(b=>b.tipo===tipo)||bikes[0]||{}).id||null; }
+function defaultBike(tipo){ const a=bikes.filter(b=>!b.retirada); return (a.find(b=>b.tipo===tipo&&b.principal)||a.find(b=>b.tipo===tipo)||a[0]||{}).id||null; }
+// una sola vez: la Scott y la Cube de David pasan a "Anteriores bicis" (él lo pidió el 12 nov)
+function migRetire(){ if(store.get('ichnos-mig-retiro',false)) return; let ch=false;
+  bikes.forEach(b=>{ if(!b.retirada&&/^(scott|cube)$/.test(nrm(b.marca))){ b.retirada=true; b.principal=false; ch=true; } });
+  syncRaw.set('ichnos-mig-retiro',true); if(ch) saveBikes(); }
 function saveBikes(){ if(!store.set('ichnos-bicis',bikes)) toast('No se han podido guardar las bicis (¿fotos muy grandes?).',5000); renderBikes(); renderNums(); }
 function renderBikes(){
   const box=$('bikeList'); box.innerHTML='';
-  bikes.forEach(b=>{
+  const act=bikes.filter(b=>!b.retirada), old=bikes.filter(b=>b.retirada);
+  [...act,...(old.length?['__old']:[]),...old].forEach(b=>{
+    if(b==='__old'){ const h=document.createElement('h5'); h.className='bk-old-h'; h.textContent='Anteriores bicis'; box.appendChild(h); return; }
     const km=rides.filter(r=>r.bike===b.id).reduce((s,r)=>s+(r.km||0),0);
-    const el=document.createElement('button'); el.className='bike';
+    const el=document.createElement('button'); el.className='bike'+(b.retirada?' old':'');
     el.innerHTML=`<div class="bk-ph" ${b.foto?`style="background-image:url('${b.foto}')"`:''}>${b.foto?'':BIKE_SVG}</div>
       <div class="bk-t"><b>${esc(bikeName(b))}</b><small>${b.mote?esc(`${b.marca} ${b.modelo}`):''}</small>
       <span><i class="chip">${BIKE_TIPOS[b.tipo]||''}</i>${b.principal?'<i class="chip main">Principal</i>':''}</span>
@@ -2810,7 +2820,7 @@ function editBike(b){
   bikeEditing=b||null; bikeFoto=b?b.foto:null;
   $('bkTitle').textContent=b?'Editar bici':'Nueva bici';
   $('bkMote').value=b?b.mote:''; $('bkMarca').value=b?b.marca:''; $('bkModelo').value=b?b.modelo:'';
-  $('bkTipo').value=b?b.tipo:(mode||'mtb'); $('bkMain').checked=b?!!b.principal:!bikes.some(x=>x.tipo===$('bkTipo').value);
+  $('bkTipo').value=b?b.tipo:(mode||'mtb'); $('bkMain').checked=b?!!b.principal:!bikes.some(x=>x.tipo===$('bkTipo').value); $('bkOld').checked=!!(b&&b.retirada);
   paintBikePh(); $('bkDel').hidden=!b; $('bkModal').hidden=false;
 }
 function paintBikePh(){ const ph=$('bkPh'); ph.style.backgroundImage=bikeFoto?`url("${bikeFoto}")`:''; ph.querySelector('.ico').innerHTML=bikeFoto?'':BIKE_SVG; }
@@ -2825,7 +2835,7 @@ $('bkFile').onchange=e=>{
 };
 $('bkForm').onsubmit=e=>{
   e.preventDefault();
-  const d={mote:$('bkMote').value.trim(),marca:$('bkMarca').value.trim(),modelo:$('bkModelo').value.trim(),tipo:$('bkTipo').value,principal:$('bkMain').checked,foto:bikeFoto};
+  const d={mote:$('bkMote').value.trim(),marca:$('bkMarca').value.trim(),modelo:$('bkModelo').value.trim(),tipo:$('bkTipo').value,principal:$('bkMain').checked&&!$('bkOld').checked,retirada:$('bkOld').checked,foto:bikeFoto};
   if(!d.marca&&!d.modelo&&!d.mote){ toast('Pon al menos la marca, el modelo o un mote.'); return; }
   let b=bikeEditing; if(b) Object.assign(b,d); else { b={id:'b'+Date.now(),...d}; bikes.push(b); }
   if(b.principal) bikes.forEach(x=>{ if(x!==b&&x.tipo===b.tipo) x.principal=false; });
@@ -3383,7 +3393,7 @@ $('locate').onclick=()=>{
 };
 
 // ================= ARRANQUE =================
-updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(async()=>{ syncReady=true; await syncNow(false); svAuto(); },1200); }); drawHome(); readShared();
+updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(async()=>{ syncReady=true; await syncNow(false); migRetire(); svAuto(); },1200); }); drawHome(); readShared();
 // si se cerró la app grabando, ofrecer guardar lo que había
 (async()=>{
   const pend=store.get('ichnos-rec',null);
