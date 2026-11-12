@@ -494,6 +494,11 @@ details.help p{margin:6px 0 0}
 .leaflet-control-zoom a,.leaflet-control-layers{border:0!important;box-shadow:var(--shadow)!important}
 .leaflet-control-zoom{border:0!important;border-radius:12px!important;overflow:hidden}
 .leaflet-control-layers{border-radius:12px!important}
+.leaflet-control-layers-toggle{width:46px!important;height:52px!important;background-image:none!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--ink);text-decoration:none;font-family:var(--body);font-weight:700;font-size:10px}
+.leaflet-control-layers-toggle svg{width:22px;height:22px}
+.lc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 6px;font-size:13px}
+.lc-head button{border:0;background:var(--soft);border-radius:8px;padding:3px 8px;font-weight:700}
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle{display:none!important}
 .leaflet-top.leaflet-right{top:env(safe-area-inset-top,0px)}
 .leaflet-bottom{bottom:62px}
 .leaflet-bottom.leaflet-right .leaflet-control-zoom{margin-bottom:66px}
@@ -1231,7 +1236,18 @@ const pinLayer=L.layerGroup().addTo(map);         // puntos que pones
 const fLayer=L.layerGroup().addTo(map);           // fuentes
 const windLayer=L.layerGroup().addTo(map);        // viento sobre la ruta
 const recLayer=L.layerGroup().addTo(map);         // grabación en directo
-L.control.layers(base,{'Nombres de pueblos, calles y montañas':namesToggle,'<span class="perso"></span>Mapa personal (por donde has pasado)':hLayer}).addTo(map);
+const layersCtl=L.control.layers(base,{'Nombres de pueblos, calles y montañas':namesToggle,'<span class="perso"></span>Mapa personal (por donde has pasado)':hLayer}).addTo(map);
+// se abre al CLICAR (no al pasar el ratón) y se cierra al volver a clicar o al tocar el mapa
+(()=>{ const c=layersCtl.getContainer&&layersCtl.getContainer(); if(!c||!L.DomEvent.off) return;
+  L.DomEvent.off(c,{mouseenter:layersCtl._expandSafely,mouseleave:layersCtl.collapse},layersCtl);
+  const a=c.querySelector('.leaflet-control-layers-toggle'); if(!a) return;
+  a.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span>Mapa</span>';
+  a.title='Tipo de mapa'; let was=false;
+  const lst=c.querySelector('.leaflet-control-layers-list'); if(lst){ const h=document.createElement('div'); h.className='lc-head'; h.innerHTML='<b>Tipo de mapa</b><button type="button" aria-label="Cerrar">✕</button>'; h.querySelector('button').onclick=e=>{ e.stopPropagation(); layersCtl.collapse(); }; lst.prepend(h); }
+  a.addEventListener('mousedown',()=>{ was=c.classList.contains('leaflet-control-layers-expanded'); });
+  a.addEventListener('touchstart',()=>{ was=c.classList.contains('leaflet-control-layers-expanded'); },{passive:true});
+  a.addEventListener('click',()=>{ if(was) setTimeout(()=>layersCtl.collapse(),0); });
+})();
 // botón "Capas" (fuentes, trialeras, bares…) justo debajo del de Satélite/Mapa
 const CapasCtl=L.Control.extend({onAdd(){ const d=L.DomUtil.create('div','capas-ctl');
   d.innerHTML='<button id="capasBtn" aria-label="Mostrar: qué ver en el mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.4-6-10a6 6 0 0 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg><span>Mostrar</span><b id="capasN"></b></button>';
@@ -3754,7 +3770,7 @@ map.on('moveend',()=>{ if(route) return; clearTimeout(wxTimer); wxTimer=setTimeo
 
 // ================= BUSCADOR =================
 let qTimer=null, qRes=[], foundMk=null;
-$('q').addEventListener('input',()=>{ clearTimeout(qTimer); qTimer=setTimeout(searchPlaces,350); });
+$('q').addEventListener('input',()=>{ clearTimeout(qTimer); if(!$('q').value.trim()){ clearFound(); $('destCard').hidden=true; } qTimer=setTimeout(searchPlaces,350); });
 $('q').addEventListener('keydown',e=>{ if(e.key==='Enter'&&qRes[0]){ e.preventDefault(); goTo(qRes[0]); } if(e.key==='Escape') $('results').hidden=true; });
 document.addEventListener('click',e=>{ if(!e.target.closest('.search')) $('results').hidden=true; });
 async function searchPlaces(){
@@ -3786,8 +3802,10 @@ function goTo(f){
   $('destCard').hidden=false; $('lgBox').classList.add('min');
 }
 let dest=null;
-$('destX').onclick=()=>{ $('destCard').hidden=true; };
+function clearFound(){ if(foundMk){ foundMk.remove(); foundMk=null; } }
+$('destX').onclick=()=>{ $('destCard').hidden=true; clearFound(); };
 async function routeFromHome(round){
+  clearFound();
   if(!perfil.home){
     const go=await ask('No tienes tu casa guardada','Ponla en tu perfil y podrás crear rutas desde casa.','Ir al perfil','Ahora no');
     if(go){ showPage('pgPerfil'); editPerfil(true); } return;
