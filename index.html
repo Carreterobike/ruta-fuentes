@@ -157,6 +157,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .lbar button.capas b:empty{display:none}
 .lbar button.capas.on{background:var(--ink);color:var(--bg)}
 .sec-h .x{color:var(--ink);margin-left:auto}
+.addp{display:flex;gap:8px}.addp select{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--card);color:var(--ink);font:inherit;font-size:13.5px}.addp button{border:0;border-radius:10px;padding:8px 12px;background:var(--ink);color:var(--bg);font-weight:700;font-size:13.5px;white-space:nowrap}
 .capgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .capgrid button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:9px 10px;display:flex;gap:8px;align-items:center;font-weight:700;font-size:13.5px;text-align:left;line-height:1.2}
 .capgrid button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -492,7 +493,12 @@ details.help p{margin:6px 0 0}
 .leaflet-bottom.leaflet-right .leaflet-control-zoom{margin-bottom:66px}
 
 /* iconos del mapa */
-.tapdrop svg{width:32px;height:40px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.tapdrop svg{width:30px;height:38px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.pmk2{position:relative;width:32px;height:41px}
+.pmk2 svg{width:32px;height:41px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.pmk2 em{position:absolute;left:26px;top:-4px;background:#1E2328;color:#B6E22E;font-style:normal;font-size:11px;font-weight:800;border-radius:6px;padding:1px 5px;white-space:nowrap}
+.capgrid .ic svg{width:26px;height:33px;display:block}
+.capgrid .ic{background:none!important;width:26px;height:33px;border-radius:0}
 .pin{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#1E2328;font-weight:700;display:grid;place-items:center;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.45);font-size:13px}
 .pin.f{background:#1677c9}
 .pin.f svg{width:14px;height:14px}
@@ -699,17 +705,19 @@ details.help p{margin:6px 0 0}
       <section class="sec" id="secCapas" hidden>
         <div class="sec-h"><h3>Qué ver en el mapa</h3><button class="qbtn x" id="capasX" aria-label="Cerrar">✕</button></div>
         <div class="capgrid">
-          <button data-t="fuentes"><span class="ic" style="background:#1677c9">💧</span>Fuentes</button>
-          <button data-t="trialeras"><span class="ic" style="background:#2e9d3a">⛰</span>Trialeras</button>
-          <button data-t="segmentos"><span class="ic" style="background:#1E2328">⏱</span>Segmentos</button>
-          <button data-p="comer"><span class="ic" style="background:#e8590c">🍴</span>Bares y restaurantes</button>
-          <button data-p="dormir"><span class="ic" style="background:#7048e8">🛏</span>Hoteles y hostales</button>
-          <button data-p="salud"><span class="ic" style="background:#e03131">✚</span>Hospitales y urgencias</button>
-          <button data-p="farmacia"><span class="ic" style="background:#2b8a3e">💊</span>Farmacias</button>
-          <button data-p="taller"><span class="ic" style="background:#1c7ed6">🔧</span>Tiendas y talleres de bici</button>
-          <button data-p="super"><span class="ic" style="background:#5c940d">🛒</span>Supermercados</button>
+          <button data-t="fuentes"><span class="ic" data-pin="fuente"></span>Fuentes</button>
+          <button data-t="trialeras"><span class="ic" data-pin="trial"></span>Trialeras</button>
+          <button data-t="segmentos"><span class="ic" data-pin="crono"></span>Segmentos</button>
+          <button data-p="comer"><span class="ic" data-pin="bar"></span>Bares y restaurantes</button>
+          <button data-p="dormir"><span class="ic" data-pin="cama"></span>Hoteles y hostales</button>
+          <button data-p="salud"><span class="ic" data-pin="hosp"></span>Hospitales y urgencias</button>
+          <button data-p="farmacia"><span class="ic" data-pin="farm"></span>Farmacias</button>
+          <button data-p="taller"><span class="ic" data-pin="taller"></span>Tiendas y talleres de bici</button>
+          <button data-p="super"><span class="ic" data-pin="super"></span>Supermercados</button>
         </div>
         <p class="note" id="capasNote" hidden>Acércate un poco más en el mapa para ver los sitios.</p>
+        <div class="addp"><select id="apCat" aria-label="Tipo de sitio"><option value="taller">Tienda / taller de bici</option><option value="comer">Bar / restaurante</option><option value="dormir">Alojamiento</option><option value="salud">Hospital / urgencias</option><option value="farmacia">Farmacia</option><option value="super">Supermercado</option></select><button id="apBtn">＋ Añadir sitio</button></div>
+        <p class="note">¿Falta alguno o ya no existe? Añádelo aquí, o toca el sitio y pulsa "Ya no existe".</p>
       </section>
       <section class="sec" id="secCrear" hidden>
         <div class="sec-h"><h3>Tu ruta</h3><span class="status" id="status">Toca el mapa para poner la salida</span></div>
@@ -1649,6 +1657,7 @@ let hintShown=false;
 map.on('click', e => {
   if(segMode){ segClick(e.latlng); return; }
   if(addingF){ addMyFountainAt(e.latlng); return; }
+  if(addingP){ addMyPlaceAt(e.latlng); return; }
   if(T.crear){ points.push([e.latlng.lat,e.latlng.lng]); drawPins(); calc(); return; }
   const info=trailAt(e.latlng);
   if(info){ L.popup({minWidth:200}).setLatLng(e.latlng).setContent(info).openOn(map); return; }
@@ -1912,12 +1921,12 @@ function renderStats(){
 // ================= CAPAS Y LUGARES (bares, alojamiento, salud, talleres…) =================
 let capasOpen=false, almOpen=false;
 const PCAT={
-  comer:{t:'Bar / restaurante',col:'#e8590c',ic:'🍴',q:'nwr["amenity"~"^(restaurant|bar|cafe|pub|fast_food|biergarten)$"](BB);'},
-  dormir:{t:'Alojamiento',col:'#7048e8',ic:'🛏',q:'nwr["tourism"~"^(hotel|hostel|guest_house|motel|alpine_hut|camp_site|apartment|wilderness_hut)$"](BB);'},
-  salud:{t:'Hospital / urgencias',col:'#e03131',ic:'✚',q:'nwr["amenity"~"^(hospital|clinic)$"](BB);nwr["healthcare"~"^(hospital|centre)$"](BB);'},
-  farmacia:{t:'Farmacia',col:'#2b8a3e',ic:'💊',q:'nwr["amenity"="pharmacy"](BB);'},
-  taller:{t:'Tienda / taller de bici',col:'#1c7ed6',ic:'🔧',q:'nwr["shop"="bicycle"](BB);nwr["amenity"="bicycle_repair_station"](BB);'},
-  super:{t:'Supermercado',col:'#5c940d',ic:'🛒',q:'nwr["shop"~"^(supermarket|convenience)$"](BB);'},
+  comer:{t:'Bar / restaurante',col:'#d9480f',pin:'bar',ic:'🍴',q:'nwr["amenity"~"^(restaurant|bar|cafe|pub|fast_food|biergarten)$"](BB);'},
+  dormir:{t:'Alojamiento',col:'#7048e8',pin:'cama',ic:'🛏',q:'nwr["tourism"~"^(hotel|hostel|guest_house|motel|alpine_hut|camp_site|apartment|wilderness_hut)$"](BB);'},
+  salud:{t:'Hospital / urgencias',col:'#c92a2a',pin:'hosp',ic:'✚',q:'nwr["amenity"~"^(hospital|clinic)$"](BB);nwr["healthcare"~"^(hospital|centre)$"](BB);'},
+  farmacia:{t:'Farmacia',col:'#2b8a3e',pin:'farm',ic:'💊',q:'nwr["amenity"="pharmacy"](BB);'},
+  taller:{t:'Tienda / taller de bici',col:'#0c8599',pin:'taller',ic:'🔧',q:'nwr["shop"="bicycle"](BB);nwr["amenity"="bicycle_repair_station"](BB);'},
+  super:{t:'Supermercado',col:'#e67700',pin:'super',ic:'🛒',q:'nwr["shop"~"^(supermarket|convenience)$"](BB);'},
 };
 const SUBT={restaurant:'Restaurante',bar:'Bar',cafe:'Cafetería',pub:'Pub',fast_food:'Comida rápida',biergarten:'Terraza',hotel:'Hotel',hostel:'Albergue',guest_house:'Casa de huéspedes',motel:'Motel',alpine_hut:'Refugio',camp_site:'Camping',apartment:'Apartamentos',wilderness_hut:'Refugio libre',hospital:'Hospital',clinic:'Centro de salud',centre:'Centro de salud',pharmacy:'Farmacia',bicycle:'Tienda de bici',bicycle_repair_station:'Punto de reparación',supermarket:'Supermercado',convenience:'Tienda'};
 function tileCat(c,sc){
@@ -1950,6 +1959,18 @@ function placeCat(t){
 let placesOn=new Set(store.get('ichnos-capas',[]).filter(k=>PCAT[k]));
 let opin=store.get('ichnos-lugares',{})||{};
 const pStore=new Map(), pLoaded=new Set();
+let addingP=null;
+function loadMyPlaces(){ Object.entries(opin).forEach(([id,o])=>{ if(o&&o.mine&&o.lat!=null) pStore.set(id,{id,lat:o.lat,lon:o.lon,cat:o.cat,tags:{},name:o.name,mine:true}); }); }
+async function addMyPlaceAt(ll){
+  const cat=addingP; addingP=null; $('map').classList.toggle('crear',T.crear);
+  const nm=await askName('Nuevo sitio','',{title:'Añadir '+PCAT[cat].t.toLowerCase(),hint:'Ponle el nombre del sitio.',placeholder:'Nombre',button:'Guardar sitio',allowEmpty:false,list:[]});
+  if(nm===null) return;
+  const id='u'+Date.now().toString(36);
+  opin[id]={mine:true,lat:+ll.lat.toFixed(6),lon:+ll.lng.toFixed(6),cat,name:nm,t:Date.now()};
+  store.set('ichnos-lugares',opin); loadMyPlaces();
+  if(!placesOn.has(cat)){ placesOn.add(cat); syncRaw.set('ichnos-capas',[...placesOn]); paintCapas(); }
+  renderPlaces(); toast('Sitio guardado');
+}
 const placeLayer=L.layerGroup().addTo(map);
 function addPlaces(j){ (j&&j.elements||[]).forEach(e=>{ const t=e.tags||{}, cat=placeCat(t); if(!cat) return; const lat=e.lat??(e.center&&e.center.lat), lon=e.lon??(e.center&&e.center.lon); if(lat==null) return;
   const id=e.type[0]+e.id; if(!pStore.has(id)) pStore.set(id,{id,lat,lon,cat,tags:t,name:t.name||SUBT[t.amenity||t.tourism||t.shop||t.healthcare]||PCAT[cat].t}); }); }
@@ -1975,9 +1996,9 @@ function renderPlaces(){
   placeLayer.clearLayers(); if(!placesOn.size&&!points.some(p=>p[2]==='b')) return;
   const b=map.getBounds().pad(0.2); let n=0;
   const lunchIds=new Set(points.filter(p=>p[2]==='b').map(p=>p[3]));
-  pStore.forEach(p=>{ if(!(placesOn.has(p.cat)||lunchIds.has(p.id))) return; if(!b.contains([p.lat,p.lon])||n>400) return; n++;
+  pStore.forEach(p=>{ if(!(placesOn.has(p.cat)||lunchIds.has(p.id))) return; if(opin[p.id]&&opin[p.id].oculto) return; if(!b.contains([p.lat,p.lon])||n>400) return; n++;
     const o=opin[p.id], lab=opTxt(o);
-    L.marker([p.lat,p.lon],{pane:'taps',title:p.name,icon:L.divIcon({className:'',html:`<div class="pmk" style="background:${PCAT[p.cat].col}">${PCAT[p.cat].ic}${lab?`<em>${lab}</em>`:''}</div>`,iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-14]})})
+    L.marker([p.lat,p.lon],{pane:'taps',title:p.name,icon:L.divIcon({className:'',html:`<div class="pmk2">${pinSvg(PCAT[p.cat].col,PCAT[p.cat].pin)}${lab?`<em>${lab}</em>`:''}</div>`,iconSize:[32,41],iconAnchor:[16,40],popupAnchor:[0,-34]})})
       .bindPopup(()=>placeEl(p),{minWidth:240,maxWidth:280}).addTo(placeLayer);
   });
 }
@@ -1994,9 +2015,11 @@ function placeEl(p){
   let nota=o.nota||0; if(f.querySelector('.pr')) f.querySelector('.pr').value=o.precio||''; f.querySelector('.tx').value=o.txt||'';
   f.querySelectorAll('.stars button').forEach(b=>b.onclick=()=>{ nota=+b.dataset.k; f.querySelectorAll('.stars button').forEach(x=>x.classList.toggle('on',+x.dataset.k<=nota)); });
   f.querySelector('.sv').onclick=()=>{ const pr=f.querySelector('.pr'), precio=pr?parseFloat(pr.value.replace(',','.'))||null:null;
-    opin[p.id]={nota:nota||null,precio,txt:f.querySelector('.tx').value.trim().slice(0,1000),t:Date.now(),name:p.name,lat:p.lat,lon:p.lon,cat:p.cat};
+    opin[p.id]={...(opin[p.id]||{}),nota:nota||null,precio,txt:f.querySelector('.tx').value.trim().slice(0,1000),t:Date.now(),name:p.name,lat:p.lat,lon:p.lon,cat:p.cat};
     store.set('ichnos-lugares',opin); map.closePopup(); renderPlaces(); if(almOpen) renderLunch(); toast('Opinión guardada'); };
   d.appendChild(f);
+  const hb=document.createElement('button'); hb.className='segbtn del'; hb.textContent=p.mine?'Borrar este sitio':'Ya no existe (ocultar)';
+  hb.onclick=()=>{ map.closePopup(); if(p.mine){ delete opin[p.id]; pStore.delete(p.id); } else opin[p.id]={...(opin[p.id]||{}),oculto:true,name:p.name,lat:p.lat,lon:p.lon,cat:p.cat,t:Date.now()}; store.set('ichnos-lugares',opin); renderPlaces(); toast(p.mine?'Sitio borrado':'Sitio ocultado. Ya no saldrá en tu mapa.'); };
   if(p.cat==='comer'||p.cat==='dormir'){
     const isLunch=points.some(q=>q[2]==='b'&&q[3]===p.id);
     const bt=document.createElement('button'); bt.className='segbtn'+(isLunch?' del2':'');
@@ -2004,6 +2027,7 @@ function placeEl(p){
     bt.onclick=()=>{ map.closePopup(); if(isLunch) removeLunch(); else lunchAt(p,false); };
     d.appendChild(bt);
   }
+  d.appendChild(hb);
   return d;
 }
 function removeLunch(){ const i=points.findIndex((q,k)=>q[2]==='b'&&k>0&&k<points.length-1); if(i>0){ points.splice(i,1); drawPins(); calc(); toast('Parada quitada de la ruta.'); } }
@@ -2031,7 +2055,7 @@ async function searchLunch(){
     const cx=tX(+pt[1]), cy=tY(+pt[0]); await loadTilesAround(cx-2,cx+2,cy-2,cy+2);
     if(my!==almReq) return;
     almRes=[...pStore.values()].filter(p=>p.cat==='comer').map(p=>{ const nr=nearestOnRoute([p.lat,p.lon]); return {p,dPt:dist([p.lat,p.lon],pt),dRoute:nr.d,km:nr.km}; })
-      .filter(x=>x.dPt<=2500).sort((a,b)=>((opin[b.p.id]&&opin[b.p.id].nota)||0)-((opin[a.p.id]&&opin[a.p.id].nota)||0)||a.dRoute-b.dRoute).slice(0,15);
+      .filter(x=>x.dPt<=2500&&!(opin[x.p.id]&&opin[x.p.id].oculto)).sort((a,b)=>((opin[b.p.id]&&opin[b.p.id].nota)||0)-((opin[a.p.id]&&opin[a.p.id].nota)||0)||a.dRoute-b.dRoute).slice(0,15);
     renderLunch();
   }catch(e){ if(my===almReq) $('almNote').textContent='No he podido buscar bares ahora. Prueba en un rato.'; }
 }
@@ -2044,8 +2068,11 @@ function renderLunch(){
     b.onclick=e=>{ e.stopPropagation(); lunchAt(x.p,almWhere==='final'); };
     li.appendChild(b); li.onclick=()=>map.setView([x.p.lat,x.p.lon],16); ul.appendChild(li); });
 }
+setTimeout(()=>document.querySelectorAll('#secCapas .ic[data-pin]').forEach(e=>{ e.innerHTML=pinSvg(PIN_C[e.dataset.pin],e.dataset.pin); }),0);
 function paintCapas(){ const n=['fuentes','trialeras','segmentos'].filter(k=>T[k]).length+placesOn.size; $('capasN').textContent=n||''; $('capasBtn').classList.toggle('on',capasOpen); document.querySelectorAll('#secCapas [data-p]').forEach(b=>b.classList.toggle('on',placesOn.has(b.dataset.p))); }
 $('capasBtn').onclick=()=>{ capasOpen=!capasOpen; paintCapas(); updateSheet(); };
+$('apBtn').onclick=()=>{ addingP=$('apCat').value; $('map').classList.add('crear'); capasOpen=false; paintCapas(); updateSheet(); toast('Toca en el mapa dónde está el sitio',6000); };
+setTimeout(()=>{ loadMyPlaces(); renderPlaces(); },0);
 $('capasX').onclick=()=>{ capasOpen=false; paintCapas(); updateSheet(); };
 document.querySelectorAll('#secCapas [data-p]').forEach(b=>b.onclick=()=>{ const k=b.dataset.p; placesOn.has(k)?placesOn.delete(k):placesOn.add(k); syncRaw.set('ichnos-capas',[...placesOn]); paintCapas(); loadPlaces(); });
 $('almBtn').onclick=()=>{ almOpen=!almOpen; updateSheet(); if(almOpen) searchLunch(); };
@@ -2055,6 +2082,9 @@ map.on('moveend',()=>{ clearTimeout(pTimer); pTimer=setTimeout(loadPlaces,600); 
 setTimeout(()=>{ paintCapas(); if(placesOn.size) loadPlaces(); },800);
 
 // ================= FUENTES =================
+const ICO={"fuente": "<path d=\"M4 9.5h6V7h4v2.5h3.5A2.5 2.5 0 0 1 20 12v1.5h-3.5V12H4z\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M18.3 16c1 1.4 1.7 2.4 1.7 3.2a1.7 1.7 0 0 1-3.4 0c0-.8.7-1.8 1.7-3.2z\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M12 7V4.5M10 4.5h4\"/>", "trial": "<path d=\"M2.5 19.5 9.5 8l3.5 5.5 2.5-3.5 6 9.5z\" fill=\"currentColor\" stroke=\"none\" opacity=\".35\"/><path d=\"M2.5 19.5 9.5 8l3.5 5.5 2.5-3.5 6 9.5z\"/><path d=\"M8 20l2.5-2.5-1.5-1.5 3-2.5\" stroke-dasharray=\"1.5 1.5\"/>", "crono": "<circle cx=\"12\" cy=\"13.5\" r=\"7\"/><path d=\"M12 13.5l3-3M10 3.5h4M12 3.5v3M18.2 6.8l1.3-1.3\"/>", "bar": "<path d=\"M4.5 10h11v3.5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M15.5 11h1.5a2.5 2.5 0 0 1 0 5h-1.8M3.5 21h14M8 3c-.9 1.3.9 2.3 0 4.5M12 3c-.9 1.3.9 2.3 0 4.5\"/>", "cama": "<path d=\"M3 19V6.5M3 14.5h18V19M21 14.5V13a3.5 3.5 0 0 0-3.5-3.5H11v5\"/><circle cx=\"7\" cy=\"11.5\" r=\"2\" fill=\"currentColor\" stroke=\"none\"/>", "hosp": "<path d=\"M7 5v14M17 5v14M7 12h10\" stroke-width=\"3\"/>", "farm": "<path d=\"M9 3.5h6v5.5h5.5v6H15v5.5H9V15H3.5V9H9z\" fill=\"currentColor\" stroke=\"none\"/>", "taller": "<circle cx=\"7.5\" cy=\"16\" r=\"4.2\"/><path d=\"M7.5 16l3-5.5h4.5\"/><path d=\"M19.8 6.2a3 3 0 0 0-3.8 3.6l-2.7 2.7 1.8 1.8 2.7-2.7a3 3 0 0 0 3.6-3.8l-1.6 1.6-1.6-.4-.4-1.6z\" fill=\"currentColor\" stroke-width=\"1\"/>", "super": "<path d=\"M3.5 10h17l-2 9.5h-13z\" fill=\"currentColor\" stroke=\"none\" opacity=\".35\"/><path d=\"M3.5 10h17l-2 9.5h-13zM8 10l3-6M16 10l-3-6M9 13.5v3M12 13.5v3M15 13.5v3\"/>"};
+const PIN_C={fuente:'#1c7ed6',trial:'#2f9e44',crono:'#495057',bar:'#d9480f',cama:'#7048e8',hosp:'#c92a2a',farm:'#2b8a3e',taller:'#0c8599',super:'#e67700'};
+function pinSvg(fill,ico,ring){ return `<svg class="pinsvg" viewBox="0 0 36 46"><path d="M18 1.5C8.9 1.5 1.5 8.6 1.5 17.4 1.5 28.6 18 44.5 18 44.5S34.5 28.6 34.5 17.4C34.5 8.6 27.1 1.5 18 1.5z" fill="${fill}" stroke="${ring||'#fff'}" stroke-width="${ring?3.2:2.5}"/><g transform="translate(7 6) scale(.917)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" color="#fff">${ICO[ico]}</g></svg>`; }
 const DROP_SVG='<svg viewBox="0 0 32 40"><path d="M16 2s-13 15.5-13 24a13 13 0 0 0 26 0c0-8.5-13-24-13-24z" fill="#1677c9" stroke="#ffffff" stroke-width="2.2"/><g transform="translate(6.6 16.5) scale(0.78)"><path d="M4 11h9a4 4 0 0 1 4 4v1M4 8v6M9 11V7M6 6h6" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 19.5c0 .8-.7 1.5-1.5 1.5S14 20.3 14 19.5c0-1 1.5-2.5 1.5-2.5S17 18.5 17 19.5z" fill="#ffffff"/></g></svg>';
 // lector mínimo de teselas vectoriales (MVT) para sacar los puntos de una capa
 function mvtPoints(buf, layerName, z, tx, ty){
@@ -2294,7 +2324,7 @@ function fountainEl(f){
 }
 const NAT_SVG=DROP_SVG.replace('fill="#1677c9"','fill="#d98a00"');
 const MINE_SVG=DROP_SVG.replace('stroke="#ffffff" stroke-width="2.2"','stroke="#B6E22E" stroke-width="2.8"');
-const iconFor=f=>f.kind==='natural'?NAT_SVG:f.kind==='mine'?MINE_SVG:DROP_SVG;
+const iconFor=f=>pinSvg(f.kind==='natural'?'#d98a00':'#1c7ed6','fuente',f.kind==='mine'?'#B6E22E':null);
 // En el mapa salen: todas las fuentes si la pestaña Fuentes está encendida, y siempre las que se han marcado para tu ruta
 function renderFountains(){
   fLayer.clearLayers(); const list=$('fList'); list.innerHTML='';
@@ -2305,7 +2335,7 @@ function renderFountains(){
   if(T.fuentes) fStore.forEach(f=>shownIds.add(f.id));
   shownIds.forEach(id=>{
     const f=fStore.get(id); if(!f) return;
-    const m=L.marker([f.lat,f.lon],{pane:'taps',title:nameOf(f),icon:L.divIcon({className:'',html:`<div class="tapdrop">${iconFor(f)}</div>`,iconSize:[32,40],iconAnchor:[16,27],popupAnchor:[0,-22]})})
+    const m=L.marker([f.lat,f.lon],{pane:'taps',title:nameOf(f),icon:L.divIcon({className:'',html:`<div class="tapdrop">${iconFor(f)}</div>`,iconSize:[30,38],iconAnchor:[15,37],popupAnchor:[0,-32]})})
       .bindPopup(()=>fountainEl(f),{minWidth:230}).addTo(fLayer);
     m.on('popupopen',async()=>{ if(f.photo!==undefined) return; f.photo=await findPhoto(f); m.setPopupContent(fountainEl(f)); });
     mk[id]=m;
