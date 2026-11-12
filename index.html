@@ -26,7 +26,7 @@
   --route:#B6E22E; --route-edge:#1E2328; --shadow:0 4px 18px rgba(0,0,0,.16);
   --display:"Barlow Condensed","Arial Narrow",sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --topo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='160' viewBox='0 0 220 160'%3E%3Cg fill='none' stroke='%23B6E22E' stroke-opacity='.16' stroke-width='1.2'%3E%3Cpath d='M-20 20c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 45c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 70c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 95c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 120c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cpath d='M-20 145c40-25 70 15 110-5s60-20 90 0 40 10 60 0'/%3E%3Cellipse cx='160' cy='80' rx='26' ry='14'/%3E%3Cellipse cx='160' cy='80' rx='14' ry='7'/%3E%3C/g%3E%3C/svg%3E");
+  --topo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='150' viewBox='0 0 220 150'%3E%3Cg fill='none' stroke='%23B6E22E' stroke-opacity='.16' stroke-width='1.2'%3E%3Cpath d='M0 10C30 -10 80 30 110 10S190 30 220 10'/%3E%3Cpath d='M0 35C30 15 80 55 110 35S190 55 220 35'/%3E%3Cpath d='M0 60C30 40 80 80 110 60S190 80 220 60'/%3E%3Cpath d='M0 85C30 65 80 105 110 85S190 105 220 85'/%3E%3Cpath d='M0 110C30 90 80 130 110 110S190 130 220 110'/%3E%3Cpath d='M0 135C30 115 80 155 110 135S190 155 220 135'/%3E%3Cpath d='M0 160C30 140 80 180 110 160S190 180 220 160'/%3E%3Cpath d='M0 10C30 -10 80 30 110 10S190 30 220 10'/%3E%3Cellipse cx='162' cy='72.5' rx='20' ry='5'/%3E%3Cellipse cx='162' cy='72.5' rx='10' ry='2.5'/%3E%3C/g%3E%3C/svg%3E");
   --navh:calc(62px + env(safe-area-inset-bottom,0px));
 }
 html[data-theme="dark"]:root{ --bg:#0c0d0f; --card:#17191c; --soft:#22252a; --ink:#f2f2f2; --muted:#9a9ea6; --line:#2a2e34;
@@ -407,6 +407,13 @@ details.help p{margin:6px 0 0}
 .recs li{grid-template-columns:1fr auto!important}
 .recs em,.routes li em{font-style:normal;font-weight:800;font-family:var(--display);font-size:18px}
 .routes li em.pr{color:#5f8a00}
+.rcols{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.rcol h4{margin:0 0 4px;font-family:var(--display);font-size:17px;letter-spacing:.4px;text-transform:uppercase}
+.rcol h4 small,.rtabs small{color:var(--muted);font-weight:700}
+.rcol .empty{font-size:13px;color:var(--muted);margin:6px 0}
+#pRides{max-width:960px}
+@media (min-width:761px){ .rtabs{display:none} }
+@media (max-width:760px){ #pRides{max-width:440px} .rcols{grid-template-columns:1fr} .rcol:not(.show){display:none} .rcol h4{display:none} }
 .rides{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .rides li{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer}
 .rides li:hover{background:var(--soft)}
@@ -620,8 +627,11 @@ details.help p{margin:6px 0 0}
   <section class="pblock" id="pRides">
     <div class="pb-h"><h3>Lista de salidas</h3></div>
     <p class="empty" id="rideEmpty">Todavía no hay salidas. Conecta Strava o trae tus archivos en Ajustes (la rueda ⚙️ de arriba), o graba una con el botón "Grabar ruta".</p>
-    <ul class="rides" id="rideList"></ul>
-    <button class="btn" id="rideMore" hidden>Ver más</button>
+    <div class="segc rtabs" id="rideTabs"><button data-c="bici" class="on">En bici <small id="nBiciT"></small></button><button data-c="pie">A pie <small id="nPieT"></small></button></div>
+    <div class="rcols">
+      <div class="rcol show" data-c="bici"><h4>En bici <small id="nBici"></small></h4><ul class="rides" id="rideListB"></ul><button class="btn" id="rideMoreB" hidden>Ver más</button></div>
+      <div class="rcol" data-c="pie"><h4>A pie <small id="nPie"></small></h4><ul class="rides" id="rideListP"></ul><button class="btn" id="rideMoreP" hidden>Ver más</button></div>
+    </div>
   </section>
 </main>
 
@@ -3224,10 +3234,14 @@ function shapeSvg(c,w,h,pad=6){
   return {d:'M'+c.filter((p,i)=>i%step===0||i===c.length-1).map(p=>P(p).join(',')).join('L'),P};
 }
 let rideShown=20;
+let rideShownP=20;
 function renderRideList(){
-  const ul=$('rideList'); ul.innerHTML='';
-  const list=filtRides();
-  list.slice(0,rideShown).forEach(r=>{
+  const all=filtRides(), pie=all.filter(r=>isFoot(rideTipo(r))), bici=all.filter(r=>!isFoot(rideTipo(r)));
+  [['B',bici,rideShown,'bici'],['P',pie,rideShownP,'pie']].forEach(([k,list,shown,c])=>{
+  const ul=$('rideList'+k); ul.innerHTML='';
+  $(c==='bici'?'nBici':'nPie').textContent=list.length?'('+list.length+')':''; $(c==='bici'?'nBiciT':'nPieT').textContent=list.length?'('+list.length+')':'';
+  if(!list.length) ul.innerHTML=`<p class="empty">${c==='bici'?'Sin salidas en bici todavía.':'Sin salidas a pie todavía.'}</p>`;
+  list.slice(0,shown).forEach(r=>{
     const st=rideStats(r), sh=shapeSvg(r.coords,64,64), li=document.createElement('li');
     li.innerHTML=`<svg viewBox="0 0 64 64" class="rthumb"><path d="${sh.d}" fill="none" stroke="#1E2328" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="${sh.d}" fill="none" stroke="#B6E22E" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
       <span><b>${esc(r.name)}</b><small>${fmtD(r.date)}${r.bike?' · '+esc(bikeName(bikeById(r.bike))):''}</small>
@@ -3235,10 +3249,12 @@ function renderRideList(){
     li.onclick=()=>openRide(r);
     ul.appendChild(li);
   });
-  $('rideMore').hidden=list.length<=rideShown;
-  $('rideEmpty').hidden=list.length>0;
-  fetchListPhotos(list.slice(0,rideShown));
+  $('rideMore'+k).hidden=list.length<=shown;
+  });
+  $('rideEmpty').hidden=all.length>0;
+  fetchListPhotos([...bici.slice(0,rideShown),...pie.slice(0,rideShownP)]);
 }
+document.querySelectorAll('#rideTabs button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#rideTabs button').forEach(x=>x.classList.toggle('on',x===b)); document.querySelectorAll('.rcol').forEach(c=>c.classList.toggle('show',c.dataset.c===b.dataset.c)); });
 const mainPhoto=r=>(r.fotos&&r.fotos[0]&&r.fotos[0].src)||(r.sfotos&&r.sfotos[0])||null;
 // fotos de Strava de las salidas que se ven en la lista (poco a poco, para no pasarse con Strava)
 const phTried=new Set(); let phBusy=false;
@@ -3248,7 +3264,8 @@ async function fetchListPhotos(list){
     phTried.add(r.id); const before=(r.sfotos||[]).length; await loadStravaPhotos(r, true); if(!r.sfotosT) break; if((r.sfotos||[]).length!==before) got++; } }catch(e){}
   phBusy=false; if(got) renderRideList();
 }
-$('rideMore').onclick=()=>{ rideShown+=20; renderRideList(); };
+$('rideMoreB').onclick=()=>{ rideShown+=20; renderRideList(); };
+$('rideMoreP').onclick=()=>{ rideShownP+=20; renderRideList(); };
 
 // ================= FICHA DE UNA SALIDA =================
 let rideOpen=null;
