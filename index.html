@@ -1800,6 +1800,24 @@ const PCAT={
   super:{t:'Supermercado',col:'#5c940d',ic:'🛒',q:'nwr["shop"~"^(supermarket|convenience)$"](BB);'},
 };
 const SUBT={restaurant:'Restaurante',bar:'Bar',cafe:'Cafetería',pub:'Pub',fast_food:'Comida rápida',biergarten:'Terraza',hotel:'Hotel',hostel:'Albergue',guest_house:'Casa de huéspedes',motel:'Motel',alpine_hut:'Refugio',camp_site:'Camping',apartment:'Apartamentos',wilderness_hut:'Refugio libre',hospital:'Hospital',clinic:'Centro de salud',centre:'Centro de salud',pharmacy:'Farmacia',bicycle:'Tienda de bici',bicycle_repair_station:'Punto de reparación',supermarket:'Supermercado',convenience:'Tienda'};
+function tileCat(c,sc){
+  if(/^(restaurant|cafe|beer|fast_food)$/.test(c)||(c==='bar'&&sc!=='nightclub')||sc==='biergarten') return 'comer';
+  if(c==='lodging'||c==='campsite'||/^(camp_site|alpine_hut|wilderness_hut)$/.test(sc)) return 'dormir';
+  if(c==='hospital'||sc==='clinic') return 'salud';
+  if(c==='pharmacy'||sc==='pharmacy') return 'farmacia';
+  if(c==='bicycle'||sc==='bicycle'||sc==='bicycle_repair_station') return 'taller';
+  if(/^(supermarket|convenience)$/.test(sc)) return 'super';
+  return null;
+}
+function addTilePlaces(pts){ pts.forEach(q=>{ const c=q.props.class||'', sc=q.props.subclass||'', cat=tileCat(c,sc); if(!cat) return;
+  const id='t'+q.lat.toFixed(5)+','+q.lon.toFixed(5); if(pStore.has(id)) return;
+  const tags={}; if(/^(restaurant|bar|cafe|pub|fast_food|biergarten)$/.test(sc)) tags.amenity=sc; else if(c==='beer') tags.amenity='pub'; else if(c==='lodging'||c==='campsite') tags.tourism=sc; else if(c==='hospital'||sc==='clinic') tags.amenity=sc; else if(cat==='farmacia') tags.amenity='pharmacy'; else if(cat==='taller') tags.shop='bicycle'; else if(cat==='super') tags.shop=sc;
+  const nm=q.props['name:es']||q.props.name||'';
+  pStore.set(id,{id,lat:q.lat,lon:q.lon,cat,tags,name:nm||SUBT[sc]||PCAT[cat].t}); }); }
+async function loadTilesAround(x0,x1,y0,y1){
+  const keys=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) keys.push([x,y]);
+  for(let i=0;i<keys.length;i+=6){ const part=await Promise.all(keys.slice(i,i+6).map(([x,y])=>tilePois(x,y))); part.forEach(addTilePlaces); }
+}
 function placeCat(t){
   if(/^(restaurant|bar|cafe|pub|fast_food|biergarten)$/.test(t.amenity||'')) return 'comer';
   if(/^(hotel|hostel|guest_house|motel|alpine_hut|camp_site|apartment|wilderness_hut)$/.test(t.tourism||'')) return 'dormir';
@@ -1817,23 +1835,20 @@ function addPlaces(j){ (j&&j.elements||[]).forEach(e=>{ const t=e.tags||{}, cat=
   const id=e.type[0]+e.id; if(!pStore.has(id)) pStore.set(id,{id,lat,lon,cat,tags:t,name:t.name||SUBT[t.amenity||t.tourism||t.shop||t.healthcare]||PCAT[cat].t}); }); }
 const pTile=(lat,lon)=>[Math.floor((lon+180)/360*1024),Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*1024)];
 const tLon=x=>x/1024*360-180, tLat=y=>Math.atan(Math.sinh(Math.PI*(1-2*y/1024)))*180/Math.PI;
-let pTimer=null, pBusy=false;
+let pTimer=null, pBusy=false, pAgain=false;
 async function loadPlaces(){
   const need=[...placesOn]; $('capasNote').hidden=true;
   if(!need.length){ renderPlaces(); return; }
-  if(map.getZoom()<12){ $('capasNote').hidden=false; renderPlaces(); return; }
-  if(pBusy) return; pBusy=true;
+  if(map.getZoom()<13){ $('capasNote').textContent='Acércate un poco más en el mapa para ver los sitios.'; $('capasNote').hidden=false; renderPlaces(); return; }
+  if(pBusy){ pAgain=true; return; } pBusy=true;
   try{
-    const b=map.getBounds(), [x0,y0]=pTile(b.getNorth(),b.getWest()), [x1,y1]=pTile(b.getSouth(),b.getEast());
-    const tiles=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) tiles.push([x,y]);
-    for(const [x,y] of tiles.slice(0,6)){
-      const cats=need.filter(c=>!pLoaded.has(c+'|'+x+'|'+y)); if(!cats.length) continue;
-      const bb=`${tLat(y+1).toFixed(5)},${tLon(x).toFixed(5)},${tLat(y).toFixed(5)},${tLon(x+1).toFixed(5)}`;
-      try{ const j=await overpass(`[out:json][timeout:25];(${cats.map(c=>PCAT[c].q.replaceAll('BB',bb)).join('')});out center tags;`,25000);
-        addPlaces(j); cats.forEach(c=>pLoaded.add(c+'|'+x+'|'+y)); renderPlaces(); }catch(e){ toast('No he podido cargar los sitios ahora. Prueba en un rato.',4000); break; }
-    }
-  }finally{ pBusy=false; }
+    const b=map.getBounds(); let x0=tX(b.getWest()), x1=tX(b.getEast()), y0=tY(b.getNorth()), y1=tY(b.getSouth());
+    while((x1-x0+1)*(y1-y0+1)>30){ if(x1-x0>y1-y0){ x0++; x1--; } else { y0++; y1--; } }
+    await loadTilesAround(x0,x1,y0,y1);
+  }catch(e){ toast('No he podido cargar los sitios ahora.',3500); }
+  finally{ pBusy=false; }
   renderPlaces();
+  if(pAgain){ pAgain=false; loadPlaces(); }
 }
 const opTxt=o=>o?[o.nota?'★'+o.nota:'',o.precio?String(o.precio).replace('.',',')+' €':''].filter(Boolean).join(' · '):'';
 function renderPlaces(){
@@ -1893,8 +1908,8 @@ async function searchLunch(){
   const pt=almWhere==='final'?route.coords[route.coords.length-1]:routeAt(route.length/2);
   $('almNote').textContent='Buscando bares…'; $('almList').innerHTML='';
   try{
-    const j=await overpass(`[out:json][timeout:25];(${PCAT.comer.q.replaceAll('BB','around:2500,'+(+pt[0]).toFixed(5)+','+(+pt[1]).toFixed(5))});out center tags;`,25000);
-    if(my!==almReq) return; addPlaces(j);
+    const cx=tX(+pt[1]), cy=tY(+pt[0]); await loadTilesAround(cx-2,cx+2,cy-2,cy+2);
+    if(my!==almReq) return;
     almRes=[...pStore.values()].filter(p=>p.cat==='comer').map(p=>{ const nr=nearestOnRoute([p.lat,p.lon]); return {p,dPt:dist([p.lat,p.lon],pt),dRoute:nr.d,km:nr.km}; })
       .filter(x=>x.dPt<=2500).sort((a,b)=>((opin[b.p.id]&&opin[b.p.id].nota)||0)-((opin[a.p.id]&&opin[a.p.id].nota)||0)||a.dRoute-b.dRoute).slice(0,15);
     renderLunch();
@@ -2009,15 +2024,17 @@ function addFountain(f){
 }
 // 1) fuentes de las teselas del mapa base
 async function omtUrl(){ if(!omtTiles){ const j=await (await fetch('https://tiles.openfreemap.org/planet')).json(); omtTiles=j.tiles[0]; } return omtTiles; }
-function tileFountains(x,y){
+const poiCache=new Map();
+function tilePois(x,y){
   const k=x+'/'+y;
-  if(!tileCache.has(k)) tileCache.set(k,(async()=>{
+  if(!poiCache.has(k)) poiCache.set(k,(async()=>{
     const u=(await omtUrl()).replace('{z}',14).replace('{x}',x).replace('{y}',y);
-    const r=await fetch(u); if(!r.ok) return [];
-    return mvtPoints(await r.arrayBuffer(),'poi',14,x,y).filter(p=>p.props.class==='drinking_water'||p.props.subclass==='drinking_water');
-  })().catch(()=>{ tileCache.delete(k); return []; }));
-  return tileCache.get(k);
+    const r=await fetch(u); if(!r.ok) throw new Error('tile');
+    return mvtPoints(await r.arrayBuffer(),'poi',14,x,y);
+  })().catch(()=>{ poiCache.delete(k); return []; }));
+  return poiCache.get(k);
 }
+async function tileFountains(x,y){ return (await tilePois(x,y)).filter(p=>p.props.class==='drinking_water'||p.props.subclass==='drinking_water'); }
 async function loadTileSet(keys){
   const list=[...keys], out=[];
   for(let i=0;i<list.length;i+=6){
