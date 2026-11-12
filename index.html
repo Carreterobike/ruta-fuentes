@@ -1974,13 +1974,13 @@ async function ovtSource(){
   ovtRel=rel; ovtP=new pmtiles.PMTiles(`https://overturemaps-extras-us-west-2.s3.us-west-2.amazonaws.com/tiles/${rel}/places.pmtiles`);
   return ovtP;
 }
-function ovtCat(H){
+function ovtCat(H,prim,name){
   const has=k=>H.includes(k), h0=H[0]||'';
-  if(H.some(k=>/bike|bicycle|cycl/.test(k))) return 'taller';
+  if(H.some(k=>/(^|_)(bike|bicycle)/.test(k)&&!/motor/.test(k))) return 'taller';
   if(h0==='food_and_drink'&&!H.some(k=>/bakery|candy|dessert|ice_cream|juice/.test(k))) return 'comer';
   if(h0==='lodging') return 'dormir';
   if(has('pharmacy')) return 'farmacia';
-  if(has('hospital')||has('emergency_room')||has('urgent_care_clinic')||(h0==='health_care'&&H[1]==='outpatient_care_facility')) return 'salud';
+  if(/hospital|emergency|urgent_care/.test(prim||'')||(h0==='health_care'&&/\b(cap|cuap|hospital|urg[eè]nci|urgencia|ambulatori|centro de salud|centre d.atenci|consultori local)/i.test(name||''))) return 'salud';
   if(has('grocery_store')||has('supermarket')||has('convenience_store')) return 'super';
   return null;
 }
@@ -1991,8 +1991,9 @@ async function ovtTile(x,y){
   ovtCache.set(k,pr); return pr;
 }
 function addOvtPlaces(pts){ pts.forEach(q=>{ const pr=q.props||{}; if(/closed/.test(pr.operating_status||'')) return; if((pr.confidence??1)<0.35) return;
-  const tx=jp(pr.taxonomy)||{}, H=tx.hierarchy||[tx.primary||pr.basic_category||'']; const cat=ovtCat(H); if(!cat) return;
+  const tx=jp(pr.taxonomy)||{}, H=tx.hierarchy||[tx.primary||pr.basic_category||''];
   const name=pr['@name']||(jp(pr.names)||{}).primary||''; if(!name) return;
+  const cat=ovtCat(H,tx.primary||pr.basic_category,name); if(!cat) return;
   const ad=(jp(pr.addresses)||[])[0]||{}, ph=(jp(pr.phones)||[])[0]||'', web=(jp(pr.websites)||[])[0]||'';
   const extra={addr:[ad.freeform,ad.locality].filter(Boolean).join(', '),phone:ph,web,sub:(tx.primary||'').replace(/_/g,' ')};
   const same=nearSame(q.lat,q.lon,cat,name);
