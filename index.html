@@ -126,6 +126,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .results li:hover{background:var(--soft)}
 .results b{display:block;font-weight:600}
 .results small{color:var(--muted)}
+.mbar{display:flex;gap:2px;background:var(--brand);border-radius:16px;padding:4px;box-shadow:var(--shadow);overflow-x:auto;scrollbar-width:none}
+.mbar::-webkit-scrollbar{display:none}
+.mbar button{flex:1 1 42px;min-width:0;border:0;background:none;color:#cfd3d6;border-radius:12px;padding:5px 1px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;font-family:var(--body);font-weight:700;font-size:9px;letter-spacing:-.2px;line-height:1.1;white-space:nowrap}
+.mbar button svg{width:24px;height:24px}
+.mbar button.on{background:var(--accent);color:var(--accent-ink)}
+.mbar .msep{flex:none;width:1px;margin:6px 2px;background:rgba(255,255,255,.18)}
 .chips{display:flex;gap:6px}
 .chips button{flex:1;border:0;border-radius:999px;background:var(--card);box-shadow:var(--shadow);padding:9px 6px;font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.6px;text-transform:uppercase}
 .chips button.on{background:var(--brand);color:var(--accent)}
@@ -174,7 +180,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .sec-h h3{margin:0;font-family:var(--display);font-weight:800;font-size:21px;text-transform:uppercase;letter-spacing:.4px}
 .status{font-size:13px;color:var(--muted);text-align:right;min-width:0}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .stat{min-width:0}
 .stat b{display:block;font-family:var(--display);font-weight:800;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
 .stat b em{font-style:normal;font-size:15px;font-weight:600;margin-left:2px;color:var(--muted)}
@@ -260,6 +266,7 @@ details.help p{margin:6px 0 0}
 .segc{display:flex;gap:4px;background:var(--soft);border-radius:12px;padding:3px}
 .segc button{flex:1;border:0;background:none;border-radius:9px;padding:8px 4px;font-weight:700;font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px}
 .segc button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.segc.extras button.on{background:var(--ink);color:var(--bg)}
 .segc.lvls button i{width:10px;height:10px;border-radius:50%;flex:none}
 .segc.lvls button{font-size:12px;padding:8px 2px}
 /* tarjeta del buscador: crear ruta desde casa */
@@ -585,6 +592,10 @@ details.help p{margin:6px 0 0}
     <div class="pb-h"><h3>Mis bicis</h3><button class="pb-btn" id="bikeAdd">＋ Añadir</button></div>
     <div class="bikes" id="bikeList"></div>
   </section>
+  <section class="pblock" id="pShoes">
+    <div class="pb-h"><h3>Mis zapatillas</h3><button class="pb-btn" id="shoeAdd">＋ Añadir</button></div>
+    <div class="bikes" id="shoeList"></div>
+  </section>
 
   <section class="pblock" id="pStats">
     <div class="pb-h"><h3>Tus números</h3><select id="stFilter" aria-label="Qué salidas contar"></select></div>
@@ -661,10 +672,8 @@ details.help p{margin:6px 0 0}
       <input id="q" type="search" placeholder="Buscar pueblo, calle, montaña…" autocomplete="off" aria-label="Buscar un sitio">
       <ul class="results" id="results" hidden></ul>
     </div>
-    <div class="chips" id="modes" role="group" aria-label="Tipo de bici">
-      <button data-mode="road">Carretera</button>
-      <button data-mode="gravel">Gravel</button>
-      <button data-mode="mtb" class="on">BTT</button>
+    <div class="mbar" id="modes" role="group" aria-label="Modalidad">
+      <button data-mode="road" aria-label="Carretera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16.5" r="3.8"/><circle cx="18" cy="16.5" r="3.8"/><path d="M6 16.5l3.6-6.5h6l2.4 6.5M9.6 10 8.4 7.6H6.6M15.6 10l-1.5-3H16.6M12 16.5l3.6-6.5"/></svg><span>Carretera</span></button><button data-mode="gravel" aria-label="Gravel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16.5" r="3.8"/><circle cx="18" cy="16.5" r="3.8"/><path d="M6 16.5l3.6-6.5h6l2.4 6.5M9.6 10 8.4 7.6H6.6M15.6 10l-1.5-3H16.6M12 16.5l3.6-6.5"/><path d="M2 22.6h1.2M6 22.6h1.2M10 22.6h1.2M14 22.6h1.2M18 22.6h1.2" stroke-width="2"/></svg><span>Gravel</span></button><button data-mode="mtb" class="on" aria-label="BTT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16.5" r="3.8"/><circle cx="18" cy="16.5" r="3.8"/><path d="M6 16.5l3.6-6.5h6l2.4 6.5M9.6 10 8.4 7.6H6.6M15.6 10l-1.5-3H16.6M12 16.5l3.6-6.5"/><path d="M15 6 18.2 1.6 21.4 6z" fill="currentColor" stroke-width="1.2"/></svg><span>BTT</span></button><button data-mode="ebike" aria-label="E-bike"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16.5" r="3.8"/><circle cx="18" cy="16.5" r="3.8"/><path d="M6 16.5l3.6-6.5h6l2.4 6.5M9.6 10 8.4 7.6H6.6M15.6 10l-1.5-3H16.6M12 16.5l3.6-6.5"/><path d="M19.6.8 16.8 5.2h2.8L17.4 9" stroke-width="1.8"/></svg><span>E-bike</span></button><i class="msep"></i><button data-mode="run" aria-label="Correr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="15.5" cy="3.8" r="2.1" fill="currentColor"/><path d="M14 8.2 10.8 14l3.8 3.2-1 5.2M10.8 14 6.8 17M14 8.2l3.4 3.4 3-1M14 8.2l-4.2 1-2 3.2"/></svg><span>Correr</span></button><button data-mode="trail" aria-label="Trail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12.5" cy="3.8" r="2.1" fill="currentColor"/><path d="M11 8.2 7.8 14l3.8 3.2-1 5.2M7.8 14 3.8 17M11 8.2l3.4 3.4 3-1M11 8.2l-4.2 1-2 3.2"/><path d="M15 22.6l3.4-5 2 2.4 1.6-2.2v4.8z" fill="currentColor" stroke-width="1"/></svg><span>Trail</span></button><button data-mode="hike" aria-label="Senderismo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="3.6" r="2.1" fill="currentColor"/><path d="M11 8v7l-2.6 7.4M11 15l3 7.4M11 9.2l-3.4 4M11 9.2l3.6 3.4M17.5 11v11.4"/><rect x="6.4" y="7.6" width="3.2" height="5" rx="1" fill="currentColor" stroke-width="1"/></svg><span>Senderismo</span></button><button data-mode="walk" aria-label="Caminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="3.6" r="2.1" fill="currentColor"/><path d="M12 8v7l-2.4 7.4M12 15l3.2 7.4M12 9.2l-3.2 4.2M12 9.2l3.2 4.2"/></svg><span>Caminar</span></button>
     </div>
   </div>
 
@@ -698,6 +707,14 @@ details.help p{margin:6px 0 0}
           <label>Tipo de camino</label>
           <div class="segc" id="segGravel"><button data-g="pista">Solo pista</button><button data-g="mixta" class="on">Mixta</button><button data-g="carretera">Solo carretera</button></div>
         </div>
+        <div class="opts" id="optEbike" hidden>
+          <label>Tu e-bike</label>
+          <div class="segc" id="segEbike"><button data-e="road">De carretera</button><button data-e="mtb">De montaña</button></div>
+        </div>
+        <div class="opts" id="optExtras" hidden>
+          <label>Añadir a tu ruta</label>
+          <div class="segc extras"><button id="exF">💧 Fuentes</button><button id="exA">🍴 Almuerzo</button></div>
+        </div>
         <div class="opts" id="optLevel" hidden>
           <label>Tu nivel de trialeras</label>
           <div class="segc lvls" id="segLevel"></div>
@@ -707,6 +724,7 @@ details.help p{margin:6px 0 0}
         <div class="stats">
           <div class="stat"><b id="sKm">–</b><small>Distancia</small></div>
           <div class="stat"><b id="sUp">–</b><small>Desnivel</small></div>
+          <div class="stat"><b id="sTime">–</b><small>Tiempo aprox.</small></div>
         </div>
         <div id="sSurf"></div>
         <div class="actions">
@@ -839,7 +857,7 @@ details.help p{margin:6px 0 0}
     <label class="fld">Mote<input id="bkMote" maxlength="30" placeholder="Ej.: La Bestia"></label>
     <div class="row2"><label class="fld">Marca<input id="bkMarca" maxlength="30" placeholder="Ej.: BMC"></label>
     <label class="fld">Modelo<input id="bkModelo" maxlength="40" placeholder="Ej.: Fourstroke"></label></div>
-    <label class="fld">Tipo<select id="bkTipo"><option value="road">Carretera</option><option value="gravel">Gravel</option><option value="mtb">BTT</option><option value="ebike">E-bike</option></select></label>
+    <label class="fld">Tipo<select id="bkTipo"><option value="road">Carretera</option><option value="gravel">Gravel</option><option value="mtb">BTT</option><option value="ebike">E-bike</option><option value="run">Correr</option><option value="trail">Trail</option><option value="hike">Senderismo</option><option value="walk">Caminar</option></select></label>
     <label class="chk"><input type="checkbox" id="bkMain"> Bici principal para este tipo (se pone sola en las salidas nuevas)</label>
     <label class="chk"><input type="checkbox" id="bkOld"> Ya no la tengo (pasa a "Anteriores bicis")</label>
     <div class="btns"><button type="submit" class="btn-main">Guardar</button><button type="button" class="btn-ghost" id="bkCancel">Cancelar</button>
@@ -1197,7 +1215,7 @@ map.on('overlayremove',e=>{ if(e.layer===hLayer) store.set('ichnos-mapaper',fals
 // ---------- estado ----------
 // T = pestañas encendidas. Se pueden tener varias a la vez; se apagan tocándolas otra vez.
 const T={crear:false,fuentes:false,trialeras:false,segmentos:false};
-let mode='mtb';
+let mode=(()=>{ try{ const m=JSON.parse(localStorage.getItem('ichnos-modo')||'"mtb"'); return ['road','gravel','mtb','ebike','run','trail','hike','walk'].includes(m)?m:'mtb'; }catch(e){ return 'mtb'; } })();
 let points=[];          // [lat, lon, 'f' si es una fuente añadida]
 let route=null;         // {coords:[[lat,lon,ele]], cum:[m], length, up, idx:[índice de cada punto]}
 let reqId=0, routeVer=0, askedVer=-1;
@@ -1232,10 +1250,12 @@ function updateSheet(){
   $('secCrear').hidden=!showCrear;
   $('done').hidden=!(T.crear && points.length>=2);
   $('optGravel').hidden=!(T.crear && mode==='gravel');
-  $('optLevel').hidden=!(T.crear && mode!=='road');
+  $('optLevel').hidden=!(T.crear && curLevel()!=null);
+  $('optEbike').hidden=!(T.crear && mode==='ebike');
+  $('optExtras').hidden=!T.crear;
   if(!$('optLevel').hidden) paintLevel();
   $('secFuentes').hidden=!(route && fuentesAsked);
-  $('lgBox').hidden=!(T.trialeras && mode!=='road');
+  $('lgBox').hidden=!(T.trialeras && trailsMode());
   $('addF').hidden=!T.fuentes;
   $('secViaje').hidden=!trip;
   $('tripBack').hidden=!(trip&&trip.open!=null);
@@ -1264,16 +1284,83 @@ $('handle').onclick=()=>{ $('sheet').classList.toggle('closed'); setTimeout(plac
 // ================= MODALIDADES =================
 // Cada modalidad prueba perfiles de BRouter en orden. Todos son de bici y respetan las calles de sentido único.
 const MODES = {
-  road:   {label:'Carretera', profiles:['fastbike-lowtraffic','fastbike'], people:'cycling'},
-  gravel: {label:'Gravel',    profiles:['trekking'], people:'mtb'},
-  mtb:    {label:'BTT',       profiles:['mtb-zossebart','trekking'], people:'mtb'}
+  road:   {label:'Carretera', profiles:['fastbike-lowtraffic','fastbike'], kmh:25, vup:900},
+  gravel: {label:'Gravel',    profiles:['trekking'], kmh:20, vup:700},
+  mtb:    {label:'BTT',       profiles:['mtb-zossebart','trekking'], kmh:14, vup:500},
+  ebike:  {label:'E-bike',    profiles:['trekking'], kmh:21, vup:1300},
+  run:    {label:'Correr',    profiles:['hiking-mountain'], kmh:10, vup:700, foot:1},
+  trail:  {label:'Trail',     profiles:['hiking-mountain'], kmh:7.5, vup:600, foot:1},
+  hike:   {label:'Senderismo',profiles:['hiking-mountain'], kmh:4.2, vup:400, foot:1},
+  walk:   {label:'Caminar',   profiles:['hiking-mountain'], kmh:4.5, vup:400, foot:1}
 };
+const isFoot=m=>!!(MODES[m]&&MODES[m].foot);
+let ebikeType=store.get('ichnos-ebike','mtb');
+const trailsMode=()=>mode==='mtb'||mode==='gravel'||mode==='trail'||mode==='hike'||(mode==='ebike'&&ebikeType==='mtb');
 const GRAVEL={pista:'Solo pista',mixta:'Mixta',carretera:'Solo carretera'};
 let gravelType=store.get('ichnos-gravel','mixta');
-let levels=store.get('ichnos-nivel',{gravel:1,mtb:2});   // 0 verde · 1 azul · 2 roja · 3 negra · 4 doble negra
-const curLevel=()=>mode==='road'?null:levels[mode];
+let levels=store.get('ichnos-nivel',{gravel:1,mtb:2}); if(levels.ebike==null) levels.ebike=2;   // 0 verde · 1 azul · 2 roja · 3 negra · 4 doble negra
+const curLevel=()=>(mode==='mtb'||mode==='gravel'||(mode==='ebike'&&ebikeType==='mtb'))?levels[mode]:null;
 // --- perfil de ruta propio para BRouter: solo bici, nunca contra dirección, y sin trialeras más difíciles que tu nivel ---
+function brfFoot(kind){
+  const B={
+    frun:`if highway=footway|pedestrian then 1
+    else if highway=path then ( if ispaved then 1 else 1.3 )
+    else if highway=track then ( if ispaved then 1.1 else 1.3 )
+    else if highway=cycleway then 1.2
+    else if highway=unclassified|residential|living_street|service|road then 1.2
+    else if highway=steps then 2
+    else if highway=tertiary|tertiary_link then 1.7
+    else if highway=secondary|secondary_link then 2.6
+    else if highway=primary|primary_link then 5
+    else if highway=trunk|trunk_link then 20
+    else 100000`,
+    ftrail:`if highway=path|bridleway then 1
+    else if highway=track then 1.15
+    else if highway=footway then 1.3
+    else if highway=steps then 1.5
+    else if highway=unclassified|residential|living_street|service|road then 1.6
+    else if highway=cycleway|pedestrian then 1.8
+    else if highway=tertiary|tertiary_link then 2.2
+    else if highway=secondary|secondary_link then 3.5
+    else if highway=primary|primary_link then 6
+    else if highway=trunk|trunk_link then 30
+    else 100000`,
+    fwalk:`if highway=footway|pedestrian then 1
+    else if highway=path then 1.1
+    else if highway=track then 1.2
+    else if highway=unclassified|residential|living_street|service|road then 1.1
+    else if highway=steps then 1.3
+    else if highway=cycleway then 1.4
+    else if highway=tertiary|tertiary_link then 1.6
+    else if highway=secondary|secondary_link then 2.6
+    else if highway=primary|primary_link then 4.5
+    else if highway=trunk|trunk_link then 20
+    else 100000`};
+  return `---context:global
+assign downhillcost 0
+assign downhillcutoff 1.5
+assign uphillcost 0
+assign uphillcutoff 1.5
+assign validForBikes 0
+assign validForFoot 1
+assign validForCars 0
+
+---context:way
+assign ispaved or surface=paved|asphalt|concrete|paving_stones tracktype=grade1
+assign nofoot if foot=yes|designated|permissive then 0 else or foot=no|private access=no|private
+assign hardpenalty if sac_scale=demanding_alpine_hiking|difficult_alpine_hiking then 100000 else 0
+assign accesspenalty if nofoot then 100000 else if highway=motorway|motorway_link then 100000 else 0
+assign basecost ${B[kind]}
+assign costfactor add basecost max hardpenalty accesspenalty
+assign turncost 0
+assign initialcost 0
+
+---context:node
+assign initialcost 0
+`;
+}
 function brfText(kind,maxScale){
+  if(kind[0]==='f') return brfFoot(kind);
   const hard=[];
   if(maxScale!=null) for(let n=maxScale+1;n<=6;n++) hard.push(String(n));
   const B={
@@ -1352,9 +1439,10 @@ async function customProfile(kind,maxScale,fresh){
   if(!j.profileid || j.error) throw new Error(j.error||'perfil');
   return profCache[key]=j.profileid;
 }
-function routeKind(){ return mode==='road'?'road':mode==='mtb'?'mtb':(gravelType==='carretera'?'road':gravelType); }
+function routeKind(){ if(mode==='run') return 'frun'; if(mode==='trail'||mode==='hike') return 'ftrail'; if(mode==='walk') return 'fwalk'; if(mode==='ebike') return ebikeType==='road'?'road':'mtb'; return mode==='road'?'road':mode==='mtb'?'mtb':(gravelType==='carretera'?'road':gravelType); }
 function fallbackProfiles(){
-  if(mode==='gravel' && gravelType==='carretera') return MODES.road.profiles;
+  if((mode==='gravel' && gravelType==='carretera')||(mode==='ebike'&&ebikeType==='road')) return MODES.road.profiles;
+  if(mode==='ebike') return MODES.mtb.profiles;
   return MODES[mode].profiles;
 }
 // lee la dificultad más alta por la que pasa la ruta (BRouter la devuelve en los datos de cada tramo)
@@ -1414,10 +1502,20 @@ function recommendTrails(){
   });
 }
 map.on('moveend',()=>{ clearTimeout(recTimer); recTimer=setTimeout(recommendTrails,500); });
+let wantF=store.get('ichnos-exF',false), wantA=store.get('ichnos-exA',false);
+function paintExtras(){ $('exF').classList.toggle('on',wantF); $('exA').classList.toggle('on',wantA); document.querySelectorAll('#segEbike button').forEach(b=>b.classList.toggle('on',b.dataset.e===ebikeType)); }
+$('exF').onclick=()=>{ wantF=!wantF; syncRaw.set('ichnos-exF',wantF); paintExtras(); };
+$('exA').onclick=()=>{ wantA=!wantA; syncRaw.set('ichnos-exA',wantA); paintExtras(); };
+document.querySelectorAll('#segEbike button').forEach(b=>b.onclick=()=>{ ebikeType=b.dataset.e; syncRaw.set('ichnos-ebike',ebikeType); paintExtras();
+  document.querySelector('#secCapas [data-t="trialeras"]').hidden=!trailsMode(); applyTrails(); updateSheet(); if(points.length>=2) calc(); });
+paintExtras();
+function paintModeUI(){ document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x.dataset.mode===mode)); const t=document.querySelector('#secCapas [data-t="trialeras"]'); if(t) t.hidden=!trailsMode(); }
+setTimeout(paintModeUI,0);
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
   mode=b.dataset.mode;
   document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelector('#secCapas [data-t="trialeras"]').hidden = mode==='road';   // en Carretera no hay trialeras
+  document.querySelector('#secCapas [data-t="trialeras"]').hidden = !trailsMode();   // solo en modalidades de montaña
+  store.set('ichnos-modo',mode);
   applyTrails(); updateSheet(); recommendTrails();
   if(points.length>=2) calc();
 });
@@ -1426,7 +1524,7 @@ document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
 const KIND={track:'Pista',path:'Sendero',footway:'Camino peatonal',cycleway:'Carril bici',bridleway:'Camino de herradura',steps:'Escaleras'};
 function applyTrails(){
   glSet(()=>{
-    const show=mode!=='road' && T.trialeras;
+    const show=trailsMode() && T.trialeras;
     TRAIL_LAYERS.forEach(id=>glMap.setLayoutProperty(id,'visibility',show?'visible':'none'));
     const gr=mode==='gravel';
     glMap.setPaintProperty('trail-track','line-color',gr?'#8a5a1f':'#8a6a3a');
@@ -1484,7 +1582,7 @@ function lineOf(f){ const g=f.geometry; if(!g) return null; if(g.type==='LineStr
   if(g.type==='MultiLineString') return g.coordinates.reduce((a,b)=>b.length>a.length?b:a,[]); return null; }
 // Lo que sale al tocar una trialera
 function trailAt(latlng){
-  if(!glReady||mode==='road'||!T.trialeras) return null;
+  if(!glReady||!trailsMode()||!T.trialeras) return null;
   const pt=glMap.project([latlng.lng,latlng.lat]);
   const hit=glMap.queryRenderedFeatures([[pt.x-8,pt.y-8],[pt.x+8,pt.y+8]],{layers:['trail-rated','trail-track','trail-path']});
   const mine=myNameAt(latlng);
@@ -1680,7 +1778,7 @@ async function calc(){
   try{
     const res=await routeLL(points,{deadline:Date.now()+60000});
     if(my!==reqId) return;
-    const label = (trip&&trip.open!=null?`Etapa ${trip.open+1} · `:'') + MODES[mode].label + (mode==='gravel'?' ('+GRAVEL[gravelType].toLowerCase()+')':'');
+    const label = (trip&&trip.open!=null?`Etapa ${trip.open+1} · `:'') + MODES[mode].label + (mode==='gravel'?' ('+GRAVEL[gravelType].toLowerCase()+')':'') + (mode==='ebike'?(ebikeType==='road'?' (carretera)':' (montaña)'):'');
     await useRoute(res.coords, res.up, label, my);
     if(!(trip&&trip.open!=null) && res.len>200000) toast(`Son ${fmtKm(res.len/1000)} km. Si quieres, pulsa "Hacer por etapas".`,6000);
     if(res.maxScale!=null && res.mx!=null && res.mx>res.maxScale) toast(`Ojo: no había otro camino y la ruta pasa por un tramo ${LEVELS[levelOf(res.mx)].col}, más difícil que tu nivel.`,6000);
@@ -1757,8 +1855,8 @@ async function useRoute(coords, up, label, my){
 let fuentesAsked=false;
 async function finishRoute(){
   askedVer=routeVer;
-  const yes=await ask('¿Te marco las fuentes más cercanas?','Busco fuentes de agua potable y públicas cerca de tu ruta para que sepas dónde llenar los bidones.','Sí, márcalas','No, gracias');
-  if(!yes) return;
+  if(wantA){ almOpen=true; updateSheet(); searchLunch(); }
+  if(!wantF) return;
   setStatus('Buscando fuentes…');
   await loadFountains();
   if(!route) return;
@@ -1792,9 +1890,12 @@ async function routeThroughFountains(list,single){
 }
 
 // ---------- GPX para el reloj / ciclocomputador ----------
+function estTime(m,up,md){ const M=MODES[md||mode]||MODES.mtb; return (m/1000/M.kmh+up/M.vup)*3600; }
+function fmtDur(sec){ const h=Math.floor(sec/3600), mi=Math.round((sec-h*3600)/60/5)*5; return h?`${h}<em>h</em>${mi?` ${String(mi).padStart(2,'0')}`:''}`:`${Math.max(5,mi)}<em>min</em>`; }
 function renderStats(){
   $('sKm').innerHTML = route ? fmtKm(route.length/1000)+'<em>km</em>' : '–';
   $('sUp').innerHTML = route && route.up!=null ? Math.round(route.up)+'<em>m</em>' : '–';
+  $('sTime').innerHTML = route ? fmtDur(estTime(route.length,route.up||0)) : '–';
   $('sSurf').innerHTML = route ? surfBar(route.coords) : '';
 }
 
@@ -2292,7 +2393,7 @@ let trip=null, tripReq=0;
 const STAGE_COLS=['#B6E22E','#22c3e6'];
 const tripLayer=L.layerGroup().addTo(map);
 const KM_OPTS=[60,80,100,120,150];
-const defaultKmDay=()=>mode==='road'?120:100;
+const defaultKmDay=()=>isFoot(mode)?(mode==='run'?25:20):mode==='road'?120:100;
 function towards(S,E,d){ const D=dist([S.lat,S.lon],[E.lat,E.lon]), f=Math.min(1,d/D); return [S.lat+(E.lat-S.lat)*f,S.lon+(E.lon-S.lon)*f]; }
 // pueblos cerca de un punto, sacados del propio mapa base (rápido y sin servidores extra)
 const placeTileCache=new Map();
@@ -2774,6 +2875,10 @@ function parseCSV(t){
 function stravaTipo(type){
   const t=nrm(type).replace(/[_\s]+/g,' ');
   if(!t||/virtual/.test(t)) return null;
+  if(/trail|carrera (por|de) montana|montana.*carrera/.test(t)) return 'trail';
+  if(/^run|\brun\b|carrera|correr|running/.test(t)) return 'run';
+  if(/hike|senderismo|excursion|trekking|alpinismo/.test(t)) return 'hike';
+  if(/walk|caminata|paseo|andar/.test(t)) return 'walk';
   if(/e-?mountain|e-?mtb|montana electr|electrica de montana|e ?bike|e-bike|electr/.test(t)) return 'ebike';
   if(/mountain|montana|mtb|btt/.test(t)) return 'mtb';
   if(/gravel/.test(t)) return 'gravel';
@@ -2791,9 +2896,9 @@ function csvInfo(text){
   return by;
 }
 // bicis de Strava (bikes.csv del archivo): mote de Strava → marca, modelo y tipo
-function bikesCsv(text){
+function bikesCsv(text,shoe){
   const rows=parseCSV(text.replace(/^﻿/,'')); if(rows.length<2) return [];
-  return rows.slice(1).filter(r=>r[0]).map(r=>{ const sp=nrm(r[3]||''); let tipo=/montana|mountain/.test(sp)?'mtb':/gravel/.test(sp)?'gravel':/electr|e-?bike/.test(sp)?'ebike':/bici|ride/.test(sp)?'road':null;
+  return rows.slice(1).filter(r=>r[0]).map(r=>{ const sp=nrm(r[3]||''); if(shoe){ const st=stravaTipo(sp); return {name:r[0],marca:r[1]||'',modelo:r[2]||'',tipo:st&&isFoot(st)?st:'run'}; } let tipo=/montana|mountain/.test(sp)?'mtb':/gravel/.test(sp)?'gravel':/electr|e-?bike/.test(sp)?'ebike':/bici|ride/.test(sp)?'road':null;
     if(!tipo) tipo=/scale|spark|epic|stumpjumper|fourstroke|four stroke|oiz|anthem|trance|lux|mtb|btt|29/.test(nrm(r[1]+' '+r[2]))?'mtb':'road';
     return {name:r[0],marca:r[1]||'',modelo:r[2]||'',tipo}; });
 }
@@ -2822,9 +2927,11 @@ $('impFile').onchange=async e=>{
         const ents=await unzipList(f);
         const c=ents.find(x=>/(^|\/)activities\.csv$/i.test(x.name));
         if(c) info=csvInfo(new TextDecoder().decode(await unzipRead(f,c)));
-        const bc=ents.find(x=>/(^|\/)bikes\.csv$/i.test(x.name)); if(bc) sbikes=bikesCsv(new TextDecoder().decode(await unzipRead(f,bc)));
+        const bc=ents.find(x=>/(^|\/)bikes\.csv$/i.test(x.name)); if(bc) sbikes=sbikes.concat(bikesCsv(new TextDecoder().decode(await unzipRead(f,bc))));
+        const sc=ents.find(x=>/(^|\/)shoes\.csv$/i.test(x.name)); if(sc) sbikes=sbikes.concat(bikesCsv(new TextDecoder().decode(await unzipRead(f,sc)),true));
         ents.filter(x=>/\.(gpx|tcx|fit)(\.gz)?$/i.test(x.name)).forEach(x=>items.push({name:x.name,get:()=>unzipRead(f,x)}));
-      }else if(/^bikes\.csv$/i.test(f.name)){ sbikes=bikesCsv(await f.text()); }
+      }else if(/^bikes\.csv$/i.test(f.name)){ sbikes=sbikes.concat(bikesCsv(await f.text())); }
+      else if(/^shoes\.csv$/i.test(f.name)){ sbikes=sbikes.concat(bikesCsv(await f.text(),true)); }
       else if(/\.csv$/i.test(f.name)){ if(/^activities\.csv$/i.test(f.name)||files.filter(x=>/\.csv$/i.test(x.name)).length===1) info=csvInfo(await f.text()); }
       else if(/\.(gpx|tcx|fit)(\.gz)?$/i.test(f.name)) items.push({name:f.name,get:()=>f.arrayBuffer(),mod:f.lastModified});
     }
@@ -2975,7 +3082,8 @@ $('recBtn2').onclick=()=>{ if(rec) stopRec(); else { showPage('pgMapa'); startRe
 document.addEventListener('visibilitychange',async()=>{ if(rec && document.visibilityState==='visible' && navigator.wakeLock){ try{ wakeLock=await navigator.wakeLock.request('screen'); }catch(e){} } });
 
 // ================= MIS BICIS =================
-const BIKE_TIPOS={road:'Carretera',gravel:'Gravel',mtb:'BTT',ebike:'E-bike'};
+const SHOE_SVG='<svg viewBox="0 0 48 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22c0-4 1-9 3-12l7 4c4 2 9 3 14 4l10 2c4 1 6 3 6 6v2H6c-1 0-2-1-2-2z"/><path d="M4 26h40M17 15l-2 4M22 16.5l-2 4M27 17.6l-2 4"/></svg>';
+const BIKE_TIPOS={road:'Carretera',gravel:'Gravel',mtb:'BTT',ebike:'E-bike',run:'Correr',trail:'Trail',hike:'Senderismo',walk:'Caminar'};
 const BIKE_SVG='<svg viewBox="0 0 48 32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="22" r="8"/><circle cx="38" cy="22" r="8"/><path d="M10 22 18 9h13l7 13M18 9l7 13h-15M28 5h5M17 6h4"/></svg>';
 let bikes=store.get('ichnos-bicis',null);
 if(!bikes){   // primera vez: dejamos puestas tus bicis
@@ -2988,38 +3096,42 @@ const bikeById=id=>bikes.find(b=>b.id===id)||null;
 const bikeForTipo=tipo=>{ if(!tipo) return null; const b=bikes.find(b=>b.tipo===tipo&&b.principal&&!b.retirada)||bikes.find(b=>b.tipo===tipo&&!b.retirada); return b?b.id:null; };
 const nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 function bikeByGear(g){ g=nrm(g); if(!g) return null; const b=bikes.find(b=>(b.alias||[]).some(a=>nrm(a)===g))||bikes.find(b=>b.mote&&g.includes(nrm(b.mote)))||bikes.find(b=>b.modelo&&g.includes(nrm(b.modelo)))||bikes.find(b=>b.marca&&g.includes(nrm(b.marca))); return b?b.id:null; }
-function defaultBike(tipo){ const a=bikes.filter(b=>!b.retirada); return (a.find(b=>b.tipo===tipo&&b.principal)||a.find(b=>b.tipo===tipo)||a[0]||{}).id||null; }
+function defaultBike(tipo){ const a=bikes.filter(b=>!b.retirada&&isFoot(b.tipo)===isFoot(tipo)); return (a.find(b=>b.tipo===tipo&&b.principal)||a.find(b=>b.tipo===tipo)||a[0]||{}).id||null; }
 // una sola vez: la Scott y la Cube de David pasan a "Anteriores bicis" (él lo pidió el 12 nov)
 function migRetire(){ if(store.get('ichnos-mig-retiro',false)) return; let ch=false;
   bikes.forEach(b=>{ if(!b.retirada&&/^(scott|cube)$/.test(nrm(b.marca))){ b.retirada=true; b.principal=false; ch=true; } });
   syncRaw.set('ichnos-mig-retiro',true); if(ch) saveBikes(); }
 function saveBikes(){ if(!store.set('ichnos-bicis',bikes)) toast('No se han podido guardar las bicis (¿fotos muy grandes?).',5000); renderBikes(); renderNums(); }
-function renderBikes(){
-  const box=$('bikeList'); box.innerHTML='';
-  const act=bikes.filter(b=>!b.retirada), old=bikes.filter(b=>b.retirada);
+function renderBikes(){ renderGear('bikeList',bikes.filter(b=>!isFoot(b.tipo)),false); renderGear('shoeList',bikes.filter(b=>isFoot(b.tipo)),true); }
+function renderGear(boxId,list,shoe){
+  const box=$(boxId); box.innerHTML='';
+  const act=list.filter(b=>!b.retirada), old=list.filter(b=>b.retirada);
   [...act,...(old.length?['__old']:[]),...old].forEach(b=>{
-    if(b==='__old'){ const h=document.createElement('h5'); h.className='bk-old-h'; h.textContent='Anteriores bicis'; box.appendChild(h); return; }
+    if(b==='__old'){ const h=document.createElement('h5'); h.className='bk-old-h'; h.textContent=shoe?'Anteriores zapatillas':'Anteriores bicis'; box.appendChild(h); return; }
     const km=rides.filter(r=>r.bike===b.id).reduce((s,r)=>s+(r.km||0),0);
     const el=document.createElement('button'); el.className='bike'+(b.retirada?' old':'');
-    el.innerHTML=`<div class="bk-ph" ${b.foto?`style="background-image:url('${b.foto}')"`:''}>${b.foto?'':BIKE_SVG}</div>
+    el.innerHTML=`<div class="bk-ph" ${b.foto?`style="background-image:url('${b.foto}')"`:''}>${b.foto?'':(shoe?SHOE_SVG:BIKE_SVG)}</div>
       <div class="bk-t"><b>${esc(bikeName(b))}</b><small>${b.mote?esc(`${b.marca} ${b.modelo}`):''}</small>
       <span><i class="chip">${BIKE_TIPOS[b.tipo]||''}</i>${b.principal?'<i class="chip main">Principal</i>':''}</span>
       <em>${Math.round(km).toLocaleString('es-ES')} km</em></div>`;
     el.onclick=()=>editBike(b);
     box.appendChild(el);
   });
-  if(!bikes.length) box.innerHTML='<p class="empty">Añade tus bicis para saber cuántos km llevas con cada una.</p>';
+  if(!list.length) box.innerHTML=shoe?'<p class="empty">Añade tus zapatillas para saber cuántos km llevas con cada par.</p>':'<p class="empty">Añade tus bicis para saber cuántos km llevas con cada una.</p>';
 }
 let bikeFoto=null, bikeEditing=null;
-function editBike(b){
-  bikeEditing=b||null; bikeFoto=b?b.foto:null;
-  $('bkTitle').textContent=b?'Editar bici':'Nueva bici';
+function editBike(b,shoe){
+  bikeEditing=b||null; bikeFoto=b?b.foto:null; shoe=b?isFoot(b.tipo):!!shoe;
+  $('bkTitle').textContent=shoe?(b?'Editar zapatillas':'Nuevas zapatillas'):(b?'Editar bici':'Nueva bici');
+  document.querySelectorAll('#bkTipo option').forEach(o=>o.hidden=isFoot(o.value)!==shoe);
+  $('bkOld').parentNode.lastChild.textContent=shoe?' Ya no las uso (pasan a "Anteriores zapatillas")':' Ya no la tengo (pasa a "Anteriores bicis")';
   $('bkMote').value=b?b.mote:''; $('bkMarca').value=b?b.marca:''; $('bkModelo').value=b?b.modelo:'';
-  $('bkTipo').value=b?b.tipo:(mode||'mtb'); $('bkMain').checked=b?!!b.principal:!bikes.some(x=>x.tipo===$('bkTipo').value); $('bkOld').checked=!!(b&&b.retirada);
+  $('bkTipo').value=b?b.tipo:(shoe?(isFoot(mode)?mode:'run'):(isFoot(mode)?'mtb':mode||'mtb')); $('bkMain').checked=b?!!b.principal:!bikes.some(x=>x.tipo===$('bkTipo').value); $('bkOld').checked=!!(b&&b.retirada);
   paintBikePh(); $('bkDel').hidden=!b; $('bkModal').hidden=false;
 }
 function paintBikePh(){ const ph=$('bkPh'); ph.style.backgroundImage=bikeFoto?`url("${bikeFoto}")`:''; ph.querySelector('.ico').innerHTML=bikeFoto?'':BIKE_SVG; }
-$('bikeAdd').onclick=()=>editBike(null);
+$('bikeAdd').onclick=()=>editBike(null,false);
+$('shoeAdd').onclick=()=>editBike(null,true);
 $('bkFile').onchange=e=>{
   const f=e.target.files[0]; if(!f) return; e.target.value='';
   const img=new Image(), url=URL.createObjectURL(f);
@@ -3065,12 +3177,12 @@ const fmtHc=s=>{ if(s==null) return '–'; s=Math.round(s); const h=Math.floor(s
 const n0=x=>x==null?'–':Math.round(x).toLocaleString('es-ES');
 let stPer='w', stFilt='all';
 function rideTipo(r){ const b=bikeById(r.bike); return b?b.tipo:(r.tipo||null); }
-function filtRides(){ return rides.filter(r=>stFilt==='all'||(stFilt.startsWith('bike:')&&(stFilt==='bike:'?!bikeById(r.bike):r.bike===stFilt.slice(5)))||(stFilt.startsWith('tipo:')&&rideTipo(r)===stFilt.slice(5))); }
+function filtRides(){ return rides.filter(r=>stFilt==='all'||(stFilt==='grp:pie'&&isFoot(rideTipo(r)))||(stFilt==='grp:bici'&&!isFoot(rideTipo(r)))||(stFilt.startsWith('bike:')&&(stFilt==='bike:'?!bikeById(r.bike):r.bike===stFilt.slice(5)))||(stFilt.startsWith('tipo:')&&rideTipo(r)===stFilt.slice(5))); }
 function weekStart(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
 function renderNums(){
   // filtro
   const sel=$('stFilter'), cur=stFilt;
-  sel.innerHTML=`<option value="all">Todas las salidas</option>`+bikes.map(b=>`<option value="bike:${b.id}">${esc(bikeName(b))}</option>`).join('')+
+  sel.innerHTML=`<option value="all">Todas las salidas</option><option value="grp:bici">Todo en bici</option><option value="grp:pie">Todo a pie</option>`+bikes.map(b=>`<option value="bike:${b.id}">${esc(bikeName(b))}</option>`).join('')+
     (rides.some(r=>!bikeById(r.bike))?`<option value="bike:">Sin bici</option>`:'');
   sel.value=[...sel.options].some(o=>o.value===cur)?cur:'all'; stFilt=sel.value;
   const now=new Date(), from=stPer==='w'?weekStart(now):stPer==='m'?new Date(now.getFullYear(),now.getMonth(),1):stPer==='y'?new Date(now.getFullYear(),0,1):new Date(0);
@@ -3438,7 +3550,7 @@ function refreshSegs(){
   const add=(name,sub,txt,fn)=>{ const li=document.createElement('li'); li.innerHTML=`<span><b>${esc(name)}</b><small>${sub} · ${txt}</small></span>`; li.onclick=fn; ul.appendChild(li); };
   mySegs.forEach(sg=>{ const c=sg.coords, dz=c[c.length-1][2]!=null&&c[0][2]!=null?c[c.length-1][2]-c[0][2]:null;
     add(sg.name,'Tu segmento',bestTxt(effortsFor('my:'+sg.id,c),dz),()=>{ map.fitBounds(L.latLngBounds(c.map(x=>[x[0],x[1]])),{padding:[40,40]}); L.popup({minWidth:220}).setLatLng([c[0][0],c[0][1]]).setContent(segPopup(sg)).openOn(map); }); });
-  if(mode!=='road' && glReady && map.getZoom()>=13 && rides.some(r=>r.times)){
+  if(trailsMode() && glReady && map.getZoom()>=13 && rides.some(r=>r.times)){
     const b=map.getBounds(); let fs=[];
     try{ fs=glMap.querySourceFeatures('omt',{sourceLayer:'transportation_name',filter:IS_TRAIL}); }catch(e){}
     const names=[...new Set(fs.map(f=>f.properties.name).filter(Boolean))].slice(0,60), found=[];
