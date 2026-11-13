@@ -451,6 +451,7 @@ details.help p{margin:6px 0 0}
 .frreq{display:flex;align-items:center;gap:8px;padding:10px;border-radius:12px;background:rgba(182,226,46,.18);margin-bottom:6px}.frreq span{flex:1}
 .inv-add{display:flex;gap:8px}.inv-add input{flex:1;min-width:0}.inv-add .btn-main{width:auto}
 .invlist li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--soft);font-size:14px}.invlist li span{flex:1;min-width:0}.invlist li small{display:block;color:var(--muted);font-size:12px}
+.propt{margin:14px 0 6px;font-size:15px}
 .invlist li code{font-weight:800;font-family:inherit;font-size:15px}
 .modal .box.lbox{max-width:420px;max-height:80vh;text-align:left}.modal .box.lbox h4{text-align:center}.modal .box.lbox ul{overflow-y:auto;min-height:0}
 .avlist li{padding:10px;border-radius:12px;background:var(--soft);font-size:14px;line-height:1.4;cursor:pointer}.avlist li.new{background:rgba(182,226,46,.22)}.avlist li small{display:block;color:var(--muted);font-size:12px}
@@ -684,6 +685,8 @@ details.help p{margin:6px 0 0}
     <p class="svp">Crea un código para cada amigo (por ejemplo <b>Jesus-SB</b>) y pásaselo junto con el enlace de la app. Cada código sirve una sola vez.</p>
     <div class="inv-add"><input id="invCode" placeholder="Ej.: Jesus-SB" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn">Crear</button></div>
     <ul class="invlist" id="invList"></ul>
+    <h4 class="propt" id="propT" hidden>Avisos y propuestas de la grupeta</h4>
+    <ul class="invlist" id="propList"></ul>
     <details class="help"><summary>¿Alguien ha olvidado la contraseña?</summary><p class="svp">Toca su nombre y te doy un código para que se ponga una contraseña nueva.</p><ul class="invlist" id="invUsers"></ul></details>
   </section>
   <section class="pblock" id="pBikes">
@@ -1540,7 +1543,7 @@ async function setToggle(k,on){
     if(on){ toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
     else if(route && points.length>=2 && askedVer!==routeVer) await finishRoute();
   }
-  if(k==='trialeras') applyTrails();
+  if(k==='trialeras'){ applyTrails(); if(typeof drawTrailFix==='function') drawTrailFix(); }
   if(k==='fuentes'){ if(on) loadViewFountains(); else { renderFountains(); if(addingF) $('addF').click(); } }
   if(k==='segmentos'){ if(!on && segMode) segCancel(); drawSegs(); refreshSegs(); }
   updateSheet();
@@ -1894,7 +1897,9 @@ function trailAt(latlng){
   const name=mine?mine.name:osm;
   const d=document.createElement('div'); d.className='tpop';
   let h=`<b>${esc(name||'Trialera sin nombre')}</b>${kind?'<br>'+kind:''}`;
-  if(!isNaN(sc)){ const lv=LEVELS[levelOf(sc)]; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${lv.name}</span> <small>(S${esc(v)})</small>`; }
+  const fx=(typeof fixAt==='function')?fixAt(latlng):null;
+  if(fx){ const lv=LEVELS[fx.lv]||{name:'Doble negra',color:'#111111'}; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${fx.lv>=4?'Doble negra':lv.name}</span> <small>(corregida por ${esc(uName(fx.by))})</small>`; }
+  else if(!isNaN(sc)){ const lv=LEVELS[levelOf(sc)]; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${lv.name}</span> <small>(S${esc(v)})</small>`; }
   else if(p.class==='track') h+='<br>Pista: apta para todos';
   else h+='<br>Dificultad: sin apuntar';
   if(p.surface) h+=`<br>Suelo: ${p.surface==='unpaved'?'tierra o grava':p.surface==='paved'?'asfalto':esc(p.surface)}`;
@@ -1918,6 +1923,15 @@ function trailAt(latlng){
     saveMyNames(); toast(`Guardado: "${nn}"`);
   };
   d.appendChild(bt);
+  if(me){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Cambiar color':'Proponer otro color';
+    cb.onclick=async()=>{ map.closePopup();
+      let c=fx?fx.coords.map(p=>[p[1],p[0]]):(hit.length?lineOf(hit[0]):(mine?mine.coords:null));
+      if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
+      const lv=await pickLevel(fx?fx.lv:(!isNaN(sc)?levelOf(sc):null)); if(lv==null) return;
+      const id=fx?fx.id:'c'+c[0].map(x=>x.toFixed(5)).join('_');
+      gPush([{k:'color',id,coords:c.map(x=>[+x[1].toFixed(6),+x[0].toFixed(6)]),lv,name:name||''}]);
+      if(me.admin){ gData.c[id]={coords:c.map(x=>[x[1],x[0]]),lv,name:name||'',by:me.id,t:Date.now()}; drawTrailFix(); toast('Color cambiado para todos'); } };
+    d.appendChild(cb); }
   if(mine){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar mi nombre';
     del.onclick=()=>{ map.closePopup(); myNames=myNames.filter(n=>n!==mine); saveMyNames(); toast('Nombre quitado'); }; d.appendChild(del); }
   return d;
@@ -2295,6 +2309,7 @@ async function addMyPlaceAt(ll){
   const nm=await askName('Nuevo sitio','',{title:'Añadir '+PCAT[cat].t.toLowerCase(),hint:'Ponle el nombre del sitio.',placeholder:'Nombre',button:'Guardar sitio',allowEmpty:false,list:[]});
   if(nm===null) return;
   const id='u'+Date.now().toString(36);
+  if(me&&!me.admin){ gPush([{k:'sitio',id,m:{name:nm,lat:+ll.lat.toFixed(6),lon:+ll.lng.toFixed(6),cat},t:Date.now()}]); toast('Propuesta enviada a David. Cuando la apruebe saldrá para todos.',5000); return; }
   opin[id]={mine:true,lat:+ll.lat.toFixed(6),lon:+ll.lng.toFixed(6),cat,name:nm,t:Date.now()};
   store.set('ichnos-lugares',opin); loadMyPlaces(); gPush([{k:'sitio',id,m:{name:nm,lat:opin[id].lat,lon:opin[id].lon,cat},t:opin[id].t}]);
   if(!placesOn.has(cat)){ placesOn.add(cat); syncRaw.set('ichnos-capas',[...placesOn]); paintCapas(); }
@@ -2353,7 +2368,8 @@ function placeEl(p){
     const q=opin[p.id]; gPush([{k:'op',id:p.id,m:{name:p.name,lat:p.lat,lon:p.lon,cat:p.cat},o:{nota:q.nota,precio:q.precio,txt:q.txt,t:q.t}}]); };
   d.appendChild(f);
   const hb=document.createElement('button'); hb.className='segbtn del'; hb.textContent=p.mine?'Borrar este sitio':'Ya no existe (ocultar)';
-  hb.onclick=()=>{ map.closePopup(); if(p.mine){ delete opin[p.id]; pStore.delete(p.id); gPush([{k:'sitio-',id:p.id}]); } else { opin[p.id]={...(opin[p.id]||{}),oculto:true,name:p.name,lat:p.lat,lon:p.lon,cat:p.cat,t:Date.now()}; gPush([{k:'oculto',id:p.id,m:{name:p.name,lat:p.lat,lon:p.lon,cat:p.cat},on:true}]); } store.set('ichnos-lugares',opin); renderPlaces(); toast(p.mine?'Sitio borrado':'Sitio ocultado. Ya no saldrá en el mapa de nadie.'); };
+  if(me&&!me.admin&&!p.mine){ hb.textContent='Avisar a David: ya no existe'; hb.onclick=()=>{ map.closePopup(); gReport(p.id,{name:p.name,lat:p.lat,lon:p.lon,cat:p.cat},'sitio'); }; }
+  else hb.onclick=()=>{ map.closePopup(); if(p.mine){ delete opin[p.id]; pStore.delete(p.id); gPush([{k:'sitio-',id:p.id}]); } else { opin[p.id]={...(opin[p.id]||{}),oculto:true,name:p.name,lat:p.lat,lon:p.lon,cat:p.cat,t:Date.now()}; gPush([{k:'oculto',id:p.id,m:{name:p.name,lat:p.lat,lon:p.lon,cat:p.cat},on:true}]); } store.set('ichnos-lugares',opin); renderPlaces(); toast(p.mine?'Sitio borrado':'Sitio ocultado. Ya no saldrá en el mapa de nadie.'); };
   if(p.cat==='comer'||p.cat==='dormir'){
     const isLunch=points.some(q=>q[2]==='b'&&q[3]===p.id);
     const bt=document.createElement('button'); bt.className='segbtn'+(isLunch?' del2':'');
@@ -2577,6 +2593,7 @@ async function addMyFountainAt(ll){
   const nm=await askName('Nueva fuente','',{title:'Añadir fuente',hint:'Ponle nombre si lo sabes (por ejemplo "Font de la Vallensana"). Si no, déjalo vacío.',placeholder:'Nombre de la fuente (opcional)',button:'Guardar fuente',allowEmpty:true,list:[]});
   if(nm===null) return;
   const m={id:'m'+Date.now(),lat:+ll.lat.toFixed(6),lon:+ll.lng.toFixed(6),name:nm};
+  if(me&&!me.admin){ gPush([{k:'fuente',id:m.id,lat:m.lat,lon:m.lon,name:m.name}]); toast('Propuesta enviada a David. Cuando la apruebe saldrá para todos.',5000); return; }
   myFountains.push(m); store.set('ichnos-fuentes',myFountains); gPush([{k:'fuente',id:m.id,lat:m.lat,lon:m.lon,name:m.name}]);
   addFountain({...m,kind:'mine',mine:true,photo:undefined});
   if(!T.fuentes) await setToggle('fuentes',true); else renderFountains();
@@ -2654,6 +2671,10 @@ function fountainEl(f){
     d.appendChild(bt);
   }
   if(f.mine){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Borrar esta fuente'; del.onclick=()=>{ map.closePopup(); deleteMyFountain(f); }; d.appendChild(del); }
+  else if(me&&me.admin){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Ocultar para todos (ya no está)';
+    del.onclick=()=>{ map.closePopup(); const gid=/^g-/.test(f.id)?f.id.slice(2):null; gPush([gid?{k:'fuente-',id:gid}:{k:'oculto',id:f.id,m:{name:nameOf(f),lat:f.lat,lon:f.lon,cat:'fuente'},on:true}]); fStore.delete(f.id); renderFountains(); toast('Fuente quitada para todos'); }; d.appendChild(del); }
+  else if(me){ const av=document.createElement('button'); av.className='segbtn del2'; av.textContent='Avisar a David de un problema';
+    av.onclick=()=>{ map.closePopup(); gReport(/^g-/.test(f.id)?f.id.slice(2):f.id,{name:nameOf(f),lat:f.lat,lon:f.lon,cat:'fuente'},'fuente'); }; d.appendChild(av); }
   return d;
 }
 const NAT_SVG=DROP_SVG.replace('fill="#1677c9"','fill="#d98a00"');
@@ -2668,7 +2689,7 @@ function renderFountains(){
   const shownIds=new Set(nearF.map(f=>f.id));
   if(T.fuentes) fStore.forEach(f=>shownIds.add(f.id));
   shownIds.forEach(id=>{
-    const f=fStore.get(id); if(!f) return;
+    const f=fStore.get(id); if(!f) return; try{ if(isHidden(id)) return; }catch(e){}
     const m=L.marker([f.lat,f.lon],{pane:'taps',title:nameOf(f),icon:L.divIcon({className:'',html:`<div class="tapdrop">${iconFor(f)}</div>`,iconSize:[30,38],iconAnchor:[15,37],popupAnchor:[0,-32]})})
       .bindPopup(()=>fountainEl(f),{minWidth:230}).addTo(fLayer);
     m.on('popupopen',async()=>{ if(f.photo!==undefined) return; f.photo=await findPhoto(f); m.setPopupContent(fountainEl(f)); });
@@ -4323,11 +4344,11 @@ $('locate').onclick=()=>{
 };
 
 // ================= MAPA COMPARTIDO (opiniones, sitios y fuentes de todos) =================
-let gData=store.get('ichnos-g',null)||{l:{},f:{},t:{}}; gData.t=gData.t||{};
+let gData=store.get('ichnos-g',null)||{l:{},f:{},t:{},c:{}}; gData.t=gData.t||{}; gData.c=gData.c||{};
 let gQueue=store.get('ichnos-gq',[])||[], gBusy=false;
 function gPush(ops){ if(!me) return; gQueue.push(...ops); syncRaw.set('ichnos-gq',gQueue); gFlush(); }
 async function gFlush(){ if(!me||gBusy||!gQueue.length) return; gBusy=true; const ops=gQueue.slice(0,400);
-  try{ const d=await api('/g',{method:'POST',body:{ops}}); gQueue=gQueue.slice(ops.length); syncRaw.set('ichnos-gq',gQueue); gSet(d); }catch(e){}
+  try{ const d=await api('/g',{method:'POST',body:{ops}}); gQueue=gQueue.slice(ops.length); syncRaw.set('ichnos-gq',gQueue); gSet(d); if(d&&d.pend&&!me.admin) toast('Enviado a David. Él decide qué hacer.',4500); }catch(e){}
   gBusy=false; }
 function gMigrate(){   // una vez: lo que ya tenías pasa al mapa de todos
   if(!me||store.get('ichnos-gmig',null)===me.id) return; const ops=[];
@@ -4339,12 +4360,12 @@ function gMigrate(){   // una vez: lo que ya tenías pasa al mapa de todos
   syncRaw.set('ichnos-gmig',me.id); if(ops.length) gPush(ops);
 }
 async function gLoad(){ if(!me) return; gApply(); gMigrate(); await gFlush(); try{ gSet(await api('/g')); }catch(e){} }
-function gSet(d){ if(!d) return; gData={l:d.l||{},f:d.f||{},t:d.t||{}}; syncRaw.set('ichnos-g',gData); gApply(); }
+function gSet(d){ if(!d) return; gData={l:d.l||{},f:d.f||{},t:d.t||{},c:d.c||{}}; syncRaw.set('ichnos-g',gData); gApply(); }
 function gApply(){
   Object.entries(gData.l).forEach(([id,p])=>{ if(p.m&&p.m.add&&!isMe(p.m.by)&&!(opin[id]&&opin[id].mine)) pStore.set(id,{id,lat:p.m.lat,lon:p.m.lon,cat:p.m.cat,tags:{},name:p.m.name,shared:p.m.by}); });
   pStore.forEach((p,id)=>{ if(p.shared&&!(gData.l[id]&&gData.l[id].m&&gData.l[id].m.add)) pStore.delete(id); });
   Object.entries(gData.f).forEach(([id,f])=>{ if(isMe(f.by)||fStore.has('g-'+id)) return; addFountain({id:'g-'+id,lat:f.lat,lon:f.lon,name:f.name||'',kind:'potable',by:f.by,photo:undefined}); });
-  renderPlaces(); if(T.fuentes) renderFountains(); if(T.segmentos) drawSegs();
+  renderPlaces(); if(T.fuentes) renderFountains(); if(T.segmentos) drawSegs(); drawTrailFix();
 }
 function opAll(id){ const l=[], g=gData.l[id];
   if(g&&g.o) Object.entries(g.o).forEach(([u,o])=>{ if(!isMe(u)) l.push({...o,u}); });
@@ -4353,6 +4374,29 @@ function opAll(id){ const l=[], g=gData.l[id];
 function opSum(id){ const l=opAll(id), ns=l.filter(o=>o.nota).map(o=>o.nota), ps=l.filter(o=>o.precio).map(o=>o.precio), avg=a=>Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10;
   return [ns.length?'★'+String(avg(ns)).replace('.',','):'', ps.length?String(avg(ps)).replace('.',',')+' €':''].filter(Boolean).join(' · '); }
 const isHidden=id=>(opin[id]&&opin[id].oculto)||(gData.l[id]&&gData.l[id].h);
+
+
+// avisar a David de un problema (fuente que no va, sitio cerrado…)
+async function gReport(id,m,tipo){
+  const opts=tipo==='fuente'?['No funciona','Ya no está','El agua no es potable','Está en otro sitio']:['Ya no existe','Ha cerrado','Está en otro sitio','Los precios han cambiado'];
+  const txt=await askName('',opts[0],{title:'Avisar a David',hint:'Elige o escribe qué pasa. David decide qué hacer.',placeholder:'Qué pasa',button:'Enviar aviso',list:opts});
+  if(!txt) return; gPush([{k:'aviso',id,m,txt}]);
+}
+// colores corregidos de trialeras (los pone David; los demás los proponen)
+const trailFix=L.layerGroup().addTo(map);
+function drawTrailFix(){
+  trailFix.clearLayers(); if(!T.trialeras) return;
+  Object.values(gData.c||{}).forEach(c=>{ const ll=c.coords.map(p=>[p[0],p[1]]), lv=LEVELS[c.lv]||LEVELS[3], dbl=c.lv>=4;
+    L.polyline(ll,{color:'#ffffff',weight:dbl?9:7,opacity:.9,interactive:false}).addTo(trailFix);
+    L.polyline(ll,{color:lv.color,weight:dbl?6:4,interactive:false}).addTo(trailFix);
+    if(dbl) L.polyline(ll,{color:'#ffffff',weight:1.5,interactive:false}).addTo(trailFix); });
+}
+function fixAt(latlng){ let best=null, bd=25; Object.entries(gData.c||{}).forEach(([id,c])=>{ const d=distToLine([latlng.lat,latlng.lng],c.coords.map(p=>[p[1],p[0]])); if(d<bd){ bd=d; best={id,...c}; } }); return best; }
+async function pickLevel(cur){
+  const names=['Verde','Azul','Roja','Negra','Doble negra'];
+  const v=await askName('',names[cur!=null?cur:1],{title:'¿De qué color es?',hint:'Verde (fácil) · Azul · Roja · Negra · Doble negra (muy difícil)',placeholder:'Color',button:'Guardar color',list:names});
+  if(!v) return null; const i=names.findIndex(n=>n.toLowerCase()===v.trim().toLowerCase()); if(i<0){ toast('Elige uno de la lista: Verde, Azul, Roja, Negra o Doble negra.',4500); return null; } return i;
+}
 
 // ================= AMIGOS: seguir, ver perfiles, me gusta y comentarios =================
 const APP_URL='https://carreterobike.github.io/ruta-fuentes/';
@@ -4497,13 +4541,16 @@ async function loadAvisos(){ if(!me) return; try{ avisos=await api('/avisos')||[
 function paintBell(){ $('bell').hidden=!me; const seen=store.get('ichnos-avisto',0), n=avisos.filter(a=>a.t>seen).length; $('bellN').hidden=!n; $('bellN').textContent=n>9?'9+':n; }
 function avText(a){ const w=`<b>${esc(uName(a.u))}</b>`, rn=a.n?` «${esc(a.n)}»`:'';
   return {seg:`${w} quiere seguirte.`,acep:`${w} ha aceptado que le sigas. Ya ves sus salidas.`,alta:`${w} se ha unido a Ichnos con tu invitación.`,
-    like:`A ${w} le gusta tu salida${rn}.`,com:`${w} ha comentado en tu salida${rn}: “${esc(a.x||'')}”`}[a.k]||`${w}`; }
+    like:`A ${w} le gusta tu salida${rn}.`,com:`${w} ha comentado en tu salida${rn}: “${esc(a.x||'')}”`,
+    prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
 $('bell').onclick=()=>{
   const seen=store.get('ichnos-avisto',0);
   $('avList').innerHTML=avisos.length?avisos.map((a,i)=>`<li data-i="${i}" class="${a.t>seen?'new':''}">${avText(a)}<small>${fmtDT(a.t)}</small></li>`).join(''):'<p class="svp">No tienes avisos.</p>';
   $('avList').querySelectorAll('li').forEach(li=>li.onclick=()=>{ const a=avisos[+li.dataset.i]; $('avModal').hidden=true;
     if((a.k==='like'||a.k==='com')){ const r=rides.find(x=>x.id===a.r); if(r) openRide(r); }
     else if(a.k==='seg'){ showPage('pgPerfil'); $('pAmigos').scrollIntoView({behavior:'smooth'}); }
+    else if(a.k==='prop'){ showPage('pgPerfil'); loadAdmin(); $('pInvita').scrollIntoView({behavior:'smooth'}); }
+    else if(a.k==='propok'||a.k==='propno'){ }
     else openFriend(a.u); });
   $('avModal').hidden=false; syncRaw.set('ichnos-avisto',Date.now()); paintBell();
 };
@@ -4523,6 +4570,14 @@ async function loadAdmin(){
   $('invList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
     if(b.dataset.x){ if(!await ask(`¿Anular el código ${b.dataset.x}?`,'Ya nadie podrá usarlo.','Sí, anular','No')) return; try{ await api('/admin/anular',{method:'POST',body:{code:b.dataset.x}}); }catch(e){} loadAdmin(); return; }
     copyTxt(b.dataset.t==='clave'?clvMsg(b.dataset.c):invMsg(b.dataset.c),'Mensaje copiado. Pégalo en WhatsApp.'); });
+  const props=Object.entries(j.props||{}).sort((a,b)=>b[1].t-a[1].t);
+  $('propT').hidden=!props.length;
+  $('propList').innerHTML=props.map(([pid,p])=>`<li><span><b>${esc(uName(p.by))}</b> ${esc(propText(p.op))}<small>${fmtD(p.t)}</small></span>${propLL(p.op)?`<button class="ghost" data-v="${pid}">Ver</button>`:''}<button data-ok="${pid}">${p.op.k==='aviso'?'Quitar':'Aceptar'}</button><button class="ghost" data-no="${pid}">No</button></li>`).join('');
+  $('propList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
+    const pid=b.dataset.v||b.dataset.ok||b.dataset.no, p=(j.props||{})[pid];
+    if(b.dataset.v){ const ll=propLL(p.op); showPage('pgMapa'); map.setView(ll,17); return; }
+    try{ const d=await api('/admin/propuestas',{method:'POST',body:{pid,ok:!!b.dataset.ok}}); gSet(d); toast(b.dataset.ok?'Hecho, ya está para todos.':'Descartado.',3500); }catch(e){ toast('No se ha podido ahora.',4000); }
+    loadAdmin(); });
   const others=users.filter(u=>!isMe(u.id));
   $('invUsers').innerHTML=others.length?others.map(u=>`<li><span><b>${esc(u.name)}</b><small>usuario ${esc(u.user)}</small></span><button class="ghost" data-u="${u.id}">Código nuevo</button></li>`).join(''):'<p class="svp">Todavía no hay nadie más.</p>';
   $('invUsers').querySelectorAll('button').forEach(b=>b.onclick=async()=>{ const u=users.find(x=>x.id===b.dataset.u);
@@ -4530,6 +4585,9 @@ async function loadAdmin(){
     try{ const i=await api('/admin/clave',{method:'POST',body:{uid:u.id}}); await copyTxt(clvMsg(i.code),'Mensaje con el código copiado. Pégalo en WhatsApp.'); }catch(e){ toast('No hay conexión ahora.',4000); }
     loadAdmin(); });
 }
+function propText(o){ const n=(o.m&&o.m.name)||o.name||''; const LV=['verde','azul','roja','negra','doble negra'];
+  return ({aviso:`avisa en «${n||'un sitio'}»: ${o.txt||''}`,fuente:`propone añadir la fuente «${n||'sin nombre'}»`,'fuente-':'propone borrar una fuente',sitio:`propone añadir «${n}»`,'sitio-':`propone borrar «${n}»`,oculto:`propone ocultar «${n}»`,color:`propone poner «${n||'una trialera'}» en ${LV[o.lv]||''}`})[o.k]||'hace una propuesta'; }
+function propLL(o){ if(o.m&&isFinite(o.m.lat)&&o.m.lat) return [o.m.lat,o.m.lon]; if(isFinite(o.lat)&&o.lat) return [o.lat,o.lon]; if(o.coords&&o.coords[0]) return [o.coords[0][0],o.coords[0][1]]; return null; }
 const clvMsg=code=>`Para poner una contraseña nueva en Ichnos:\n1) Abre ${APP_URL}\n2) Pulsa "He olvidado la contraseña"\n3) Pon este código: ${code} y tu contraseña nueva.`;
 $('invBtn').onclick=async()=>{ const code=$('invCode').value.trim(); if(!code) return;
   try{ await api('/admin/invitar',{method:'POST',body:{code}}); $('invCode').value=''; await loadAdmin(); copyTxt(invMsg(code),`Código ${code} creado. El mensaje con el enlace y el código está copiado: pégalo en WhatsApp.`); }
