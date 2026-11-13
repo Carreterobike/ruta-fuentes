@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ichnos · Privacidad</title>
+<style>
+:root{--bg:#ffffff;--ink:#1E2328;--muted:#5b636b;--acc:#5a7d00}
+@media (prefers-color-scheme:dark){:root{--bg:#121417;--ink:#F2F4F5;--muted:#a7b0b8;--acc:#B6E22E}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:28px;margin:0 0 4px}h1 span{color:var(--acc)}h2{font-size:19px;margin:28px 0 6px}
+p,li{color:var(--ink)}small{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>ICH<span>NOS</span> · Política de privacidad</h1>
+<small>Última actualización: 13 de noviembre de 2026 · <a href="#en">English below</a></small>
+
+<h2>Qué es Ichnos</h2>
+<p>Ichnos es una aplicación gratuita y sin ánimo de lucro para una grupeta ciclista (Serralada Bikers, Barcelona): rutas, fuentes, trialeras, sitios para almorzar y las salidas de sus miembros. Solo se entra con un código de invitación.</p>
+
+<h2>Qué datos guardamos</h2>
+<ul>
+<li>Tu cuenta: nombre o apodo, usuario y contraseña (guardada cifrada, nunca en claro).</li>
+<li>Lo que tú pones en la app: perfil, bicis, salidas (recorrido GPS, tiempos, desnivel, pulso, cadencia y potencia si las hay), fotos, comentarios, opiniones de sitios y fuentes.</li>
+<li>Si conectas Strava o Intervals.icu: la llave de acceso que esos servicios dan para leer tus actividades. No guardamos tus contraseñas de esos servicios.</li>
+</ul>
+
+<h2>Para qué y quién lo ve</h2>
+<ul>
+<li>Tus datos se usan solo para que la app funcione y los tengas en todos tus aparatos.</li>
+<li>Las personas que tú aceptas que te sigan pueden ver tu perfil y tus salidas. Las salidas que ven otros se recortan alrededor de tu casa.</li>
+<li>Los datos que llegan de Strava solo los ves tú; nunca se enseñan a otros usuarios.</li>
+<li>Las fuentes, sitios, opiniones y trialeras que compartes en el mapa los ve toda la grupeta.</li>
+<li>No vendemos ni cedemos datos a nadie, no hay publicidad y no usamos rastreadores.</li>
+</ul>
+
+<h2>Dónde se guarda</h2>
+<p>En tu propio aparato y en un servidor de Cloudflare (Cloudflare Workers KV). La app se sirve desde GitHub Pages.</p>
+
+<h2>Borrar o desconectar</h2>
+<p>Puedes desconectar Strava o Intervals.icu desde Ajustes cuando quieras. Para borrar tu cuenta y todos tus datos, pídeselo al administrador de la grupeta, que los borra.</p>
+
+<hr>
+<h2 id="en">Privacy policy (English)</h2>
+<p>Ichnos is a free, non-commercial, invite-only app for a small cycling club (Serralada Bikers, Barcelona). We store your account (name, username, hashed password) and what you add (profile, bikes, rides with GPS tracks and sensor data, photos, comments, places). If you connect Strava or Intervals.icu we store the access token they issue to read your activities; we never store your passwords for those services.</p>
+<p>Your data is used only to run the app and sync it across your devices. People you accept as followers can see your profile and rides (trimmed around your home). Data received from Strava is shown only to you, never to other users. Places, fountains and trails you share are visible to the club. We do not sell or share data, show ads or use trackers. Data is stored on your device and on Cloudflare Workers KV; the app is hosted on GitHub Pages. You can disconnect services in Settings at any time and ask the club admin to delete your account and all your data.</p>
+</main>
+</body>
+</html>
