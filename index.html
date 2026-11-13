@@ -1082,7 +1082,9 @@ async function authInit(){
   let st=null; try{ st=await (await fetch(BRIDGE+'/estado')).json(); }catch(e){}
   if(!st||st.v!==2){   // el puente todavía es el antiguo
     let ok=false; try{ ok=localStorage.getItem('rf-ok')==='1d885a150e47cf'; }catch(e){}
-    if(ok) $('lock').hidden=true; else lkMode('viejo'); return; }
+    if(ok) $('lock').hidden=true; else lkMode('viejo');
+    if(st===null&&typeof sv!=='undefined'&&sv.k){ svLegacy=true; paintStrava(); setTimeout(()=>stravaSync(false),1500); }
+    return; }
   const o=store.get('ichnos-strava',null);
   if(st.primero&&o&&o.k) lkMode('primero'); else lkMode('entrar');
 }
@@ -3279,10 +3281,12 @@ $('impFile').onchange=async e=>{
 
 // ================= STRAVA (cada uno el suyo, a través del puente) =================
 let sv=store.get('ichnos-strava',null)||{};     // por dónde vamos trayendo salidas
-const svOn=()=>!!(me&&me.strava);
+let svLegacy=false;   // mientras el puente sea el antiguo, Strava sigue funcionando con el código de antes
+const svOn=()=>me?!!me.strava:(svLegacy&&!!sv.k);
 async function svGet(path){
+  if(!me&&svLegacy){ const r=await fetch(BRIDGE+'/api/'+path,{headers:{'X-Ichnos-Key':sv.k}}); if(r.status===401) throw new Error('clave'); if(r.status===429) throw new Error('limite'); if(!r.ok) throw new Error('http'); return r.json(); }
   try{ return await api('/api/'+path); }
-  catch(e){ if(e.status===409){ me.strava=false; syncRaw.set('ichnos-auth',me); throw new Error('clave'); } if(e.status===429) throw new Error('limite'); throw new Error('http'); }
+  catch(e){ if(e.status===409&&me){ me.strava=false; syncRaw.set('ichnos-auth',me); throw new Error('clave'); } if(e.status===429) throw new Error('limite'); throw new Error('http'); }
 }
 let svBusy=false;
 function svAgo(t){ if(!t) return 'todavía no'; const m=Math.round((Date.now()-t)/60000); return m<1?'ahora mismo':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:new Date(t).toLocaleDateString('es-ES',{day:'numeric',month:'short'}); }
