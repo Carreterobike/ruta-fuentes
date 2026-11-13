@@ -3,7 +3,7 @@
 <head>
 <script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('ichnos-tema')||'"light"')==='dark'?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}</script>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Ichnos</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -36,6 +36,8 @@ html[data-theme="dark"]:root{ --bg:#0c0d0f; --card:#17191c; --soft:#22252a; --in
 html,body{height:100%;margin:0}
 body{font-family:var(--body);background:var(--bg);color:var(--ink);font-size:15px;overflow:hidden;-webkit-tap-highlight-color:transparent}
 button,input,select{font:inherit;color:inherit}
+/* en el móvil, si un campo tiene letra de menos de 16 el iPhone hace zoom y luego los toques caen en otro sitio */
+@media (pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}}
 button{cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
@@ -1011,6 +1013,12 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
+// En el iPhone, al cerrar el teclado la pantalla se queda movida y los toques caen en el botón de al lado: la devolvemos a su sitio
+function fixViewport(){ if(window.scrollX||window.scrollY||document.documentElement.scrollTop||document.body.scrollTop){ window.scrollTo(0,0); document.documentElement.scrollTop=0; document.body.scrollTop=0; } }
+document.addEventListener('focusout',()=>setTimeout(()=>{ const a=document.activeElement; if(!a||!/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) fixViewport(); },60));
+if(window.visualViewport) visualViewport.addEventListener('resize',()=>{ if(visualViewport.height>=window.innerHeight-1) fixViewport(); });
+window.addEventListener('scroll',()=>{ const a=document.activeElement; if(!a||!/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) fixViewport(); },{passive:true});
+
 // ================= CUENTA (cada persona con su usuario) =================
 const BRIDGE='https://ichnos-strava.dcarreterov86.workers.dev';
 let me=store.get('ichnos-auth',null);   // {t,id,user,name,admin,strava}
