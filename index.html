@@ -85,7 +85,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .svchip{font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--soft);color:var(--muted)}
 .svchip.on{background:#FC4C02;color:#fff}
 .svp{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
-#svCode{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:10px;font:13px ui-monospace,monospace;background:var(--card);color:var(--ink);resize:vertical}
+.sv-btn{border:0;border-radius:12px;padding:13px 18px;background:#FC4C02;color:#fff;font-weight:700;font-size:16px;width:100%}
+.sv-btn:disabled{opacity:.5}
+.sv-pw{margin:0;font-size:11px;color:var(--muted);text-align:right;letter-spacing:.3px}.sv-pw b{color:#FC4C02;font-weight:800;letter-spacing:1px}
+.acpw{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.acpw input,.inv-add input{border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:16px;background:var(--bg);color:var(--ink)}
 .sal-top .actions button{padding:13px 6px;font-size:15px}
 .sal-top .help p{margin:6px 0;font-size:14px;line-height:1.45}
 .sal-top .help summary{cursor:pointer;font-weight:600;color:var(--accent-strong)}
@@ -425,12 +429,40 @@ details.help p{margin:6px 0 0}
 .rides li{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer}
 .rides li:hover{background:var(--soft)}
 .rthumb{width:64px;height:64px;background:var(--soft);border-radius:12px}
+.rthumb.ic{display:grid;place-items:center;color:var(--muted)}.rthumb.ic svg{width:36px;height:36px}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .rphoto{width:76px;height:76px;border-radius:12px;object-fit:cover;background:var(--soft)}
 .rides span{display:flex;flex-direction:column;gap:2px;min-width:0}
 .rides b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rides small{color:var(--muted);font-size:12.5px}
 .rnums{display:flex;gap:10px;flex-wrap:wrap}.rnums i{font-style:normal;font-weight:700;color:var(--ink)}
 /* ficha de una salida */
+.phead .bell{position:relative}.phead .bell:not([hidden])+.gear{margin-left:8px}
+.phead .bell i{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#e5484d;color:#fff;font:700 11px/18px var(--body);font-style:normal;text-align:center;padding:0 4px;box-sizing:border-box}
+.frlist,.invlist,.avlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
+.frlist li{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;background:var(--soft);cursor:pointer}
+.frlist li .av,.feed .av{width:38px;height:38px;border-radius:50%;flex:none;background:#2c343b center/cover no-repeat;color:#B6E22E;display:grid;place-items:center;font-weight:800;font-size:16px}
+.frlist li span{flex:1;min-width:0;display:flex;flex-direction:column}.frlist li b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.frlist li small{color:var(--muted);font-size:12.5px}
+.frlist li button,.invlist li button,.frreq button{border:0;border-radius:10px;padding:8px 12px;font-weight:700;font-size:13.5px;background:var(--ink);color:var(--bg);white-space:nowrap}
+.frlist li button.ghost,.invlist li button.ghost,.frreq button.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.frreq{display:flex;align-items:center;gap:8px;padding:10px;border-radius:12px;background:rgba(182,226,46,.18);margin-bottom:6px}.frreq span{flex:1}
+.inv-add{display:flex;gap:8px}.inv-add input{flex:1;min-width:0}.inv-add .btn-main{width:auto}
+.invlist li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--soft);font-size:14px}.invlist li span{flex:1;min-width:0}.invlist li small{display:block;color:var(--muted);font-size:12px}
+.invlist li code{font-weight:800;font-family:inherit;font-size:15px}
+.modal .box.lbox{max-width:420px;max-height:80vh;text-align:left}.modal .box.lbox h4{text-align:center}.modal .box.lbox ul{overflow-y:auto;min-height:0}
+.avlist li{padding:10px;border-radius:12px;background:var(--soft);font-size:14px;line-height:1.4;cursor:pointer}.avlist li.new{background:rgba(182,226,46,.22)}.avlist li small{display:block;color:var(--muted);font-size:12px}
+.avatar.sm{width:72px;height:72px;margin:0;border-width:3px;flex:none}
+.rvcard.frtop{flex-direction:row;align-items:center}.frtop>div:nth-child(2){flex:1;display:flex;flex-direction:column;min-width:0}.frtop b{font-size:19px}.frtop small{color:var(--muted)}
+.frstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.frstats b{display:block;font-size:20px;font-family:var(--display);font-weight:800}.frstats small{color:var(--muted);font-size:12px}
+.feed li{grid-template-columns:38px 1fr auto}
+.feed .who{font-size:12.5px;color:var(--muted)}.feed .who b{color:var(--ink);font-size:13px}
+.rnums i.lk{color:#FC4C02;font-style:normal}
+.rvlike{display:flex;align-items:center;gap:10px}
+.rvlike button{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 14px;font-weight:800;font-size:15px}
+.rvlike svg{width:20px;height:20px;fill:none;stroke:#FC4C02;stroke-width:2}.rvlike button.on{border-color:#FC4C02;color:#FC4C02}.rvlike button.on svg{fill:rgba(252,76,2,.2)}.rvlike button:disabled{opacity:1}
+.rvlike small{color:var(--muted);font-size:13px;line-height:1.3}
+.notes li .who{font-weight:800;font-size:13px;display:block;margin-bottom:2px}
+.sv-link{color:#FC4C02;font-weight:800;font-size:14px;text-decoration:underline;align-self:center}
 .rideview{position:fixed;inset:0;z-index:2500;overflow-y:auto;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))}
 .rv-h{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;background:var(--brand);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
 .rv-h button{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;width:38px;height:38px;font-size:20px}
@@ -467,7 +499,7 @@ details.help p{margin:6px 0 0}
 .modal .box{width:100%;max-width:360px;background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:22px 20px 18px;display:flex;flex-direction:column;gap:10px;text-align:center}
 .modal .ico{width:54px;height:54px;margin:0 auto}
 .modal h4{margin:0;font-family:var(--display);font-weight:800;font-size:24px;line-height:1.1}
-.modal p{margin:0;color:var(--muted);line-height:1.4}
+.modal p{margin:0;color:var(--muted);line-height:1.4;white-space:pre-line}
 .modal .btns{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 
 /* marca, pantalla de inicio y candado */
@@ -486,6 +518,12 @@ details.help p{margin:6px 0 0}
 .lock input{color:#1E2328;border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:17px;background:var(--card);text-align:center}
 .lock button{border:0;border-radius:12px;padding:13px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px}
 .lock .err{color:#ff8a80;font-size:14px;min-height:1.2em}
+.lock form{max-height:100%;overflow-y:auto}
+.lk-tabs{display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:12px;padding:3px}
+.lock .lk-tabs button{flex:1;background:none;color:#c9ced2;padding:9px;font-size:15px;border-radius:9px}
+.lock .lk-tabs button.on{background:#fff;color:#1E2328}
+.lock .lk-link{background:none;color:#c9ced2;font-weight:600;font-size:14px;padding:4px;text-decoration:underline}
+.lock input[hidden]{display:none}
 
 /* botón de ubicación y controles del mapa */
 .fab{position:absolute;z-index:1000;right:max(12px,env(safe-area-inset-right,0px));bottom:74px;width:48px;height:48px;border-radius:50%;border:0;
@@ -564,32 +602,29 @@ details.help p{margin:6px 0 0}
 <div class="splash" id="splash"><div><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></div></div>
 <script>setTimeout(function(){var s=document.getElementById('splash');if(s){s.classList.add('out');setTimeout(function(){s.hidden=true;},500);}},1300);</script>
 <div class="lock" id="lock">
-  <form id="lockForm" autocomplete="off">
+  <form id="lockForm" autocomplete="on" novalidate>
     <img src="data:image/png;base64,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" alt=""><h2>ICH<span>NOS</span></h2>
-    <p>App en pruebas. Escribe la contraseña para entrar.</p>
-    <input id="lockPw" type="password" placeholder="Contraseña" aria-label="Contraseña" autocapitalize="off" autocorrect="off">
-    <button type="submit">Entrar</button>
+    <div class="lk-tabs" id="lkTabs"><button type="button" data-v="entrar" class="on">Entrar</button><button type="button" data-v="alta">Crear cuenta</button></div>
+    <p id="lkMsg">Entra con tu usuario y tu contraseña.</p>
+    <input id="lkCode" data-v="alta clave" placeholder="Código de invitación" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false">
+    <input id="lkName" data-v="alta primero" placeholder="Tu nombre o apodo" maxlength="30" autocomplete="nickname">
+    <input id="lkUser" data-v="entrar alta primero" placeholder="Usuario (sin espacios)" autocapitalize="off" autocorrect="off" autocomplete="username" spellcheck="false" maxlength="20">
+    <input id="lkPass" data-v="entrar alta primero clave viejo" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <input id="lkPass2" data-v="alta primero clave" type="password" placeholder="Repite la contraseña" autocomplete="new-password">
+    <button type="submit" id="lkGo">Entrar</button>
     <div class="err" id="lockErr"></div>
+    <button type="button" class="lk-link" id="lkForgot">He olvidado la contraseña</button>
+    <button type="button" class="lk-link" id="lkBack" hidden>← Volver a entrar</button>
   </form>
 </div>
 <script>
-(function(){
-  function h(str,seed){seed=seed||7;var h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(var i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(16);}
-  var KEY='1d885a150e47cf', lock=document.getElementById('lock');
-  try{ if(localStorage.getItem('rf-ok')===KEY){ lock.hidden=true; } }catch(e){}
-  if(!lock.hidden) setTimeout(function(){ document.getElementById('lockPw').focus(); },50);
-  document.getElementById('lockForm').addEventListener('submit',function(e){
-    e.preventDefault();
-    var pw=document.getElementById('lockPw').value.trim();
-    if(h(pw)===KEY){ try{ localStorage.setItem('rf-ok',KEY); }catch(err){} lock.hidden=true; }
-    else { document.getElementById('lockErr').textContent='Contraseña incorrecta. Revisa mayúsculas y números.'; }
-  });
-})();
+// Si ya has entrado en este aparato, no se enseña la pantalla de entrada
+(function(){ try{ if(localStorage.getItem('ichnos-auth')) document.getElementById('lock').hidden=true; }catch(e){} })();
 </script>
 
 <!-- ============ PÁGINA 1: PERFIL ============ -->
 <main class="page" id="pgPerfil">
-  <header class="phead"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b><button class="gear" data-gear aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></header>
+  <header class="phead"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b><button class="gear bell" id="bell" aria-label="Avisos" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><i id="bellN" hidden></i></button><button class="gear" data-gear aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></header>
   <section class="pcard" id="pView">
     <div class="avatar" id="pAvatar"></div>
     <h2 id="pApodo"></h2>
@@ -612,6 +647,18 @@ details.help p{margin:6px 0 0}
     <button type="button" class="btn-ghost" id="pCancel">Cancelar</button>
   </form>
 
+  <section class="pblock" id="pAmigos" hidden>
+    <div class="pb-h"><h3>Amigos</h3><button class="pb-btn" id="frFind">＋ Buscar</button></div>
+    <div id="frReq"></div>
+    <ul class="frlist" id="frList"></ul>
+  </section>
+  <section class="pblock" id="pInvita" hidden>
+    <div class="pb-h"><h3>Invitar amigos</h3></div>
+    <p class="svp">Crea un código para cada amigo (por ejemplo <b>Jesus-SB</b>) y pásaselo junto con el enlace de la app. Cada código sirve una sola vez.</p>
+    <div class="inv-add"><input id="invCode" placeholder="Ej.: Jesus-SB" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn">Crear</button></div>
+    <ul class="invlist" id="invList"></ul>
+    <details class="help"><summary>¿Alguien ha olvidado la contraseña?</summary><p class="svp">Toca su nombre y te doy un código para que se ponga una contraseña nueva.</p><ul class="invlist" id="invUsers"></ul></details>
+  </section>
   <section class="pblock" id="pBikes">
     <div class="pb-h"><h3>Mis bicis</h3><button class="pb-btn" id="bikeAdd">＋ Añadir</button></div>
     <div class="bikes" id="bikeList"></div>
@@ -641,6 +688,11 @@ details.help p{margin:6px 0 0}
       <button id="recBtn2" class="primary">● Grabar ruta</button>
     </div>
   </section>
+  <section class="pblock" id="pFeed" hidden>
+    <div class="pb-h"><h3>De tus amigos</h3></div>
+    <ul class="rides feed" id="feedList"></ul>
+    <button class="btn" id="feedMore" hidden>Ver más</button>
+  </section>
   <section class="pblock" id="pRides">
     <div class="pb-h"><h3>Lista de salidas</h3></div>
     <p class="empty" id="rideEmpty">Todavía no hay salidas. Conecta Strava o trae tus archivos en Ajustes (la rueda ⚙️ de arriba), o graba una con el botón "Grabar ruta".</p>
@@ -655,17 +707,24 @@ details.help p{margin:6px 0 0}
 <!-- ============ AJUSTES (se abre con la rueda) ============ -->
 <main class="page off" id="pgAjustes">
   <header class="phead short"><button class="aj-back" id="ajBack" aria-label="Volver">←</button><b class="aj-t">Ajustes</b></header>
+  <section class="pblock" id="acBox">
+    <div class="pb-h"><h3>Tu cuenta</h3></div>
+    <p class="svp" id="acInfo"></p>
+    <details class="help"><summary>Cambiar la contraseña</summary>
+      <div class="acpw"><input type="password" id="acOld" placeholder="Contraseña actual" autocomplete="current-password"><input type="password" id="acNew" placeholder="Contraseña nueva" autocomplete="new-password"><input type="password" id="acNew2" placeholder="Repite la nueva" autocomplete="new-password"><button class="btn-main" id="acSave">Cambiar contraseña</button></div>
+    </details>
+  </section>
   <section class="pblock" id="svBox">
     <div class="pb-h"><h3>Strava</h3><span class="svchip" id="svChip">Sin conectar</span></div>
     <div id="svOff">
-      <p class="svp">Conecta tu Strava y las salidas que grabes con el COROS llegarán solas a Ichnos.</p>
-      <textarea id="svCode" rows="3" placeholder="Pega aquí el código que empieza por ICHNOS-" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
-      <button class="btn-main" id="svSave">Conectar</button>
+      <p class="svp">Conecta tu Strava y las salidas que grabes con el reloj o el ciclocomputador llegarán solas a Ichnos. Se hace una sola vez.</p>
+      <button class="sv-btn" id="svGo">Conectar con Strava</button>
     </div>
     <div id="svOn" hidden>
       <p class="svp" id="svInfo"></p>
       <div class="actions"><button class="primary" id="svNow">Traer salidas nuevas</button><button id="svOut">Desconectar</button></div>
     </div>
+    <p class="sv-pw">Powered by <b>STRAVA</b></p>
   </section>
   <section class="pblock">
     <div class="pb-h"><h3>Traer salidas de archivos</h3></div>
@@ -898,16 +957,32 @@ details.help p{margin:6px 0 0}
     <button type="button" class="btn-out" id="bkDel" hidden>Borrar bici</button></div>
   </form>
 </div>
+<div class="rideview" id="frView" hidden role="dialog" aria-modal="true" aria-labelledby="frName">
+  <header class="rv-h"><button id="frBack" aria-label="Volver">←</button><div><b id="frName"></b><small id="frSub"></small></div></header>
+  <div class="rv-body">
+    <div class="rvcard frtop"><div class="avatar sm" id="frAv"></div><div><b id="frApodo"></b><small id="frCity"></small></div><button class="btn" id="frFollow"></button></div>
+    <div class="rvcard" id="frStats"></div>
+    <div class="rvcard" id="frBikes"></div>
+    <div class="rvcard"><div class="ch-t">Salidas</div><p class="note" id="frEmpty" hidden></p><ul class="rides" id="frRides"></ul><button class="btn" id="frMore" hidden>Ver más</button></div>
+  </div>
+</div>
+<div class="modal" id="usModal" hidden role="dialog" aria-modal="true" aria-labelledby="usTitle">
+  <div class="box lbox"><h4 id="usTitle">Buscar amigos</h4><input class="ninput" id="usQ" placeholder="Escribe un nombre" autocomplete="off"><ul class="frlist" id="usList"></ul><button class="btn-ghost" id="usClose">Cerrar</button></div>
+</div>
+<div class="modal" id="avModal" hidden role="dialog" aria-modal="true" aria-labelledby="avTitle">
+  <div class="box lbox"><h4 id="avTitle">Avisos</h4><ul class="avlist" id="avList"></ul><button class="btn-ghost" id="avClose">Cerrar</button></div>
+</div>
 <div class="rideview" id="rideView" hidden role="dialog" aria-modal="true" aria-labelledby="rvName">
   <header class="rv-h"><button id="rvBack" aria-label="Volver">←</button><div><b id="rvName"></b><small id="rvDate"></small></div></header>
   <div class="rv-body">
     <div class="rvcard"><svg id="rvMap" class="rvmap" role="img" aria-label="Recorrido de la salida"></svg>
-    <div class="rv-acts"><button class="btn" id="rvOnMap">Ver en el mapa</button><label>Bici <select id="rvBike"></select></label></div>
+    <div class="rv-acts"><button class="btn" id="rvOnMap">Ver en el mapa</button><label id="rvBikeL">Bici <select id="rvBike"></select></label><a class="sv-link" id="rvStrava" target="_blank" rel="noopener" hidden>Ver en Strava</a></div>
     <div class="rv-grid" id="rvGrid"></div>
     <p class="note" id="rvNoData" hidden>Esta salida no tiene horas ni pulso. Si la trajiste con una versión anterior de Ichnos, vuelve a traer su archivo para ver todos los datos.</p></div>
     <div class="rvcard" id="rvPhotos"><div class="ch-t">Fotos</div><div class="ph-grid" id="rvPh"></div>
       <button class="btn" id="rvPhAdd">📷 Añadir fotos</button><input type="file" id="rvPhFile" accept="image/*" multiple hidden></div>
-    <div class="rvcard" id="rvNotes"><div class="ch-t">Comentarios</div><ul class="notes" id="rvNoteList"></ul>
+    <div class="rvcard" id="rvNotes"><div class="rvlike"><button id="rvLike" aria-label="Me gusta"><svg viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M7 10v11H3V10z"/><path d="M7 10l4-8c1.7 0 2.8 1.4 2.4 3L12.8 9H19a2 2 0 0 1 2 2.3l-1.3 7.6A2.5 2.5 0 0 1 17.3 21H7"/></svg><span id="rvLikeN">0</span></button><small id="rvLikers"></small></div>
+      <div class="ch-t">Comentarios</div><ul class="notes" id="rvNoteList"></ul>
       <div class="note-add"><textarea id="rvNoteTxt" rows="2" placeholder="¿Qué tal la salida? Bares, fuentes, cómo estaba el camino…"></textarea><button class="btn-main" id="rvNoteBtn">Publicar comentario</button></div></div>
     <div class="rvcard" id="rvCharts"></div>
     <div class="rvcard" id="rvZones"></div>
@@ -936,6 +1011,87 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
+// ================= CUENTA (cada persona con su usuario) =================
+const BRIDGE='https://ichnos-strava.dcarreterov86.workers.dev';
+let me=store.get('ichnos-auth',null);   // {t,id,user,name,admin,strava}
+async function api(path,{method='GET',body}={}){
+  const h={}; if(me&&me.t) h.Authorization='Bearer '+me.t; if(body!=null) h['Content-Type']='application/json';
+  const r=await fetch(BRIDGE+path,{method,headers:h,body:body==null?undefined:(typeof body==='string'?body:JSON.stringify(body))});
+  let j=null; try{ j=await r.json(); }catch(e){}
+  if(r.status===401&&me&&!path.startsWith('/auth')){ sessionLost(); }
+  if(!r.ok){ const e=new Error((j&&j.error)||'http'); e.status=r.status; throw e; }
+  return j;
+}
+const isMe=uid=>!!me&&uid===me.id;
+function sessionLost(){ if(!me) return; me=null; syncRaw.del('ichnos-auth'); lkMode('entrar','Tienes que volver a entrar con tu usuario y contraseña. Tus cosas no se borran.'); $('lock').hidden=false; }
+let lkV='entrar';
+const LK_TXT={entrar:['Entra con tu usuario y tu contraseña.','Entrar'],
+  alta:['Escribe el código que te ha pasado quien te invita y elige tu usuario y tu contraseña.','Crear mi cuenta'],
+  clave:['Pide a David un código para cambiar la contraseña y escribe la nueva.','Cambiar contraseña'],
+  primero:['Eres el primero: crea tu cuenta. Todo lo que tienes en Ichnos pasa a ella y Strava sigue conectado.','Crear mi cuenta'],
+  viejo:['App en pruebas. Escribe la contraseña para entrar.','Entrar']};
+function lkMode(v,msg){ lkV=v;
+  $('lkTabs').hidden=v==='primero'||v==='viejo'||v==='clave';
+  document.querySelectorAll('#lkTabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  document.querySelectorAll('#lockForm input').forEach(i=>{ i.hidden=!i.dataset.v.split(' ').includes(v); });
+  $('lkMsg').textContent=msg||LK_TXT[v][0]; $('lkGo').textContent=LK_TXT[v][1]; $('lockErr').textContent='';
+  $('lkPass').autocomplete=v==='entrar'||v==='viejo'?'current-password':'new-password';
+  $('lkCode').placeholder=v==='clave'?'Código para cambiar la contraseña':'Código de invitación';
+  $('lkPass').placeholder=v==='clave'?'Contraseña nueva':'Contraseña';
+  $('lkForgot').hidden=v!=='entrar'; $('lkBack').hidden=v!=='clave';
+}
+document.querySelectorAll('#lkTabs button').forEach(b=>b.onclick=()=>lkMode(b.dataset.v));
+$('lkForgot').onclick=()=>lkMode('clave'); $('lkBack').onclick=()=>lkMode('entrar');
+function oldHash(str,seed){seed=seed||7;var h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(var i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(16);}
+$('lockForm').addEventListener('submit',async e=>{
+  e.preventDefault(); const v=lkV, val=id=>$(id).value.trim(), err=t=>{ $('lockErr').textContent=t; };
+  if(v==='viejo'){ if(oldHash($('lkPass').value.trim())==='1d885a150e47cf'){ try{ localStorage.setItem('rf-ok','1d885a150e47cf'); }catch(x){} $('lock').hidden=true; } else err('Contraseña incorrecta. Revisa mayúsculas y números.'); return; }
+  const pass=$('lkPass').value;
+  if(v!=='entrar'&&pass!==$('lkPass2').value) return err('Las dos contraseñas no son iguales.');
+  const b={user:val('lkUser'),pass,name:val('lkName'),code:val('lkCode')};
+  if(v==='primero'){ const o=store.get('ichnos-strava',null); b.key=o&&o.k; }
+  $('lkGo').disabled=true; err('');
+  try{
+    const s=await api({entrar:'/auth/entrar',alta:'/auth/registro',clave:'/auth/clave',primero:'/auth/primero'}[v],{method:'POST',body:b});
+    await loggedIn(s);
+  }catch(x){ err(x.status?x.message:'No hay conexión. Prueba otra vez en un momento.'); }
+  $('lkGo').disabled=false;
+});
+async function wipeLocal(){
+  Object.keys(localStorage).filter(k=>/^ichnos-/.test(k)&&!/^ichnos-(capas|tema|ovt|gravel)$/.test(k)).forEach(k=>localStorage.removeItem(k));
+  try{ await ridesTx('readwrite',st=>st.clear()); }catch(e){}
+}
+async function loggedIn(s){
+  const prev=store.get('ichnos-owner',null);
+  if(prev&&prev!==s.id) await wipeLocal();          // otra persona en este aparato: se empieza limpio
+  if(prev!==s.id){ syncRaw.del('ichnos-sync'); syncRaw.del('ichnos-gmig'); }  // la copia empieza de cero en tu cuenta
+  const o=store.get('ichnos-strava',null); if(o&&o.k){ delete o.k; delete o.u; syncRaw.set('ichnos-strava',o); }
+  syncRaw.set('ichnos-auth',s); syncRaw.set('ichnos-owner',s.id);
+  $('lkMsg').textContent='¡Dentro! Preparando tu Ichnos…'; location.reload();
+}
+async function authInit(){
+  if(me){ api('/yo').then(y=>{ if(!me) return; me={...me,...y}; syncRaw.set('ichnos-auth',me); paintAccount(); }).catch(()=>{}); return; }
+  let st=null; try{ st=await (await fetch(BRIDGE+'/estado')).json(); }catch(e){}
+  if(!st||st.v!==2){   // el puente todavía es el antiguo
+    let ok=false; try{ ok=localStorage.getItem('rf-ok')==='1d885a150e47cf'; }catch(e){}
+    if(ok) $('lock').hidden=true; else lkMode('viejo'); return; }
+  const o=store.get('ichnos-strava',null);
+  if(st.primero&&o&&o.k) lkMode('primero'); else lkMode('entrar');
+}
+lkMode('entrar');
+function paintAccount(){
+  if(!$('acInfo')) return;
+  $('acBox').hidden=!me;
+  if(me) $('acInfo').innerHTML=`Has entrado como <b>${esc(me.name||'')}</b> (usuario <b>${esc(me.user||'')}</b>).`;
+  if(typeof paintAdmin==='function') paintAdmin();
+}
+$('acSave').onclick=async()=>{
+  if($('acNew').value!==$('acNew2').value){ toast('Las dos contraseñas nuevas no son iguales.'); return; }
+  try{ const s2=await api('/yo',{method:'POST',body:{old:$('acOld').value,pass:$('acNew').value}}); me={...me,...s2}; syncRaw.set('ichnos-auth',me);
+    ['acOld','acNew','acNew2'].forEach(i=>$(i).value=''); toast('Contraseña cambiada. En tus otros aparatos tendrás que volver a entrar.',5000);
+  }catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); }
+};
+
 // ================= COPIA ENTRE APARATOS (Mac ↔ iPhone) =================
 // Lo que cambias en un aparato se guarda en tu puente de Cloudflare y el otro lo coge al abrir Ichnos.
 const SYNC_KEYS=['ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap','ichnos-lugares'];
@@ -945,6 +1101,7 @@ function syncMeta(){ const m=store.get('ichnos-sync',null)||{}; m.mt=m.mt||{}; m
 function syncSave(m){ const cur=syncMeta();   // por si algo cambió mientras se copiaba
   Object.keys(cur.mt).forEach(k=>{ if((cur.mt[k]||0)>(m.mt[k]||0)) m.mt[k]=cur.mt[k]; });
   if(cur.dirtyDel&&!m._pushedDel) m.dirtyDel=true;
+  if(cur.pubDirty&&cur.pubDirty.length>(m.pubDirty||[]).length&&!(m._pushed||[]).length) m.pubDirty=cur.pubDirty;
   cur.dirty.forEach(b=>{ if(!m.dirty.includes(b)&&!(m._pushed||[]).includes(b)) m.dirty.push(b); });
   const o={...m}; delete o._pushed; delete o._pushedDel; syncRaw.set('ichnos-sync',o); }
 const rideBucket=d=>{ const x=new Date(d||0); return 'r-'+x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'); };
@@ -955,13 +1112,12 @@ function syncDelRide(id,date){ const d=store.get('ichnos-rdel',[]); if(!d.includ
 store.set=(k,v)=>{ const ok=syncRaw.set(k,v); if(syncReady&&SYNC_KEYS.includes(k)) syncMark(k); return ok; };
 store.del=k=>{ syncRaw.del(k); if(syncReady&&SYNC_KEYS.includes(k)) syncMark(k); };
 async function syncReq(path,opt={}){
-  const r=await fetch(sv.u+'/sync'+path,{method:opt.method||'GET',body:opt.body,headers:opt.body?{'X-Ichnos-Key':sv.k,'Content-Type':'application/json'}:{'X-Ichnos-Key':sv.k}});
-  if(r.status===401) throw new Error('clave'); if(r.status===404) throw new Error('viejo'); if(!r.ok&&r.status!==409) throw new Error('http');
-  return r.json();
+  try{ let q=''; if(opt.method==='PUT'){ const m=/^\{"t":(\d+)/.exec(opt.body); q='?t='+(m?m[1]:Date.now()); } return await api('/sync'+path+q,{method:opt.method,body:opt.body}); }
+  catch(e){ if(e.status===401) throw new Error('clave'); throw new Error('http'); }
 }
 const cleanRide=r=>{ const c={...r}; Object.keys(c).forEach(k=>{ if(k.startsWith('_')) delete c[k]; }); return c; };
 async function syncNow(manual){
-  if(!sv||syncBusy) return; syncBusy=true;
+  if(!me||syncBusy) return; syncBusy=true;
   let gotSettings=false, gotRides=false, err=null;
   const m=syncMeta(); m._pushed=[];
   try{
@@ -994,12 +1150,15 @@ async function syncNow(manual){
       const list=rides.filter(r=>rideBucket(r.date)===b&&!dels.has(r.id)).map(cleanRide), t=Date.now();
       await syncReq('/'+b,{method:'PUT',body:JSON.stringify({t,v:list})});
       m.seen[b]=t; m.dirty=m.dirty.filter(x=>x!==b); m._pushed.push(b); syncSave(m); m._pushed=m._pushed;
+      try{ await api('/pub/p-'+b.slice(2),{method:'PUT',body:list.map(publicRide)}); }catch(e){ (m.pubDirty=m.pubDirty||[]).includes(b)||m.pubDirty.push(b); }
     }
+    for(const b of [...(m.pubDirty||[])]){ const list=rides.filter(r=>rideBucket(r.date)===b&&!dels.has(r.id)).map(cleanRide); await api('/pub/p-'+b.slice(2),{method:'PUT',body:list.map(publicRide)}); m.pubDirty=m.pubDirty.filter(x=>x!==b); }
+    await publishPub(m);
+    await gFlush();
     m.last=Date.now();
   }catch(e){ err=e&&e.message; }
   syncSave(m); syncBusy=false;
-  if(err==='viejo'){ if(manual) toast('Falta poner el código nuevo en Cloudflare para la copia entre aparatos.',6000); }
-  else if(err&&manual) toast('No se ha podido hacer la copia entre aparatos ahora. Prueba en un rato.',5000);
+  if(err&&manual) toast('No se ha podido hacer la copia entre aparatos ahora. Prueba en un rato.',5000);
   if(typeof paintStrava==='function') paintStrava();
   if(gotSettings){
     let last=0; try{ last=+sessionStorage.getItem('ichnos-syncrl')||0; }catch(e){}
@@ -1007,6 +1166,24 @@ async function syncNow(manual){
   }
   if(gotRides) toast('Salidas traídas de tu otro aparato.',3500);
   else if(manual&&!err) toast('Todo igual en tus aparatos.',3000);
+}
+// lo que ven tus amigos: perfil, resumen de salidas y salidas sin el trozo de alrededor de casa
+function publicRide(r){
+  const o={id:r.id,name:r.name,date:r.date,source:r.source,tipo:rideTipo(r),km:r.km,bk:r.bike?bikeName(bikeById(r.bike)):'',fotos:r.fotos,sfotos:r.sfotos,notas:r.notas};
+  const rad=+perfil.priv||0, h=perfil.home&&perfil.homeExact?[perfil.home.lat,perfil.home.lon]:null;
+  const keep=(r.coords||[]).map((p,i)=>!(rad&&h&&dist(p,h)<=rad));
+  ['coords','times','eles','hr','cad','pw'].forEach(k=>{ if(Array.isArray(r[k])) o[k]=r[k].filter((_,i)=>keep[i]); });
+  if(!o.coords||o.coords.length<2){ o.coords=[]; }
+  return o;
+}
+const strHash=t=>{ let h=0; for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))|0; return t.length+':'+h; };
+async function publishPub(m){
+  const pub={apodo:perfil.apodo||(me&&me.name)||'',ciudad:perfil.ciudad||'',foto:perfil.foto||null,
+    bicis:bikes.filter(b=>!b.retirada).map(b=>({n:bikeName(b),tipo:b.tipo}))};
+  const res=rides.filter(r=>r.coords&&r.coords.length>1).slice(0,600).map(r=>{ const st=rideStats(r); return {id:r.id,d:r.date,n:r.name,km:+st.km.toFixed(2),s:st.moving,up:st.up,tp:rideTipo(r),bk:r.bike?bikeName(bikeById(r.bike)):'',ph:(r.sfotos&&r.sfotos[0])||'',nf:(r.fotos||[]).length+(r.sfotos||[]).length,nc:(r.notas||[]).length}; });
+  const a=JSON.stringify(pub), b=JSON.stringify(res), ha=strHash(a), hb=strHash(b);
+  if(m.pubA!==ha){ await api('/pub/pub',{method:'PUT',body:a}); m.pubA=ha; }
+  if(m.pubB!==hb){ await api('/pub/resumen',{method:'PUT',body:b}); m.pubB=hb; }
 }
 function syncAgo(){ const m=syncMeta(); return m.last?svAgo(m.last):'todavía no'; }
 let toastTimer=null;
@@ -1030,7 +1207,7 @@ function paintAvatar(el,foto){ el.style.backgroundImage=foto?`url("${foto}")`:''
 if(perfil.priv==null) perfil.priv=500;
 function renderPerfil(){
   paintAvatar($('pAvatar'),perfil.foto);
-  $('pApodo').textContent=perfil.apodo||'Sin apodo';
+  $('pApodo').textContent=perfil.apodo||(me&&me.name)||'Sin apodo';
   $('pCiudad').innerHTML=PIN_SVG+esc(perfil.ciudad||'Sin ciudad');
   $('pHome').textContent = perfil.home&&perfil.homeExact ? `Casa guardada · ${+perfil.priv?'se esconde '+(perfil.priv>=1000?'1 km':perfil.priv+' m')+' en tus rutas':'no se esconde en tus rutas'}` : 'Sin casa guardada';
 }
@@ -1046,10 +1223,10 @@ function editPerfil(on){
 }
 $('pEdit').onclick=()=>editPerfil(true);
 $('pOut').onclick=async()=>{
-  const ok=await ask('¿Salir de Ichnos?','La próxima vez que abras la app te pedirá la contraseña. Tu perfil y tus rutas no se borran.','Sí, salir','Cancelar');
+  const ok=await ask('¿Salir de tu cuenta?','La próxima vez tendrás que entrar con tu usuario y contraseña. Tus cosas no se borran.','Sí, salir','Cancelar');
   if(!ok) return;
-  try{ localStorage.removeItem('rf-ok'); }catch(e){}
-  $('lockPw').value=''; $('lockErr').textContent=''; $('lock').hidden=false; setTimeout(()=>$('lockPw').focus(),50);
+  me=null; syncRaw.del('ichnos-auth'); try{ localStorage.removeItem('rf-ok'); }catch(e){}
+  $('lkPass').value=''; lkMode('entrar'); $('lock').hidden=false;
 };
 $('pCancel').onclick=()=>editPerfil(false);
 $('pFile').onchange=e=>{
@@ -1081,6 +1258,9 @@ $('pForm').onsubmit=async e=>{
   if(!perfil.casa){ perfil.homeExact=false; }
   if(!store.set('ichnos-perfil',perfil)) toast('No se ha podido guardar el perfil en este navegador.');
   renderPerfil(); if(window.drawHome) drawHome(); if(window.drawHeat) drawHeat();
+  if(me&&(old.priv!==perfil.priv||JSON.stringify(old.home)!==JSON.stringify(perfil.home)||old.homeExact!==perfil.homeExact)){   // lo que ven tus amigos se vuelve a recortar
+    const m=syncMeta(); m.pubDirty=[...new Set(rides.map(r=>rideBucket(r.date)))]; syncRaw.set('ichnos-sync',m); syncSoon(); }
+  if(me&&perfil.apodo&&perfil.apodo!==me.name) api('/yo',{method:'POST',body:{name:perfil.apodo}}).then(()=>{ me.name=perfil.apodo; syncRaw.set('ichnos-auth',me); paintAccount(); }).catch(()=>{});
 };
 renderPerfil();
 if(!perfil.apodo && !perfil.foto) editPerfil(true);
@@ -1091,6 +1271,7 @@ function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
   document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
   if((id==='pgSalidas'||id==='pgAjustes') && typeof svAuto==='function') svAuto();
+  if(id==='pgSalidas' && typeof loadFeed==='function') loadFeed(false);
   if(id==='pgMapa' && window.map){
     setTimeout(()=>{ map.invalidateSize(); try{ glMap.resize(); }catch(e){} },30);
     if(!mapCentered && perfil.home && !route){ map.setView([perfil.home.lat,perfil.home.lon],perfil.homeExact?14:13); mapCentered=true; }
@@ -2042,7 +2223,7 @@ async function addMyPlaceAt(ll){
   if(nm===null) return;
   const id='u'+Date.now().toString(36);
   opin[id]={mine:true,lat:+ll.lat.toFixed(6),lon:+ll.lng.toFixed(6),cat,name:nm,t:Date.now()};
-  store.set('ichnos-lugares',opin); loadMyPlaces();
+  store.set('ichnos-lugares',opin); loadMyPlaces(); gPush([{k:'sitio',id,m:{name:nm,lat:opin[id].lat,lon:opin[id].lon,cat},t:opin[id].t}]);
   if(!placesOn.has(cat)){ placesOn.add(cat); syncRaw.set('ichnos-capas',[...placesOn]); paintCapas(); }
   renderPlaces(); toast('Sitio guardado');
 }
@@ -2071,8 +2252,8 @@ function renderPlaces(){
   placeLayer.clearLayers(); if(!placesOn.size&&!points.some(p=>p[2]==='b')) return;
   const b=map.getBounds().pad(0.2); let n=0;
   const lunchIds=new Set(points.filter(p=>p[2]==='b').map(p=>p[3]));
-  pStore.forEach(p=>{ if(!(placesOn.has(p.cat)||lunchIds.has(p.id))) return; if(opin[p.id]&&opin[p.id].oculto) return; if(!b.contains([p.lat,p.lon])||n>400) return; n++;
-    const o=opin[p.id], lab=opTxt(o);
+  pStore.forEach(p=>{ if(!(placesOn.has(p.cat)||lunchIds.has(p.id))) return; if(isHidden(p.id)) return; if(!b.contains([p.lat,p.lon])||n>400) return; n++;
+    const lab=opSum(p.id);
     L.marker([p.lat,p.lon],{pane:'taps',title:p.name,icon:L.divIcon({className:'',html:`<div class="pmk2">${pinSvg(PCAT[p.cat].col,PCAT[p.cat].pin)}${lab?`<em>${lab}</em>`:''}</div>`,iconSize:[32,41],iconAnchor:[16,40],popupAnchor:[0,-34]})})
       .bindPopup(()=>placeEl(p),{minWidth:240,maxWidth:280}).addTo(placeLayer);
   });
@@ -2084,6 +2265,9 @@ function placeEl(p){
   let where=''; if(route){ const nr=nearestOnRoute([p.lat,p.lon]); where=`<br><small>Km ${fmtKm(nr.km)} · ${nr.d<60?'en tu ruta':'a '+(nr.d<1000?Math.round(nr.d)+' m':fmtKm(nr.d/1000)+' km')+' de tu ruta'}</small>`; }
   const ex=p.extra||{}, tel=t.phone||ex.phone, web=t.website||ex.web;
   d.innerHTML=`<b class="t">${esc(p.name)}</b><br><small>${esc(sub)}</small>${where}${ex.addr?`<br><small>${esc(ex.addr)}</small>`:''}${extra?`<br><small>${extra}</small>`:''}${tel?`<br><a href="tel:${esc(tel)}">📞 ${esc(tel)}</a>`:''}${web?`<br><a href="${esc(/^https?:/.test(web)?web:'https://'+web)}" target="_blank" rel="noopener">🌐 Web</a>`:''}`;
+  if(p.shared) d.insertAdjacentHTML('beforeend',`<br><small>Añadido por ${esc(uName(p.shared))}</small>`);
+  const oth=opAll(p.id).filter(x=>!isMe(x.u)&&x.u);
+  if(oth.length) d.insertAdjacentHTML('beforeend',`<div class="mine"><b>Tus amigos:</b>${oth.map(x=>`<br><b>${esc(uName(x.u))}</b>: ${esc(opTxt(x)||'')}${x.txt?' · '+esc(x.txt):''}`).join('')}</div>`);
   if(o.t) d.insertAdjacentHTML('beforeend',`<div class="mine"><b>Tu opinión:</b> ${esc(opTxt(o)||'sin nota')}${o.txt?'<br>'+esc(o.txt):''}<br><small>${new Date(o.t).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</small></div>`);
   const f=document.createElement('div');
   f.innerHTML=`<small>${o.t?'Cambiar tu opinión':'¿Has estado? Ponle nota'}</small><div class="stars">${[1,2,3,4,5].map(k=>`<button type="button" data-k="${k}" class="${(o.nota||0)>=k?'on':''}">★</button>`).join('')}</div>
@@ -2092,10 +2276,11 @@ function placeEl(p){
   f.querySelectorAll('.stars button').forEach(b=>b.onclick=()=>{ nota=+b.dataset.k; f.querySelectorAll('.stars button').forEach(x=>x.classList.toggle('on',+x.dataset.k<=nota)); });
   f.querySelector('.sv').onclick=()=>{ const pr=f.querySelector('.pr'), precio=pr?parseFloat(pr.value.replace(',','.'))||null:null;
     opin[p.id]={...(opin[p.id]||{}),nota:nota||null,precio,txt:f.querySelector('.tx').value.trim().slice(0,1000),t:Date.now(),name:p.name,lat:p.lat,lon:p.lon,cat:p.cat};
-    store.set('ichnos-lugares',opin); map.closePopup(); renderPlaces(); if(almOpen) renderLunch(); toast('Opinión guardada'); };
+    store.set('ichnos-lugares',opin); map.closePopup(); renderPlaces(); if(almOpen) renderLunch(); toast('Opinión guardada');
+    const q=opin[p.id]; gPush([{k:'op',id:p.id,m:{name:p.name,lat:p.lat,lon:p.lon,cat:p.cat},o:{nota:q.nota,precio:q.precio,txt:q.txt,t:q.t}}]); };
   d.appendChild(f);
   const hb=document.createElement('button'); hb.className='segbtn del'; hb.textContent=p.mine?'Borrar este sitio':'Ya no existe (ocultar)';
-  hb.onclick=()=>{ map.closePopup(); if(p.mine){ delete opin[p.id]; pStore.delete(p.id); } else opin[p.id]={...(opin[p.id]||{}),oculto:true,name:p.name,lat:p.lat,lon:p.lon,cat:p.cat,t:Date.now()}; store.set('ichnos-lugares',opin); renderPlaces(); toast(p.mine?'Sitio borrado':'Sitio ocultado. Ya no saldrá en tu mapa.'); };
+  hb.onclick=()=>{ map.closePopup(); if(p.mine){ delete opin[p.id]; pStore.delete(p.id); gPush([{k:'sitio-',id:p.id}]); } else { opin[p.id]={...(opin[p.id]||{}),oculto:true,name:p.name,lat:p.lat,lon:p.lon,cat:p.cat,t:Date.now()}; gPush([{k:'oculto',id:p.id,m:{name:p.name,lat:p.lat,lon:p.lon,cat:p.cat},on:true}]); } store.set('ichnos-lugares',opin); renderPlaces(); toast(p.mine?'Sitio borrado':'Sitio ocultado. Ya no saldrá en el mapa de nadie.'); };
   if(p.cat==='comer'||p.cat==='dormir'){
     const isLunch=points.some(q=>q[2]==='b'&&q[3]===p.id);
     const bt=document.createElement('button'); bt.className='segbtn'+(isLunch?' del2':'');
@@ -2319,14 +2504,14 @@ async function addMyFountainAt(ll){
   const nm=await askName('Nueva fuente','',{title:'Añadir fuente',hint:'Ponle nombre si lo sabes (por ejemplo "Font de la Vallensana"). Si no, déjalo vacío.',placeholder:'Nombre de la fuente (opcional)',button:'Guardar fuente',allowEmpty:true,list:[]});
   if(nm===null) return;
   const m={id:'m'+Date.now(),lat:+ll.lat.toFixed(6),lon:+ll.lng.toFixed(6),name:nm};
-  myFountains.push(m); store.set('ichnos-fuentes',myFountains);
+  myFountains.push(m); store.set('ichnos-fuentes',myFountains); gPush([{k:'fuente',id:m.id,lat:m.lat,lon:m.lon,name:m.name}]);
   addFountain({...m,kind:'mine',mine:true,photo:undefined});
   if(!T.fuentes) await setToggle('fuentes',true); else renderFountains();
   toast('Fuente guardada');
 }
 function deleteMyFountain(f){
   const id=f.id2||f.id;
-  myFountains=myFountains.filter(m=>m.id!==id); store.set('ichnos-fuentes',myFountains);
+  myFountains=myFountains.filter(m=>m.id!==id); store.set('ichnos-fuentes',myFountains); gPush([{k:'fuente-',id}]);
   if(f.id2){ delete f.id2; f.mine=false; f.kind=f.tags&&f.tags.natural==='spring'&&f.tags.drinking_water!=='yes'?'natural':'potable'; }
   else fStore.delete(f.id);
   renderFountains(); toast('Fuente borrada');
@@ -2387,7 +2572,7 @@ function fountainEl(f){
   const sv=`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${f.lat},${f.lon}`;
   let where='';
   if(route){ const n=nearestOnRoute([f.lat,f.lon]); f.d=n.d; f.km=n.km; where=`Km ${fmtKm(f.km)} · ${f.d<25?'en la ruta':'a '+Math.round(f.d)+' m de la ruta'}<br>`; }
-  d.innerHTML=`${ph}<b>${esc(nameOf(f))}</b><br>${where}<span class="tags ${f.kind}">${KIND_TXT[f.kind]}</span><br><a href="${sv}" target="_blank" rel="noopener">Verla en Street View</a>`;
+  d.innerHTML=`${ph}<b>${esc(nameOf(f))}</b><br>${where}<span class="tags ${f.kind}">${f.by?'Añadida por '+esc(uName(f.by)):KIND_TXT[f.kind]}</span><br><a href="${sv}" target="_blank" rel="noopener">Verla en Street View</a>`;
   if(route && points.length>=2){
     const vi=viaIdx(f), bt=document.createElement('button'); bt.className='segbtn';
     if(vi>0){ bt.textContent='Quitar de la ruta'; bt.classList.add('del2'); bt.onclick=()=>{ map.closePopup(); points.splice(vi,1); drawPins(); calc().then(()=>{askedVer=routeVer;}); }; }
@@ -3084,69 +3269,89 @@ $('impFile').onchange=async e=>{
   toast(n?`${n} salida${n>1?'s':''} añadida${n>1?'s':''}`+(other?` · ${other} de correr, caminar u otras no se han traído`:'')+(bad?` · ${bad} sin recorrido`:''):(other?'En ese archivo no hay salidas en bici.':'No he encontrado recorridos en esos archivos.'),6500);
 };
 
-// ================= STRAVA (conexión directa) =================
-let sv=store.get('ichnos-strava',null);
-function svParse(c){ const m=/ICHNOS-([A-Za-z0-9+/=_-]+)/.exec(String(c).replace(/\s+/g,'')); if(!m) return null; try{ const o=JSON.parse(atob(m[1])); return o&&o.u&&o.k?{u:o.u.replace(/\/$/,''),k:o.k}:null; }catch(e){ return null; } }
+// ================= STRAVA (cada uno el suyo, a través del puente) =================
+let sv=store.get('ichnos-strava',null)||{};     // por dónde vamos trayendo salidas
+const svOn=()=>!!(me&&me.strava);
 async function svGet(path){
-  const r=await fetch(sv.u+'/api/'+path,{headers:{'X-Ichnos-Key':sv.k}});
-  if(r.status===401) throw new Error('clave'); if(r.status===429) throw new Error('limite'); if(!r.ok) throw new Error('http');
-  return r.json();
+  try{ return await api('/api/'+path); }
+  catch(e){ if(e.status===409){ me.strava=false; syncRaw.set('ichnos-auth',me); throw new Error('clave'); } if(e.status===429) throw new Error('limite'); throw new Error('http'); }
 }
 let svBusy=false;
 function svAgo(t){ if(!t) return 'todavía no'; const m=Math.round((Date.now()-t)/60000); return m<1?'ahora mismo':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:new Date(t).toLocaleDateString('es-ES',{day:'numeric',month:'short'}); }
 function paintStrava(msg){
-  const on=!!sv; $('svOff').hidden=on; $('svOn').hidden=!on;
+  const on=svOn(); $('svOff').hidden=on; $('svOn').hidden=!on;
   $('svChip').textContent=on?'Conectado':'Sin conectar'; $('svChip').classList.toggle('on',on);
-  if(on){ const n=rides.filter(r=>/^strava-/.test(r.id)).length;
-    $('svInfo').textContent=msg||`Las salidas nuevas llegan solas al abrir Ichnos. Última vez: ${svAgo(sv.last)}.`+(sv.more?' Quedan más por traer: pulsa otra vez en un rato.':''); }
-  $('syInfo').textContent=on?`Tus bicis, salidas, fotos, comentarios, fuentes y rutas se copian solas entre el Mac y el móvil al abrir Ichnos. Última copia: ${syncAgo()}.`:'Para copiar tus cosas entre el Mac y el móvil, primero conecta Strava (arriba).'; $('syNow').disabled=!on;
+  $('svGo').disabled=!me;
+  if(on){ $('svInfo').textContent=msg||`Las salidas nuevas llegan solas al abrir Ichnos. Última vez: ${svAgo(sv.last)}.`+(sv.histDone?'':' Tus salidas antiguas se van trayendo poco a poco.'); }
+  $('syInfo').textContent=me?`Tus bicis, salidas, fotos, comentarios, fuentes y rutas se guardan en tu cuenta y salen iguales en todos tus aparatos. Última copia: ${syncAgo()}.`:'Entra con tu cuenta para tener tus cosas en todos tus aparatos.'; $('syNow').disabled=!me;
   $('svNow').disabled=svBusy; $('svNow').textContent=svBusy?'Trayendo…':'Traer salidas nuevas';
+  paintAccount();
+}
+async function svImport(a,gear){
+  const tipo=stravaTipo(a.sport_type||a.type), id='strava-'+a.id;
+  if(!tipo||!a.map||!a.map.summary_polyline||rides.some(r=>r.id===id)) return false;
+  const s=await svGet(`activities/${a.id}/streams?keys=latlng,time,altitude,heartrate,cadence,watts&key_by_type=true`);
+  const g=k=>s&&s[k]&&s[k].data, ll=g('latlng');
+  if(!ll||ll.length<2) return 'x';
+  const t0=Date.parse(a.start_date), tm=g('time'), ts=ll.map((_,i)=>tm&&tm[i]!=null?t0+tm[i]*1000:null);
+  const th=thinFull(ll,ts,g('altitude'),{hr:g('heartrate'),cad:g('cadence'),pw:g('watts')});
+  let bike=null;
+  if(a.gear_id){ if(!(a.gear_id in gear)){ try{ gear[a.gear_id]=(await svGet('gear/'+a.gear_id)).name||''; }catch(e){ gear[a.gear_id]=''; } store.set('ichnos-gear',gear); } bike=bikeByGear(gear[a.gear_id]); }
+  await saveRides([{id,name:a.name||'Salida',date:t0,source:'Strava',tipo,coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike:bike||bikeForTipo(tipo),km:lineKm(th.coords)}],true);
+  return true;
 }
 async function stravaSync(manual){
-  if(!sv||svBusy) return; svBusy=true; paintStrava('Mirando si hay salidas nuevas en Strava…');
-  let added=0, more=false, err=null;
+  if(!svOn()||svBusy) return; svBusy=true; paintStrava('Mirando si hay salidas nuevas en Strava…');
+  let added=0, more=false, err=null; const gear=store.get('ichnos-gear',{}); let n=0;
   try{
-    const after=sv.after||Math.floor(Date.now()/1000)-30*86400;
+    // 1) primero las nuevas
+    if(!sv.start) sv.start=Math.floor(Date.now()/1000)-30*86400;
+    const after=sv.after||sv.start;
     const list=(await svGet(`athlete/activities?after=${after}&per_page=60`)).sort((a,b)=>Date.parse(a.start_date)-Date.parse(b.start_date));
-    const gear=store.get('ichnos-gear',{}); let n=0;
     for(const a of list){
-      const tipo=stravaTipo(a.sport_type||a.type), id='strava-'+a.id;
-      if(tipo&&a.map&&a.map.summary_polyline&&!rides.some(r=>r.id===id)){
-        if(n>=20){ more=true; break; }
-        const s=await svGet(`activities/${a.id}/streams?keys=latlng,time,altitude,heartrate,cadence,watts&key_by_type=true`); n++;
-        const g=k=>s&&s[k]&&s[k].data, ll=g('latlng');
-        if(ll&&ll.length>1){
-          const t0=Date.parse(a.start_date), tm=g('time'), ts=ll.map((_,i)=>tm&&tm[i]!=null?t0+tm[i]*1000:null);
-          const th=thinFull(ll,ts,g('altitude'),{hr:g('heartrate'),cad:g('cadence'),pw:g('watts')});
-          let bike=null;
-          if(a.gear_id){ if(!(a.gear_id in gear)){ try{ gear[a.gear_id]=(await svGet('gear/'+a.gear_id)).name||''; }catch(e){ gear[a.gear_id]=''; } store.set('ichnos-gear',gear); } bike=bikeByGear(gear[a.gear_id]); }
-          await saveRides([{id,name:a.name||'Salida',date:t0,source:'Strava',tipo,coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike:bike||bikeForTipo(tipo),km:lineKm(th.coords)}]);
-          added++;
-        }
-      }
-      sv.after=Math.max(sv.after||after,Math.floor(Date.parse(a.start_date)/1000)); store.set('ichnos-strava',sv);
+      if(n>=20){ more=true; break; }
+      const r=await svImport(a,gear); if(r) n++; if(r===true) added++;
+      sv.after=Math.max(sv.after||after,Math.floor(Date.parse(a.start_date)/1000)); syncRaw.set('ichnos-strava',sv);
     }
     if(list.length>=60) more=true;
-    sv.last=Date.now(); sv.more=more; store.set('ichnos-strava',sv);
-  }catch(e){ err=e&&e.message; if(sv) store.set('ichnos-strava',sv); }
+    // 2) luego, poco a poco, las antiguas (de la más nueva a la más vieja)
+    let pages=0;
+    while(!more&&!sv.histDone&&n<12&&pages<4){
+      const before=sv.before||sv.start; pages++;
+      const old=await svGet(`athlete/activities?before=${before}&per_page=30`);
+      if(!old.length){ sv.histDone=true; break; }
+      old.sort((a,b)=>Date.parse(b.start_date)-Date.parse(a.start_date));
+      for(const a of old){
+        if(n>=12) break;
+        const r=await svImport(a,gear); if(r) n++; if(r===true) added++;
+        sv.before=Math.floor(Date.parse(a.start_date)/1000); syncRaw.set('ichnos-strava',sv);
+      }
+    }
+    sv.last=Date.now(); sv.more=more; syncRaw.set('ichnos-strava',sv);
+  }catch(e){ err=e&&e.message; syncRaw.set('ichnos-strava',sv); }
   svBusy=false;
-  if(added) drawHeat();
+  if(added){ await loadRides(); drawHeat(); }
   paintStrava();
-  if(err==='clave') toast('La conexión con Strava ya no vale. Desconecta y vuelve a pegar el código.',6000);
-  else if(err==='limite') toast('Strava pide esperar un poco. Prueba dentro de 15 minutos.',5000);
+  if(err==='clave') toast('Strava se ha desconectado. Ve a Ajustes y pulsa "Conectar con Strava".',6000);
+  else if(err==='limite'){ if(manual) toast('Strava pide esperar un poco. Prueba dentro de 15 minutos.',5000); }
   else if(err&&manual) toast('No se ha podido hablar con Strava ahora. Prueba en un rato.',5000);
-  else if(added||manual) toast(added?`${added} salida${added>1?'s':''} nueva${added>1?'s':''} de Strava`+(more?'. Quedan más: pulsa otra vez en un rato.':''):'No hay salidas nuevas en Strava.',5000);
+  else if(added||manual) toast(added?`${added} salida${added>1?'s':''} traída${added>1?'s':''} de Strava`+(more?'. Quedan más: llegarán en un rato.':''):'No hay salidas nuevas en Strava.',5000);
 }
-$('svSave').onclick=async()=>{
-  const o=svParse($('svCode').value);
-  if(!o){ toast('Ese código no vale. Copia el código entero, empieza por ICHNOS-',5000); return; }
-  sv={...o,after:null,last:null}; store.set('ichnos-strava',sv); $('svCode').value='';
-  paintStrava(); toast('Strava conectado. Traigo tus salidas del último mes…',4000); await syncNow(false); stravaSync(true);
-};
+$('svGo').onclick=()=>{ if(!me) return; location.href=BRIDGE+'/conectar?t='+encodeURIComponent(me.t)+'&r='+encodeURIComponent(location.origin+location.pathname); };
+(function svBack(){
+  const m=/#strava=([\w-]+)/.exec(location.hash); if(!m) return;
+  history.replaceState(null,'',location.pathname+location.search);
+  const k=m[1];
+  if(k==='ok'&&me){ me.strava=true; syncRaw.set('ichnos-auth',me); toast('¡Strava conectado! Trayendo tus salidas…',5000); setTimeout(()=>stravaSync(false),2500); return; }
+  const T={otra:'Esa cuenta de Strava ya está unida a otro usuario de Ichnos.',permiso:'Hay que dejar marcada la casilla de ver tus actividades. Vuelve a intentarlo.',cancelado:'No has dado permiso en Strava.',
+    limite:'Strava todavía no deja conectar a más personas a Ichnos. Cuando lo apruebe, podrás conectarlo. Mientras, puedes traer tus salidas con archivos.',sesion:'Vuelve a entrar en tu cuenta y prueba otra vez.'};
+  setTimeout(()=>toast(T[k]||'No se ha podido conectar Strava. Prueba otra vez en un rato.',9000),800);
+})();
 $('svNow').onclick=()=>stravaSync(true);
 $('syNow').onclick=()=>syncNow(true);
-$('svOut').onclick=async()=>{ if(await ask('¿Desconectar Strava de este aparato?','Las salidas que ya tienes se quedan.','Sí, desconectar','No')){ sv=null; store.del('ichnos-strava'); paintStrava(); } };
-const svAuto=()=>{ if(sv&&!svBusy&&(!sv.last||Date.now()-sv.last>10*60000)) stravaSync(false); };
+$('svOut').onclick=async()=>{ if(await ask('¿Desconectar Strava?','Las salidas que ya tienes se quedan. Las nuevas ya no llegarán solas.','Sí, desconectar','No')){
+  try{ await api('/strava/quitar',{method:'POST'}); me.strava=false; syncRaw.set('ichnos-auth',me); paintStrava(); }catch(e){ toast('No se ha podido desconectar ahora.',4000); } } };
+const svAuto=()=>{ if(svOn()&&!svBusy&&(!sv.last||Date.now()-sv.last>10*60000)) stravaSync(false); };
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ if(Date.now()-(syncMeta().last||0)>60000) syncNow(false); svAuto(); } });
 paintStrava();
 
@@ -3202,11 +3407,7 @@ const SHOE_SVG='<svg viewBox="0 0 48 32" fill="none" stroke="currentColor" strok
 const BIKE_TIPOS={road:'Carretera',gravel:'Gravel',mtb:'BTT',ebike:'E-bike',run:'Correr',trail:'Trail',hike:'Senderismo',walk:'Caminar'};
 const BIKE_SVG='<svg viewBox="0 0 48 32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="22" r="8"/><circle cx="38" cy="22" r="8"/><path d="M10 22 18 9h13l7 13M18 9l7 13h-15M28 5h5M17 6h4"/></svg>';
 let bikes=store.get('ichnos-bicis',null);
-if(!bikes){   // primera vez: dejamos puestas tus bicis
-  bikes=[{id:'b1',mote:'',marca:'BMC',modelo:'Fourstroke',tipo:'mtb',principal:true,foto:null},
-         {id:'b2',mote:'',marca:'Megamo',modelo:'Pulse 2025',tipo:'road',principal:true,foto:null}];
-  store.set('ichnos-bicis',bikes);
-}
+if(!bikes) bikes=[];   // cada uno pone sus bicis (o llegan solas de Strava)
 const bikeName=b=>b?(b.mote||`${b.marca} ${b.modelo}`.trim()||'Bici'):'Sin bici';
 const bikeById=id=>bikes.find(b=>b.id===id)||null;
 const bikeForTipo=tipo=>{ if(!tipo) return null; const b=bikes.find(b=>b.tipo===tipo&&b.principal&&!b.retirada)||bikes.find(b=>b.tipo===tipo&&!b.retirada); return b?b.id:null; };
@@ -3214,7 +3415,7 @@ const nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLow
 function bikeByGear(g){ g=nrm(g); if(!g) return null; const b=bikes.find(b=>(b.alias||[]).some(a=>nrm(a)===g))||bikes.find(b=>b.mote&&g.includes(nrm(b.mote)))||bikes.find(b=>b.modelo&&g.includes(nrm(b.modelo)))||bikes.find(b=>b.marca&&g.includes(nrm(b.marca))); return b?b.id:null; }
 function defaultBike(tipo){ const a=bikes.filter(b=>!b.retirada&&isFoot(b.tipo)===isFoot(tipo)); return (a.find(b=>b.tipo===tipo&&b.principal)||a.find(b=>b.tipo===tipo)||a[0]||{}).id||null; }
 // una sola vez: la Scott y la Cube de David pasan a "Anteriores bicis" (él lo pidió el 12 nov)
-function migRetire(){ if(store.get('ichnos-mig-retiro',false)) return; let ch=false;
+function migRetire(){ if(!me||!me.admin||store.get('ichnos-mig-retiro',false)) return; let ch=false;
   bikes.forEach(b=>{ if(!b.retirada&&/^(scott|cube)$/.test(nrm(b.marca))){ b.retirada=true; b.principal=false; ch=true; } });
   syncRaw.set('ichnos-mig-retiro',true); if(ch) saveBikes(); }
 function saveBikes(){ if(!store.set('ichnos-bicis',bikes)) toast('No se han podido guardar las bicis (¿fotos muy grandes?).',5000); renderBikes(); renderNums(); }
@@ -3351,7 +3552,7 @@ function renderRideList(){
     const st=rideStats(r), sh=shapeSvg(r.coords,64,64), li=document.createElement('li');
     li.innerHTML=`<svg viewBox="0 0 64 64" class="rthumb"><path d="${sh.d}" fill="none" stroke="#1E2328" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="${sh.d}" fill="none" stroke="#B6E22E" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
       <span><b>${esc(r.name)}</b><small>${fmtD(r.date)}${r.bike?' · '+esc(bikeName(bikeById(r.bike))):''}</small>
-      <small class="rnums"><i>${fmtKm(st.km)} km</i><i>${fmtH(st.moving)}</i>${st.up!=null?`<i>+${n0(st.up)} m</i>`:''}${st.hr?`<i>♥ ${Math.round(st.hr)}</i>`:''}${(r.fotos||[]).length+(r.sfotos||[]).length?`<i class="ph">📷 ${(r.fotos||[]).length+(r.sfotos||[]).length}</i>`:''}${(r.notas||[]).length?`<i class="ph">💬 ${r.notas.length}</i>`:''}</small></span>${mainPhoto(r)?`<img class="rphoto" src="${esc(mainPhoto(r))}" alt="" loading="lazy">`:''}`;
+      <small class="rnums"><i>${fmtKm(st.km)} km</i><i>${fmtH(st.moving)}</i>${st.up!=null?`<i>+${n0(st.up)} m</i>`:''}${st.hr?`<i>♥ ${Math.round(st.hr)}</i>`:''}${(r.fotos||[]).length+(r.sfotos||[]).length?`<i class="ph">📷 ${(r.fotos||[]).length+(r.sfotos||[]).length}</i>`:''}${(()=>{ const so=me?socOf(me.id,r.id):{l:[],c:[]}, nc=(r.notas||[]).length+so.c.length; return (so.l.length?`<i class="lk">👍 ${so.l.length}</i>`:'')+(nc?`<i class="ph">💬 ${nc}</i>`:''); })()}</small></span>${mainPhoto(r)?`<img class="rphoto" src="${esc(mainPhoto(r))}" alt="" loading="lazy">`:''}`;
     li.onclick=()=>openRide(r);
     ul.appendChild(li);
   });
@@ -3365,7 +3566,7 @@ const mainPhoto=r=>(r.fotos&&r.fotos[0]&&r.fotos[0].src)||(r.sfotos&&r.sfotos[0]
 // fotos de Strava de las salidas que se ven en la lista (poco a poco, para no pasarse con Strava)
 const phTried=new Set(); let phBusy=false;
 async function fetchListPhotos(list){
-  if(phBusy||!sv) return; phBusy=true; let got=0;
+  if(phBusy||!svOn()) return; phBusy=true; let got=0;
   try{ for(const r of list){ if(phTried.size>=60) break; if(r.sfotosT||!/^strava-\d+$/.test(r.id||'')||phTried.has(r.id)) continue;
     phTried.add(r.id); const before=(r.sfotos||[]).length; await loadStravaPhotos(r, true); if(!r.sfotosT) break; if((r.sfotos||[]).length!==before) got++; } }catch(e){}
   phBusy=false; if(got) renderRideList();
@@ -3378,8 +3579,11 @@ let rideOpen=null;
 const ZONE_COL=['#9aa3a6','#4aa3ec','#3ccf7a','#f0a030','#e5484d'];
 function hrMax(){ if(+perfil.hrmax) return +perfil.hrmax; let m=0; rides.forEach(r=>{ const s=rideStats(r); if(s.hrmax&&s.hrmax<230) m=Math.max(m,s.hrmax); }); return m||190; }
 function openRide(r){
-  rideOpen=r; const st=rideStats(r), c=r.coords;
-  $('rvName').textContent=r.name; $('rvDate').textContent=[fmtD(r.date),r.source].filter(Boolean).join(' · ');
+  rideOpen=r; const st=rideStats(r), c=r.coords, fr=r._fr;
+  $('rvName').textContent=r.name; $('rvDate').textContent=[fr?fr.name:'',fmtD(r.date),fr?r.bk:'',r.source].filter(Boolean).join(' · ');
+  $('rvBikeL').hidden=!!fr; $('rvPhAdd').hidden=!!fr; document.querySelector('.rvdel').hidden=!!fr;
+  const sm=/^strava-(\d+)$/.exec(r.id||''); $('rvStrava').hidden=!sm; if(sm) $('rvStrava').href='https://www.strava.com/activities/'+sm[1];
+  $('rvNoteTxt').placeholder=fr?`Escribe algo a ${fr.name}…`:'¿Qué tal la salida? Bares, fuentes, cómo estaba el camino…';
   // mapa pequeño (dibujo de la ruta)
   const W=600,H=320, sh=shapeSvg(c,W,H,18); const a=sh.P(c[0]), z=sh.P(c[c.length-1]);
   $('rvMap').setAttribute('viewBox',`0 0 ${W} ${H}`);
@@ -3411,7 +3615,7 @@ function openRide(r){
   if(r.pw) series.push({k:'Potencia',u:'W',v:r.pw,col:'#f0a030'});
   $('rvCharts').innerHTML=''; series.forEach(s=>$('rvCharts').appendChild(chartEl(r,s)));
   // zonas de pulso
-  if(r.hr&&r.times){
+  if(r.hr&&r.times&&!fr){
     const m=hrMax(), zt=[0,0,0,0,0];
     for(let i=1;i<c.length;i++){ const h=r.hr[i]; if(!h) continue; const dt=Math.min(30,Math.max(0,r.times[i]-r.times[i-1])); const p=h/m; zt[p<0.6?0:p<0.7?1:p<0.8?2:p<0.9?3:4]+=dt; }
     const tot=zt.reduce((x,y)=>x+y,0)||1, names=['Z1 Recuperación','Z2 Fondo','Z3 Tempo','Z4 Umbral','Z5 Máximo'], lim=[0,0.6,0.7,0.8,0.9,1];
@@ -3425,6 +3629,7 @@ function openRide(r){
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
   $('rvSegs').innerHTML=segs.length?`<div class="ch-t">Segmentos y trialeras</div><ul class="routes">${segs.map(x=>`<li><span><b>${esc(x.name)}</b><small>${x.dir}</small></span><em class="${x.pr?'pr':''}">${fmtT(x.t)}${x.pr&&x.n>1?' · ¡mejor marca!':''}</em></li>`).join('')}</ul>`:'';
   renderRvPhotos(r); renderRvNotes(r); loadStravaPhotos(r);
+  if(me) getSoc(rideOwner(r),true).then(()=>{ if(rideOpen===r) renderRvNotes(r); });
   $('rideView').hidden=false; $('rideView').scrollTop=0;
 }
 let rvP=null;
@@ -3432,8 +3637,8 @@ let rvP=null;
 async function saveRideEdit(r){ const copy=cleanRide(r); copy.mt=r.mt=Date.now(); await ridesTx('readwrite',st=>st.put(copy)); syncDirtyRide(copy.date); renderRideList(); }
 function renderRvPhotos(r){
   const own=r.fotos||[], sp=r.sfotos||[];
-  $('rvPh').innerHTML=sp.map((u,i)=>`<button data-s="${i}"><img src="${esc(u)}" alt="" loading="lazy"><i>Strava</i></button>`).join('')+own.map((f,i)=>`<button data-o="${i}"><img src="${f.src}" alt="" loading="lazy"></button>`).join('');
-  $('rvPh').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const o=b.dataset.o; phOpen(o!=null?own[+o].src:sp[+b.dataset.s], o!=null?own[+o].id:null); });
+  $('rvPh').innerHTML=sp.map((u,i)=>`<button data-s="${i}"><img src="${esc(u)}" alt="" loading="lazy"><i>Strava</i></button>`).join('')+own.map((f,i)=>`<button data-o="${i}" data-f="${r._fr?1:''}"><img src="${f.src}" alt="" loading="lazy"></button>`).join('');
+  $('rvPh').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const o=b.dataset.o; phOpen(o!=null?own[+o].src:sp[+b.dataset.s], o!=null&&!r._fr?own[+o].id:null); });
 }
 let phCur=null;
 function phOpen(src,id){ phCur=id; $('phImg').src=src; $('phDel').hidden=!id; $('phView').hidden=false; }
@@ -3451,17 +3656,32 @@ $('rvPhFile').onchange=async e=>{ const r=rideOpen, files=[...e.target.files]; e
   for(const f of files.slice(0,12)){ try{ const src=await shrinkPhoto(f); (r.fotos=r.fotos||[]).push({id:'f'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),src,t:Date.now()}); ok++; }catch(err){} }
   if(ok){ await saveRideEdit(r); renderRvPhotos(r); }
   toast(ok?`${ok} foto${ok>1?'s':''} añadida${ok>1?'s':''}`:'No he podido leer esas fotos.',3500); };
+const fmtDT=t=>new Date(t).toLocaleString('es-ES',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
 function renderRvNotes(r){
-  const n=r.notas||[];
-  $('rvNoteList').innerHTML=n.map(x=>`<li><p>${esc(x.txt)}</p><small>${new Date(x.t).toLocaleString('es-ES',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</small><button data-id="${x.id}" aria-label="Borrar comentario">✕</button></li>`).join('');
+  const fr=r._fr, owner=rideOwner(r), soc=socOf(owner,r.id);
+  const items=[...(r.notas||[]).map(x=>({k:'n',id:x.id,u:owner,t:x.t,x:x.txt,del:!fr})),
+    ...soc.c.map(c=>({k:'c',id:c.id,u:c.u,t:c.t,x:c.x,del:isMe(c.u)||!fr}))].sort((a,b)=>a.t-b.t);
+  const showWho=!!me&&(fr||soc.c.length);
+  $('rvNoteList').innerHTML=items.map(x=>`<li>${showWho?`<span class="who">${esc(x.u===owner&&fr?fr.name:uName(x.u))}</span>`:''}<p>${esc(x.x)}</p><small>${fmtDT(x.t)}</small>${x.del?`<button data-k="${x.k}" data-id="${x.id}" aria-label="Borrar comentario">✕</button>`:''}</li>`).join('');
   $('rvNoteList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{ if(!await ask('¿Borrar este comentario?','','Sí, bórralo','No')) return;
-    r.notas=(r.notas||[]).filter(x=>x.id!==b.dataset.id); await saveRideEdit(r); renderRvNotes(r); });
+    if(b.dataset.k==='n'){ r.notas=(r.notas||[]).filter(x=>x.id!==b.dataset.id); await saveRideEdit(r); }
+    else await socPost(owner,r,{del:b.dataset.id});
+    renderRvNotes(r); });
+  // me gusta
+  $('rvLike').parentNode.hidden=!me;
+  const liked=!!me&&soc.l.includes(me.id);
+  $('rvLike').classList.toggle('on',liked); $('rvLikeN').textContent=soc.l.length; $('rvLike').disabled=!fr;
+  $('rvLike').setAttribute('aria-label',fr?(liked?'Quitar me gusta':'Me gusta'):'Me gusta de tus amigos');
+  $('rvLikers').textContent=soc.l.length?'A '+soc.l.map(uName).join(', ')+(soc.l.length>1?' les gusta':' le gusta'):(fr?'Dale a me gusta':'Todavía no hay me gusta');
 }
+$('rvLike').onclick=async()=>{ const r=rideOpen; if(!r||!r._fr||!me) return; const owner=rideOwner(r), liked=socOf(owner,r.id).l.includes(me.id);
+  await socPost(owner,r,{like:!liked}); renderRvNotes(r); };
 $('rvNoteBtn').onclick=async()=>{ const r=rideOpen, t=$('rvNoteTxt').value.trim(); if(!r||!t) return;
+  if(r._fr){ $('rvNoteBtn').disabled=true; const ok=await socPost(rideOwner(r),r,{com:t}); $('rvNoteBtn').disabled=false; if(ok){ $('rvNoteTxt').value=''; renderRvNotes(r); toast('Comentario publicado'); } return; }
   (r.notas=r.notas||[]).push({id:'n'+Date.now().toString(36),t:Date.now(),txt:t.slice(0,2000)}); $('rvNoteTxt').value='';
   await saveRideEdit(r); renderRvNotes(r); toast('Comentario guardado'); };
 async function loadStravaPhotos(r,quiet){
-  const m=/^strava-(\d+)$/.exec(r.id||''); if(!m||!sv||r.sfotosT) return;
+  const m=/^strava-(\d+)$/.exec(r.id||''); if(!m||!svOn()||r.sfotosT||r._fr) return;
   try{
     const list=await svGet(`activities/${m[1]}/photos?size=1000&photo_sources=true`);
     r.sfotos=(Array.isArray(list)?list:[]).map(p=>p&&p.urls&&(p.urls['1000']||Object.values(p.urls)[0])).filter(Boolean).slice(0,30);
@@ -3831,8 +4051,218 @@ $('locate').onclick=()=>{
     ()=>toast('No se ha podido saber tu ubicación. Revisa los permisos.'),{enableHighAccuracy:true,timeout:10000});
 };
 
+// ================= MAPA COMPARTIDO (opiniones, sitios y fuentes de todos) =================
+let gData=store.get('ichnos-g',null)||{l:{},f:{}};
+let gQueue=store.get('ichnos-gq',[])||[], gBusy=false;
+function gPush(ops){ if(!me) return; gQueue.push(...ops); syncRaw.set('ichnos-gq',gQueue); gFlush(); }
+async function gFlush(){ if(!me||gBusy||!gQueue.length) return; gBusy=true; const ops=gQueue.slice(0,400);
+  try{ const d=await api('/g',{method:'POST',body:{ops}}); gQueue=gQueue.slice(ops.length); syncRaw.set('ichnos-gq',gQueue); gSet(d); }catch(e){}
+  gBusy=false; }
+function gMigrate(){   // una vez: lo que ya tenías pasa al mapa de todos
+  if(!me||store.get('ichnos-gmig',null)===me.id) return; const ops=[];
+  Object.entries(opin).forEach(([id,o])=>{ if(!o) return; const m={name:o.name,lat:o.lat,lon:o.lon,cat:o.cat};
+    if(o.mine) ops.push({k:'sitio',id,m,t:o.t});
+    if(o.oculto) ops.push({k:'oculto',id,m,on:true,t:o.t});
+    if(o.nota||o.precio||o.txt) ops.push({k:'op',id,m,o:{nota:o.nota,precio:o.precio,txt:o.txt,t:o.t}}); });
+  myFountains.forEach(f=>ops.push({k:'fuente',id:f.id,lat:f.lat,lon:f.lon,name:f.name}));
+  syncRaw.set('ichnos-gmig',me.id); if(ops.length) gPush(ops);
+}
+async function gLoad(){ if(!me) return; gApply(); gMigrate(); await gFlush(); try{ gSet(await api('/g')); }catch(e){} }
+function gSet(d){ if(!d) return; gData={l:d.l||{},f:d.f||{}}; syncRaw.set('ichnos-g',gData); gApply(); }
+function gApply(){
+  Object.entries(gData.l).forEach(([id,p])=>{ if(p.m&&p.m.add&&!isMe(p.m.by)&&!(opin[id]&&opin[id].mine)) pStore.set(id,{id,lat:p.m.lat,lon:p.m.lon,cat:p.m.cat,tags:{},name:p.m.name,shared:p.m.by}); });
+  pStore.forEach((p,id)=>{ if(p.shared&&!(gData.l[id]&&gData.l[id].m&&gData.l[id].m.add)) pStore.delete(id); });
+  Object.entries(gData.f).forEach(([id,f])=>{ if(isMe(f.by)||fStore.has('g-'+id)) return; addFountain({id:'g-'+id,lat:f.lat,lon:f.lon,name:f.name||'',kind:'potable',by:f.by,photo:undefined}); });
+  renderPlaces(); if(T.fuentes) renderFountains();
+}
+function opAll(id){ const l=[], g=gData.l[id];
+  if(g&&g.o) Object.entries(g.o).forEach(([u,o])=>{ if(!isMe(u)) l.push({...o,u}); });
+  const mine=opin[id]; if(mine&&(mine.nota||mine.precio||mine.txt)) l.push({...mine,u:me?me.id:''});
+  return l; }
+function opSum(id){ const l=opAll(id), ns=l.filter(o=>o.nota).map(o=>o.nota), ps=l.filter(o=>o.precio).map(o=>o.precio), avg=a=>Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10;
+  return [ns.length?'★'+String(avg(ns)).replace('.',','):'', ps.length?String(avg(ps)).replace('.',',')+' €':''].filter(Boolean).join(' · '); }
+const isHidden=id=>(opin[id]&&opin[id].oculto)||(gData.l[id]&&gData.l[id].h);
+
+// ================= AMIGOS: seguir, ver perfiles, me gusta y comentarios =================
+const APP_URL='https://carreterobike.github.io/ruta-fuentes/';
+let users=store.get('ichnos-usuarios',[])||[], fw=store.get('ichnos-fw',null)||{in:{},out:{}};
+const socCache={};
+const uName=id=>{ if(me&&id===me.id) return perfil.apodo||me.name||'Tú'; const u=users.find(x=>x.id===id); return u?u.name:'Alguien'; };
+const initial=n=>esc((String(n||'?').trim()[0]||'?').toUpperCase());
+const rideOwner=r=>r._fr?r._fr.uid:(me&&me.id);
+const socOf=(uid,rid)=>{ const c=socCache[uid]; return (c&&c.d&&c.d[rid])||{l:[],c:[]}; };
+async function getSoc(uid,force){
+  if(!me||!uid) return {}; const c=socCache[uid];
+  if(!force&&c&&Date.now()-c.t<60000) return c.d;
+  try{ const d=await api('/soc/'+uid)||{}; socCache[uid]={t:Date.now(),d}; return d; }catch(e){ return c?c.d:{}; }
+}
+async function socPost(uid,r,body){
+  try{ const s2=await api(`/soc/${uid}/${encodeURIComponent(r.id)}`,{method:'POST',body:{...body,n:r.name}});
+    const c=socCache[uid]||(socCache[uid]={t:Date.now(),d:{}}); c.d[r.id]=s2; return true;
+  }catch(e){ toast(e.status===403?'Ya no puedes ver las salidas de esta persona.':'No hay conexión ahora. Prueba en un momento.',4500); return false; }
+}
+function fwState(id){ const o=fw.out[id], i=fw.in[id];
+  return o==='ok'&&i==='ok'?'Os seguís':o==='ok'?'Le sigues':o==='pend'?'Solicitud enviada':i==='ok'?'Te sigue':i==='pend'?'Quiere seguirte':''; }
+async function loadFriends(){
+  if(!me) return;
+  try{ const j=await api('/amigos'); users=j.users||[]; fw={in:j.in||{},out:j.out||{}}; syncRaw.set('ichnos-usuarios',users); syncRaw.set('ichnos-fw',fw); }catch(e){}
+  renderFriends();
+}
+function renderFriends(){
+  $('pAmigos').hidden=!me; if(!me) return;
+  const reqs=Object.keys(fw.in).filter(id=>fw.in[id]==='pend');
+  $('frReq').innerHTML=reqs.map(id=>`<div class="frreq"><span><b>${esc(uName(id))}</b> quiere seguirte</span><button data-a="${id}">Aceptar</button><button class="ghost" data-r="${id}">No</button></div>`).join('');
+  $('frReq').querySelectorAll('button').forEach(b=>b.onclick=()=>b.dataset.a?fwAct('aceptar',b.dataset.a):fwAct('quitar',b.dataset.r));
+  const ids=[...new Set([...Object.keys(fw.out),...Object.keys(fw.in).filter(id=>fw.in[id]==='ok')])].filter(id=>users.some(u=>u.id===id));
+  ids.sort((a,b)=>uName(a).localeCompare(uName(b),'es'));
+  $('frList').innerHTML=ids.length?ids.map(id=>{ const st=fwState(id), back=fw.in[id]==='ok'&&!fw.out[id];
+    return `<li data-id="${id}"><div class="av">${initial(uName(id))}</div><span><b>${esc(uName(id))}</b><small>${st}</small></span>${back?`<button data-f="${id}">Seguir también</button>`:''}</li>`; }).join('')
+    :'<p class="svp">Todavía no sigues a nadie. Pulsa <b>＋ Buscar</b> para encontrar a tus amigos.</p>';
+  $('frList').querySelectorAll('li').forEach(li=>li.onclick=e=>{ if(e.target.dataset.f){ e.stopPropagation(); fwAct('seguir',e.target.dataset.f); return; } openFriend(li.dataset.id); });
+}
+async function fwAct(act,id){
+  if(act==='dejar'&&!await ask(`¿Dejar de seguir a ${uName(id)}?`,'Ya no verás sus salidas. Puedes volver a pedirlo cuando quieras.','Sí, dejar de seguir','No')) return false;
+  if(act==='quitar'&&fw.in[id]==='ok'&&!await ask(`¿Quitar a ${uName(id)}?`,'Ya no verá tus salidas.','Sí, quitar','No')) return false;
+  try{ const a=await api(`/${act}/${id}`,{method:'POST'}); fw={in:a.in||{},out:a.out||{}}; syncRaw.set('ichnos-fw',fw); }
+  catch(e){ toast('No hay conexión ahora. Prueba en un momento.',4000); return false; }
+  if(act==='seguir') toast(`Solicitud enviada. Cuando ${uName(id)} acepte, verás sus salidas.`,4500);
+  if(act==='aceptar') toast(`Ahora ${uName(id)} ve tus salidas.`,3500);
+  renderFriends(); renderUsers(); loadFeed(true); return true;
+}
+// buscar amigos
+function renderUsers(){
+  if($('usModal').hidden) return;
+  const q=nrm($('usQ').value), list=users.filter(u=>!isMe(u.id)&&(!q||nrm(u.name).includes(q)||nrm(u.user).includes(q)));
+  $('usList').innerHTML=list.length?list.map(u=>{ const o=fw.out[u.id];
+    return `<li data-id="${u.id}"><div class="av">${initial(u.name)}</div><span><b>${esc(u.name)}</b><small>${esc(fwState(u.id)||'@'+u.user)}</small></span><button data-id="${u.id}" class="${o?'ghost':''}">${o==='ok'?'Siguiendo':o==='pend'?'Pendiente':'Seguir'}</button></li>`; }).join('')
+    :'<p class="svp">No hay nadie con ese nombre. Para que alguien entre en Ichnos necesita un código de invitación.</p>';
+  $('usList').querySelectorAll('li').forEach(li=>li.onclick=e=>{ const id=li.dataset.id;
+    if(e.target.tagName==='BUTTON'){ e.stopPropagation(); const o=fw.out[id]; if(o==='ok') fwAct('dejar',id); else if(!o) fwAct('seguir',id); return; }
+    $('usModal').hidden=true; openFriend(id); });
+}
+$('frFind').onclick=()=>{ $('usQ').value=''; $('usModal').hidden=false; renderUsers(); loadFriends().then(renderUsers); };
+$('usQ').oninput=renderUsers; $('usClose').onclick=()=>$('usModal').hidden=true;
+// perfil de un amigo
+let frCur=null, frRes=[], frShown=20;
+const FOOT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4" r="2.2" fill="currentColor"/><path d="M13 7.6 9.8 13.2l3.6 2.6-1.3 5.4M9.8 13.2l-4.3 2.4M13 7.6l3.3 3.4 3.4-.8M13 7.6l-4.3.9-2.2 3.2"/></svg>';
+const CYC_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="4.3"/><circle cx="18.5" cy="17" r="4.3"/><path d="M5.5 17 10 10.2h6.8L18.5 17M10 10.2 12.6 17 16.8 10.2M12.6 17H5.5M8.3 8.4h3.4"/></svg>';
+function sumLi(x,uid,who){
+  const soc=socOf(uid,x.id), nc=(x.nc||0)+soc.c.length, lk=soc.l.length;
+  const pic=x.ph?`<img class="rphoto" src="${esc(x.ph)}" alt="" loading="lazy">`:'';
+  const lead=who?`<div class="av">${initial(uName(uid))}</div>`:`<div class="rthumb ic">${isFoot(x.tp)?FOOT_SVG:CYC_SVG}</div>`;
+  return `${lead}<span>${who?`<small class="who"><b>${esc(uName(uid))}</b> · ${fmtD(x.d)}</small>`:''}<b>${esc(x.n)}</b>${who?'':`<small>${fmtD(x.d)}${x.bk?' · '+esc(x.bk):''}</small>`}
+    <small class="rnums"><i>${fmtKm(x.km)} km</i>${x.s?`<i>${fmtH(x.s)}</i>`:''}${x.up!=null?`<i>+${n0(x.up)} m</i>`:''}${x.nf?`<i class="ph">📷 ${x.nf}</i>`:''}${lk?`<i class="lk">👍 ${lk}</i>`:''}${nc?`<i class="ph">💬 ${nc}</i>`:''}</small></span>${pic}`;
+}
+function paintFollowBtn(id){ const o=fw.out[id], b=$('frFollow');
+  b.textContent=o==='ok'?'Siguiendo':o==='pend'?'Pendiente':'Seguir'; b.className='btn'+(o?'':' primary');
+  b.onclick=async()=>{ if(o==='pend') return; if(await fwAct(o==='ok'?'dejar':'seguir',id)) openFriend(id); }; }
+async function openFriend(id){
+  frCur=id; frShown=20; $('frView').hidden=false; $('frView').scrollTop=0;
+  $('frName').textContent=uName(id); $('frSub').textContent=fwState(id); $('frApodo').textContent=uName(id); $('frCity').textContent='';
+  paintAvatar($('frAv'),null); paintFollowBtn(id);
+  $('frStats').innerHTML=''; $('frBikes').innerHTML=''; $('frRides').innerHTML=''; $('frMore').hidden=true;
+  if(fw.out[id]!=='ok'){ $('frEmpty').hidden=false; $('frEmpty').textContent=fw.out[id]==='pend'?'Cuando acepte tu solicitud verás su perfil y sus salidas.':'Pulsa "Seguir". Cuando acepte, verás su perfil y sus salidas.'; return; }
+  $('frEmpty').hidden=false; $('frEmpty').textContent='Cargando…';
+  let pub=null; frRes=[];
+  try{ [pub,frRes]=await Promise.all([api(`/u/${id}/pub`),api(`/u/${id}/resumen`),getSoc(id,true)]); }
+  catch(e){ if(frCur===id) $('frEmpty').textContent=e.status===403?'Ya no puedes ver sus salidas.':'No hay conexión ahora. Prueba en un momento.'; return; }
+  if(frCur!==id) return; frRes=frRes||[];
+  if(pub){ $('frApodo').textContent=pub.apodo||uName(id); $('frCity').textContent=pub.ciudad||''; paintAvatar($('frAv'),pub.foto||null); }
+  const y0=new Date(new Date().getFullYear(),0,1).getTime(), yr=frRes.filter(x=>x.d>=y0), sum=(l,k)=>l.reduce((a,x)=>a+(x[k]||0),0);
+  $('frStats').innerHTML=`<div class="ch-t">Este año</div><div class="frstats"><div><b>${yr.length}</b><small>Salidas</small></div><div><b>${n0(sum(yr,'km'))}</b><small>Km</small></div><div><b>${n0(sum(yr,'up'))}</b><small>M de desnivel</small></div></div>
+    <div class="ch-t">Siempre</div><div class="frstats"><div><b>${frRes.length}</b><small>Salidas</small></div><div><b>${n0(sum(frRes,'km'))}</b><small>Km</small></div><div><b>${n0(sum(frRes,'up'))}</b><small>M de desnivel</small></div></div>`;
+  const bk=(pub&&pub.bicis)||[];
+  $('frBikes').innerHTML=bk.length?`<div class="ch-t">Bicis y zapatillas</div><ul class="routes">${bk.map(b=>`<li><span><b>${esc(b.n)}</b><small>${esc(BIKE_TIPOS[b.tipo]||'')}</small></span></li>`).join('')}</ul>`:'';
+  $('frEmpty').hidden=!!frRes.length; $('frEmpty').textContent='Todavía no tiene salidas.';
+  renderFrRides();
+}
+function renderFrRides(){
+  const ul=$('frRides'); ul.innerHTML='';
+  frRes.slice(0,frShown).forEach(x=>{ const li=document.createElement('li'); li.innerHTML=sumLi(x,frCur,false); li.onclick=()=>openFriendRide(frCur,x); ul.appendChild(li); });
+  $('frMore').hidden=frRes.length<=frShown;
+}
+$('frMore').onclick=()=>{ frShown+=20; renderFrRides(); };
+$('frBack').onclick=()=>{ $('frView').hidden=true; frCur=null; };
+async function openFriendRide(uid,x){
+  toast('Abriendo la salida…',8000);
+  let list=null; try{ list=await api(`/u/${uid}/p-${rideBucket(x.d).slice(2)}`); }catch(e){}
+  const r=(list||[]).find(o=>o.id===x.id);
+  if(!r||!r.coords||r.coords.length<2){ toast('Esta salida no se puede ver ahora.',4000); return; }
+  toast('');
+  r._fr={uid,name:uName(uid)}; prepRide(r); const st=rideStats(r); if(r.km) st.km=r.km;
+  openRide(r);
+}
+// lo último de tus amigos (en Salidas)
+let feedItems=[], feedShown=10, feedT=0;
+async function loadFeed(force){
+  if(!me){ $('pFeed').hidden=true; return; }
+  const ids=Object.keys(fw.out).filter(id=>fw.out[id]==='ok');
+  $('pFeed').hidden=!ids.length; if(!ids.length) return;
+  if(!force&&Date.now()-feedT<120000){ renderFeed(); return; } feedT=Date.now();
+  const all=[];
+  await Promise.all(ids.map(async id=>{ try{ const [res]=await Promise.all([api(`/u/${id}/resumen`),getSoc(id)]); (res||[]).slice(0,30).forEach(x=>all.push({...x,uid:id})); }catch(e){} }));
+  feedItems=all.sort((a,b)=>b.d-a.d).slice(0,80); renderFeed();
+}
+function renderFeed(){
+  const ul=$('feedList'); ul.innerHTML='';
+  if(!feedItems.length) ul.innerHTML='<p class="svp">Tus amigos todavía no tienen salidas.</p>';
+  feedItems.slice(0,feedShown).forEach(x=>{ const li=document.createElement('li'); li.innerHTML=sumLi(x,x.uid,true); li.onclick=()=>openFriendRide(x.uid,x); ul.appendChild(li); });
+  $('feedMore').hidden=feedItems.length<=feedShown;
+}
+$('feedMore').onclick=()=>{ feedShown+=10; renderFeed(); };
+// avisos (campana)
+let avisos=store.get('ichnos-avisos',[])||[];
+async function loadAvisos(){ if(!me) return; try{ avisos=await api('/avisos')||[]; syncRaw.set('ichnos-avisos',avisos); }catch(e){} paintBell(); }
+function paintBell(){ $('bell').hidden=!me; const seen=store.get('ichnos-avisto',0), n=avisos.filter(a=>a.t>seen).length; $('bellN').hidden=!n; $('bellN').textContent=n>9?'9+':n; }
+function avText(a){ const w=`<b>${esc(uName(a.u))}</b>`, rn=a.n?` «${esc(a.n)}»`:'';
+  return {seg:`${w} quiere seguirte.`,acep:`${w} ha aceptado que le sigas. Ya ves sus salidas.`,alta:`${w} se ha unido a Ichnos con tu invitación.`,
+    like:`A ${w} le gusta tu salida${rn}.`,com:`${w} ha comentado en tu salida${rn}: “${esc(a.x||'')}”`}[a.k]||`${w}`; }
+$('bell').onclick=()=>{
+  const seen=store.get('ichnos-avisto',0);
+  $('avList').innerHTML=avisos.length?avisos.map((a,i)=>`<li data-i="${i}" class="${a.t>seen?'new':''}">${avText(a)}<small>${fmtDT(a.t)}</small></li>`).join(''):'<p class="svp">No tienes avisos.</p>';
+  $('avList').querySelectorAll('li').forEach(li=>li.onclick=()=>{ const a=avisos[+li.dataset.i]; $('avModal').hidden=true;
+    if((a.k==='like'||a.k==='com')){ const r=rides.find(x=>x.id===a.r); if(r) openRide(r); }
+    else if(a.k==='seg'){ showPage('pgPerfil'); $('pAmigos').scrollIntoView({behavior:'smooth'}); }
+    else openFriend(a.u); });
+  $('avModal').hidden=false; syncRaw.set('ichnos-avisto',Date.now()); paintBell();
+};
+$('avClose').onclick=()=>$('avModal').hidden=true;
+// invitar (solo David)
+function paintAdmin(){ if($('pInvita')) $('pInvita').hidden=!(me&&me.admin); }
+const invMsg=code=>`¡Hola! Te invito a Ichnos 🚴\n1) Abre este enlace en el móvil: ${APP_URL}\n2) Pulsa "Crear cuenta" y pon este código: ${code}\n3) Elige tu usuario y tu contraseña.\nEn el iPhone: en Safari pulsa Compartir → "Añadir a pantalla de inicio" y te queda como una app.`;
+async function copyTxt(t,ok){ try{ await navigator.clipboard.writeText(t); toast(ok,4500); }catch(e){ await ask('Copia este mensaje',t,'Vale','Cerrar'); } }
+async function loadAdmin(){
+  if(!me||!me.admin) return; let j;
+  try{ j=await api('/admin'); }catch(e){ return; }
+  users=j.users||users;
+  const invs=(j.invs||[]).sort((a,b)=>b.t-a.t);
+  $('invList').innerHTML=invs.length?invs.map(i=>{ const used=i.used?`Ya usado por <b>${esc(uName(i.used.uid))}</b> · ${fmtD(i.used.t)}`:i.tipo==='clave'?`Para la contraseña nueva de <b>${esc(i.name||'')}</b> · vale 7 días`:'Sin usar todavía';
+    return `<li><span><code>${esc(i.code)}</code><small>${used}</small></span>${i.used?'':`<button data-c="${esc(i.code)}" data-t="${i.tipo}">Copiar</button><button class="ghost" data-x="${esc(i.code)}">Anular</button>`}</li>`; }).join('')
+    :'<p class="svp">Todavía no has creado ningún código.</p>';
+  $('invList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
+    if(b.dataset.x){ if(!await ask(`¿Anular el código ${b.dataset.x}?`,'Ya nadie podrá usarlo.','Sí, anular','No')) return; try{ await api('/admin/anular',{method:'POST',body:{code:b.dataset.x}}); }catch(e){} loadAdmin(); return; }
+    copyTxt(b.dataset.t==='clave'?clvMsg(b.dataset.c):invMsg(b.dataset.c),'Mensaje copiado. Pégalo en WhatsApp.'); });
+  const others=users.filter(u=>!isMe(u.id));
+  $('invUsers').innerHTML=others.length?others.map(u=>`<li><span><b>${esc(u.name)}</b><small>usuario ${esc(u.user)}</small></span><button class="ghost" data-u="${u.id}">Código nuevo</button></li>`).join(''):'<p class="svp">Todavía no hay nadie más.</p>';
+  $('invUsers').querySelectorAll('button').forEach(b=>b.onclick=async()=>{ const u=users.find(x=>x.id===b.dataset.u);
+    if(!await ask(`¿Contraseña nueva para ${u.name}?`,'Te doy un código para pasárselo. Con él se pone una contraseña nueva. Vale 7 días.','Sí, dame el código','No')) return;
+    try{ const i=await api('/admin/clave',{method:'POST',body:{uid:u.id}}); await copyTxt(clvMsg(i.code),'Mensaje con el código copiado. Pégalo en WhatsApp.'); }catch(e){ toast('No hay conexión ahora.',4000); }
+    loadAdmin(); });
+}
+const clvMsg=code=>`Para poner una contraseña nueva en Ichnos:\n1) Abre ${APP_URL}\n2) Pulsa "He olvidado la contraseña"\n3) Pon este código: ${code} y tu contraseña nueva.`;
+$('invBtn').onclick=async()=>{ const code=$('invCode').value.trim(); if(!code) return;
+  try{ await api('/admin/invitar',{method:'POST',body:{code}}); $('invCode').value=''; await loadAdmin(); copyTxt(invMsg(code),`Código ${code} creado. El mensaje con el enlace y el código está copiado: pégalo en WhatsApp.`); }
+  catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); } };
+function socialStart(){
+  if(!me) return;
+  renderFriends(); paintBell(); paintAdmin();
+  loadFriends().then(()=>loadFeed(true)); loadAvisos(); loadAdmin();
+  getSoc(me.id,true).then(()=>renderRideList());
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&me){ loadAvisos(); loadFriends(); } });
+
 // ================= ARRANQUE =================
-updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(async()=>{ syncReady=true; await syncNow(false); migRetire(); svAuto(); },1200); }); drawHome(); readShared();
+authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(async()=>{ syncReady=true; await syncNow(false); migRetire(); svAuto(); },1200); }); drawHome(); readShared();
 // si se cerró la app grabando, ofrecer guardar lo que había
 (async()=>{
   const pend=store.get('ichnos-rec',null);
