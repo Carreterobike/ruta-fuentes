@@ -89,6 +89,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .svp{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
 .sv-btn{border:0;border-radius:12px;padding:13px 18px;background:#FC4C02;color:#fff;font-weight:700;font-size:16px;width:100%}
 .sv-btn:disabled{opacity:.5}
+.sv-btn.icu{background:#E4002B}
 .sv-pw{margin:0;font-size:11px;color:var(--muted);text-align:right;letter-spacing:.3px}.sv-pw b{color:#FC4C02;font-weight:800;letter-spacing:1px}
 .acpw{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .acpw input,.inv-add input{border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:16px;background:var(--bg);color:var(--ink)}
@@ -751,6 +752,22 @@ details.help p{margin:6px 0 0}
       <div class="acpw"><input type="password" id="acOld" placeholder="Contraseña actual" autocomplete="current-password"><input type="password" id="acNew" placeholder="Contraseña nueva" autocomplete="new-password"><input type="password" id="acNew2" placeholder="Repite la nueva" autocomplete="new-password"><button class="btn-main" id="acSave">Cambiar contraseña</button></div>
     </details>
   </section>
+  <section class="pblock" id="icuBox">
+    <div class="pb-h"><h3>Intervals.icu</h3><span class="svchip" id="icuChip">Sin conectar</span></div>
+    <div id="icuOff">
+      <p class="svp">Para que <b>tus amigos vean tus salidas</b> tienen que llegar directas de tu reloj, no por Strava (norma de Strava). Intervals.icu es gratis y se conecta con COROS, Garmin, Wahoo, Suunto y Polar.</p>
+      <p class="svp"><b>1.</b> Crea una cuenta gratis en <b>intervals.icu</b> y, en sus Ajustes (Settings), conecta tu reloj (por ejemplo COROS). No conectes allí Strava para esto.</p>
+      <button class="sv-btn icu" id="icuGo" hidden>Conectar Intervals.icu</button>
+      <div id="icuKeyBox">
+        <p class="svp"><b>2.</b> En intervals.icu ve a <b>Settings</b>, baja hasta <b>Developer Settings</b>, pulsa <b>(view)</b> al lado de <b>API Key</b>, cópiala y pégala aquí:</p>
+        <div class="inv-add"><input id="icuKey" placeholder="Tu API Key de Intervals.icu" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="icuKeyBtn">Conectar</button></div>
+      </div>
+    </div>
+    <div id="icuOn" hidden>
+      <p class="svp" id="icuInfo"></p>
+      <div class="actions"><button class="primary" id="icuNow">Traer salidas</button><button id="icuOut">Desconectar</button></div>
+    </div>
+  </section>
   <section class="pblock" id="svBox">
     <div class="pb-h"><h3>Strava</h3><span class="svchip" id="svChip">Sin conectar</span></div>
     <div id="svOff">
@@ -1131,6 +1148,7 @@ function paintAccount(){
   $('acBox').hidden=!me;
   if(me) $('acInfo').innerHTML=`Has entrado como <b>${esc(me.name||'')}</b> (usuario <b>${esc(me.user||'')}</b>).`;
   if(typeof paintAdmin==='function') paintAdmin();
+  try{ paintIcu(); }catch(e){}
 }
 $('acSave').onclick=async()=>{
   if($('acNew').value!==$('acNew2').value){ toast('Las dos contraseñas nuevas no son iguales.'); return; }
@@ -3092,7 +3110,7 @@ function prepRide(r){
   r.coords.forEach((p,i)=>{ s=Math.min(s,p[0]); n=Math.max(n,p[0]); w=Math.min(w,p[1]); e=Math.max(e,p[1]); if(i) cum.push(cum[i-1]+dist(r.coords[i-1],p)); });
   r._bb=[s,w,n,e]; r._cum=cum;
 }
-async function saveRides(list,quiet){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT','sef','sefT','api'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); if(!quiet) await loadRides(); }
+async function saveRides(list,quiet){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT','sef','sefT','api','icu'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); if(!quiet) await loadRides(); }
 async function delRide(id){ const r=rides.find(x=>x.id===id); await ridesTx('readwrite',st=>st.delete(id)); syncDelRide(id,r&&r.date); await loadRides(); }
 function lineKm(c){ let m=0; for(let i=1;i<c.length;i++) m+=dist(c[i-1],c[i]); return m/1000; }
 function thin(c){ const out=[]; for(const p of c){ if(!out.length||dist(out[out.length-1],p)>=10) out.push([+p[0].toFixed(5),+p[1].toFixed(5)]); } return out; }
@@ -3405,6 +3423,84 @@ $('svNow').onclick=()=>stravaSync(true);
 $('syNow').onclick=()=>syncNow(true);
 $('svOut').onclick=async()=>{ if(await ask('¿Desconectar Strava?','Las salidas que ya tienes se quedan. Las nuevas ya no llegarán solas.','Sí, desconectar','No')){
   try{ await api('/strava/quitar',{method:'POST'}); me.strava=false; syncRaw.set('ichnos-auth',me); paintStrava(); }catch(e){ toast('No se ha podido desconectar ahora.',4000); } } };
+
+// ================= INTERVALS.ICU (salidas directas del reloj: estas sí las ven tus amigos) =================
+let icu=store.get('ichnos-icu',null)||{}, icuBusy=false, icuOAuth=false;
+const icuOn=()=>!!(me&&me.icu);
+function paintIcu(msg){
+  if(!$('icuBox')) return; const on=icuOn();
+  $('icuBox').hidden=!me; $('icuOff').hidden=on; $('icuOn').hidden=!on;
+  $('icuChip').textContent=on?'Conectado':'Sin conectar'; $('icuChip').classList.toggle('on',on);
+  $('icuGo').hidden=!icuOAuth; $('icuKeyBox').hidden=icuOAuth;
+  if(on) $('icuInfo').textContent=msg||`Las salidas de tu reloj llegan solas y tus amigos las pueden ver. Última vez: ${svAgo(icu.last)}.`+(icu.histDone?'':' Las antiguas se van trayendo poco a poco.');
+  $('icuNow').disabled=icuBusy; $('icuNow').textContent=icuBusy?'Trayendo…':'Traer salidas';
+}
+async function icuGet(path,bin){
+  const r=await fetch(BRIDGE+'/icu/api/'+path,{headers:{Authorization:'Bearer '+me.t}});
+  if(r.status===409){ me.icu=false; syncRaw.set('ichnos-auth',me); throw new Error('clave'); }
+  if(r.status===429) throw new Error('limite'); if(!r.ok) throw new Error('http');
+  return bin?r.arrayBuffer():r.json();
+}
+const ymd=t=>new Date(t).toISOString().slice(0,10);
+async function icuImport(a){
+  const id='icu-'+a.id; if(rides.some(r=>r.id===id)) return false;
+  if(/strava/i.test(String(a.source||''))) return false;          // lo que vino de Strava no vale para enseñar
+  const tipo=stravaTipo(a.type); if(!tipo) return false;
+  const t0=Date.parse(a.start_date||a.start_date_local); if(!t0) return false;
+  const dup=rides.find(r=>Math.abs(r.date-t0)<180000);
+  if(dup&&!dup.api) return false;                                 // ya la tienes de un archivo
+  let buf=await icuGet('activity/'+encodeURIComponent(a.id)+'/file',true);
+  const u8=new Uint8Array(buf); if(u8[0]===0x1f&&u8[1]===0x8b) buf=await gunzipBuf(buf);
+  const ft=String(a.file_type||'fit').toLowerCase();
+  const t=await parseTrackBuf('salida.'+(ft==='gpx'||ft==='tcx'?ft:'fit'),buf), th=thinFull(t.coords,t.times,t.eles,t.ex);
+  if(th.coords.length<2) return 'x';
+  const data={coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,km:lineKm(th.coords),api:0,source:a.device_name?a.device_name+' (Intervals.icu)':'Reloj (Intervals.icu)',icu:String(a.id)};
+  if(dup) await saveRides([{...dup,...data}],true);              // la de Strava pasa a ser del reloj: ya la pueden ver tus amigos
+  else await saveRides([{id,name:a.name||'Salida',date:t0,tipo,bike:bikeForTipo(tipo),...data}],true);
+  return true;
+}
+async function icuSync(manual){
+  if(!icuOn()||icuBusy) return; icuBusy=true; paintIcu('Mirando si hay salidas nuevas en Intervals.icu…');
+  let n=0, added=0, more=false, err=null;
+  try{
+    if(!icu.start) icu.start=Date.now()-30*86400000;
+    const from=icu.after||icu.start;
+    const list=(await icuGet(`athlete/0/activities?oldest=${ymd(from)}&newest=${ymd(Date.now()+86400000)}`)||[]).sort((a,b)=>Date.parse(a.start_date_local)-Date.parse(b.start_date_local));
+    for(const a of list){ if(n>=15){ more=true; break; } const r=await icuImport(a); if(r) n++; if(r===true) added++; icu.after=Math.max(icu.after||0,Date.parse(a.start_date_local)||0); syncRaw.set('ichnos-icu',icu); }
+    let w=0;
+    while(!more&&!icu.histDone&&n<15&&w<3){
+      w++; const end=icu.before||icu.start, beg=end-90*86400000;
+      const old=(await icuGet(`athlete/0/activities?oldest=${ymd(beg)}&newest=${ymd(end-86400000)}`)||[]).sort((a,b)=>Date.parse(b.start_date_local)-Date.parse(a.start_date_local));
+      let stop=false;
+      for(const a of old){ if(n>=15){ stop=true; break; } const r=await icuImport(a); if(r) n++; if(r===true) added++; }
+      if(!stop) icu.before=beg;
+      if(icu.before&&icu.before<Date.UTC(2010,0,1)) icu.histDone=true;
+      syncRaw.set('ichnos-icu',icu);
+    }
+    icu.last=Date.now(); syncRaw.set('ichnos-icu',icu);
+  }catch(e){ err=e&&e.message; }
+  icuBusy=false;
+  if(added){ await loadRides(); drawHeat(); syncSoon&&syncSoon(); }
+  paintIcu();
+  if(err==='clave') toast('Intervals.icu se ha desconectado. Ve a Ajustes y vuelve a conectarlo.',6000);
+  else if(err&&manual) toast('No se ha podido hablar con Intervals.icu ahora. Prueba en un rato.',5000);
+  else if(added||manual) toast(added?`${added} salida${added>1?'s':''} traída${added>1?'s':''} de tu reloj`+(more?'. Quedan más.':''):'No hay salidas nuevas en Intervals.icu.',5000);
+}
+$('icuKeyBtn').onclick=async()=>{ const k=$('icuKey').value.trim(); if(!k) return; $('icuKeyBtn').disabled=true;
+  try{ const r=await api('/icu/clave',{method:'POST',body:{key:k}}); $('icuKey').value=''; me.icu=true; syncRaw.set('ichnos-auth',me); paintIcu(); toast(`Intervals.icu conectado${r.name?' ('+r.name+')':''}. Trayendo tus salidas…`,5000); icuSync(false); }
+  catch(e){ toast(e.status?e.message:'No hay conexión ahora.',6000); }
+  $('icuKeyBtn').disabled=false; };
+$('icuGo').onclick=()=>{ if(me) location.href=BRIDGE+'/icu/conectar?t='+encodeURIComponent(me.t)+'&r='+encodeURIComponent(location.origin+location.pathname); };
+$('icuNow').onclick=()=>icuSync(true);
+$('icuOut').onclick=async()=>{ if(await ask('¿Desconectar Intervals.icu?','Las salidas que ya tienes se quedan.','Sí, desconectar','No')){ try{ await api('/icu/quitar',{method:'POST'}); me.icu=false; syncRaw.set('ichnos-auth',me); paintIcu(); }catch(e){ toast('No se ha podido ahora.',4000); } } };
+(function icuBack(){ const m=/#icu=([\w-]+)/.exec(location.hash); if(!m) return; history.replaceState(null,'',location.pathname+location.search);
+  if(m[1]==='ok'&&me){ me.icu=true; syncRaw.set('ichnos-auth',me); toast('¡Intervals.icu conectado! Trayendo tus salidas…',5000); setTimeout(()=>icuSync(false),2500); }
+  else setTimeout(()=>toast('No se ha podido conectar Intervals.icu. Prueba otra vez.',6000),800); })();
+const icuAuto=()=>{ if(icuOn()&&!icuBusy&&(!icu.last||Date.now()-icu.last>10*60000)) icuSync(false); };
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') icuAuto(); });
+fetch(BRIDGE+'/estado').then(r=>r.json()).then(st=>{ icuOAuth=!!st.icu; paintIcu(); }).catch(()=>{});
+paintIcu();
+
 const svAuto=()=>{ if(svOn()&&!svBusy&&(!sv.last||Date.now()-sv.last>10*60000)) stravaSync(false); };
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ if(Date.now()-(syncMeta().last||0)>60000) syncNow(false); svAuto(); } });
 paintStrava();
@@ -4431,7 +4527,7 @@ function socialStart(){
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&me){ loadAvisos(); loadFriends(); } });
 
 // ================= ARRANQUE =================
-authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(async()=>{ syncReady=true; await syncNow(false); migRetire(); svAuto(); },1200); }); drawHome(); readShared();
+authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().then(()=>{ paintStrava(); setTimeout(async()=>{ syncReady=true; await syncNow(false); migRetire(); svAuto(); setTimeout(icuAuto,4000); },1200); }); drawHome(); readShared();
 // si se cerró la app grabando, ofrecer guardar lo que había
 (async()=>{
   const pend=store.get('ichnos-rec',null);
