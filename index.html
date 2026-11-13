@@ -3731,6 +3731,7 @@ function hrMax(){ if(+perfil.hrmax) return +perfil.hrmax; let m=0; rides.forEach
 function openRide(r){
   rideOpen=r; const st=rideStats(r), c=r.coords, fr=r._fr;
   $('rvName').textContent=r.name; $('rvDate').textContent=[fr?fr.name:'',fmtD(r.date),fr?r.bk:'',r.source].filter(Boolean).join(' · ');
+  if(/garmin/i.test(r.source||'')) $('rvDate').textContent+=' · Datos de Garmin';   // Garmin pide que se diga
   $('rvBikeL').hidden=!!fr; $('rvPhAdd').hidden=!!fr; document.querySelector('.rvdel').hidden=!!fr;
   const sm=/^strava-(\d+)$/.exec(r.id||''); $('rvStrava').hidden=!sm; if(sm) $('rvStrava').href='https://www.strava.com/activities/'+sm[1];
   $('rvNoteTxt').placeholder=fr?`Escribe algo a ${fr.name}…`:'¿Qué tal la salida? Bares, fuentes, cómo estaba el camino…';
