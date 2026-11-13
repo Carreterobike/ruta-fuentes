@@ -1104,7 +1104,7 @@ $('acSave').onclick=async()=>{
 
 // ================= COPIA ENTRE APARATOS (Mac ↔ iPhone) =================
 // Lo que cambias en un aparato se guarda en tu puente de Cloudflare y el otro lo coge al abrir Ichnos.
-const SYNC_KEYS=['ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap','ichnos-lugares'];
+const SYNC_KEYS=['ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-ssegs','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap','ichnos-lugares'];
 const syncRaw={set:store.set.bind(store),del:store.del.bind(store)};
 let syncTimer=null, syncBusy=false, syncReady=false;
 function syncMeta(){ const m=store.get('ichnos-sync',null)||{}; m.mt=m.mt||{}; m.seen=m.seen||{}; m.dirty=m.dirty||[]; return m; }
@@ -1160,9 +1160,9 @@ async function syncNow(manual){
       const list=rides.filter(r=>rideBucket(r.date)===b&&!dels.has(r.id)).map(cleanRide), t=Date.now();
       await syncReq('/'+b,{method:'PUT',body:JSON.stringify({t,v:list})});
       m.seen[b]=t; m.dirty=m.dirty.filter(x=>x!==b); m._pushed.push(b); syncSave(m); m._pushed=m._pushed;
-      try{ await api('/pub/p-'+b.slice(2),{method:'PUT',body:list.map(publicRide)}); }catch(e){ (m.pubDirty=m.pubDirty||[]).includes(b)||m.pubDirty.push(b); }
+      try{ await api('/pub/p-'+b.slice(2),{method:'PUT',body:list.filter(r=>!r.api).map(publicRide)}); }catch(e){ (m.pubDirty=m.pubDirty||[]).includes(b)||m.pubDirty.push(b); }
     }
-    for(const b of [...(m.pubDirty||[])]){ const list=rides.filter(r=>rideBucket(r.date)===b&&!dels.has(r.id)).map(cleanRide); await api('/pub/p-'+b.slice(2),{method:'PUT',body:list.map(publicRide)}); m.pubDirty=m.pubDirty.filter(x=>x!==b); }
+    for(const b of [...(m.pubDirty||[])]){ const list=rides.filter(r=>rideBucket(r.date)===b&&!dels.has(r.id)).map(cleanRide); await api('/pub/p-'+b.slice(2),{method:'PUT',body:list.filter(r=>!r.api).map(publicRide)}); m.pubDirty=m.pubDirty.filter(x=>x!==b); }
     await publishPub(m);
     await gFlush();
     m.last=Date.now();
@@ -1189,8 +1189,8 @@ function publicRide(r){
 const strHash=t=>{ let h=0; for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))|0; return t.length+':'+h; };
 async function publishPub(m){
   const pub={apodo:perfil.apodo||(me&&me.name)||'',ciudad:perfil.ciudad||'',foto:perfil.foto||null,
-    bicis:bikes.filter(b=>!b.retirada).map(b=>({n:bikeName(b),tipo:b.tipo}))};
-  const res=rides.filter(r=>r.coords&&r.coords.length>1).slice(0,600).map(r=>{ const st=rideStats(r); return {id:r.id,d:r.date,n:r.name,km:+st.km.toFixed(2),s:st.moving,up:st.up,tp:rideTipo(r),bk:r.bike?bikeName(bikeById(r.bike)):'',ph:(r.sfotos&&r.sfotos[0])||'',nf:(r.fotos||[]).length+(r.sfotos||[]).length,nc:(r.notas||[]).length}; });
+    bicis:bikes.filter(b=>!b.retirada).map(b=>({n:bikeName(b),tipo:b.tipo})),tiempos:myPubTimes()};
+  const res=rides.filter(r=>r.coords&&r.coords.length>1&&!r.api).slice(0,600).map(r=>{ const st=rideStats(r); return {id:r.id,d:r.date,n:r.name,km:+st.km.toFixed(2),s:st.moving,up:st.up,tp:rideTipo(r),bk:r.bike?bikeName(bikeById(r.bike)):'',ph:(r.sfotos&&r.sfotos[0])||'',nf:(r.fotos||[]).length+(r.sfotos||[]).length,nc:(r.notas||[]).length}; });
   const a=JSON.stringify(pub), b=JSON.stringify(res), ha=strHash(a), hb=strHash(b);
   if(m.pubA!==ha){ await api('/pub/pub',{method:'PUT',body:a}); m.pubA=ha; }
   if(m.pubB!==hb){ await api('/pub/resumen',{method:'PUT',body:b}); m.pubB=hb; }
@@ -3054,7 +3054,7 @@ function prepRide(r){
   r.coords.forEach((p,i)=>{ s=Math.min(s,p[0]); n=Math.max(n,p[0]); w=Math.min(w,p[1]); e=Math.max(e,p[1]); if(i) cum.push(cum[i-1]+dist(r.coords[i-1],p)); });
   r._bb=[s,w,n,e]; r._cum=cum;
 }
-async function saveRides(list,quiet){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); if(!quiet) await loadRides(); }
+async function saveRides(list,quiet){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT','sef','sefT','api'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); if(!quiet) await loadRides(); }
 async function delRide(id){ const r=rides.find(x=>x.id===id); await ridesTx('readwrite',st=>st.delete(id)); syncDelRide(id,r&&r.date); await loadRides(); }
 function lineKm(c){ let m=0; for(let i=1;i<c.length;i++) m+=dist(c[i-1],c[i]); return m/1000; }
 function thin(c){ const out=[]; for(const p of c){ if(!out.length||dist(out[out.length-1],p)>=10) out.push([+p[0].toFixed(5),+p[1].toFixed(5)]); } return out; }
@@ -3309,7 +3309,9 @@ async function svImport(a,gear){
   const th=thinFull(ll,ts,g('altitude'),{hr:g('heartrate'),cad:g('cadence'),pw:g('watts')});
   let bike=null;
   if(a.gear_id){ if(!(a.gear_id in gear)){ try{ gear[a.gear_id]=(await svGet('gear/'+a.gear_id)).name||''; }catch(e){ gear[a.gear_id]=''; } store.set('ichnos-gear',gear); } bike=bikeByGear(gear[a.gear_id]); }
-  await saveRides([{id,name:a.name||'Salida',date:t0,source:'Strava',tipo,coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike:bike||bikeForTipo(tipo),km:lineKm(th.coords)}],true);
+  const nr={id,name:a.name||'Salida',date:t0,source:'Strava',api:1,tipo,coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike:bike||bikeForTipo(tipo),km:lineKm(th.coords)};
+  try{ const det=await svGet(`activities/${a.id}?include_all_efforts=true`); applyEfforts(nr,det&&det.segment_efforts); }catch(e){ if(e.message==='limite') throw e; }
+  await saveRides([nr],true);
   return true;
 }
 async function stravaSync(manual){
@@ -3339,6 +3341,8 @@ async function stravaSync(manual){
         sv.before=Math.floor(Date.parse(a.start_date)/1000); syncRaw.set('ichnos-strava',sv);
       }
     }
+    // 3) los segmentos de las salidas que ya tenías
+    if(me&&!more&&n<12) await svEffortsBackfill(12-n);
     sv.last=Date.now(); sv.more=more; syncRaw.set('ichnos-strava',sv);
   }catch(e){ err=e&&e.message; syncRaw.set('ichnos-strava',sv); }
   svBusy=false;
@@ -3639,6 +3643,7 @@ function openRide(r){
     ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name) segs.push({name,dir:lb[k],t:e.t,pr:e.t===res[k][0].t,n:res[k].length}); })); };
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
+  if(!fr) (r.sef||[]).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const all=stravaBest(e.sid); segs.push({name:sg.name,dir:'Strava'+(e.pr===1?' · 🏆 tu mejor marca':e.pr?` · ${e.pr}.º mejor`:''),t:e.t,pr:e.pr===1,n:all.length}); });
   $('rvSegs').innerHTML=segs.length?`<div class="ch-t">Segmentos y trialeras</div><ul class="routes">${segs.map(x=>`<li><span><b>${esc(x.name)}</b><small>${x.dir}</small></span><em class="${x.pr?'pr':''}">${fmtT(x.t)}${x.pr&&x.n>1?' · ¡mejor marca!':''}</em></li>`).join('')}</ul>`:'';
   renderRvPhotos(r); renderRvNotes(r); loadStravaPhotos(r);
   if(me) getSoc(rideOwner(r),true).then(()=>{ if(rideOpen===r) renderRvNotes(r); });
@@ -3771,7 +3776,7 @@ function passes(c,P,R){
   return out;
 }
 // todas las veces que has hecho un segmento, en los dos sentidos
-function effortsFor(key,seg){
+function effortsFor(key,seg,noApi){
   if(effCache.has(key)) return effCache.get(key);
   const res={f:[],b:[]};
   if(!seg||seg.length<2){ effCache.set(key,res); return res; }
@@ -3779,7 +3784,7 @@ function effortsFor(key,seg){
   let s=90,w=180,n=-90,e=-180; seg.forEach(p=>{ s=Math.min(s,p[0]); n=Math.max(n,p[0]); w=Math.min(w,p[1]); e=Math.max(e,p[1]); });
   const pad=0.0006;
   rides.forEach(r=>{
-    if(!r.times||!r._bb) return;
+    if(!r.times||!r._bb||(noApi&&r.api)) return;
     const bb=r._bb; if(bb[0]>n+pad||bb[2]<s-pad||bb[1]>e+pad||bb[3]<w-pad) return;
     const c=r.coords, As=passes(c,A,30), Bs=passes(c,B,30);
     if(!As.length||!Bs.length) return;
@@ -3852,6 +3857,112 @@ function namedTrailLine(name,near){
   return chainFrom(seed,ps);
 }
 
+// ================= SEGMENTOS DE STRAVA Y TRIALERAS DE LA GRUPETA =================
+// Lo de Strava solo lo ves tú (norma de Strava). Lo que compartes con la grupeta pasa a ser vuestro.
+let ssegs=store.get('ichnos-ssegs',{})||{};   // {sid:{id,name,coords:[[lat,lon,ele]],km,gr}}
+let sexp=store.get('ichnos-sexp',{})||{};     // zonas ya buscadas en Strava
+const SS_COL='#FC4C02', GT_COL='#2a9d4b';
+function decPoly(s){ let i=0,lat=0,lng=0; const out=[];
+  while(i<s.length){ let b,sh=0,r=0; do{ b=s.charCodeAt(i++)-63; r|=(b&31)<<sh; sh+=5; }while(b>=32); lat+=r&1?~(r>>1):r>>1;
+    sh=0; r=0; do{ b=s.charCodeAt(i++)-63; r|=(b&31)<<sh; sh+=5; }while(b>=32); lng+=r&1?~(r>>1):r>>1; out.push([lat/1e5,lng/1e5,null]); }
+  return out; }
+function nearestIdx(c,P,from=0){ let bi=-1,bd=Infinity; for(let i=from;i<c.length;i++){ const d=dist(c[i],P); if(d<bd){bd=d;bi=i;} } return bd<80?bi:-1; }
+function thinLine(c,step=12){ const o=[c[0]]; for(let i=1;i<c.length;i++){ if(dist(o[o.length-1],c[i])>=step||i===c.length-1) o.push(c[i]); } return o.slice(0,400); }
+// los segmentos de una salida de Strava: nombre, tu tiempo y si es tu mejor marca
+function applyEfforts(r,efforts){
+  const out=[];
+  (efforts||[]).forEach(e=>{
+    const sg=e.segment||{}, sid=String(sg.id||''); if(!sid) return;
+    if(!ssegs[sid]||!ssegs[sid].own){
+      let line=null;
+      if(sg.start_latlng&&sg.end_latlng&&r.coords){ const i=nearestIdx(r.coords,sg.start_latlng); const j=i>=0?nearestIdx(r.coords,sg.end_latlng,i+1):-1;
+        if(i>=0&&j>i) line=thinLine(r.coords.slice(i,j+1).map((p,k)=>[p[0],p[1],r.eles&&r.eles[i+k]!=null?Math.round(r.eles[i+k]):null])); }
+      if(line&&line.length>=2) ssegs[sid]={id:sid,name:sg.name||e.name||'Segmento',coords:line,km:(sg.distance||0)/1000,gr:sg.average_grade,own:1};
+      else if(!ssegs[sid]) return;
+    }
+    out.push({sid,t:e.elapsed_time,pr:e.pr_rank||null});
+  });
+  r.sef=out; r.sefT=Date.now();
+  store.set('ichnos-ssegs',ssegs);
+  return out;
+}
+// trae los segmentos de las salidas de Strava que aún no los tienen (pocas cada vez)
+async function svEffortsBackfill(maxN){
+  let n=0;
+  for(const r of rides.filter(x=>/^strava-\d+$/.test(x.id)&&!x.sefT).sort((a,b)=>b.date-a.date)){
+    if(n>=maxN) break; n++;
+    let d=null; try{ d=await svGet('activities/'+r.id.slice(7)+'?include_all_efforts=true'); }catch(e){ if(e.message!=='http') throw e; }
+    applyEfforts(r,d&&d.segment_efforts); await saveRideEdit(r);
+  }
+  return n;
+}
+// busca todos los segmentos de Strava de la zona que estás mirando
+let sxBusy=false;
+async function exploreSegs(){
+  if(!T.segmentos||!svOn()||sxBusy||map.getZoom()<12) return; sxBusy=true;
+  const b=map.getBounds(), S=0.04, type=isFoot()?'running':'riding'; let calls=0, added=0;
+  try{
+    for(let la=Math.floor(b.getSouth()/S)*S; la<b.getNorth()&&calls<4; la+=S){
+      for(let lo=Math.floor(b.getWest()/S)*S; lo<b.getEast()&&calls<4; lo+=S){
+        const k=type+':'+la.toFixed(2)+','+lo.toFixed(2); if(sexp[k]) continue; calls++;
+        const d=await svGet(`segments/explore?bounds=${la.toFixed(4)},${lo.toFixed(4)},${(la+S).toFixed(4)},${(lo+S).toFixed(4)}&activity_type=${type}`);
+        (d&&d.segments||[]).forEach(s=>{ const id=String(s.id); if(ssegs[id]||!s.points) return; ssegs[id]={id,name:s.name,coords:decPoly(s.points),km:(s.distance||0)/1000,gr:s.avg_grade}; added++; });
+        sexp[k]=Date.now();
+      }
+    }
+  }catch(e){}
+  store.set('ichnos-sexp',sexp); if(added){ store.set('ichnos-ssegs',ssegs); drawSegs(); refreshSegs(); }
+  sxBusy=false;
+}
+map.on('moveend',()=>{ if(T.segmentos) setTimeout(exploreSegs,900); });
+// tus tiempos de Strava en un segmento
+function stravaBest(sid){ const l=[]; rides.forEach(r=>(r.sef||[]).forEach(e=>{ if(e.sid===sid) l.push({t:e.t,date:r.date}); })); l.sort((a,b)=>a.t-b.t); return l; }
+const segDz=c=>c[c.length-1][2]!=null&&c[0][2]!=null?c[c.length-1][2]-c[0][2]:null;
+function ssPopup(sg){
+  const d=document.createElement('div'); d.className='tpop', c=sg.coords;
+  d.innerHTML=`<b>${esc(sg.name)}</b><br><small>Segmento de Strava · ${fmtKm(sg.km||lenOf(c)/1000)} km${sg.gr!=null?` · ${String(Math.round(sg.gr*10)/10).replace('.',',')} %`:''} · solo lo ves tú</small>`;
+  const sb=stravaBest(sg.id);
+  if(sb.length) d.insertAdjacentHTML('beforeend',`<div class="tms"><div class="tms-h">Tus tiempos en Strava</div><div class="tm"><span>Mejor <b class="best">${fmtT(sb[0].t)}</b> · ${sb.length} ${sb.length===1?'vez':'veces'} · último ${fmtD(sb.reduce((x,y)=>y.date>x.date?y:x).date)}</span></div></div>`);
+  else d.appendChild(timesBlock(effortsFor('ss:'+sg.id,c),segDz(c)));
+  d.insertAdjacentHTML('beforeend',`<a class="sv-link" href="https://www.strava.com/segments/${esc(sg.id)}" target="_blank" rel="noopener">Ver en Strava</a>`);
+  if(me&&!gData.t['ss'+sg.id]){ const sh=document.createElement('button'); sh.className='segbtn'; sh.textContent='Compartir con la grupeta';
+    sh.onclick=async()=>{ map.closePopup(); const nm=await askName('',sg.name,{title:'Compartir con la grupeta',hint:'La trialera pasa al mapa de todos con este nombre. Puedes cambiarlo.',placeholder:'Nombre de la trialera',button:'Compartir'});
+      if(!nm) return; gPush([{k:'tramo',id:'ss'+sg.id,name:nm,coords:c}]); gData.t['ss'+sg.id]={name:nm,coords:c,by:me.id,t:Date.now()}; drawSegs(); toast(`"${nm}" compartida con la grupeta`); };
+    d.appendChild(sh); }
+  return d;
+}
+// tiempos de tus amigos (los que mide Ichnos con salidas que no vienen de Strava)
+let frTimes={}, frTimesT=0;
+async function loadFrTimes(){
+  if(!me||Date.now()-frTimesT<300000) return frTimes; frTimesT=Date.now();
+  const ids=Object.keys(fw.out).filter(id=>fw.out[id]==='ok'), out={};
+  await Promise.all(ids.map(async id=>{ try{ const p=await api(`/u/${id}/pub`); if(p&&p.tiempos) out[id]=p.tiempos; }catch(e){} }));
+  frTimes=out; return out;
+}
+function myPubTimes(){   // tus mejores tiempos en las trialeras de la grupeta, sin salidas que vengan de Strava
+  const o={};
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ const res=effortsFor('gtp:'+id,tr.coords,true), lb=dirLabels(res,segDz(tr.coords));
+    if(res.f.length||res.b.length) o[id]={f:res.f[0]?res.f[0].t:null,b:res.b[0]?res.b[0].t:null,lf:lb.f,lb:lb.b}; });
+  return o;
+}
+function gtPopup(id,tr){
+  const d=document.createElement('div'); d.className='tpop', c=tr.coords;
+  d.innerHTML=`<b>${esc(tr.name)}</b><br><small>Trialera de la grupeta · ${fmtKm(lenOf(c)/1000)} km · la añadió ${esc(uName(tr.by))}</small>`;
+  d.appendChild(timesBlock(effortsFor('gt:'+id,c),segDz(c)));
+  const cl=document.createElement('div'); cl.className='tms'; cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div><small>Cargando…</small>'; d.appendChild(cl);
+  loadFrTimes().then(ft=>{
+    const mine=myPubTimes()[id], rows={f:[],b:[]};
+    const add=(u,t)=>{ if(!t) return; if(t.f) rows.f.push({u,t:t.f}); if(t.b) rows.b.push({u,t:t.b}); };
+    add(me.id,mine); Object.entries(ft).forEach(([u,tt])=>add(u,tt[id]));
+    const lb=dirLabels(effortsFor('gt:'+id,c),segDz(c));
+    const one=k=>rows[k].length?`<div class="tm"><b>${lb[k]}</b><ol>${rows[k].sort((a,b)=>a.t-b.t).map(x=>`<li><b>${fmtT(x.t)}</b> ${esc(uName(x.u))}</li>`).join('')}</ol></div>`:'';
+    cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div>'+((one('f')+one('b'))||'<small>Todavía nadie tiene tiempo aquí. Cuentan las salidas subidas con archivo o directas del reloj (las de Strava no se pueden enseñar a otros).</small>');
+  });
+  if(isMe(tr.by)||(me&&me.admin)){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar del mapa de la grupeta';
+    del.onclick=async()=>{ map.closePopup(); if(await ask('¿Quitar esta trialera de la grupeta?',tr.name,'Sí, quitar','No')){ gPush([{k:'tramo-',id}]); delete gData.t[id]; drawSegs(); } }; d.appendChild(del); }
+  return d;
+}
+
 // ---------- crear tus propios segmentos ----------
 let segMode=null, segA=null, segTmp=null;
 $('segNew').onclick=()=>{
@@ -3894,6 +4005,12 @@ function segPopup(sg){
 function drawSegs(){
   segLayer.clearLayers();
   if(!T.segmentos) return;
+  Object.values(ssegs).forEach(sg=>{ if(!sg.coords||sg.coords.length<2||(gData.t||{})['ss'+sg.id]) return; const ll=sg.coords.map(c=>[c[0],c[1]]);
+    L.polyline(ll,{color:'#ffffff',weight:7,opacity:.8,interactive:false}).addTo(segLayer);
+    L.polyline(ll,{color:SS_COL,weight:4,bubblingMouseEvents:false}).bindPopup(()=>ssPopup(sg),{minWidth:230}).addTo(segLayer); });
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ const ll=tr.coords.map(c=>[c[0],c[1]]);
+    L.polyline(ll,{color:'#ffffff',weight:9,opacity:.9,interactive:false}).addTo(segLayer);
+    L.polyline(ll,{color:GT_COL,weight:5,bubblingMouseEvents:false}).bindPopup(()=>gtPopup(id,tr),{minWidth:230}).addTo(segLayer); });
   mySegs.forEach(sg=>{
     const ll=sg.coords.map(c=>[c[0],c[1]]);
     L.polyline(ll,{color:'#ffffff',weight:9,opacity:.9,interactive:false}).addTo(segLayer);
@@ -4064,7 +4181,7 @@ $('locate').onclick=()=>{
 };
 
 // ================= MAPA COMPARTIDO (opiniones, sitios y fuentes de todos) =================
-let gData=store.get('ichnos-g',null)||{l:{},f:{}};
+let gData=store.get('ichnos-g',null)||{l:{},f:{},t:{}}; gData.t=gData.t||{};
 let gQueue=store.get('ichnos-gq',[])||[], gBusy=false;
 function gPush(ops){ if(!me) return; gQueue.push(...ops); syncRaw.set('ichnos-gq',gQueue); gFlush(); }
 async function gFlush(){ if(!me||gBusy||!gQueue.length) return; gBusy=true; const ops=gQueue.slice(0,400);
@@ -4080,12 +4197,12 @@ function gMigrate(){   // una vez: lo que ya tenías pasa al mapa de todos
   syncRaw.set('ichnos-gmig',me.id); if(ops.length) gPush(ops);
 }
 async function gLoad(){ if(!me) return; gApply(); gMigrate(); await gFlush(); try{ gSet(await api('/g')); }catch(e){} }
-function gSet(d){ if(!d) return; gData={l:d.l||{},f:d.f||{}}; syncRaw.set('ichnos-g',gData); gApply(); }
+function gSet(d){ if(!d) return; gData={l:d.l||{},f:d.f||{},t:d.t||{}}; syncRaw.set('ichnos-g',gData); gApply(); }
 function gApply(){
   Object.entries(gData.l).forEach(([id,p])=>{ if(p.m&&p.m.add&&!isMe(p.m.by)&&!(opin[id]&&opin[id].mine)) pStore.set(id,{id,lat:p.m.lat,lon:p.m.lon,cat:p.m.cat,tags:{},name:p.m.name,shared:p.m.by}); });
   pStore.forEach((p,id)=>{ if(p.shared&&!(gData.l[id]&&gData.l[id].m&&gData.l[id].m.add)) pStore.delete(id); });
   Object.entries(gData.f).forEach(([id,f])=>{ if(isMe(f.by)||fStore.has('g-'+id)) return; addFountain({id:'g-'+id,lat:f.lat,lon:f.lon,name:f.name||'',kind:'potable',by:f.by,photo:undefined}); });
-  renderPlaces(); if(T.fuentes) renderFountains();
+  renderPlaces(); if(T.fuentes) renderFountains(); if(T.segmentos) drawSegs();
 }
 function opAll(id){ const l=[], g=gData.l[id];
   if(g&&g.o) Object.entries(g.o).forEach(([u,o])=>{ if(!isMe(u)) l.push({...o,u}); });
