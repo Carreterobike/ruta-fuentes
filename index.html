@@ -455,6 +455,8 @@ details.help p{margin:6px 0 0}
 .modal .box.lbox{max-width:420px;max-height:80vh;text-align:left}.modal .box.lbox h4{text-align:center}.modal .box.lbox ul{overflow-y:auto;min-height:0}
 .avlist li{padding:10px;border-radius:12px;background:var(--soft);font-size:14px;line-height:1.4;cursor:pointer}.avlist li.new{background:rgba(182,226,46,.22)}.avlist li small{display:block;color:var(--muted);font-size:12px}
 .avatar.sm{width:72px;height:72px;margin:0;border-width:3px;flex:none}
+.frview-mapbtn{}
+#frMapBtn{width:100%}
 .rvcard.frtop{flex-direction:row;align-items:center}.frtop>div:nth-child(2){flex:1;display:flex;flex-direction:column;min-width:0}.frtop b{font-size:19px}.frtop small{color:var(--muted)}
 .frstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.frstats b{display:block;font-size:20px;font-family:var(--display);font-weight:800}.frstats small{color:var(--muted);font-size:12px}
 .feed li{grid-template-columns:38px 1fr auto}
@@ -1018,6 +1020,7 @@ details.help p{margin:6px 0 0}
   <div class="rv-body">
     <div class="rvcard frtop"><div class="avatar sm" id="frAv"></div><div><b id="frApodo"></b><small id="frCity"></small></div><button class="btn" id="frFollow"></button></div>
     <div class="rvcard" id="frStats"></div>
+    <button class="btn-main" id="frMapBtn" hidden>Ver su mapa</button>
     <div class="rvcard" id="frBikes"></div>
     <div class="rvcard"><div class="ch-t">Salidas</div><p class="note" id="frEmpty" hidden></p><ul class="rides" id="frRides"></ul><button class="btn" id="frMore" hidden>Ver más</button></div>
   </div>
@@ -1249,6 +1252,10 @@ async function publishPub(m){
   const a=JSON.stringify(pub), b=JSON.stringify(res), ha=strHash(a), hb=strHash(b);
   if(m.pubA!==ha){ await api('/pub/pub',{method:'PUT',body:a}); m.pubA=ha; }
   if(m.pubB!==hb){ await api('/pub/resumen',{method:'PUT',body:b}); m.pubB=hb; }
+  // tu mapa para tus amigos: todos tus recorridos (sin los de Strava ni la zona de casa), muy aligerados
+  const mp=JSON.stringify(rides.filter(r=>!r.api&&r.coords&&r.coords.length>1).map(r=>{ const c=publicRide(r).coords, o=[]; let last=null;
+    for(const p of c){ if(!last||dist(last,p)>=120){ o.push([+p[0].toFixed(4),+p[1].toFixed(4)]); last=p; } } return o.length>1?o:null; }).filter(Boolean)), hc=strHash(mp);
+  if(m.pubC!==hc){ await api('/pub/p-0000-00',{method:'PUT',body:mp}); m.pubC=hc; }   // "p-0000-00" = el mapa (nombre que el puente ya acepta)
 }
 function syncAgo(){ const m=syncMeta(); return m.last?svAgo(m.last):'todavía no'; }
 let toastTimer=null;
@@ -3874,7 +3881,7 @@ $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden
   map.fitBounds(L.latLngBounds(r.coords),{padding:[40,40]}); };
 function clearRideOnMap(){ rideHi.clearLayers(); rideOnMap=null; $('rideOn').hidden=true; }
 $('roX').onclick=clearRideOnMap;
-$('roBack').onclick=()=>{ const r=rideOnMap; clearRideOnMap(); if(r){ showPage('pgSalidas'); openRide(r); } };
+$('roBack').onclick=()=>{ const r=rideOnMap; clearRideOnMap(); if(r&&r._frMap){ openFriend(r._frMap); return; } if(r){ showPage('pgSalidas'); openRide(r); } };
 $('rvDel').onclick=async()=>{ const r=rideOpen; if(!r) return; if(await ask('¿Borrar esta salida?',r.name,'Sí, bórrala','No')){ $('rideView').hidden=true; clearRideOnMap(); delRide(r.id); } };
 const rideHi=L.layerGroup().addTo(map);
 
@@ -4424,7 +4431,7 @@ async function openFriend(id){
   frCur=id; frShown=20; $('frView').hidden=false; $('frView').scrollTop=0;
   $('frName').textContent=uName(id); $('frSub').textContent=fwState(id); $('frApodo').textContent=uName(id); $('frCity').textContent='';
   paintAvatar($('frAv'),null); paintFollowBtn(id);
-  $('frStats').innerHTML=''; $('frBikes').innerHTML=''; $('frRides').innerHTML=''; $('frMore').hidden=true;
+  $('frStats').innerHTML=''; $('frBikes').innerHTML=''; $('frRides').innerHTML=''; $('frMore').hidden=true; $('frMapBtn').hidden=true;
   if(fw.out[id]!=='ok'){ $('frEmpty').hidden=false; $('frEmpty').textContent=fw.out[id]==='pend'?'Cuando acepte tu solicitud verás su perfil y sus salidas.':'Pulsa "Seguir". Cuando acepte, verás su perfil y sus salidas.'; return; }
   $('frEmpty').hidden=false; $('frEmpty').textContent='Cargando…';
   let pub=null; frRes=[];
@@ -4438,6 +4445,7 @@ async function openFriend(id){
   const bk=(pub&&pub.bicis)||[];
   $('frBikes').innerHTML=bk.length?`<div class="ch-t">Bicis y zapatillas</div><ul class="routes">${bk.map(b=>`<li><span><b>${esc(b.n)}</b><small>${esc(BIKE_TIPOS[b.tipo]||'')}</small></span></li>`).join('')}</ul>`:'';
   $('frEmpty').hidden=!!frRes.length; $('frEmpty').textContent='Todavía no tiene salidas.';
+  $('frMapBtn').hidden=!frRes.length;
   renderFrRides();
 }
 function renderFrRides(){
@@ -4447,6 +4455,15 @@ function renderFrRides(){
 }
 $('frMore').onclick=()=>{ frShown+=20; renderFrRides(); };
 $('frBack').onclick=()=>{ $('frView').hidden=true; frCur=null; };
+$('frMapBtn').onclick=async()=>{ const uid=frCur; if(!uid) return; toast('Cargando su mapa…',8000);
+  let lines=null; try{ lines=await api(`/u/${uid}/p-0000-00`); }catch(e){}
+  if(!lines||!lines.length){ toast('Todavía no tiene mapa. Se hace cuando abre Ichnos.',5000); return; }
+  toast(''); $('frView').hidden=true; showPage('pgMapa'); rideHi.clearLayers();
+  const pts=[];
+  lines.forEach(l=>{ L.polyline(l,{color:'#ffffff',weight:5,opacity:.6,interactive:false}).addTo(rideHi); L.polyline(l,{color:'#7B61FF',weight:3,opacity:.85,interactive:false}).addTo(rideHi); l.forEach((p,i)=>{ if(i%5===0) pts.push(p); }); });
+  const b=L.latLngBounds(pts);
+  rideOnMap={_frMap:uid}; $('roName').textContent='Mapa de '+uName(uid); $('rideOn').hidden=false;
+  try{ map.fitBounds(b,{padding:[40,40]}); }catch(e){} };
 async function openFriendRide(uid,x){
   toast('Abriendo la salida…',8000);
   let list=null; try{ list=await api(`/u/${uid}/p-${rideBucket(x.d).slice(2)}`); }catch(e){}
