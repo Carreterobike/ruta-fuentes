@@ -755,8 +755,8 @@ details.help p{margin:6px 0 0}
   <section class="pblock" id="icuBox">
     <div class="pb-h"><h3>Intervals.icu</h3><span class="svchip" id="icuChip">Sin conectar</span></div>
     <div id="icuOff">
-      <p class="svp">Para que <b>tus amigos vean tus salidas</b> tienen que llegar directas de tu reloj, no por Strava (norma de Strava). Intervals.icu es gratis y se conecta con COROS, Garmin, Wahoo, Suunto y Polar.</p>
-      <p class="svp"><b>1.</b> Crea una cuenta gratis en <b>intervals.icu</b> y, en sus Ajustes (Settings), conecta tu reloj (por ejemplo COROS). No conectes allí Strava para esto.</p>
+      <p class="svp">Para que <b>tus amigos vean tus salidas</b> tienen que llegar directas de tu GPS, no por Strava (norma de Strava). Intervals.icu es gratis y se conecta con COROS, Garmin, Wahoo, Suunto y Polar.</p>
+      <p class="svp"><b>1.</b> Crea una cuenta gratis en <b>intervals.icu</b> y, en sus Ajustes (Settings), conecta tu GPS (por ejemplo el COROS DURA o tu Garmin). No conectes allí Strava para esto.</p>
       <button class="sv-btn icu" id="icuGo" hidden>Conectar Intervals.icu</button>
       <div id="icuKeyBox">
         <p class="svp"><b>2.</b> En intervals.icu ve a <b>Settings</b>, baja hasta <b>Developer Settings</b>, pulsa <b>(view)</b> al lado de <b>API Key</b>, cópiala y pégala aquí:</p>
@@ -3432,7 +3432,7 @@ function paintIcu(msg){
   $('icuBox').hidden=!me; $('icuOff').hidden=on; $('icuOn').hidden=!on;
   $('icuChip').textContent=on?'Conectado':'Sin conectar'; $('icuChip').classList.toggle('on',on);
   $('icuGo').hidden=!icuOAuth; $('icuKeyBox').hidden=icuOAuth;
-  if(on) $('icuInfo').textContent=msg||`Las salidas de tu reloj llegan solas y tus amigos las pueden ver. Última vez: ${svAgo(icu.last)}.`+(icu.histDone?'':' Las antiguas se van trayendo poco a poco.');
+  if(on) $('icuInfo').textContent=msg||`Las salidas de tu GPS llegan solas y tus amigos las pueden ver. Última vez: ${svAgo(icu.last)}.`+(icu.histDone?'':' Las antiguas se van trayendo poco a poco.');
   $('icuNow').disabled=icuBusy; $('icuNow').textContent=icuBusy?'Trayendo…':'Traer salidas';
 }
 async function icuGet(path,bin){
@@ -3454,8 +3454,8 @@ async function icuImport(a){
   const ft=String(a.file_type||'fit').toLowerCase();
   const t=await parseTrackBuf('salida.'+(ft==='gpx'||ft==='tcx'?ft:'fit'),buf), th=thinFull(t.coords,t.times,t.eles,t.ex);
   if(th.coords.length<2) return 'x';
-  const data={coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,km:lineKm(th.coords),api:0,source:a.device_name?a.device_name+' (Intervals.icu)':'Reloj (Intervals.icu)',icu:String(a.id)};
-  if(dup) await saveRides([{...dup,...data}],true);              // la de Strava pasa a ser del reloj: ya la pueden ver tus amigos
+  const data={coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,km:lineKm(th.coords),api:0,source:a.device_name?a.device_name+' (Intervals.icu)':'GPS (Intervals.icu)',icu:String(a.id)};
+  if(dup) await saveRides([{...dup,...data}],true);              // la de Strava pasa a ser la del GPS: ya la pueden ver tus amigos
   else await saveRides([{id,name:a.name||'Salida',date:t0,tipo,bike:bikeForTipo(tipo),...data}],true);
   return true;
 }
@@ -3484,7 +3484,7 @@ async function icuSync(manual){
   paintIcu();
   if(err==='clave') toast('Intervals.icu se ha desconectado. Ve a Ajustes y vuelve a conectarlo.',6000);
   else if(err&&manual) toast('No se ha podido hablar con Intervals.icu ahora. Prueba en un rato.',5000);
-  else if(added||manual) toast(added?`${added} salida${added>1?'s':''} traída${added>1?'s':''} de tu reloj`+(more?'. Quedan más.':''):'No hay salidas nuevas en Intervals.icu.',5000);
+  else if(added||manual) toast(added?`${added} salida${added>1?'s':''} traída${added>1?'s':''} de tu GPS`+(more?'. Quedan más.':''):'No hay salidas nuevas en Intervals.icu.',5000);
 }
 $('icuKeyBtn').onclick=async()=>{ const k=$('icuKey').value.trim(); if(!k) return; $('icuKeyBtn').disabled=true;
   try{ const r=await api('/icu/clave',{method:'POST',body:{key:k}}); $('icuKey').value=''; me.icu=true; syncRaw.set('ichnos-auth',me); paintIcu(); toast(`Intervals.icu conectado${r.name?' ('+r.name+')':''}. Trayendo tus salidas…`,5000); icuSync(false); }
