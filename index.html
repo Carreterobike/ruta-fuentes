@@ -1982,6 +1982,17 @@ function distToLine(ll,coords){
   }
   return best;
 }
+// nombre compartido con la grupeta (o puesto con "Cambiar color") cerca de un punto
+function sharedNameAt(latlng){ const P=[latlng.lat,latlng.lng]; let best=null, bd=20;
+  [...Object.values(gData.t||{}),...Object.values(gData.c||{})].forEach(x=>{ if(!x||!x.name||!x.coords||x.coords.length<2) return; const d=distToLine(P,x.coords.map(c=>[c[1],c[0]])); if(d<bd){ bd=d; best=x; } });
+  return best; }
+// el segmento de Strava que pasa justo por ahí (el más corto: es el más concreto)
+function svSegAt(latlng){ const P=[latlng.lat,latlng.lng]; let best=null, bl=Infinity;
+  Object.values(ssegs).forEach(sg=>{ const c=sg.coords; if(!c||c.length<2) return;
+    if(!sg._bb){ let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); sg._bb=[a,b,n,e]; }
+    const bb=sg._bb; if(P[0]<bb[0]-0.0003||P[0]>bb[2]+0.0003||P[1]<bb[1]-0.0004||P[1]>bb[3]+0.0004) return;
+    if(distToLine(P,c.map(q=>[q[1],q[0]]))>15) return; const L=lenOf(c); if(L<bl){ bl=L; best=sg; } });
+  return best; }
 function myNameAt(latlng){ let best=null, bd=25; myNames.forEach(n=>{ const d=distToLine([latlng.lat,latlng.lng],n.coords); if(d<bd){bd=d;best=n;} }); return best; }
 function askName(title,def,o={}){
   return new Promise(res=>{
@@ -2009,7 +2020,8 @@ function trailAt(latlng){
   const osm=glMap.queryRenderedFeatures([[pt.x-40,pt.y-40],[pt.x+40,pt.y+40]],{layers:['trail-names']}).map(f=>f.properties.name).find(Boolean);
   const kind=KIND[p.subclass]||KIND[p.class]||'';
   const v=String(p.mtb_scale??''), sc=parseInt(v,10);
-  const name=mine?mine.name:osm;
+  const shr=mine?null:sharedNameAt(latlng), svs=(mine||shr||osm)?null:svSegAt(latlng);
+  const name=mine?mine.name:shr?shr.name:osm?osm:svs?String(svs.name||'').trim():null;
   const d=document.createElement('div'); d.className='tpop';
   let h=`<b>${esc(name||'Trialera sin nombre')}</b>${kind?'<br>'+kind:''}`;
   const fx=(typeof fixAt==='function')?fixAt(latlng):null;
@@ -2027,11 +2039,19 @@ function trailAt(latlng){
     if(!line && hit.length){ const c=lineOf(hit[0]); if(c) { line=c.map(x=>[x[1],x[0]]); key='way:'+line[0].map(x=>x.toFixed(5)).join(','); } }
     if(line&&line.length>1) d.appendChild(timesBlock(effortsFor(key,line),null));
   }catch(e){ console.warn(e); }
+  if(svs){ const sb=stravaBest(svs.id), S=svs.st; const bt0=S?S.pr:sb.length?sb[0].t:null;
+    d.insertAdjacentHTML('beforeend',`<div class="tms"><div class="tms-h">Segmento de Strava</div><div class="tm"><span>${bt0!=null?`Tu mejor tiempo: <b class="best">${fmtT(bt0)}</b>`:'Aún no tienes tiempo'}${S&&S.n?` · ${S.n} ${S.n===1?'vez':'veces'}`:''}</span></div></div>`); }
   const bt=document.createElement('button'); bt.className='segbtn'; bt.textContent=name?'Cambiar nombre':'Ponerle nombre';
   bt.onclick=async()=>{
     map.closePopup();
     const nn=await askName(name?'Cambiar el nombre':'Ponle nombre a esta trialera',name||'');
     if(!nn) return;
+    if(me&&me.admin){   // tu nombre lo ve toda la grupeta
+      let c=mine?mine.coords:(hit.length?lineOf(hit[0]):null); if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
+      const coords=c.map(x=>[+x[1].toFixed(6),+x[0].toFixed(6)]);
+      const id=shr&&Object.keys(gData.t).find(k=>gData.t[k]===shr)||('n'+Date.now().toString(36));
+      gPush([{k:'tramo',id,name:nn,coords}]); gData.t[id]={name:nn,coords,by:me.id,t:Date.now()};
+      if(mine){ myNames=myNames.filter(n=>n!==mine); saveMyNames(); } drawSegs(); effCache.clear(); toast(`Guardado para toda la grupeta: "${nn}"`); return; }
     if(mine){ mine.name=nn; }
     else{ const c=hit.length?lineOf(hit[0]):null; if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
       myNames.push({id:Date.now(),name:nn,coords:c.map(x=>[+x[0].toFixed(6),+x[1].toFixed(6)])}); }
@@ -4085,7 +4105,7 @@ function openRide(r){
   // y todas las trialeras del mapa por las que has pasado
   rideTrails(r).then(tr=>{ if(rideOpen!==r) return; if(!tr.length){ fetchStats(); return; }
     const ov=(a1,b1,a2,b2)=>Math.max(0,Math.min(b1,b2)-Math.max(a1,a2));
-    const fixes=[]; Object.values(gData.c||{}).forEach(f=>{ if(!f.name||!f.coords||f.coords.length<2) return; let a=nearestIdx(r.coords,f.coords[0]), b=nearestIdx(r.coords,f.coords[f.coords.length-1]);
+    const fixes=[]; [...Object.values(gData.t||{}),...Object.values(gData.c||{})].forEach(f=>{ if(!f.name||!f.coords||f.coords.length<2) return; let a=nearestIdx(r.coords,f.coords[0]), b=nearestIdx(r.coords,f.coords[f.coords.length-1]);
       if(a<0||b<0||a===b) return; if(a>b) [a,b]=[b,a]; fixes.push({name:f.name,a,b}); });
     const gone=new Set();
     tr.forEach(x=>{ if(x.name) return;
@@ -4365,6 +4385,27 @@ async function svEffortsBackfill(maxN){
 }
 // busca todos los segmentos de Strava de la zona que estás mirando
 let sxBusy=false;
+async function svSweep(){
+  if(!svOn()||sxBusy||document.hidden) return; sxBusy=true;
+  let st=store.get('ichnos-sweep',null)||{q:null,t:0};
+  if(!st.q||(!st.q.length&&Date.now()-st.t>30*86400000)){   // zonas de 0,04° donde más has rodado en bici
+    const cnt=new Map(); rides.forEach(r=>{ if(r._dup||!r.coords||isFoot(rideTipo(r))) return; const seen=new Set();
+      r.coords.forEach((p,i)=>{ if(i%15===0) seen.add(Math.floor(p[0]/0.04)+','+Math.floor(p[1]/0.04)); }); seen.forEach(k=>cnt.set(k,(cnt.get(k)||0)+1)); });
+    st.q=[...cnt.entries()].filter(([,n])=>n>=3).sort((a,b)=>b[1]-a[1]).slice(0,40).map(([k])=>{ const [a,b]=k.split(',').map(Number); return [a*0.04,b*0.04,0.04]; });
+  }
+  let calls=0, added=0;
+  while(st.q.length&&calls<40){ const [la,lo,S]=st.q[0]; let d;
+    try{ d=await svGet(`segments/explore?bounds=${la.toFixed(5)},${lo.toFixed(5)},${(la+S).toFixed(5)},${(lo+S).toFixed(5)}&activity_type=riding`); }catch(e){ break; }
+    st.q.shift(); calls++;
+    const segs=(d&&d.segments)||[];
+    segs.forEach(x=>{ const id=String(x.id); if(ssegs[id]||!x.points) return; ssegs[id]={id,name:x.name,coords:thinLine(decPoly(x.points),15),km:(x.distance||0)/1000,gr:x.avg_grade}; added++; });
+    if(segs.length>=10&&S>0.006){ const h=S/2; st.q.push([la,lo,h],[la+h,lo,h],[la,lo+h,h],[la+h,lo+h,h]); }   // zona llena: se mira en trozos más pequeños
+  }
+  st.t=Date.now(); store.set('ichnos-sweep',st);
+  if(added){ store.set('ichnos-ssegs',ssegs); if(T.segmentos){ drawSegs(); refreshSegs(); } }
+  sxBusy=false;
+}
+setTimeout(svSweep,20000); setInterval(svSweep,16*60*1000);
 async function exploreSegs(){
   if(!T.segmentos||!svOn()||sxBusy||map.getZoom()<12) return; sxBusy=true;
   const b=map.getBounds(), S=0.04, type=isFoot()?'running':'riding'; let calls=0, added=0;
