@@ -919,7 +919,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
         <p class="note">¿Falta alguno o ya no existe? Añádelo aquí, o toca el sitio y pulsa "Ya no existe". Sitios: © OpenStreetMap y Overture Maps.</p>
       </section>
       <section class="sec" id="secCrear" hidden>
-        <div class="sec-h"><h3>Tu ruta</h3><span class="status" id="status">Toca el mapa para poner la salida</span></div>
+        <div class="sec-h"><h3>Tu ruta</h3><span class="status" id="status">Toca el mapa para poner la salida</span><button class="qbtn x" id="crearX" aria-label="Cerrar">✕</button></div>
         <div class="opts" id="optGravel" hidden>
           <label>Tipo de camino</label>
           <div class="segc" id="segGravel"><button data-g="pista">Solo pista</button><button data-g="mixta" class="on">Mixta</button><button data-g="carretera">Solo carretera</button></div>
@@ -1638,7 +1638,7 @@ async function setToggle(k,on){
   T[k]=on;
   document.querySelectorAll(`[data-t="${k}"]`).forEach(b=>b.classList.toggle('on',on)); paintCapas();
   if(k==='crear'&&on&&rideOnMap) clearRideOnMap();
-  if(k==='crear'){
+  if(k==='crear'){ if(on) crearClosed=false;
     $('map').classList.toggle('crear',on); document.body.classList.toggle('crear-on',on); drawPins(); applyTrails(); setTimeout(recommendTrails,50);
     if(on){ if(!points.length&&typeof pickMode==='function') await pickMode(); toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
     else if(route && points.length>=2 && askedVer!==routeVer) await finishRoute();
@@ -1648,8 +1648,9 @@ async function setToggle(k,on){
   if(k==='segmentos'){ if(!on && segMode) segCancel(); drawSegs(); refreshSegs(); }
   updateSheet();
 }
+let crearClosed=false;   // la ventana de la ruta cerrada con la ✕
 function updateSheet(){
-  const showCrear=T.crear || !!route || points.length>0 || !$('calcCancel').hidden;
+  const showCrear=!crearClosed && (T.crear || !!route || points.length>0 || !$('calcCancel').hidden);
   $('secCrear').hidden=!showCrear;
   $('done').hidden=!(T.crear && points.length>=2);
   $('optGravel').hidden=!(T.crear && mode==='gravel');
@@ -2127,9 +2128,11 @@ $('clear').onclick = () => {
   const b=$('clear');
   if(!b.classList.contains('confirm')){ b.classList.add('confirm'); b.textContent='¿Seguro?'; clearTimer=setTimeout(()=>{b.classList.remove('confirm');b.textContent='Borrar ruta';},3000); return; }
   clearTimeout(clearTimer); b.classList.remove('confirm'); b.textContent='Borrar ruta';
-  points=[]; drawPins(); calc();
+  points=[]; drawPins(); calc(); almOpen=false;
+  if(T.crear) setToggle('crear',false); crearClosed=true; updateSheet();   // ruta borrada: se cierra la ventana
 };
 $('done').onclick = () => setToggle('crear',false);
+$('crearX').onclick = async () => { crearClosed=true; almOpen=false; if(T.crear) await setToggle('crear',false); updateSheet(); };
 function deleteSeg(k){ map.closePopup(); if(k===0) points.splice(0,1); else points.splice(k+1,1); drawPins(); calc(); }
 function deletePoint(i){ map.closePopup(); points.splice(i,1); drawPins(); calc(); }
 
@@ -2934,10 +2937,10 @@ async function loadFountains(){
   route.coords.forEach((c,i)=>{ if(i%3) return;
     for(const dl of [-0.004,0,0.004]) for(const dn of [-0.005,0,0.005]) keys.add(tX(c[1]+dn)+'/'+tY(c[0]+dl)); });
   let ok=0;
-  await Promise.all([
+  await Promise.race([Promise.all([
     loadTileSet(keys).then(()=>ok++).catch(()=>{}),
     opRoute().then(()=>ok++).catch(()=>{})
-  ]);
+  ]), new Promise(z=>setTimeout(z,15000))]);   // como mucho 15 s: con lo que haya, sigue
   if(ok<2) toast(ok?'No he podido buscar todas las fuentes. Puede que falte alguna.':'No se han podido cargar las fuentes. Comprueba internet.',4500);
 }
 function nearRouteFountains(){
