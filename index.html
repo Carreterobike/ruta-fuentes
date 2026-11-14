@@ -1296,7 +1296,14 @@ async function syncNow(manual){
     // 1) bicis, fuentes, nombres, segmentos, viaje, perfil…
     for(const k of SYNC_KEYS){
       const rt=idx[k]||0, lt=m.mt[k]||0;
-      if(rt&&rt>lt){ const o=await syncReq('/'+k); if(o){ if(o.v==null) syncRaw.del(k); else syncRaw.set(k,o.v); m.mt[k]=rt; gotSettings=true; } }
+      if(rt&&rt>lt){ const o=await syncReq('/'+k); if(o){
+        // segmentos de Strava y mis rutas: se juntan sin recargar la app (si no, se recargaba una y otra vez)
+        if(k==='ichnos-ssegs'&&o.v&&typeof o.v==='object'){ let extra=false; const R=o.v;
+          Object.keys(ssegs).forEach(id=>{ if(!R[id]) extra=true; });
+          Object.entries(R).forEach(([id,sg])=>{ if(!ssegs[id]) ssegs[id]=sg; else if(sg.st&&(!ssegs[id].st||sg.st.t>ssegs[id].st.t)) ssegs[id].st=sg.st; });
+          syncRaw.set(k,ssegs); m.mt[k]=extra?Date.now():rt; continue; }
+        if(k==='ichnos-misrutas'){ syncRaw.set(k,o.v||[]); m.mt[k]=rt; try{ misRutas=o.v||[]; renderMisRutas(); }catch(e){} continue; }
+        if(o.v==null) syncRaw.del(k); else syncRaw.set(k,o.v); m.mt[k]=rt; gotSettings=true; } }
       else if(!rt||lt>rt){ const v=store.get(k,null); if(v==null&&!lt) continue; const t=lt||1; await syncReq('/'+k,{method:'PUT',body:JSON.stringify({t,v})}); m.mt[k]=t; }
     }
     // 2) salidas borradas en el otro aparato
@@ -1333,7 +1340,7 @@ async function syncNow(manual){
   if(typeof paintStrava==='function') paintStrava();
   if(gotSettings){
     let last=0; try{ last=+sessionStorage.getItem('ichnos-syncrl')||0; }catch(e){}
-    if(Date.now()-last>20000){ try{ sessionStorage.setItem('ichnos-syncrl',Date.now()); }catch(e){} toast('Cambios traídos de tu otro aparato. Recargando…',2500); setTimeout(()=>location.reload(),1200); return; }
+    if(Date.now()-last>600000){ try{ sessionStorage.setItem('ichnos-syncrl',Date.now()); }catch(e){} toast('Cambios traídos de tu otro aparato. Recargando…',2500); setTimeout(()=>location.reload(),1200); return; }
   }
   if(gotRides) toast('Salidas traídas de tu otro aparato.',3500);
   else if(manual&&!err) toast('Todo igual en tus aparatos.',3000);
