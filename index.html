@@ -604,7 +604,7 @@ details.help p{margin:6px 0 0}
 
 /* ===== móvil: barra de 5 con el + en medio, mapa más despejado ===== */
 .bnav .m-only{display:none}
-@media (min-width:761px){ .bnav [data-pg=pgMapa]{order:3} .bnav [data-pg=pgSalidas]{order:2} }
+@media (min-width:761px){ .bnav [data-pg=pgGrupeta]{order:1} .bnav [data-pg=pgSalidas]{order:2} .bnav [data-pg=pgMapa]{order:3} }
 @media (max-width:760px){
   :root{--navh:76px}
   .bnav .m-only{display:flex}
@@ -614,7 +614,6 @@ details.help p{margin:6px 0 0}
   .bnav button.on svg{color:inherit}
   .bnav .plus i{width:56px;height:56px;border-radius:28px;background:var(--accent);color:var(--accent-ink,#12160A);display:grid;place-items:center;margin-top:-22px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
   .bnav .plus i svg{width:28px;height:28px}
-  body:not(.crear-on) #modes{display:none}
   .bnav .plus .pl-b,.bnav .plus .pl-t{display:none}
   body.crear-on .bnav .plus .pl-a{display:none} body.crear-on .bnav .plus .pl-b{display:block} body.crear-on .bnav .plus .pl-t{display:block}
   .lbar button.make{display:none}
@@ -623,6 +622,37 @@ details.help p{margin:6px 0 0}
   .leaflet-top.leaflet-right{top:calc(66px + env(safe-area-inset-top,0px))}
   body.crear-on .leaflet-top.leaflet-right{top:calc(136px + env(safe-area-inset-top,0px))}
 }
+
+body:not(.crear-on) #modes{display:none}
+.mpgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.mpgrid button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:12.5px}
+.mpgrid button svg{width:34px;height:34px}
+.mpgrid button.on{background:var(--accent);color:var(--accent-ink,#12160A);border-color:var(--accent)}
+.invsel{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:16px;background:var(--bg);color:var(--ink)}
+.grlab{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}
+.grtabs{display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px}
+.grtabs button{flex:none;height:38px;padding:0 14px;border-radius:19px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600}
+.grtabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grmem{display:flex;flex-wrap:wrap;gap:8px}
+.grmem button{display:flex;align-items:center;gap:6px;border:0;background:var(--soft);color:var(--ink);border-radius:20px;padding:4px 12px 4px 4px;font-weight:600;font-size:14px}
+.grmem button i{width:30px;height:30px;border-radius:15px;background:#2c343b;color:#B6E22E;display:grid;place-items:center;font-style:normal;font-weight:800}
+.gsal{display:flex;flex-direction:column;gap:10px}
+.gcard{border-radius:16px;background:var(--soft);padding:14px;display:flex;flex-direction:column;gap:8px}
+.gcard .when{font-weight:800;font-size:15px;color:var(--accent-ink,#3d5200)}
+html[data-theme="dark"] .gcard .when{color:var(--accent)}
+.gcard .tt{font-size:17px;font-weight:700}
+.gcard small{color:var(--muted)}
+.gcard .acts{display:flex;flex-wrap:wrap;gap:8px}
+.gcard .acts button{height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700}
+.gcard .acts button.go{background:var(--accent);color:var(--accent-ink,#12160A);border-color:var(--accent)}
+.chat{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto}
+.chat li{background:var(--soft);border-radius:14px;padding:8px 12px;max-width:85%;align-self:flex-start;font-size:15px;line-height:1.35}
+.chat li.mine{align-self:flex-end;background:rgba(182,226,46,.25)}
+.chat li b{display:block;font-size:12.5px}.chat li small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+.gpform{display:flex;flex-direction:column;gap:10px}
+.gpform label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:14px;text-align:left}
+.gpform input,.gpform select,.gpform textarea{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;background:var(--bg);color:var(--ink)}
+.gp2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media (prefers-reduced-motion:reduce){.sheet{transition:none}}
 </style>
 </head>
@@ -684,6 +714,8 @@ details.help p{margin:6px 0 0}
     <div class="pb-h"><h3>Invitar amigos</h3></div>
     <p class="svp">Crea un código para cada amigo (por ejemplo <b>Jesus-SB</b>) y pásaselo junto con el enlace de la app. Cada código sirve una sola vez.</p>
     <div class="inv-add"><input id="invCode" placeholder="Ej.: Jesus-SB" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn">Crear</button></div>
+    <label class="grlab" for="invGroup" id="invGroupL" hidden>Al registrarse entra también en la grupeta:</label>
+    <select id="invGroup" class="invsel" hidden></select>
     <ul class="invlist" id="invList"></ul>
     <h4 class="propt" id="propT" hidden>Avisos y propuestas de la grupeta</h4>
     <ul class="invlist" id="propList"></ul>
@@ -711,10 +743,30 @@ details.help p{margin:6px 0 0}
 <!-- ============ PÁGINA 2: SALIDAS ============ -->
 <main class="page off" id="pgGrupeta">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b><button class="gear" data-gear aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></header>
-  <section class="pblock">
-    <div class="pb-h"><h3>Próximas salidas</h3></div>
-    <p class="svp">Muy pronto: proponer una salida a la grupeta, ver quién se apunta y hablar entre vosotros.</p>
+  <section class="pblock" id="grNone">
+    <div class="pb-h"><h3>Tu grupeta</h3></div>
+    <p class="svp">Crea tu grupeta o únete con el código que te pasen. Dentro os veis todos las salidas sin tener que seguiros uno a uno, proponéis salidas y habláis.</p>
+    <label class="grlab" for="grNewName">Crear una grupeta</label>
+    <div class="inv-add"><input id="grNewName" placeholder="Nombre (ej.: Serralada Bikers)" maxlength="40"><button class="btn-main" id="grNewBtn">Crear</button></div>
+    <label class="grlab" for="grJoinCode">Unirme con un código</label>
+    <div class="inv-add"><input id="grJoinCode" placeholder="Código de la grupeta" autocapitalize="characters" autocorrect="off" spellcheck="false"><button class="btn-main" id="grJoinBtn">Unirme</button></div>
   </section>
+  <div id="grOne" hidden>
+    <div class="grtabs" id="grTabs"></div>
+    <section class="pblock">
+      <div class="pb-h"><h3 id="grName"></h3><button class="pb-btn" id="grInvite">Invitar</button></div>
+      <div class="grmem" id="grMem"></div>
+    </section>
+    <section class="pblock">
+      <div class="pb-h"><h3>Próximas salidas</h3><button class="pb-btn" id="grPropose">＋ Proponer</button></div>
+      <div class="gsal" id="grSal"></div>
+    </section>
+    <section class="pblock">
+      <div class="pb-h"><h3>Chat de la grupeta</h3></div>
+      <ul class="chat" id="grChat"></ul>
+      <form class="inv-add" id="grChatF"><input id="grChatT" placeholder="Escribe a la grupeta…" maxlength="1000" autocomplete="off"><button class="btn-main">Enviar</button></form>
+    </section>
+  </div>
   <div id="grFeedSlot"></div>
   <section class="pblock" id="grEmpty" hidden>
     <div class="pb-h"><h3>Tus amigos</h3></div>
@@ -883,6 +935,7 @@ details.help p{margin:6px 0 0}
           <button id="tripBtn" hidden>Hacer por etapas</button>
           <button id="tripBack" hidden>← Volver al viaje</button>
           <button id="almBtn" hidden>🍴 Almuerzo</button>
+          <button id="gpropBtn" hidden>Proponer a la grupeta</button>
         </div>
       </section>
       <section class="sec" id="secAlm" hidden>
@@ -946,7 +999,7 @@ details.help p{margin:6px 0 0}
 
 <nav class="bnav" id="bnav">
   <button data-pg="pgPerfil" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Perfil</span></button>
-  <button data-pg="pgGrupeta" class="m-only"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 14.4c.6-.3 1.3-.4 2-.4 2.8 0 4 2 4 5"/></svg><span>Grupeta</span></button>
+  <button data-pg="pgGrupeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 14.4c.6-.3 1.3-.4 2-.4 2.8 0 4 2 4 5"/></svg><span>Grupeta</span></button>
   <button class="plus m-only" id="navPlus" aria-label="Crear ruta"><i><svg class="pl-a" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><svg class="pl-b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span class="pl-t">Terminar</span></button>
   <button data-pg="pgMapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Mapa</span></button>
   <button data-pg="pgSalidas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>Salidas</span></button>
@@ -1030,6 +1083,19 @@ details.help p{margin:6px 0 0}
 </div>
 <div class="modal" id="usModal" hidden role="dialog" aria-modal="true" aria-labelledby="usTitle">
   <div class="box lbox"><h4 id="usTitle">Buscar amigos</h4><input class="ninput" id="usQ" placeholder="Escribe un nombre" autocomplete="off"><ul class="frlist" id="usList"></ul><button class="btn-ghost" id="usClose">Cerrar</button></div>
+</div>
+<div class="modal" id="gpModal" hidden role="dialog" aria-modal="true" aria-labelledby="gpT">
+  <form class="box lbox gpform" id="gpForm"><h4 id="gpT">Proponer salida a la grupeta</h4>
+    <p class="svp" id="gpRoute"></p>
+    <label>Grupeta <select id="gpGroup"></select></label>
+    <label>Título <input id="gpTitle" maxlength="100" required></label>
+    <div class="gp2"><label>Día <input type="date" id="gpDay" required></label><label>Hora <input type="time" id="gpHour" value="08:00" required></label></div>
+    <label>Notas (sitio de quedada, almuerzo…) <textarea id="gpNotes" rows="2" maxlength="1000"></textarea></label>
+    <button class="btn-main" id="gpGo">Proponer</button><button type="button" class="btn-ghost" id="gpX">Cancelar</button>
+  </form>
+</div>
+<div class="modal" id="mpModal" hidden role="dialog" aria-modal="true" aria-labelledby="mpT">
+  <div class="box lbox"><h4 id="mpT">¿Con qué vas?</h4><div class="mpgrid" id="mpGrid"></div><button class="btn-ghost" id="mpX">Cancelar</button></div>
 </div>
 <div class="modal" id="avModal" hidden role="dialog" aria-modal="true" aria-labelledby="avTitle">
   <div class="box lbox"><h4 id="avTitle">Avisos</h4><ul class="avlist" id="avList"></ul><button class="btn-ghost" id="avClose">Cerrar</button></div>
@@ -1347,6 +1413,7 @@ function showPage(id){
   document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
   if((id==='pgSalidas'||id==='pgAjustes') && typeof svAuto==='function') svAuto();
   if((id==='pgSalidas'||id==='pgGrupeta') && typeof loadFeed==='function') loadFeed(false);
+  if(id==='pgGrupeta' && typeof loadGroupData==='function') loadGroupData();
   if(id==='pgMapa' && window.map){
     setTimeout(()=>{ map.invalidateSize(); try{ glMap.resize(); }catch(e){} },30);
     if(!mapCentered && perfil.home && !route){ map.setView([perfil.home.lat,perfil.home.lon],perfil.homeExact?14:13); mapCentered=true; }
@@ -1540,7 +1607,7 @@ async function setToggle(k,on){
   if(k==='crear'&&on&&rideOnMap) clearRideOnMap();
   if(k==='crear'){
     $('map').classList.toggle('crear',on); document.body.classList.toggle('crear-on',on); drawPins(); applyTrails(); setTimeout(recommendTrails,50);
-    if(on){ toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
+    if(on){ if(!points.length&&typeof pickMode==='function') await pickMode(); toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
     else if(route && points.length>=2 && askedVer!==routeVer) await finishRoute();
   }
   if(k==='trialeras'){ applyTrails(); if(typeof drawTrailFix==='function') drawTrailFix(); }
@@ -1566,6 +1633,7 @@ function updateSheet(){
   $('secSeg').hidden=!T.segmentos;
   $('secCapas').hidden=!capasOpen;
   $('almBtn').hidden=!(route && points.length>=2 && !trip);
+  try{ $('gpropBtn').hidden=!(route && points.length>=2 && !trip && groups.length); }catch(e){}
   $('secAlm').hidden=!(almOpen && route);
   $('secHechas').hidden=!rec;
   const any=[...document.querySelectorAll('.sec')].some(s=>!s.hidden);
@@ -3902,7 +3970,7 @@ $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden
   map.fitBounds(L.latLngBounds(r.coords),{padding:[40,40]}); };
 function clearRideOnMap(){ rideHi.clearLayers(); rideOnMap=null; $('rideOn').hidden=true; }
 $('roX').onclick=clearRideOnMap;
-$('roBack').onclick=()=>{ const r=rideOnMap; clearRideOnMap(); if(r&&r._frMap){ openFriend(r._frMap); return; } if(r){ showPage('pgSalidas'); openRide(r); } };
+$('roBack').onclick=()=>{ const r=rideOnMap; clearRideOnMap(); if(r&&r._gsal){ showPage('pgGrupeta'); return; } if(r&&r._frMap){ openFriend(r._frMap); return; } if(r){ showPage('pgSalidas'); openRide(r); } };
 $('rvDel').onclick=async()=>{ const r=rideOpen; if(!r) return; if(await ask('¿Borrar esta salida?',r.name,'Sí, bórrala','No')){ $('rideView').hidden=true; clearRideOnMap(); delRide(r.id); } };
 const rideHi=L.layerGroup().addTo(map);
 
@@ -4329,8 +4397,8 @@ async function routeFromHome(round){
   drawPins(); calc();
   if(!perfil.homeExact) toast('Sale del centro de tu ciudad. Pon tu calle en el perfil para salir desde la puerta.',5000);
 }
-$('destGo').onclick=()=>routeFromHome(false);
-$('destRound').onclick=()=>routeFromHome(true);
+$('destGo').onclick=async()=>{ if(await pickMode()) routeFromHome(false); };
+$('destRound').onclick=async()=>{ if(await pickMode()) routeFromHome(true); };
 // al cambiar de modalidad con la tarjeta abierta, actualizar el texto
 document.querySelectorAll('#modes button').forEach(b=>b.addEventListener('click',()=>{ if(dest&&!$('destCard').hidden) $('destMode').textContent=`Se hará en ${MODES[mode].label}${mode==='gravel'?' · '+GRAVEL[gravelType].toLowerCase():''}${curLevel()!=null?' · nivel '+LEVELS[curLevel()].col:''}.`; }));
 
@@ -4417,7 +4485,7 @@ async function socPost(uid,r,body){
   }catch(e){ toast(e.status===403?'Ya no puedes ver las salidas de esta persona.':'No hay conexión ahora. Prueba en un momento.',4500); return false; }
 }
 function fwState(id){ const o=fw.out[id], i=fw.in[id];
-  return o==='ok'&&i==='ok'?'Os seguís':o==='ok'?'Le sigues':o==='pend'?'Solicitud enviada':i==='ok'?'Te sigue':i==='pend'?'Quiere seguirte':''; }
+  return o==='ok'&&i==='ok'?'Os seguís':o==='ok'?'Le sigues':o==='pend'?'Solicitud enviada':i==='ok'?'Te sigue':i==='pend'?'Quiere seguirte':(typeof groupMates==='function'&&groupMates().has(id))?'De tu grupeta':''; }
 async function loadFriends(){
   if(!me) return;
   try{ const j=await api('/amigos'); users=j.users||[]; fw={in:j.in||{},out:j.out||{}}; syncRaw.set('ichnos-usuarios',users); syncRaw.set('ichnos-fw',fw); }catch(e){}
@@ -4476,7 +4544,7 @@ async function openFriend(id){
   $('frName').textContent=uName(id); $('frSub').textContent=fwState(id); $('frApodo').textContent=uName(id); $('frCity').textContent='';
   paintAvatar($('frAv'),null); paintFollowBtn(id);
   $('frStats').innerHTML=''; $('frBikes').innerHTML=''; $('frRides').innerHTML=''; $('frMore').hidden=true; $('frMapBtn').hidden=true;
-  if(fw.out[id]!=='ok'){ $('frEmpty').hidden=false; $('frEmpty').textContent=fw.out[id]==='pend'?'Cuando acepte tu solicitud verás su perfil y sus salidas.':'Pulsa "Seguir". Cuando acepte, verás su perfil y sus salidas.'; return; }
+  if(!canView(id)){ $('frEmpty').hidden=false; $('frEmpty').textContent=fw.out[id]==='pend'?'Cuando acepte tu solicitud verás su perfil y sus salidas.':'Pulsa "Seguir". Cuando acepte, verás su perfil y sus salidas.'; return; }
   $('frEmpty').hidden=false; $('frEmpty').textContent='Cargando…';
   let pub=null; frRes=[];
   try{ [pub,frRes]=await Promise.all([api(`/u/${id}/pub`),api(`/u/${id}/resumen`),getSoc(id,true)]); }
@@ -4521,8 +4589,8 @@ async function openFriendRide(uid,x){
 let feedItems=[], feedShown=10, feedT=0;
 async function loadFeed(force){
   if(!me){ $('pFeed').hidden=true; return; }
-  const ids=Object.keys(fw.out).filter(id=>fw.out[id]==='ok');
-  $('pFeed').hidden=!ids.length; $('grEmpty').hidden=!!ids.length; if(!ids.length) return;
+  const ids=[...new Set([...Object.keys(fw.out).filter(id=>fw.out[id]==='ok'),...groupMates()])];
+  $('pFeed').hidden=!ids.length; $('grEmpty').hidden=!!ids.length||!!groups.length; if(!ids.length) return;
   if(!force&&Date.now()-feedT<120000){ renderFeed(); return; } feedT=Date.now();
   const all=[];
   await Promise.all(ids.map(async id=>{ try{ const [res]=await Promise.all([api(`/u/${id}/resumen`),getSoc(id)]); (res||[]).slice(0,30).forEach(x=>all.push({...x,uid:id})); }catch(e){} }));
@@ -4542,6 +4610,7 @@ function paintBell(){ $('bell').hidden=!me; const seen=store.get('ichnos-avisto'
 function avText(a){ const w=`<b>${esc(uName(a.u))}</b>`, rn=a.n?` «${esc(a.n)}»`:'';
   return {seg:`${w} quiere seguirte.`,acep:`${w} ha aceptado que le sigas. Ya ves sus salidas.`,alta:`${w} se ha unido a Ichnos con tu invitación.`,
     like:`A ${w} le gusta tu salida${rn}.`,com:`${w} ha comentado en tu salida${rn}: “${esc(a.x||'')}”`,
+    gjoin:`${w} se ha unido a tu grupeta «${esc(a.x||'')}».`,gsal:`${w} propone una salida en «${esc(a.n||'tu grupeta')}»: ${esc(a.x||'')}.`,gvoy:`${w} se apunta a tu salida «${esc(a.x||'')}».`,
     prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
 $('bell').onclick=()=>{
   const seen=store.get('ichnos-avisto',0);
@@ -4551,6 +4620,7 @@ $('bell').onclick=()=>{
     else if(a.k==='seg'){ showPage('pgPerfil'); $('pAmigos').scrollIntoView({behavior:'smooth'}); }
     else if(a.k==='prop'){ showPage('pgPerfil'); loadAdmin(); $('pInvita').scrollIntoView({behavior:'smooth'}); }
     else if(a.k==='propok'||a.k==='propno'){ }
+    else if(a.k==='gsal'||a.k==='gvoy'||a.k==='gjoin'){ if(a.g){ gCur=a.g; syncRaw.set('ichnos-gcur',gCur); } showPage('pgGrupeta'); renderGroup(); loadGroupData(); }
     else openFriend(a.u); });
   $('avModal').hidden=false; syncRaw.set('ichnos-avisto',Date.now()); paintBell();
 };
@@ -4570,6 +4640,7 @@ async function loadAdmin(){
   $('invList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
     if(b.dataset.x){ if(!await ask(`¿Anular el código ${b.dataset.x}?`,'Ya nadie podrá usarlo.','Sí, anular','No')) return; try{ await api('/admin/anular',{method:'POST',body:{code:b.dataset.x}}); }catch(e){} loadAdmin(); return; }
     copyTxt(b.dataset.t==='clave'?clvMsg(b.dataset.c):invMsg(b.dataset.c),'Mensaje copiado. Pégalo en WhatsApp.'); });
+  try{ const mine=groups; $('invGroup').innerHTML=mine.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')+'<option value="">Ninguna</option>'; $('invGroup').hidden=$('invGroupL').hidden=!mine.length; }catch(e){}
   const props=Object.entries(j.props||{}).sort((a,b)=>b[1].t-a[1].t);
   $('propT').hidden=!props.length;
   $('propList').innerHTML=props.map(([pid,p])=>`<li><span><b>${esc(uName(p.by))}</b> ${esc(propText(p.op))}<small>${fmtD(p.t)}</small></span>${propLL(p.op)?`<button class="ghost" data-v="${pid}">Ver</button>`:''}<button data-ok="${pid}">${p.op.k==='aviso'?'Quitar':'Aceptar'}</button><button class="ghost" data-no="${pid}">No</button></li>`).join('');
@@ -4590,14 +4661,104 @@ function propText(o){ const n=(o.m&&o.m.name)||o.name||''; const LV=['verde','az
 function propLL(o){ if(o.m&&isFinite(o.m.lat)&&o.m.lat) return [o.m.lat,o.m.lon]; if(isFinite(o.lat)&&o.lat) return [o.lat,o.lon]; if(o.coords&&o.coords[0]) return [o.coords[0][0],o.coords[0][1]]; return null; }
 const clvMsg=code=>`Para poner una contraseña nueva en Ichnos:\n1) Abre ${APP_URL}\n2) Pulsa "He olvidado la contraseña"\n3) Pon este código: ${code} y tu contraseña nueva.`;
 $('invBtn').onclick=async()=>{ const code=$('invCode').value.trim(); if(!code) return;
-  try{ await api('/admin/invitar',{method:'POST',body:{code}}); $('invCode').value=''; await loadAdmin(); copyTxt(invMsg(code),`Código ${code} creado. El mensaje con el enlace y el código está copiado: pégalo en WhatsApp.`); }
+  try{ await api('/admin/invitar',{method:'POST',body:{code,g:$('invGroup').value||null}}); $('invCode').value=''; await loadAdmin(); copyTxt(invMsg(code),`Código ${code} creado. El mensaje con el enlace y el código está copiado: pégalo en WhatsApp.`); }
   catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); } };
+// ================= GRUPETAS: grupos con nombre, salidas propuestas y chat =================
+let groups=store.get('ichnos-grupos',[])||[], gCur=store.get('ichnos-gcur',null), gSal={}, gChat=[], gTimer=null;
+const groupMates=()=>{ const st=new Set(); groups.forEach(g=>(g.members||[]).forEach(u=>{ if(!isMe(u)) st.add(u); })); return st; };
+const canView=id=>fw.out[id]==='ok'||groupMates().has(id);
+const curGroup=()=>groups.find(g=>g.id===gCur)||null;
+async function loadGroups(){
+  if(!me) return;
+  try{ const j=await api('/grupos'); groups=j.groups||[]; if(j.users) users=j.users; syncRaw.set('ichnos-grupos',groups); }catch(e){}
+  if(!curGroup()){ gCur=groups[0]?groups[0].id:null; syncRaw.set('ichnos-gcur',gCur); }
+  renderGroup(); if(gCur) loadGroupData();
+  if(typeof route!=='undefined') $('gpropBtn').hidden=!(route&&groups.length);
+}
+function renderGroup(){
+  const g=curGroup(); $('grNone').hidden=!!g||!me; $('grOne').hidden=!g;
+  $('grTabs').innerHTML=groups.length>1||g?groups.map(x=>`<button data-g="${x.id}" class="${x.id===gCur?'on':''}">${esc(x.name)}</button>`).join('')+'<button data-g="" aria-label="Crear o unirme a otra grupeta">＋</button>':'';
+  $('grTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!b.dataset.g){ $('grNone').hidden=false; $('grNone').scrollIntoView({behavior:'smooth'}); return; } gCur=b.dataset.g; syncRaw.set('ichnos-gcur',gCur); renderGroup(); loadGroupData(); });
+  if(!g) return;
+  $('grName').textContent=g.name;
+  $('grMem').innerHTML=g.members.map(u=>`<button data-u="${u}"><i>${initial(uName(u))}</i>${esc(uName(u))}${u===g.admin?' ★':''}</button>`).join('');
+  $('grMem').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!isMe(b.dataset.u)) openFriend(b.dataset.u); });
+}
+async function loadGroupData(){
+  const gid=gCur; if(!gid) return;
+  try{ const [sa,ch]=await Promise.all([api(`/grupos/${gid}/salidas`),api(`/grupos/${gid}/chat`)]); if(gid!==gCur) return; gSal=sa||{}; gChat=ch||[]; }catch(e){ return; }
+  renderSal(); renderChat();
+}
+const fmtWhen=t=>{ const d=new Date(t); const s=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'short'}); return s[0].toUpperCase()+s.slice(1)+' · '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}); };
+function renderSal(){
+  const g=curGroup(), list=Object.values(gSal).filter(x=>x.when>Date.now()-6*3600000).sort((a,b)=>a.when-b.when);
+  $('grSal').innerHTML=list.length?'':'<p class="svp">No hay salidas propuestas. Crea una ruta en el mapa y pulsa <b>Proponer a la grupeta</b>.</p>';
+  list.forEach(x=>{
+    const go=Object.keys(x.going||{}), mine=!!(me&&x.going&&x.going[me.id]), r=x.route||{};
+    const el=document.createElement('div'); el.className='gcard';
+    el.innerHTML=`<div class="when">${fmtWhen(x.when)}</div><div class="tt">${esc(x.title)}</div>
+      <small>${[r.km?fmtKm(r.km)+' km':'',r.up?'+'+n0(r.up)+' m':'',r.mode&&MODES[r.mode]?MODES[r.mode].label:'','la propone '+uName(x.by)].filter(Boolean).map(esc).join(' · ')}</small>
+      ${x.notes?`<div>${esc(x.notes)}</div>`:''}
+      <small><b>${go.length} ${go.length===1?'va':'van'}:</b> ${go.map(u=>esc(uName(u))).join(', ')||'nadie todavía'}</small>
+      <div class="acts"><button class="${mine?'':'go'}" data-a="go">${mine?'No voy':'Me apunto'}</button>${r.coords&&r.coords.length>1?'<button data-a="map">Ver ruta</button>':''}${r.link?'<button data-a="open">Llevar esta ruta</button>':''}${me&&(x.by===me.id||(g&&g.admin===me.id))?'<button data-a="del">Quitar</button>':''}</div>`;
+    el.querySelectorAll('button').forEach(b=>b.onclick=async()=>{
+      const a=b.dataset.a;
+      if(a==='map'){ showPage('pgMapa'); rideHi.clearLayers(); const ll=r.coords.map(p=>[p[0],p[1]]);
+        L.polyline(ll,{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(ll,{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
+        rideOnMap={_gsal:true}; $('roName').textContent=x.title; $('rideOn').hidden=false; try{ map.fitBounds(L.latLngBounds(ll),{padding:[40,40]}); }catch(e){} return; }
+      if(a==='open'){ location.href=r.link; setTimeout(()=>location.reload(),50); return; }
+      if(a==='del'&&!await ask('¿Quitar esta salida?',x.title,'Sí, quitar','No')) return;
+      try{ gSal=await api(`/grupos/${gCur}/salidas/${x.id}`,{method:'POST',body:a==='del'?{del:true}:{go:!mine}}); renderSal(); }catch(e){ toast('No hay conexión ahora.',4000); }
+    });
+    $('grSal').appendChild(el);
+  });
+}
+function renderChat(){
+  const ul=$('grChat'), atEnd=ul.scrollTop+ul.clientHeight>=ul.scrollHeight-20;
+  ul.innerHTML=gChat.length?gChat.map(c=>`<li class="${isMe(c.u)?'mine':''}"><b>${esc(uName(c.u))}</b>${esc(c.x)}<small>${fmtDT(c.t)}</small></li>`).join(''):'<p class="svp">Todavía no hay mensajes.</p>';
+  if(atEnd||!ul.dataset.seen){ ul.scrollTop=ul.scrollHeight; ul.dataset.seen=1; }
+}
+$('grChatF').onsubmit=async e=>{ e.preventDefault(); const x=$('grChatT').value.trim(); if(!x||!gCur) return; $('grChatT').value='';
+  try{ gChat=await api(`/grupos/${gCur}/chat`,{method:'POST',body:{x}}); $('grChat').scrollTop=1e9; renderChat(); $('grChat').scrollTop=1e9; }catch(err){ $('grChatT').value=x; toast('No se ha podido enviar. Prueba otra vez.',4000); } };
+$('grNewBtn').onclick=async()=>{ const name=$('grNewName').value.trim(); if(!name) return;
+  try{ const g=await api('/grupos',{method:'POST',body:{name}}); $('grNewName').value=''; gCur=g.id; syncRaw.set('ichnos-gcur',gCur); await loadGroups(); toast(`Grupeta "${g.name}" creada. Su código es ${g.code}.`,6000); }catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); } };
+$('grJoinBtn').onclick=async()=>{ const code=$('grJoinCode').value.trim(); if(!code) return;
+  try{ const g=await api('/grupos/unirse',{method:'POST',body:{code}}); $('grJoinCode').value=''; gCur=g.id; syncRaw.set('ichnos-gcur',gCur); await loadGroups(); loadFeed(true); toast(`Ya estás en "${g.name}"`,4000); }catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); } };
+$('grInvite').onclick=()=>{ const g=curGroup(); if(!g) return;
+  copyTxt(`¡Únete a la grupeta "${g.name}" en Ichnos! 🚴\nSi ya tienes Ichnos: pestaña Grupeta → "Unirme con un código" → ${g.code}\nSi todavía no tienes Ichnos, pídele a David un código de invitación.\n${APP_URL}`,`Mensaje con el código ${g.code} copiado. Pégalo en WhatsApp.`); };
+// proponer una salida con la ruta que tienes hecha
+$('grPropose').onclick=()=>{ if(route&&points.length>=2) openPropose(); else { toast('Primero crea la ruta en el mapa. Luego pulsa "Proponer a la grupeta".',5000); showPage('pgMapa'); if(!T.crear) setTimeout(()=>setToggle('crear',true),60); } };
+$('gpropBtn').onclick=()=>openPropose();
+function openPropose(){
+  if(!groups.length){ toast('Primero crea o únete a una grupeta (pestaña Grupeta).',5000); return; }
+  $('gpGroup').innerHTML=groups.map(g=>`<option value="${g.id}" ${g.id===gCur?'selected':''}>${esc(g.name)}</option>`).join(''); $('gpGroup').parentNode.hidden=groups.length<2;
+  $('gpRoute').textContent=`Ruta de ${fmtKm(route.length/1000)} km${route.up!=null?' · +'+Math.round(route.up)+' m':''} en ${MODES[mode].label}`;
+  const d=new Date(); d.setDate(d.getDate()+((7-d.getDay())%7||7)); $('gpDay').value=d.toISOString().slice(0,10);
+  $('gpTitle').value=''; $('gpNotes').value=''; $('gpModal').hidden=false; setTimeout(()=>$('gpTitle').focus(),50);
+}
+$('gpX').onclick=()=>$('gpModal').hidden=true;
+$('gpForm').onsubmit=async e=>{ e.preventDefault();
+  const when=new Date($('gpDay').value+'T'+($('gpHour').value||'08:00')).getTime(); if(!when){ toast('Pon el día y la hora.'); return; }
+  const c=[]; let last=null; route.coords.forEach(p=>{ if(!last||dist(last,p)>=40){ c.push([+p[0].toFixed(5),+p[1].toFixed(5)]); last=p; } });
+  const step=Math.ceil(c.length/400)||1, cc=c.filter((_,i)=>i%step===0);
+  const gid=$('gpGroup').value||gCur;
+  try{ gSal=await api(`/grupos/${gid}/salidas`,{method:'POST',body:{when,title:$('gpTitle').value.trim(),notes:$('gpNotes').value.trim(),route:{coords:cc,km:route.length/1000,up:route.up,mode,link:shareLink(routeShareObj())}}});
+    $('gpModal').hidden=true; gCur=gid; syncRaw.set('ichnos-gcur',gCur); toast('Salida propuesta. Les llega un aviso a todos.',4500); showPage('pgGrupeta'); renderGroup(); renderSal(); }
+  catch(err){ toast(err.status?err.message:'No hay conexión ahora.',5000); } };
+// en la pestaña Grupeta, el chat y las salidas se refrescan solos
+function groupTick(){ clearInterval(gTimer); gTimer=setInterval(()=>{ if(document.visibilityState==='visible'&&!$('pgGrupeta').classList.contains('off')) loadGroupData(); },20000); }
+// ¿con qué vas? al empezar a crear una ruta
+function pickMode(){ return new Promise(res=>{ const g=$('mpGrid'); g.innerHTML='';
+  document.querySelectorAll('#modes button').forEach(b=>{ const c=document.createElement('button'); c.type='button'; c.innerHTML=b.innerHTML; c.className=b.dataset.mode===mode?'on':'';
+    c.onclick=()=>{ $('mpModal').hidden=true; b.click(); res(true); }; g.appendChild(c); });
+  $('mpModal').hidden=false; $('mpX').onclick=()=>{ $('mpModal').hidden=true; res(false); }; }); }
+
 function socialStart(){
-  if(window.matchMedia&&matchMedia('(max-width:760px)').matches) $('grFeedSlot').appendChild($('pFeed'));   // en el móvil, lo de tus amigos va en Grupeta
+  $('grFeedSlot').appendChild($('pFeed'));   // lo de tus amigos va en la pestaña Grupeta
   $('grFind').onclick=()=>$('frFind').click();
   if(!me) return;
   renderFriends(); paintBell(); paintAdmin();
-  loadFriends().then(()=>loadFeed(true)); loadAvisos(); loadAdmin();
+  loadFriends().then(()=>loadGroups()).then(()=>loadFeed(true)); loadAvisos(); loadAdmin(); groupTick();
   getSoc(me.id,true).then(()=>renderRideList());
 }
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&me){ loadAvisos(); loadFriends(); } });
