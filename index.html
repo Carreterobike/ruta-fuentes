@@ -4054,7 +4054,8 @@ function openRide(r){
   const svDone=(r.sef&&r.sef.length)||(twin&&twin.sef.length);
   if(!fr){ const have=new Set((r.sef||[]).map(e=>e.sid)); Object.values(ssegs).forEach(sg=>{ if(have.has(sg.id)||!sg.coords||sg.coords.length<2) return; if(svDone&&svT(sg.id)==null) return; const c0=sg.coords[0]; if(!r._bb||c0[0]<r._bb[0]-0.01||c0[0]>r._bb[2]+0.01||c0[1]<r._bb[1]-0.01||c0[1]>r._bb[3]+0.01) return; mine('ss:'+sg.id,sg.name,sg.coords,segDz(sg.coords),'ss',sg.id); }); }
   // la misma trialera partida en trozos se enseña una sola vez
-  const segM=[]; segs.forEach(x=>{ const o=segM.find(y=>nrm(y.name)===nrm(x.name)); if(o){ o.t+=x.t; o.all=null; if(x.a!=null){ o.a=o.a==null?x.a:Math.min(o.a,x.a); o.b=o.b==null?x.b:Math.max(o.b,x.b); } } else segM.push({...x}); });
+  const segM=[]; segs.forEach(x=>{ if(x.sid&&segM.some(y=>y.sid===x.sid)) return;   // el mismo segmento de Strava solo una vez (con su tiempo exacto)
+    const o=segM.find(y=>nrm(y.name)===nrm(x.name)); if(o){ if(o.sid||x.sid) { segM.push({...x}); return; } o.t+=x.t; o.all=null; if(x.a!=null){ o.a=o.a==null?x.a:Math.min(o.a,x.a); o.b=o.b==null?x.b:Math.max(o.b,x.b); } } else segM.push({...x}); });
   // tu mejor tiempo: en dorado; si hoy has hecho la mejor marca, la de antes sale en plateado
   const best=x=>{ const S=x.sid&&ssegs[x.sid]&&ssegs[x.sid].st;
     if(S&&x.t!=null){ const loc=(x.all||[]).slice().sort((p,q)=>p-q); const i=loc.indexOf(x.t); if(i>=0) loc.splice(i,1);
