@@ -972,7 +972,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
         <ul class="routes" id="almList"></ul>
       </section>
       <section class="sec" id="secViaje" hidden>
-        <div class="sec-h"><h3>Viaje por etapas</h3></div>
+        <div class="sec-h"><h3>Viaje por etapas</h3><button class="qbtn x" id="viajeX" aria-label="Cerrar">✕</button></div>
         <div class="tripsum" id="tripSum"></div>
         <div class="opts"><label>Km por día</label><div class="segc" id="tripKm"></div></div>
         <p class="prog" id="tripProg" hidden></p>
@@ -1662,7 +1662,7 @@ function updateSheet(){
   $('secFuentes').hidden=!(route && fuentesAsked);
   $('lgBox').hidden=!(T.trialeras && trailsMode());
   $('addF').hidden=!T.fuentes;
-  $('secViaje').hidden=!trip;
+  $('secViaje').hidden=!trip||crearClosed;
   $('tripBack').hidden=!(trip&&trip.open!=null);
   $('tripBtn').hidden=!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
   $('secSeg').hidden=!T.segmentos;
@@ -2133,6 +2133,7 @@ $('clear').onclick = () => {
   if(T.crear) setToggle('crear',false); crearClosed=true; updateSheet();   // ruta borrada: se cierra la ventana
 };
 $('done').onclick = () => setToggle('crear',false);
+$('viajeX').onclick = () => { crearClosed=true; updateSheet(); };
 $('crearX').onclick = async () => { crearClosed=true; almOpen=false; askedVer=routeVer; if(T.crear) await setToggle('crear',false); almOpen=false; lunchLayer.clearLayers(); updateSheet(); };
 function deleteSeg(k){ map.closePopup(); if(k===0) points.splice(0,1); else points.splice(k+1,1); drawPins(); calc(); }
 function deletePoint(i){ map.closePopup(); points.splice(i,1); drawPins(); calc(); }
@@ -3136,7 +3137,7 @@ const tripKm=()=>trip?trip.stages.reduce((s,x)=>s+(x.len||0),0)/1000:0;
 const tripUp=()=>trip?trip.stages.reduce((s,x)=>s+(x.up||0),0):0;
 function saveTrip(){ if(trip&&trip.state==='ready'){ if(!store.set('ichnos-viaje',{kmDay:trip.kmDay,from:trip.from,to:trip.to,via:trip.via||[],mode:trip.mode,stages:trip.stages})) toast('El viaje es muy grande para guardarlo en este aparato; se verá hasta que cierres la app.',5000); } }
 
-async function startTrip(A,B,names={},via=[]){
+async function startTrip(A,B,names={},via=[]){ crearClosed=false;
   cancelAll(); ++reqId;
   if(T.crear) await setToggle('crear',false);
   points=[]; route=null; drawPins(); routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers(); fLayer.clearLayers();
@@ -3194,7 +3195,7 @@ async function planTrip(){
   trip.state='ready'; trip.prog=''; saveTrip(); drawTrip(); renderTrip(); fitTrip();
 }
 // rehacer un viaje con las etapas ya decididas (por ejemplo al abrirlo con el código QR en el móvil)
-async function tripFromEnds(ends,kmDay){
+async function tripFromEnds(ends,kmDay){ crearClosed=false;
   if(T.crear) await setToggle('crear',false);
   points=[]; route=null; drawPins(); routeLayer.clearLayers();
   trip={kmDay:kmDay||defaultKmDay(),mode,from:ends[0],to:ends[ends.length-1],stages:[],state:'calc',open:null};
