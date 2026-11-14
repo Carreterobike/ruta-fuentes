@@ -2141,7 +2141,13 @@ $('clear').onclick = () => {
 };
 $('done').onclick = () => setToggle('crear',false);
 $('viajeX').onclick = () => { crearClosed=true; updateSheet(); };
-$('crearX').onclick = async () => { crearClosed=true; almOpen=false; askedVer=routeVer; if(T.crear) await setToggle('crear',false); almOpen=false; lunchLayer.clearLayers(); updateSheet(); };
+$('crearX').onclick = async () => {
+  // cerrar = quitar la ruta del mapa (si no está guardada, te avisa antes)
+  if(route||points.length){ const cur=JSON.stringify(points.map(q=>q.slice(0,3)));
+    const saved=misRutas.some(x=>JSON.stringify(x.p)===cur);
+    if(!saved&&route&&!await ask('¿Quitar la ruta del mapa?','No la has guardado. Si la quieres para otro día, pulsa antes "🔖 Guardar ruta".','Quitar ruta','Volver')) return; }
+  crearClosed=true; almOpen=false; askedVer=routeVer; if(T.crear) await setToggle('crear',false);
+  points=[]; drawPins(); await calc(); almOpen=false; planLayer.clearLayers(); lunchLayer.clearLayers(); crearClosed=true; updateSheet(); };
 function deleteSeg(k){ map.closePopup(); if(k===0) points.splice(0,1); else points.splice(k+1,1); drawPins(); calc(); }
 function deletePoint(i){ map.closePopup(); points.splice(i,1); drawPins(); calc(); }
 
