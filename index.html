@@ -423,7 +423,8 @@ details.help p{margin:6px 0 0}
 .recs em,.routes li em{font-style:normal;font-weight:800;font-family:var(--display);font-size:18px}
 .routes li em.pr{color:#5f8a00}
 .routes li .rt{text-align:right}.routes li .rt em{display:block}.routes li .rt small{display:block;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
-.gold{color:var(--gold)!important}.silver{color:var(--silver)}.ink{color:var(--ink)}
+.gold{color:var(--gold)!important}
+details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight:700;font-size:14px;padding:10px 2px;color:var(--muted)}.silver{color:var(--silver)}.ink{color:var(--ink)}
 .rcols{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
 .rcol h4{margin:0 0 4px;font-family:var(--display);font-size:17px;letter-spacing:.4px;text-transform:uppercase}
 .rcol h4 small,.rtabs small{color:var(--muted);font-weight:700}
@@ -3365,11 +3366,14 @@ function thinFull(c,ts,es,ex={}){
 function drawHeat(){
   hLayer.clearLayers();
   // cada ruta se pinta semitransparente: por donde más veces pasas, más intenso sale
-  rides.forEach(r=>L.polyline(privacyTrim(r.coords),{renderer:heatRenderer,color:'#ff6a00',weight:3.4,opacity:.55,interactive:false,lineJoin:'round'}).addTo(hLayer));
+  rides.forEach(r=>!r._dup&&L.polyline(privacyTrim(r.coords),{renderer:heatRenderer,color:'#ff6a00',weight:3.4,opacity:.55,interactive:false,lineJoin:'round'}).addTo(hLayer));
 }
+// la misma salida que llega por Strava y por Intervals.icu: se queda la de Intervals (con los tiempos exactos de Strava)
+function markDups(){ const o=rides.filter(r=>!/^strava-/.test(r.id||'')); rides.forEach(r=>{ r._dup=/^strava-/.test(r.id||'')&&o.some(x=>Math.abs((x.date||0)-(r.date||0))<180000); }); }
 function renderRides(){
-  $('hN').textContent=rides.length;
-  $('hKm').textContent=Math.round(rides.reduce((s,r)=>s+(r.km||0),0)).toLocaleString('es-ES');
+  markDups(); const RR=rides.filter(r=>!r._dup);
+  $('hN').textContent=RR.length;
+  $('hKm').textContent=Math.round(RR.reduce((s,r)=>s+(r.km||0),0)).toLocaleString('es-ES');
   renderBikes(); renderNums();
 }
 
@@ -3812,7 +3816,7 @@ function renderGear(boxId,list,shoe){
   const act=list.filter(b=>!b.retirada), old=list.filter(b=>b.retirada);
   [...act,...(old.length?['__old']:[]),...old].forEach(b=>{
     if(b==='__old'){ const h=document.createElement('h5'); h.className='bk-old-h'; h.textContent=shoe?'Anteriores zapatillas':'Anteriores bicis'; box.appendChild(h); return; }
-    const km=rides.filter(r=>r.bike===b.id).reduce((s,r)=>s+(r.km||0),0);
+    const km=rides.filter(r=>r.bike===b.id&&!r._dup).reduce((s,r)=>s+(r.km||0),0);
     const el=document.createElement('button'); el.className='bike'+(b.retirada?' old':'');
     el.innerHTML=`<div class="bk-ph" ${b.foto?`style="background-image:url('${b.foto}')"`:''}>${b.foto?'':(shoe?SHOE_SVG:BIKE_SVG)}</div>
       <div class="bk-t"><b>${esc(bikeName(b))}</b><small>${b.mote?esc(`${b.marca} ${b.modelo}`):''}</small>
@@ -3881,7 +3885,7 @@ const fmtHc=s=>{ if(s==null) return '–'; s=Math.round(s); const h=Math.floor(s
 const n0=x=>x==null?'–':Math.round(x).toLocaleString('es-ES');
 let stPer='w', stFilt='all';
 function rideTipo(r){ const b=bikeById(r.bike); return b?b.tipo:(r.tipo||null); }
-function filtRides(){ return rides.filter(r=>stFilt==='all'||(stFilt==='grp:pie'&&isFoot(rideTipo(r)))||(stFilt==='grp:bici'&&!isFoot(rideTipo(r)))||(stFilt.startsWith('bike:')&&(stFilt==='bike:'?!bikeById(r.bike):r.bike===stFilt.slice(5)))||(stFilt.startsWith('tipo:')&&rideTipo(r)===stFilt.slice(5))); }
+function filtRides(){ return rides.filter(r=>!r._dup).filter(r=>stFilt==='all'||(stFilt==='grp:pie'&&isFoot(rideTipo(r)))||(stFilt==='grp:bici'&&!isFoot(rideTipo(r)))||(stFilt.startsWith('bike:')&&(stFilt==='bike:'?!bikeById(r.bike):r.bike===stFilt.slice(5)))||(stFilt.startsWith('tipo:')&&rideTipo(r)===stFilt.slice(5))); }
 function weekStart(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
 function renderNums(){
   // filtro
@@ -4036,31 +4040,49 @@ function openRide(r){
   } else $('rvZones').innerHTML='';
   // trialeras y segmentos de esta salida: tu tiempo de hoy, tu mejor tiempo y dónde están
   const twin=fr?null:rides.find(z=>z!==r&&z.sef&&z.sef.length&&Math.abs(z.date-r.date)<180000);
-  const svT=sid=>{ const e=(r.sef||[]).find(x=>x.sid===sid)||(twin&&twin.sef.find(x=>x.sid===sid)); return e?e.t:null; };
+  const svE=sid=>(r.sef||[]).find(x=>x.sid===sid)||(twin&&twin.sef.find(x=>x.sid===sid))||null, svT=sid=>{ const e=svE(sid); return e?e.t:null; };
   const segs=[]; const dzLb=dz=>dz==null||Math.abs(dz)<5?'':dz<0?'↓ Bajada':'↑ Subida';
   const mine=(key,name,line,dz,src='mine',sid=null)=>{ const res=effortsFor(key,line), lb=dirLabels(res,dz), L0=src==='ss'?lenOf(line):0;
     const ok=e=>src!=='ss'||e.dd<=L0*1.2+40;   // un segmento de Strava medido con tu GPS tiene que medir lo mismo
-    ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) { const st=sid?svT(sid):null; segs.push({src,sid,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:st!=null?st:e.t,all:st!=null?stravaBest(sid).map(x=>x.t):res[k].filter(ok).map(x=>x.t),a:e.i,b:e.j}); } })); };
+    ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) { const st=sid?svT(sid):null; segs.push({src,sid,svpr:sid&&svE(sid)?svE(sid).pr:null,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:st!=null?st:e.t,all:st!=null?stravaBest(sid).map(x=>x.t):res[k].filter(ok).map(x=>x.t),a:e.i,b:e.j}); } })); };
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
   if(!fr) (r.sef||[]).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const cc=sg.coords||[]; let a=cc.length>1?nearestIdx(r.coords,cc[0]):-1, b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1;
-    segs.push({src:'sv',sid:e.sid,name:sg.name,dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:stravaBest(e.sid).map(x=>x.t),a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });
+    segs.push({src:'sv',sid:e.sid,svpr:e.pr,name:sg.name,dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:stravaBest(e.sid).map(x=>x.t),a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });
   // los segmentos de Strava que conoces aunque esta salida no venga de Strava (se miden con tu GPS)
   if(!fr){ const have=new Set((r.sef||[]).map(e=>e.sid)); Object.values(ssegs).forEach(sg=>{ if(have.has(sg.id)||!sg.coords||sg.coords.length<2) return; const c0=sg.coords[0]; if(!r._bb||c0[0]<r._bb[0]-0.01||c0[0]>r._bb[2]+0.01||c0[1]<r._bb[1]-0.01||c0[1]>r._bb[3]+0.01) return; mine('ss:'+sg.id,sg.name,sg.coords,segDz(sg.coords),'ss',sg.id); }); }
   // la misma trialera partida en trozos se enseña una sola vez
   const segM=[]; segs.forEach(x=>{ const o=segM.find(y=>nrm(y.name)===nrm(x.name)); if(o){ o.t+=x.t; o.all=null; if(x.a!=null){ o.a=o.a==null?x.a:Math.min(o.a,x.a); o.b=o.b==null?x.b:Math.max(o.b,x.b); } } else segM.push({...x}); });
   // tu mejor tiempo: en dorado; si hoy has hecho la mejor marca, la de antes sale en plateado
-  const best=x=>{ if(x.t==null||!x.all||!x.all.length) return {pr:false,sub:''}; const rest=[...x.all].sort((p,q)=>p-q), i=rest.indexOf(x.t); if(i>=0) rest.splice(i,1);
+  const best=x=>{ const S=x.sid&&ssegs[x.sid]&&ssegs[x.sid].st;
+    if(S&&x.t!=null){ const loc=(x.all||[]).slice().sort((p,q)=>p-q); const i=loc.indexOf(x.t); if(i>=0) loc.splice(i,1);
+      if(x.svpr===1||x.t<=S.pr){ const prev=S.n>1&&loc.length>=S.n-1&&loc[0]>=x.t?loc[0]:null;   // "antes" solo si conocemos todas tus veces
+        return {pr:true,sub:`<span class="gold">¡mejor marca!</span>${prev!=null?` <span class="silver">antes ${fmtT(prev)}</span>`:S.n<=1?' <span class="silver">primera vez</span>':''}`}; }
+      return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold">🏆 ${fmtT(S.pr)}</span>`}; }
+    if(x.sid&&x.t!=null&&x.svpr===1) return {pr:true,sub:'<span class="gold">¡mejor marca!</span>'};
+    if(x.t==null||!x.all||!x.all.length) return {pr:false,sub:''}; const rest=[...x.all].sort((p,q)=>p-q), i=rest.indexOf(x.t); if(i>=0) rest.splice(i,1);
     if(!rest.length) return {pr:false,sub:'primera vez'};
     if(x.t<=rest[0]) return {pr:true,sub:`<span class="gold">¡mejor marca!</span> <span class="silver">antes ${fmtT(rest[0])}</span>`};
     return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold">🏆 ${fmtT(rest[0])}</span>`}; };
-  let rvList=[];
-  const segHtml=list=>{ rvList=list.map(x=>({...x,also:[]})).sort((x,y)=>(x.a??1e9)-(y.a??1e9)); return rvList.length?`<div class="ch-t">Trialeras y segmentos</div><ul class="routes">${rvList.map((x,i)=>{ const bb=best(x);
-    return `<li data-i="${i}"><span><b>${esc(x.name)}</b><small>${x.dir||''}${x.also.length?(x.dir?'<br>':'')+'también: '+x.also.map(y=>esc(y.name)+(y.t!=null?' '+fmtT(y.t):'')).join(' · '):''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'🏆 ':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; }).join('')}</ul>`:''; };
+  let rvList=[], svOpen=false;
+  const row=(x,i)=>{ const bb=best(x);
+    return `<li data-i="${i}"><span><b>${esc(x.name)}</b><small>${x.dir||''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'🏆 ':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; };
+  const segHtml=list=>{ rvList=list.slice().sort((x,y)=>(x.a??1e9)-(y.a??1e9));
+    const tr=[], sv=[]; rvList.forEach((x,i)=>((x.src==='sv'||x.src==='ss')?sv:tr).push(row(x,i)));
+    const npr=rvList.filter(x=>(x.src==='sv'||x.src==='ss')&&best(x).pr).length;
+    return (tr.length?`<div class="ch-t">Trialeras</div><ul class="routes">${tr.join('')}</ul>`:'')+
+      (sv.length?`<details class="svsegs"${svOpen?' open':''}><summary>Segmentos de Strava (${sv.length})${npr?` · <span class="gold">🏆 ${npr} ${npr===1?'mejor marca':'mejores marcas'}</span>`:''}</summary><ul class="routes">${sv.join('')}</ul></details>`:''); };
+  const reRender=()=>{ const d=$('rvSegs').querySelector('details.svsegs'); if(d) svOpen=d.open; $('rvSegs').innerHTML=segHtml(rvList); };
+  // tu mejor tiempo de verdad en cada segmento, preguntado a Strava (se guarda; se vuelve a preguntar tras una salida nueva)
+  const fetchStats=async()=>{ if(fr||!svOn()) return; let n=0;
+    const need=rvList.filter(x=>x.sid&&ssegs[x.sid]&&(!ssegs[x.sid].st||ssegs[x.sid].st.t<(r.sefT||r.date||0))).sort((x,y)=>(x.src==='sv'||x.src==='ss'?1:0)-(y.src==='sv'||y.src==='ss'?1:0));
+    for(const x of need){ if(n>=25||rideOpen!==r) break; n++;
+      try{ const d=await svGet('segments/'+x.sid), a=d&&d.athlete_segment_stats; if(a&&a.pr_elapsed_time) ssegs[x.sid].st={pr:a.pr_elapsed_time,n:a.effort_count||0,d:a.pr_date||null,t:Date.now()}; }catch(e){ break; } }
+    if(n){ store.set('ichnos-ssegs',ssegs); if(rideOpen===r) reRender(); } };
   $('rvSegs').innerHTML=segHtml(segM);
   $('rvSegs').onclick=ev=>{ const li=ev.target.closest('li[data-i]'); if(li) segToMap(rvList[+li.dataset.i]); };
   // y todas las trialeras del mapa por las que has pasado
-  rideTrails(r).then(tr=>{ if(rideOpen!==r||!tr.length) return;
+  rideTrails(r).then(tr=>{ if(rideOpen!==r) return; if(!tr.length){ fetchStats(); return; }
     const ov=(a1,b1,a2,b2)=>Math.max(0,Math.min(b1,b2)-Math.max(a1,a2));
     const fixes=[]; Object.values(gData.c||{}).forEach(f=>{ if(!f.name||!f.coords||f.coords.length<2) return; let a=nearestIdx(r.coords,f.coords[0]), b=nearestIdx(r.coords,f.coords[f.coords.length-1]);
       if(a<0||b<0||a===b) return; if(a>b) [a,b]=[b,a]; fixes.push({name:f.name,a,b}); });
@@ -4074,12 +4096,12 @@ function openRide(r){
     tr.forEach(x=>{ if(!x.name) return; const o=segM.find(y=>y.src==='mine'&&!gone.has(y)&&y.a!=null&&ov(x.a,x.b,y.a,y.b)>=0.6*Math.max(1,y.b-y.a)); if(o){ gone.add(o); x.name=o.name; x.a=Math.min(x.a,o.a); x.b=Math.max(x.b,o.b); x.t=movT(r,x.a,x.b); } });
     tr.forEach(x=>{ const L=x.b-x.a; let best=null, bd=1e9;
       segM.forEach(y=>{ if((y.src!=='sv'&&y.src!=='ss')||y.a==null||gone.has(y)) return; const v=ov(x.a,x.b,y.a,y.b); if(v<0.6*L||v<0.6*(y.b-y.a)) return; const d=Math.abs((y.b-y.a)-L); if(d<bd){ bd=d; best=y; } });
-      if(best){ gone.add(best); x.a=best.a; x.b=best.b; x.t=best.t; x.all=best.all; } });
+      if(best){ gone.add(best); x.a=best.a; x.b=best.b; x.t=best.t; x.all=best.all; x.sid=best.sid; x.svpr=best.svpr; } });
     for(let i=segM.length-1;i>=0;i--) if(gone.has(segM[i])) segM.splice(i,1);
     const extra=tr.filter(x=>!segM.some(y=>x.name&&nrm(y.name)===nrm(x.name))).map(x=>{ const line=r.coords.slice(x.a,x.b+1).map(p=>[p[0],p[1]]);
       let all=x.all||null; if(!all) try{ all=effortsFor('rt:'+r.id+':'+x.a,line).f.map(e=>e.t); }catch(e){} if(!all||!all.length) all=x.t!=null?[x.t]:null;
       return {a:x.a,b:x.b,name:x.name||'Trialera sin nombre',dir:[x.lv!=null?LEVELS[x.lv].name:'',x.up!=null?(x.up<-5?'bajada':x.up>5?'subida':''):''].filter(Boolean).join(' · ')||'trialera',t:x.t,all}; });
-    $('rvSegs').innerHTML=segHtml([...segM,...extra]); }).catch(()=>{});
+    $('rvSegs').innerHTML=segHtml([...segM,...extra]); fetchStats(); }).catch(()=>fetchStats());
   renderRvPhotos(r); renderRvNotes(r); loadStravaPhotos(r);
   if(me) getSoc(rideOwner(r),true).then(()=>{ if(rideOpen===r) renderRvNotes(r); });
   $('rideView').hidden=false; $('rideView').scrollTop=0;
@@ -4228,7 +4250,7 @@ function effortsFor(key,seg,noApi){
   let s=90,w=180,n=-90,e=-180; seg.forEach(p=>{ s=Math.min(s,p[0]); n=Math.max(n,p[0]); w=Math.min(w,p[1]); e=Math.max(e,p[1]); });
   const pad=0.0006;
   rides.forEach(r=>{
-    if(!r.times||!r._bb||(noApi&&r.api)) return;
+    if(!r.times||!r._bb||(noApi&&r.api)||r._dup) return;
     const bb=r._bb; if(bb[0]>n+pad||bb[2]<s-pad||bb[1]>e+pad||bb[3]<w-pad) return;
     const c=r.coords, As=passes(c,A,30), Bs=passes(c,B,30);
     if(!As.length||!Bs.length) return;
