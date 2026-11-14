@@ -4035,7 +4035,7 @@ function openRide(r){
     if(x.t<=rest[0]) return {pr:true,sub:`<span class="gold">¡mejor marca!</span> <span class="silver">antes ${fmtT(rest[0])}</span>`};
     return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold">🏆 ${fmtT(rest[0])}</span>`}; };
   let rvList=[];
-  const segHtml=list=>{ rvList=groupSegs(list); return rvList.length?`<div class="ch-t">Trialeras y segmentos</div><ul class="routes">${rvList.map((x,i)=>{ const bb=best(x);
+  const segHtml=list=>{ rvList=list.map(x=>({...x,also:[]})).sort((x,y)=>(x.a??1e9)-(y.a??1e9)); return rvList.length?`<div class="ch-t">Trialeras y segmentos</div><ul class="routes">${rvList.map((x,i)=>{ const bb=best(x);
     return `<li data-i="${i}"><span><b>${esc(x.name)}</b><small>${x.dir||''}${x.also.length?(x.dir?'<br>':'')+'también: '+x.also.map(y=>esc(y.name)+(y.t!=null?' '+fmtT(y.t):'')).join(' · '):''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'🏆 ':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; }).join('')}</ul>`:''; };
   $('rvSegs').innerHTML=segHtml(segM);
   $('rvSegs').onclick=ev=>{ const li=ev.target.closest('li[data-i]'); if(li) segToMap(rvList[+li.dataset.i]); };
