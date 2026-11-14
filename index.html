@@ -1966,6 +1966,10 @@ async function joinMyNames(){
   store.set('ichnos-nombres',myNames); glSet(()=>glMap.getSource('mynames').setData(myNamesGeo()));
 }
 setTimeout(()=>joinMyNames(),4000);
+// tiempo en movimiento entre dos puntos de una salida: las paradas no cuentan
+function movT(r,i,j){ const c=r.coords,t=r.times; if(!t||t[i]==null||t[j]==null) return null; let s=0;
+  for(let k=i+1;k<=j;k++){ const dt=t[k]-t[k-1]; if(!(dt>0)) continue; if(dt>5&&dist(c[k-1],c[k])/dt<0.5) continue; s+=dt; }
+  return Math.round(s); }
 function distToLine(ll,coords){
   const k=Math.cos(ll[0]*Math.PI/180)*111320, m=111320; let best=Infinity;
   const P=[ll[1]*k,ll[0]*m];
@@ -2731,7 +2735,7 @@ async function rideTrails(r){
   found.forEach(f=>{ const last=merged[merged.length-1];
     if(last&&f.a<=last.b+8&&(f.name===last.name)){ last.b=Math.max(last.b,f.b); last.len+=f.len; if(f.lv!=null&&(last.lv==null||f.lv>last.lv)) last.lv=f.lv; }
     else if(!last||f.a>=last.b-2||f.name!==last.name) merged.push({...f}); });
-  return merged.filter(m=>m.len>=120).map(m=>({...m,t:t&&t[m.b]!=null&&t[m.a]!=null?t[m.b]-t[m.a]:null,up:r.eles&&r.eles[m.b]!=null&&r.eles[m.a]!=null?r.eles[m.b]-r.eles[m.a]:null}));
+  return merged.filter(m=>m.len>=120).map(m=>({...m,t:movT(r,m.a,m.b),up:r.eles&&r.eles[m.b]!=null&&r.eles[m.a]!=null?r.eles[m.b]-r.eles[m.a]:null}));
 }
 
 async function tileFountains(x,y){ return (await tilePois(x,y)).filter(p=>p.props.class==='drinking_water'||p.props.subclass==='drinking_water'); }
@@ -4032,14 +4036,15 @@ function openRide(r){
   } else $('rvZones').innerHTML='';
   // trialeras y segmentos de esta salida: tu tiempo de hoy, tu mejor tiempo y dónde están
   const segs=[]; const dzLb=dz=>dz==null||Math.abs(dz)<5?'':dz<0?'↓ Bajada':'↑ Subida';
-  const mine=(key,name,line,dz)=>{ const res=effortsFor(key,line), lb=dirLabels(res,dz);
-    ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name) segs.push({name,dir:/Sentido/.test(lb[k])?'':lb[k],t:e.t,all:res[k].map(x=>x.t),a:e.i,b:e.j}); })); };
+  const mine=(key,name,line,dz,src='mine')=>{ const res=effortsFor(key,line), lb=dirLabels(res,dz), L0=src==='ss'?lenOf(line):0;
+    const ok=e=>src!=='ss'||e.dd<=L0*1.2+40;   // un segmento de Strava medido con tu GPS tiene que medir lo mismo
+    ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) segs.push({src,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:e.t,all:res[k].filter(ok).map(x=>x.t),a:e.i,b:e.j}); })); };
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
   if(!fr) (r.sef||[]).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const cc=sg.coords||[]; let a=cc.length>1?nearestIdx(r.coords,cc[0]):-1, b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1;
     segs.push({name:sg.name,dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:stravaBest(e.sid).map(x=>x.t),a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });
   // los segmentos de Strava que conoces aunque esta salida no venga de Strava (se miden con tu GPS)
-  if(!fr){ const have=new Set((r.sef||[]).map(e=>e.sid)); Object.values(ssegs).forEach(sg=>{ if(have.has(sg.id)||!sg.coords||sg.coords.length<2) return; const c0=sg.coords[0]; if(!r._bb||c0[0]<r._bb[0]-0.01||c0[0]>r._bb[2]+0.01||c0[1]<r._bb[1]-0.01||c0[1]>r._bb[3]+0.01) return; mine('ss:'+sg.id,sg.name,sg.coords,segDz(sg.coords)); }); }
+  if(!fr){ const have=new Set((r.sef||[]).map(e=>e.sid)); Object.values(ssegs).forEach(sg=>{ if(have.has(sg.id)||!sg.coords||sg.coords.length<2) return; const c0=sg.coords[0]; if(!r._bb||c0[0]<r._bb[0]-0.01||c0[0]>r._bb[2]+0.01||c0[1]<r._bb[1]-0.01||c0[1]>r._bb[3]+0.01) return; mine('ss:'+sg.id,sg.name,sg.coords,segDz(sg.coords),'ss'); }); }
   // la misma trialera partida en trozos se enseña una sola vez
   const segM=[]; segs.forEach(x=>{ const o=segM.find(y=>nrm(y.name)===nrm(x.name)); if(o){ o.t+=x.t; o.all=null; if(x.a!=null){ o.a=o.a==null?x.a:Math.min(o.a,x.a); o.b=o.b==null?x.b:Math.max(o.b,x.b); } } else segM.push({...x}); });
   // tu mejor tiempo: en dorado; si hoy has hecho la mejor marca, la de antes sale en plateado
@@ -4054,10 +4059,22 @@ function openRide(r){
   $('rvSegs').onclick=ev=>{ const li=ev.target.closest('li[data-i]'); if(li) segToMap(rvList[+li.dataset.i]); };
   // y todas las trialeras del mapa por las que has pasado
   rideTrails(r).then(tr=>{ if(rideOpen!==r||!tr.length) return;
+    const ov=(a1,b1,a2,b2)=>Math.max(0,Math.min(b1,b2)-Math.max(a1,a2));
+    const fixes=[]; Object.values(gData.c||{}).forEach(f=>{ if(!f.name||!f.coords||f.coords.length<2) return; let a=nearestIdx(r.coords,f.coords[0]), b=nearestIdx(r.coords,f.coords[f.coords.length-1]);
+      if(a<0||b<0||a===b) return; if(a>b) [a,b]=[b,a]; fixes.push({name:f.name,a,b}); });
+    const gone=new Set();
+    tr.forEach(x=>{ if(x.name) return;
+      const own=segM.find(y=>y.src==='mine'&&y.a!=null&&ov(x.a,x.b,y.a,y.b)>=0.6*Math.max(1,y.b-y.a));
+      if(own){ x.name=own.name; gone.add(own); return; }
+      const fx=fixes.find(f=>ov(x.a,x.b,f.a,f.b)>=0.6*Math.max(1,f.b-f.a)); if(fx) x.name=fx.name; });
+    // tus trozos con nombre que caen dentro de la trialera ya no salen aparte
+    tr.forEach(x=>segM.forEach(y=>{ if(y.src==='mine'&&y.a!=null&&x.name&&nrm(x.name)===nrm(y.name)&&ov(x.a,x.b,y.a,y.b)>0){ gone.add(y); x.a=Math.min(x.a,y.a); x.b=Math.max(x.b,y.b); x.t=movT(r,x.a,x.b); } }));
+    tr.forEach(x=>{ if(!x.name) return; const o=segM.find(y=>y.src==='mine'&&!gone.has(y)&&y.a!=null&&ov(x.a,x.b,y.a,y.b)>=0.6*Math.max(1,y.b-y.a)); if(o){ gone.add(o); x.name=o.name; x.a=Math.min(x.a,o.a); x.b=Math.max(x.b,o.b); x.t=movT(r,x.a,x.b); } });
+    for(let i=segM.length-1;i>=0;i--) if(gone.has(segM[i])) segM.splice(i,1);
     const extra=tr.filter(x=>!segM.some(y=>x.name&&nrm(y.name)===nrm(x.name))).map(x=>{ const line=r.coords.slice(x.a,x.b+1).map(p=>[p[0],p[1]]);
       let all=null; try{ all=effortsFor('rt:'+r.id+':'+x.a,line).f.map(e=>e.t); }catch(e){} if(!all||!all.length) all=x.t!=null?[x.t]:null;
       return {a:x.a,b:x.b,name:x.name||'Trialera sin nombre',dir:[x.lv!=null?LEVELS[x.lv].name:'',x.up!=null?(x.up<-5?'bajada':x.up>5?'subida':''):''].filter(Boolean).join(' · ')||'trialera',t:x.t,all}; });
-    if(extra.length) $('rvSegs').innerHTML=segHtml([...segM,...extra]); }).catch(()=>{});
+    $('rvSegs').innerHTML=segHtml([...segM,...extra]); }).catch(()=>{});
   renderRvPhotos(r); renderRvNotes(r); loadStravaPhotos(r);
   if(me) getSoc(rideOwner(r),true).then(()=>{ if(rideOpen===r) renderRvNotes(r); });
   $('rideView').hidden=false; $('rideView').scrollTop=0;
@@ -4217,9 +4234,9 @@ function effortsFor(key,seg,noApi){
         // la ruta tiene que pasar por casi todo el segmento
         let ok=0; for(const q of smp){ for(let k=i;k<=j;k++){ if(Math.abs(c[k][0]-q[0])<0.0004&&dist(c[k],q)<=35){ ok++; break; } } }
         if(ok<smp.length*0.85) continue;
-        const t=r.times[j]-r.times[i]; if(!(t>0)) continue;
+        const t=movT(r,i,j); if(!(t>0)) continue;
         const dz=r.eles&&r.eles[i]!=null&&r.eles[j]!=null?r.eles[j]-r.eles[i]:null;
-        res[dir].push({t,date:r.date,ride:r.name,dz,i,j});
+        res[dir].push({t,date:r.date,ride:r.name,dz,i,j,dd});
       }
     }
   });
