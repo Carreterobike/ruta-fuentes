@@ -2475,7 +2475,7 @@ function ovtCat(H,prim,name){
 const jp=v=>{ try{ return typeof v==='string'?JSON.parse(v):v; }catch(e){ return null; } };
 async function ovtTile(x,y){
   const k=x+'/'+y; if(ovtCache.has(k)) return ovtCache.get(k);
-  const pr=(async()=>{ const P=await ovtSource(); const t=await P.getZxy(14,x,y); return t&&t.data?mvtPoints(t.data,'place',14,x,y):[]; })().catch(()=>{ ovtCache.delete(k); return []; });
+  const pr=(async()=>{ const c=await tcGet('ovt:'+k); if(c) return c; const P=await ovtSource(); const t=await P.getZxy(14,x,y); const pts=t&&t.data?mvtPoints(t.data,'place',14,x,y):[]; tcPut('ovt:'+k,pts); return pts; })().catch(()=>{ ovtCache.delete(k); return []; });
   ovtCache.set(k,pr); return pr;
 }
 function addOvtPlaces(pts){ pts.forEach(q=>{ const pr=q.props||{}; if(/closed/.test(pr.operating_status||'')) return; if((pr.confidence??1)<0.35) return;
@@ -2490,7 +2490,7 @@ function addOvtPlaces(pts){ pts.forEach(q=>{ const pr=q.props||{}; if(/closed/.t
   const pl={id,lat:q.lat,lon:q.lon,cat,tags:{},name,extra}; pStore.set(id,pl); gridAdd(pl); }); }
 async function loadTilesAround(x0,x1,y0,y1){
   const keys=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) keys.push([x,y]);
-  for(let i=0;i<keys.length;i+=6){ const sl=keys.slice(i,i+6);
+  for(let i=0;i<keys.length;i+=30){ const sl=keys.slice(i,i+30);   // todo a la vez (lo guardado sale al momento)
     const [a,b]=await Promise.all([Promise.all(sl.map(([x,y])=>tilePois(x,y))),Promise.all(sl.map(([x,y])=>ovtTile(x,y)))]);
     a.forEach(addTilePlaces); b.forEach(addOvtPlaces); }
 }
@@ -2746,12 +2746,17 @@ function addFountain(f){
 // 1) fuentes de las teselas del mapa base
 async function omtUrl(){ if(!omtTiles){ const j=await (await fetch('https://tiles.openfreemap.org/planet')).json(); omtTiles=j.tiles[0]; } return omtTiles; }
 const poiCache=new Map();
+// lo que ya se ha cargado se guarda en el aparato 14 días: la segunda vez sale al momento
+const tcDB=new Promise(res=>{ try{ const r=indexedDB.open('ichnos-cache',1); r.onupgradeneeded=()=>r.result.createObjectStore('t'); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } });
+async function tcGet(k){ const db=await tcDB; if(!db) return null; return new Promise(res=>{ try{ const q=db.transaction('t').objectStore('t').get(k); q.onsuccess=()=>{ const v=q.result; res(v&&Date.now()-v.t<14*86400000?v.d:null); }; q.onerror=()=>res(null); }catch(e){ res(null); } }); }
+async function tcPut(k,d){ const db=await tcDB; if(!db) return; try{ db.transaction('t','readwrite').objectStore('t').put({t:Date.now(),d},k); }catch(e){} }
 function tilePois(x,y){
   const k=x+'/'+y;
   if(!poiCache.has(k)) poiCache.set(k,(async()=>{
+    const c=await tcGet('poi:'+k); if(c) return c;
     const u=(await omtUrl()).replace('{z}',14).replace('{x}',x).replace('{y}',y);
     const r=await fetch(u); if(!r.ok) throw new Error('tile');
-    return mvtPoints(await r.arrayBuffer(),'poi',14,x,y);
+    const pts=mvtPoints(await r.arrayBuffer(),'poi',14,x,y); tcPut('poi:'+k,pts); return pts;
   })().catch(()=>{ poiCache.delete(k); return []; }));
   return poiCache.get(k);
 }
@@ -2808,9 +2813,11 @@ const trailTileCache=new Map();
 function tileTrails(x,y){
   const k=x+'/'+y;
   if(!trailTileCache.has(k)) trailTileCache.set(k,(async()=>{
+    const c=await tcGet('trl:'+k); if(c) return c;
     const u=(await omtUrl()).replace('{z}',14).replace('{x}',x).replace('{y}',y);
     const r=await fetch(u); if(!r.ok) throw new Error('tile');
-    return mvtLines(await r.arrayBuffer(),'transportation',14,x,y,pr=>/^(path|track)$/.test(pr.class)&&pr.mtb_scale!=null&&String(pr.mtb_scale)!=='');
+    const L_=mvtLines(await r.arrayBuffer(),'transportation',14,x,y,pr=>/^(path|track)$/.test(pr.class)&&pr.mtb_scale!=null&&String(pr.mtb_scale)!=='');
+    tcPut('trl:'+k,L_); return L_;
   })().catch(()=>{ trailTileCache.delete(k); return []; }));
   return trailTileCache.get(k);
 }
@@ -2872,16 +2879,31 @@ function opToFountains(j){
     addFountain({id:'o'+e.type[0]+e.id,lat,lon,name:t.name||'',kind,tags:t,photo:undefined});
   });
 }
+// fuentes preparadas cada semana en datos/fuentes (trozos de 0,5°): salen al momento
+let fIdx=null; const fTileDone=new Map();
+async function fuentesIdx(){ if(fIdx) return fIdx; try{ const r=await fetch('datos/fuentes/index.json?d='+new Date().toISOString().slice(0,10)); if(r.ok) fIdx=await r.json(); }catch(e){} return fIdx||{t:[]}; }
+async function fuentesFile(s,w,n,e){
+  const idx=await fuentesIdx(); if(!idx.t||!idx.t.length) throw new Error('sin archivo');
+  const have=new Set(idx.t), jobs=[];
+  for(let a=Math.floor(s*2)/2;a<n;a+=0.5) for(let b=Math.floor(w*2)/2;b<e;b+=0.5){ const k=a.toFixed(1)+'_'+b.toFixed(1); if(!have.has(k)) continue;
+    if(!fTileDone.has(k)) fTileDone.set(k,(async()=>{ const c=await tcGet('fue:'+k+':'+idx.v); let j=c;
+      if(!j){ const r=await fetch('datos/fuentes/'+k+'.json?v='+idx.v); if(!r.ok) throw new Error('fuentes'); j=await r.json(); tcPut('fue:'+k+':'+idx.v,j); }
+      opToFountains({elements:j.map(x=>({type:x[0],id:x[1],lat:x[2],lon:x[3],tags:x[4]||{}}))}); })().catch(err=>{ fTileDone.delete(k); throw err; }));
+    jobs.push(fTileDone.get(k)); }
+  await Promise.all(jobs); }
 const opDone=[];   // zonas ya pedidas a Overpass
 function opCovered(s,w,n,e){ return opDone.some(b=>s>=b[0]&&w>=b[1]&&n<=b[2]&&e<=b[3]); }
 async function opArea(s,w,n,e){
   if(opCovered(s,w,n,e)) return;
+  try{ await fuentesFile(s,w,n,e); opDone.push([s,w,n,e]); return; }catch(err){}
   const area=[s,w,n,e].map(x=>x.toFixed(4)).join(',');
   const j=await overpass(`[out:json][timeout:25];(${OP_FILTERS.replaceAll('AREA',area)});out center tags;`,25000);
   opDone.push([s,w,n,e]); opToFountains(j);
 }
 async function opRoute(){
   if(!route) return;
+  try{ let a=90,b=180,c=-90,d=-180; route.coords.forEach(p=>{ a=Math.min(a,p[0]); c=Math.max(c,p[0]); b=Math.min(b,p[1]); d=Math.max(d,p[1]); });
+    await fuentesFile(a-0.01,b-0.01,c+0.01,d+0.01); return; }catch(err){}
   // la ruta simplificada (un punto cada ~250 m) y fuentes a menos de 600 m
   const pts=[]; let next=0;
   for(let i=0;i<route.coords.length;i++){ if(route.cum[i]>=next){ pts.push(route.coords[i]); next+=250; } }
@@ -3745,7 +3767,7 @@ async function stravaSync(manual){
       }
     }
     // 3) los segmentos de las salidas que ya tenías
-    if(me&&!more&&n<12) await svEffortsBackfill(12-n);
+    if(me&&!more&&n<12&&!T.crear) await svEffortsBackfill(12-n);
     sv.last=Date.now(); sv.more=more; syncRaw.set('ichnos-strava',sv);
   }catch(e){ err=e&&e.message; syncRaw.set('ichnos-strava',sv); }
   svBusy=false;
@@ -4464,7 +4486,7 @@ function applyEfforts(r,efforts){
 async function svEffortsBackfill(maxN){
   let n=0;
   for(const r of rides.filter(x=>/^strava-\d+$/.test(x.id)&&(!x.sefT||(x.upDev==null&&!x.upChk))).sort((a,b)=>b.date-a.date)){
-    if(n>=maxN) break; n++;
+    if(n>=maxN||T.crear) break; n++;
     let d=null; try{ d=await svGet('activities/'+r.id.slice(7)+'?include_all_efforts=true'); }catch(e){ if(e.message!=='http') throw e; }
     applyEfforts(r,d&&d.segment_efforts); r.upChk=1; if(d&&d.total_elevation_gain!=null){ r.upDev=Math.round(d.total_elevation_gain); r._st=null; } await saveRideEdit(r);
   }
@@ -4474,11 +4496,11 @@ async function svEffortsBackfill(maxN){
 let sxBusy=false;
 // trae poco a poco los segmentos de TODAS tus salidas de Strava (nombre, tu tiempo y tus mejores marcas)
 async function svSweep(){
-  if(!svOn()||sxBusy||document.hidden) return; sxBusy=true;
+  if(!svOn()||sxBusy||document.hidden||T.crear) return; sxBusy=true;
   try{ await svEffortsBackfill(40); }catch(e){}
   sxBusy=false;
 }
-setTimeout(svSweep,20000); setInterval(svSweep,16*60*1000);
+setTimeout(svSweep,60000); setInterval(svSweep,16*60*1000);
 async function exploreSegs(){
   if(!T.segmentos||!svOn()||sxBusy||map.getZoom()<12) return; sxBusy=true;
   const b=map.getBounds(), S=0.04, type=isFoot()?'running':'riding'; let calls=0, added=0;
