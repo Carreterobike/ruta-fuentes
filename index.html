@@ -2359,8 +2359,14 @@ async function planFountains(){
     for(let k=step;k<totKm-step*0.3;k+=step){ const lo=k-step*0.4, hi=k+step*0.4;
       const c=near.filter(f=>f.km>=lo&&f.km<=hi&&!picks.includes(f)).sort((x,y)=>(Math.abs(x.km-k)+x.d/60)-(Math.abs(y.km-k)+y.d/60));
       if(c.length) picks.push(c[0]); else gaps.push([Math.max(0,lo),Math.min(totKm,hi)]); }
-    const off=picks.filter(f=>f.d>25&&viaIdx(f)<0);
-    if(off.length) await routeThroughFountains(off);
+    let off=picks.filter(f=>f.d>25&&viaIdx(f)<0);
+    if(off.length){   // como antes: te pregunta si quieres que la ruta pase por ellas
+      setStatus('Ruta lista.');
+      const yes=await ask(off.length===1?'He encontrado 1 fuente un poco fuera de la ruta':`He encontrado ${off.length} fuentes un poco fuera de la ruta`,
+        `¿Quieres que te cambie la ruta para que pase por ellas? Te dejo elegir por cuáles.`,'Sí, elegir fuentes','No, déjala así');
+      if(yes){ const pk=await chooseFountains(off); off=pk; if(pk.length) await routeThroughFountains(pk); } else off=[];
+      for(let i=picks.length-1;i>=0;i--) if(picks[i].d>25&&viaIdx(picks[i])<0&&!off.includes(picks[i])) picks.splice(i,1);
+    }
     planLayer.clearLayers();
     const kms=picks.map(f=>({f,km:nearestOnRoute([f.lat,f.lon]).km})).sort((x,y)=>x.km-y.km);
     kms.forEach(x=>L.circleMarker([x.f.lat,x.f.lon],{radius:9,color:'#fff',weight:3,fillColor:'#1677c9',fillOpacity:1}).bindTooltip(`💧 km ${Math.round(x.km)}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-8]}).addTo(planLayer));
