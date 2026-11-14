@@ -535,6 +535,8 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .lock .lk-link{background:none;color:#c9ced2;font-weight:600;font-size:14px;padding:4px;text-decoration:underline}
 .lock input[hidden]{display:none}
 #mText{white-space:pre-line}
+#exFopt{margin-top:10px;display:flex;flex-direction:column;gap:8px}#exFopt[hidden]{display:none}#exFopt label{margin:0}
+#misRutas li .mr-b{display:flex;gap:6px}#misRutas li .mr-b button{color:inherit;font-weight:700}
 .pwwrap{position:relative;display:flex}.pwwrap>input{flex:1;min-width:0;width:100%;box-sizing:border-box;padding-right:46px!important;padding-left:46px}
 .pwwrap:has(>input[hidden]){display:none}
 .pweye{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;padding:8px;cursor:pointer;color:#6d6d6d;display:grid;place-items:center}
@@ -793,6 +795,10 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
       <button id="recBtn2" class="primary">● Grabar ruta</button>
     </div>
   </section>
+  <section class="pblock" id="pMisRutas" hidden>
+    <div class="pb-h"><h3>Mis rutas</h3></div>
+    <ul class="routes" id="misRutas"></ul>
+  </section>
   <section class="pblock" id="pFeed" hidden>
     <div class="pb-h"><h3>De tus amigos</h3></div>
     <ul class="rides feed" id="feedList"></ul>
@@ -923,6 +929,11 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
         <div class="opts" id="optExtras" hidden>
           <label>Añadir a tu ruta</label>
           <div class="segc extras"><button id="exF">💧 Fuentes</button><button id="exA">🍴 Almuerzo</button></div>
+          <div id="exFopt" hidden>
+            <label>Una fuente…</label>
+            <div class="segc" id="exFm"><button data-m="km">Cada km</button><button data-m="t">Cada tiempo</button></div>
+            <div class="segc" id="exFv"></div>
+          </div>
         </div>
         <div class="opts" id="optLevel" hidden>
           <label>Tu nivel de trialeras</label>
@@ -939,6 +950,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
         <div class="actions">
           <button id="undo" disabled>Quitar último</button>
           <button id="clear" disabled>Borrar ruta</button>
+          <button id="saveRoute" disabled>🔖 Guardar ruta</button>
           <button id="gpx" class="primary" disabled>GPX</button>
           <button id="done" class="dark" hidden>Terminar ruta</button>
           <button id="calcCancel" hidden>Cancelar</button>
@@ -1248,7 +1260,7 @@ $('acSave').onclick=async()=>{
 
 // ================= COPIA ENTRE APARATOS (Mac ↔ iPhone) =================
 // Lo que cambias en un aparato se guarda en tu puente de Cloudflare y el otro lo coge al abrir Ichnos.
-const SYNC_KEYS=['ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-ssegs','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap','ichnos-lugares'];
+const SYNC_KEYS=['ichnos-misrutas','ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-ssegs','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap','ichnos-lugares'];
 const syncRaw={set:store.set.bind(store),del:store.del.bind(store)};
 let syncTimer=null, syncBusy=false, syncReady=false;
 function syncMeta(){ const m=store.get('ichnos-sync',null)||{}; m.mt=m.mt||{}; m.seen=m.seen||{}; m.dirty=m.dirty||[]; return m; }
@@ -1891,12 +1903,20 @@ function recommendTrails(){
 }
 map.on('moveend',()=>{ clearTimeout(recTimer); recTimer=setTimeout(recommendTrails,500); });
 let wantF=store.get('ichnos-exF',false), wantA=store.get('ichnos-exA',false);
-function paintExtras(){ $('exF').classList.toggle('on',wantF); $('exA').classList.toggle('on',wantA); document.querySelectorAll('#segEbike button').forEach(b=>b.classList.toggle('on',b.dataset.e===ebikeType)); }
+function paintExtras(){ if(typeof paintFEvery==='function') paintFEvery(); $('exF').classList.toggle('on',wantF); $('exA').classList.toggle('on',wantA); document.querySelectorAll('#segEbike button').forEach(b=>b.classList.toggle('on',b.dataset.e===ebikeType)); }
 $('exF').onclick=()=>{ wantF=!wantF; syncRaw.set('ichnos-exF',wantF); paintExtras(); };
+let fEvery=store.get('ichnos-exFe',null)||{m:'km',v:15};
+const FV={km:[10,15,20,30],t:[30,45,60,90]};
+const fvTxt=(m,v)=>m==='km'?v+' km':v<60?v+' min':v===60?'1 h':'1 h '+(v-60);
+function paintFEvery(){ $('exFopt').hidden=!wantF;
+  $('exFm').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===fEvery.m));
+  $('exFv').innerHTML=FV[fEvery.m].map(v=>`<button data-v="${v}" class="${v===fEvery.v?'on':''}">${fvTxt(fEvery.m,v)}</button>`).join('');
+  $('exFv').querySelectorAll('button').forEach(b=>b.onclick=()=>{ fEvery.v=+b.dataset.v; store.set('ichnos-exFe',fEvery); paintFEvery(); }); }
+$('exFm').querySelectorAll('button').forEach(b=>b.onclick=()=>{ fEvery.m=b.dataset.m; fEvery.v=FV[fEvery.m][1]; store.set('ichnos-exFe',fEvery); paintFEvery(); });
 $('exA').onclick=()=>{ wantA=!wantA; syncRaw.set('ichnos-exA',wantA); paintExtras(); };
 document.querySelectorAll('#segEbike button').forEach(b=>b.onclick=()=>{ ebikeType=b.dataset.e; syncRaw.set('ichnos-ebike',ebikeType); paintExtras();
   document.querySelector('#secCapas [data-t="trialeras"]').hidden=!trailsMode(); applyTrails(); updateSheet(); if(points.length>=2) calc(); });
-paintExtras();
+setTimeout(paintExtras,0);
 function paintModeUI(){ document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x.dataset.mode===mode)); const t=document.querySelector('#secCapas [data-t="trialeras"]'); if(t) t.hidden=!trailsMode(); }
 setTimeout(paintModeUI,0);
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
@@ -2209,7 +2229,7 @@ let skipLong=false;
 async function calc(){
   const my=++reqId; cancelAll();
   routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers();
-  route=null; $('gpx').disabled=true; renderStats();
+  route=null; $('gpx').disabled=true; $('saveRoute').disabled=true; renderStats();
   if(points.length<2){
     askedIds=new Set(); fuentesAsked=false; askedVer=-1; renderFountains();
     loadWeather(); setStatus(points.length? 'Toca el siguiente punto o la llegada' : 'Toca el mapa para poner la salida'); updateSheet(); return;
@@ -2294,7 +2314,7 @@ async function useRoute(coords, up, label, my){
   routeVer++;
   if(trip&&trip.open!=null) syncOpenStage(coords,up);
   drawRouteSegments(coords, cum); drawArrows();
-  $('gpx').disabled=false; renderStats(); renderFountains();
+  $('gpx').disabled=false; $('saveRoute').disabled=false; renderStats(); renderFountains();
   loadWeather();
   if(fitNext){ fitNext=false; map.fitBounds(L.latLngBounds(coords.map(c=>[c[0],c[1]])),{padding:[40,40]}); }
   if(my===reqId) setStatus(`${label}: ruta lista.`);
@@ -2312,16 +2332,20 @@ async function finishRoute(){
   if(!route) return;
   const near=nearRouteFountains();
   askedIds=new Set(near.map(f=>f.id)); fuentesAsked=true;
-  renderFountains(); updateSheet(); setStatus('Ruta lista.');
-  if(!near.length){ toast('No hay fuentes públicas registradas cerca de esta ruta. Prueba con 500 m.',4500); return; }
-  const off=near.filter(f=>f.d>25&&viaIdx(f)<0);
-  if(!off.length){ toast(`Tu ruta ya pasa por ${near.length===1?'la fuente':'las '+near.length+' fuentes'}.`); return; }
-  const n=near.length;
-  const yes2=await ask(`${n===1?'He encontrado 1 fuente':'He encontrado '+n+' fuentes'}`,
-    `¿Quieres que te cambie la ruta para que pase por alguna? Te dejo elegir por cuáles.`,'Sí, elegir fuentes','No, déjala así');
-  if(!yes2) return;
-  const pick=await chooseFountains(near);
-  if(pick.length) await routeThroughFountains(pick);
+  renderFountains(); updateSheet();
+  const totKm=route.length/1000, totS=estTime(route.length,route.up||0);
+  const step=fEvery.m==='km'?fEvery.v:fEvery.v*60/Math.max(1,totS)*totKm;   // "cada tiempo" se pasa a km con la velocidad de esta ruta
+  const picks=[], gaps=[];
+  for(let k=step;k<totKm-step*0.3;k+=step){ const lo=k-step*0.4, hi=k+step*0.4;
+    const c=near.filter(f=>f.km>=lo&&f.km<=hi&&!picks.includes(f)).sort((x,y)=>(Math.abs(x.km-k)+x.d/60)-(Math.abs(y.km-k)+y.d/60));
+    if(c.length) picks.push(c[0]); else gaps.push([Math.max(0,lo),Math.min(totKm,hi)]); }
+  if(!picks.length&&!gaps.length){ setStatus('Ruta lista.'); toast(`La ruta es más corta que ${fvTxt(fEvery.m,fEvery.v)}: no hace falta parar a por agua.`,5000); return; }
+  const off=picks.filter(f=>f.d>25&&viaIdx(f)<0);
+  if(off.length) await routeThroughFountains(off);
+  const kms=picks.map(f=>nearestOnRoute([f.lat,f.lon]).km).sort((x,y)=>x-y).map(k=>Math.round(k));
+  let msg=kms.length?`Fuentes en el km ${kms.length>1?kms.slice(0,-1).join(', ')+' y '+kms[kms.length-1]:kms[0]}.`:'';
+  if(gaps.length) msg+=(msg?' ':'')+gaps.map(g=>`Sin fuente entre el km ${Math.round(g[0])} y el ${Math.round(g[1])}.`).join(' ');
+  setStatus(msg); toast(msg,8000);
 }
 // mete las fuentes como puntos de paso, cada una en su sitio según el km de la ruta
 async function routeThroughFountains(list,single){
@@ -2338,6 +2362,26 @@ async function routeThroughFountains(list,single){
   askedVer=routeVer;
   toast(single?`La ruta ahora pasa por ${nameOf(list[0])}.`:`Ruta cambiada: pasa por ${list.length===1?'1 fuente':list.length+' fuentes'}.`);
 }
+
+// ---------- mis rutas: guardar una ruta para hacerla otro día ----------
+let misRutas=store.get('ichnos-misrutas',[]);
+$('saveRoute').onclick=async()=>{ if(!route||points.length<2) return;
+  const def=(MODES[mode]?MODES[mode].label:'Ruta')+' '+fmtKm(route.length/1000)+' km';
+  const nm=await askName('Guardar ruta',def,{title:'Guardar ruta',hint:'Te sale en Salidas, en "Mis rutas". Desde ahí la abres cuando quieras.',placeholder:'Nombre de la ruta',button:'Guardar',list:[]});
+  if(!nm) return;
+  misRutas.unshift({id:Date.now(),name:nm,t:Date.now(),mode,p:points.map(x=>x.slice(0,3)),km:+(route.length/1000).toFixed(1),up:Math.round(route.up||0)});
+  store.set('ichnos-misrutas',misRutas); renderMisRutas(); toast(`Guardada: "${nm}". La tienes en Salidas.`,4500); };
+function renderMisRutas(){ $('pMisRutas').hidden=!misRutas.length;
+  $('misRutas').innerHTML=misRutas.map((x,i)=>`<li data-i="${i}"><span><b>${esc(x.name)}</b><small>${fmtKm(x.km)} km · +${n0(x.up)} m · ${esc(MODES[x.mode]?MODES[x.mode].label:'')} · ${fmtD(x.t)}</small></span><span class="mr-b"><button data-o="${i}">Abrir</button><button data-d="${i}" aria-label="Borrar ruta">✕</button></span></li>`).join('');
+  $('misRutas').querySelectorAll('button').forEach(b=>b.onclick=async ev=>{ ev.stopPropagation();
+    if(b.dataset.d!=null){ const x=misRutas[+b.dataset.d]; if(!await ask('¿Borrar esta ruta?',x.name,'Sí, borrar','No')) return; misRutas.splice(+b.dataset.d,1); store.set('ichnos-misrutas',misRutas); renderMisRutas(); return; }
+    openMiRuta(misRutas[+b.dataset.o]); }); }
+async function openMiRuta(x){ if(!x) return;
+  if(x.mode&&MODES[x.mode]&&x.mode!==mode){ const b=document.querySelector(`#modes [data-mode="${x.mode}"]`); if(b) b.click(); }
+  showPage('pgMapa'); points=x.p.map(p=>p[2]?[p[0],p[1],'f']:[p[0],p[1]]);
+  if(!T.crear) await setToggle('crear',true);
+  fitNext=true; drawPins(); await calc(); askedVer=routeVer; toast(`"${x.name}" abierta. Pulsa GPX para pasarla al reloj.`,5000); }
+setTimeout(renderMisRutas,0);
 
 // ---------- GPX para el reloj / ciclocomputador ----------
 function estTime(m,up,md){ const M=MODES[md||mode]||MODES.mtb; return (m/1000/M.kmh+up/M.vup)*3600; }
