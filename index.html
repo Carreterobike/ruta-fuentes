@@ -4072,11 +4072,8 @@ function openRide(r){
   const row=(x,i)=>{ const bb=best(x);
     return `<li data-i="${i}"><span><b>${esc(x.name)}</b><small>${x.dir||''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'🏆 ':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; };
   const segHtml=list=>{ rvList=list.slice().sort((x,y)=>(x.a??1e9)-(y.a??1e9));
-    const tr=[], sv=[]; rvList.forEach((x,i)=>((x.src==='sv'||x.src==='ss')?sv:tr).push(row(x,i)));
-    const npr=rvList.filter(x=>(x.src==='sv'||x.src==='ss')&&best(x).pr).length;
-    return (tr.length?`<div class="ch-t">Trialeras</div><ul class="routes">${tr.join('')}</ul>`:'')+
-      (sv.length?`<details class="svsegs"${svOpen?' open':''}><summary>Segmentos de Strava (${sv.length})${npr?` · <span class="gold">🏆 ${npr} ${npr===1?'mejor marca':'mejores marcas'}</span>`:''}</summary><ul class="routes">${sv.join('')}</ul></details>`:''); };
-  const reRender=()=>{ const d=$('rvSegs').querySelector('details.svsegs'); if(d) svOpen=d.open; $('rvSegs').innerHTML=segHtml(rvList); };
+    return rvList.length?`<div class="ch-t">Trialeras y segmentos</div><ul class="routes">${rvList.map(row).join('')}</ul>`:''; };
+  const reRender=()=>{ $('rvSegs').innerHTML=segHtml(rvList); };
   // tu mejor tiempo de verdad en cada segmento, preguntado a Strava (se guarda; se vuelve a preguntar tras una salida nueva)
   const fetchStats=async()=>{ if(fr||!svOn()) return; let n=0;
     const need=rvList.filter(x=>x.sid&&ssegs[x.sid]&&(!ssegs[x.sid].st||ssegs[x.sid].st.t<(r.sefT||r.date||0))).sort((x,y)=>(x.src==='sv'||x.src==='ss'?1:0)-(y.src==='sv'||y.src==='ss'?1:0));
