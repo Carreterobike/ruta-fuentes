@@ -4112,7 +4112,7 @@ let rvP=null;
 async function saveRideEdit(r){ const copy=cleanRide(r); copy.mt=r.mt=Date.now(); await ridesTx('readwrite',st=>st.put(copy)); syncDirtyRide(copy.date); renderRideList(); }
 function renderRvPhotos(r){
   const own=r.fotos||[], sp=r.sfotos||[];
-  $('rvPh').innerHTML=sp.map((u,i)=>`<button data-s="${i}"><img src="${esc(u)}" alt="" loading="lazy"><i>Strava</i></button>`).join('')+own.map((f,i)=>`<button data-o="${i}" data-f="${r._fr?1:''}"><img src="${f.src}" alt="" loading="lazy"></button>`).join('');
+  $('rvPh').innerHTML=sp.map((u,i)=>`<button data-s="${i}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join('')+own.map((f,i)=>`<button data-o="${i}" data-f="${r._fr?1:''}"><img src="${f.src}" alt="" loading="lazy"></button>`).join('');
   $('rvPh').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const o=b.dataset.o; phOpen(o!=null?own[+o].src:sp[+b.dataset.s], o!=null&&!r._fr?own[+o].id:null); });
 }
 let phCur=null;
