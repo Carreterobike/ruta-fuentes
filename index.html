@@ -533,6 +533,12 @@ details.help p{margin:6px 0 0}
 .lock .lk-tabs button.on{background:#fff;color:#1E2328}
 .lock .lk-link{background:none;color:#c9ced2;font-weight:600;font-size:14px;padding:4px;text-decoration:underline}
 .lock input[hidden]{display:none}
+#mText{white-space:pre-line}
+.pwwrap{position:relative;display:flex}.pwwrap>input{flex:1;min-width:0;width:100%;box-sizing:border-box;padding-right:46px!important;padding-left:46px}
+.pwwrap:has(>input[hidden]){display:none}
+.pweye{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;padding:8px;cursor:pointer;color:#6d6d6d;display:grid;place-items:center}
+.acpw .pwwrap>input{padding-left:12px}
+.lock .pweye,.pweye{background:none!important;color:#6d6d6d!important;width:auto!important;height:auto!important;min-height:0!important;box-shadow:none!important;margin:0!important;padding:8px!important}
 
 /* botón de ubicación y controles del mapa */
 .fab{position:absolute;z-index:1000;right:max(12px,env(safe-area-inset-right,0px));bottom:74px;width:48px;height:48px;border-radius:50%;border:0;
@@ -1178,6 +1184,13 @@ function lkMode(v,msg){ lkV=v;
   $('lkForgot').hidden=v!=='entrar'; $('lkBack').hidden=v!=='clave';
 }
 document.querySelectorAll('#lkTabs button').forEach(b=>b.onclick=()=>lkMode(b.dataset.v));
+// el ojo al lado de la contraseña: si lo tocas se ve lo que escribes
+(function(){ const EYE='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  OFF='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.5-.6 4.9-1.4"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+  document.querySelectorAll('input[type=password]').forEach(inp=>{ const w=document.createElement('span'); w.className='pwwrap'; inp.parentNode.insertBefore(w,inp); w.appendChild(inp);
+    const b=document.createElement('button'); b.type='button'; b.className='pweye'; b.setAttribute('aria-label','Ver la contraseña'); b.innerHTML=EYE;
+    b.onclick=()=>{ const show=inp.type==='password'; inp.type=show?'text':'password'; b.innerHTML=show?OFF:EYE; b.setAttribute('aria-label',show?'Ocultar la contraseña':'Ver la contraseña'); };
+    w.appendChild(b); }); })();
 $('lkForgot').onclick=()=>lkMode('clave'); $('lkBack').onclick=()=>lkMode('entrar');
 function oldHash(str,seed){seed=seed||7;var h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(var i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(16);}
 $('lockForm').addEventListener('submit',async e=>{
@@ -4829,11 +4842,14 @@ async function loadAdmin(){
     if(b.dataset.v){ const ll=propLL(p.op); showPage('pgMapa'); map.setView(ll,17); return; }
     try{ const d=await api('/admin/propuestas',{method:'POST',body:{pid,ok:!!b.dataset.ok}}); gSet(d); toast(b.dataset.ok?'Hecho, ya está para todos.':'Descartado.',3500); }catch(e){ toast('No se ha podido ahora.',4000); }
     loadAdmin(); });
-  const others=users.filter(u=>!isMe(u.id));
-  $('invUsers').innerHTML=others.length?others.map(u=>`<li><span><b>${esc(u.name)}</b><small>usuario ${esc(u.user)}</small></span><button class="ghost" data-u="${u.id}">Código nuevo</button></li>`).join(''):'<p class="svp">Todavía no hay nadie más.</p>';
-  $('invUsers').querySelectorAll('button').forEach(b=>b.onclick=async()=>{ const u=users.find(x=>x.id===b.dataset.u);
-    if(!await ask(`¿Contraseña nueva para ${u.name}?`,'Te doy un código para pasárselo. Con él se pone una contraseña nueva. Vale 7 días.','Sí, dame el código','No')) return;
-    try{ const i=await api('/admin/clave',{method:'POST',body:{uid:u.id}}); await copyTxt(clvMsg(i.code),'Mensaje con el código copiado. Pégalo en WhatsApp.'); }catch(e){ toast('No hay conexión ahora.',4000); }
+  // tú primero (por si eres tú el que no se acuerda), luego los demás
+  const others=[...users.filter(u=>isMe(u.id)),...users.filter(u=>!isMe(u.id))];
+  $('invUsers').innerHTML=others.map(u=>`<li><span><b>${isMe(u.id)?'Tú':esc(u.name)}</b><small>usuario ${esc(u.user)}</small></span><button class="ghost" data-u="${u.id}">Código nuevo</button></li>`).join('');
+  $('invUsers').querySelectorAll('button').forEach(b=>b.onclick=async()=>{ const u=users.find(x=>x.id===b.dataset.u), self=isMe(u.id);
+    if(!await ask(self?'¿Contraseña nueva para ti?':`¿Contraseña nueva para ${u.name}?`,self?'Te doy un código. En el otro aparato pulsa "He olvidado la contraseña" y ponlo con tu contraseña nueva. Vale 7 días. Después tendrás que entrar otra vez aquí con la contraseña nueva.':'Te doy un código para pasárselo. Con él se pone una contraseña nueva. Vale 7 días.','Sí, dame el código','No')) return;
+    try{ const i=await api('/admin/clave',{method:'POST',body:{uid:u.id}});
+      if(self){ await ask('Tu código',`${i.code}\n\nTu usuario es: ${u.user}\n\nEn el otro aparato: pulsa "He olvidado la contraseña", escribe este código y tu contraseña nueva dos veces.`,'Vale','Cerrar'); }
+      else await copyTxt(clvMsg(i.code),'Mensaje con el código copiado. Pégalo en WhatsApp.'); }catch(e){ toast('No hay conexión ahora.',4000); }
     loadAdmin(); });
 }
 function propText(o){ const n=(o.m&&o.m.name)||o.name||''; const LV=['verde','azul','roja','negra','doble negra'];
