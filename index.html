@@ -4100,7 +4100,7 @@ function openRide(r){
     tr.forEach(x=>{ if(!x.name) return; const o=segM.find(y=>y.src==='mine'&&!gone.has(y)&&y.a!=null&&ov(x.a,x.b,y.a,y.b)>=0.6*Math.max(1,y.b-y.a)); if(o){ gone.add(o); x.name=o.name; x.a=Math.min(x.a,o.a); x.b=Math.max(x.b,o.b); x.t=movT(r,x.a,x.b); } });
     tr.forEach(x=>{ const L=x.b-x.a; let best=null, bd=1e9;
       segM.forEach(y=>{ if((y.src!=='sv'&&y.src!=='ss')||y.a==null||gone.has(y)) return; const v=ov(x.a,x.b,y.a,y.b); if(v<0.6*L||v<0.6*(y.b-y.a)) return; const d=Math.abs((y.b-y.a)-L); if(d<bd){ bd=d; best=y; } });
-      if(best){ gone.add(best); x.a=best.a; x.b=best.b; x.t=best.t; x.all=best.all; x.sid=best.sid; x.svpr=best.svpr; } });
+      if(best){ gone.add(best); if(!x.name) x.name=String(best.name||"").trim(); x.a=best.a; x.b=best.b; x.t=best.t; x.all=best.all; x.sid=best.sid; x.svpr=best.svpr; } });
     for(let i=segM.length-1;i>=0;i--) if(gone.has(segM[i])) segM.splice(i,1);
     const extra=tr.filter(x=>!segM.some(y=>x.name&&nrm(y.name)===nrm(x.name))).map(x=>{ const line=r.coords.slice(x.a,x.b+1).map(p=>[p[0],p[1]]);
       let all=x.all||null; if(!all) try{ all=effortsFor('rt:'+r.id+':'+x.a,line).f.map(e=>e.t); }catch(e){} if(!all||!all.length) all=x.t!=null?[x.t]:null;
