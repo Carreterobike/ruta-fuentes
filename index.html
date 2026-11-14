@@ -3602,7 +3602,8 @@ const svOn=()=>me?!!me.strava:(svLegacy&&!!sv.k);
 async function svGet(path){
   if(!me&&svLegacy){ const r=await fetch(BRIDGE+'/api/'+path,{headers:{'X-Ichnos-Key':sv.k}}); if(r.status===401) throw new Error('clave'); if(r.status===429) throw new Error('limite'); if(!r.ok) throw new Error('http'); return r.json(); }
   try{ return await api('/api/'+path); }
-  catch(e){ if(e.status===409&&me){ me.strava=false; syncRaw.set('ichnos-auth',me); throw new Error('clave'); } if(e.status===429) throw new Error('limite'); throw new Error('http'); }
+  catch(e){ if(e.status===409&&me&&/^segments\/explore/.test(path)) throw new Error('http');   // Strava ya no deja buscar segmentos por zona: no es que se haya desconectado
+    if(e.status===409&&me){ me.strava=false; syncRaw.set('ichnos-auth',me); throw new Error('clave'); } if(e.status===429) throw new Error('limite'); throw new Error('http'); }
 }
 let svBusy=false;
 function svAgo(t){ if(!t) return 'todavía no'; const m=Math.round((Date.now()-t)/60000); return m<1?'ahora mismo':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:new Date(t).toLocaleDateString('es-ES',{day:'numeric',month:'short'}); }
@@ -4385,24 +4386,10 @@ async function svEffortsBackfill(maxN){
 }
 // busca todos los segmentos de Strava de la zona que estás mirando
 let sxBusy=false;
+// trae poco a poco los segmentos de TODAS tus salidas de Strava (nombre, tu tiempo y tus mejores marcas)
 async function svSweep(){
   if(!svOn()||sxBusy||document.hidden) return; sxBusy=true;
-  let st=store.get('ichnos-sweep',null)||{q:null,t:0};
-  if(!st.q||(!st.q.length&&Date.now()-st.t>30*86400000)){   // zonas de 0,04° donde más has rodado en bici
-    const cnt=new Map(); rides.forEach(r=>{ if(r._dup||!r.coords||isFoot(rideTipo(r))) return; const seen=new Set();
-      r.coords.forEach((p,i)=>{ if(i%15===0) seen.add(Math.floor(p[0]/0.04)+','+Math.floor(p[1]/0.04)); }); seen.forEach(k=>cnt.set(k,(cnt.get(k)||0)+1)); });
-    st.q=[...cnt.entries()].filter(([,n])=>n>=3).sort((a,b)=>b[1]-a[1]).slice(0,40).map(([k])=>{ const [a,b]=k.split(',').map(Number); return [a*0.04,b*0.04,0.04]; });
-  }
-  let calls=0, added=0;
-  while(st.q.length&&calls<40){ const [la,lo,S]=st.q[0]; let d;
-    try{ d=await svGet(`segments/explore?bounds=${la.toFixed(5)},${lo.toFixed(5)},${(la+S).toFixed(5)},${(lo+S).toFixed(5)}&activity_type=riding`); }catch(e){ break; }
-    st.q.shift(); calls++;
-    const segs=(d&&d.segments)||[];
-    segs.forEach(x=>{ const id=String(x.id); if(ssegs[id]||!x.points) return; ssegs[id]={id,name:x.name,coords:thinLine(decPoly(x.points),15),km:(x.distance||0)/1000,gr:x.avg_grade}; added++; });
-    if(segs.length>=10&&S>0.006){ const h=S/2; st.q.push([la,lo,h],[la+h,lo,h],[la,lo+h,h],[la+h,lo+h,h]); }   // zona llena: se mira en trozos más pequeños
-  }
-  st.t=Date.now(); store.set('ichnos-sweep',st);
-  if(added){ store.set('ichnos-ssegs',ssegs); if(T.segmentos){ drawSegs(); refreshSegs(); } }
+  try{ await svEffortsBackfill(40); }catch(e){}
   sxBusy=false;
 }
 setTimeout(svSweep,20000); setInterval(svSweep,16*60*1000);
