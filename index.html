@@ -2023,7 +2023,7 @@ function sharedNameAt(latlng){ const P=[latlng.lat,latlng.lng]; let best=null, b
 // el segmento de Strava que pasa justo por ahí (el más corto: es el más concreto)
 function svSegAt(latlng){ const P=[latlng.lat,latlng.lng]; let best=null, bl=Infinity;
   Object.values(ssegs).forEach(sg=>{ const c=sg.coords; if(!c||c.length<2) return;
-    if(!sg._bb){ let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); sg._bb=[a,b,n,e]; }
+    if(!sg._bb){ let a=90,b=180,n=-90,e=-180;   /* se calcula al momento, no se guarda */ c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); Object.defineProperty(sg,'_bb',{value:[a,b,n,e],enumerable:false,writable:true,configurable:true}); }
     const bb=sg._bb; if(P[0]<bb[0]-0.0003||P[0]>bb[2]+0.0003||P[1]<bb[1]-0.0004||P[1]>bb[3]+0.0004) return;
     if(distToLine(P,c.map(q=>[q[1],q[0]]))>15) return; const L=lenOf(c); if(L<bl){ bl=L; best=sg; } });
   return best; }
@@ -4469,6 +4469,9 @@ function namedTrailLine(name,near){
 // ================= SEGMENTOS DE STRAVA Y TRIALERAS DE LA GRUPETA =================
 // Lo de Strava solo lo ves tú (norma de Strava). Lo que compartes con la grupeta pasa a ser vuestro.
 let ssegs=store.get('ichnos-ssegs',{})||{};   // {sid:{id,name,coords:[[lat,lon,ele]],km,gr}}
+// segmentos ligeros: menos puntos (cada ~8 m de error como mucho) y sin decimales de más; ocupan unas 5 veces menos
+function segPack(c){ if(!c||c.length<2) return c; return thinLine(c,15).map(p=>[+(+p[0]).toFixed(5),+(+p[1]).toFixed(5),p[2]!=null?Math.round(p[2]):null]); }
+(function(){ let ch=false; Object.values(ssegs).forEach(sg=>{ if(sg&&!sg.pk&&sg.coords){ sg.coords=segPack(sg.coords); sg.pk=1; delete sg._bb; ch=true; } }); if(ch) store.set('ichnos-ssegs',ssegs); })();
 let sexp=store.get('ichnos-sexp',{})||{};     // zonas ya buscadas en Strava
 const SS_COL='#FC4C02', GT_COL='#2a9d4b';
 function decPoly(s){ let i=0,lat=0,lng=0; const out=[];
@@ -4486,7 +4489,7 @@ function applyEfforts(r,efforts){
       let line=null;
       if(sg.start_latlng&&sg.end_latlng&&r.coords){ const i=nearestIdx(r.coords,sg.start_latlng); const j=i>=0?nearestIdx(r.coords,sg.end_latlng,i+1):-1;
         if(i>=0&&j>i) line=thinLine(r.coords.slice(i,j+1).map((p,k)=>[p[0],p[1],r.eles&&r.eles[i+k]!=null?Math.round(r.eles[i+k]):null])); }
-      if(line&&line.length>=2) ssegs[sid]={id:sid,name:sg.name||e.name||'Segmento',coords:line,km:(sg.distance||0)/1000,gr:sg.average_grade,own:1};
+      if(line&&line.length>=2) ssegs[sid]={id:sid,pk:1,name:sg.name||e.name||'Segmento',coords:segPack(line),km:(sg.distance||0)/1000,gr:sg.average_grade,own:1};
       else if(!ssegs[sid]) return;
     }
     out.push({sid,t:e.elapsed_time,pr:e.pr_rank||null});
@@ -4522,7 +4525,7 @@ async function exploreSegs(){
       for(let lo=Math.floor(b.getWest()/S)*S; lo<b.getEast()&&calls<4; lo+=S){
         const k=type+':'+la.toFixed(2)+','+lo.toFixed(2); if(sexp[k]) continue; calls++;
         const d=await svGet(`segments/explore?bounds=${la.toFixed(4)},${lo.toFixed(4)},${(la+S).toFixed(4)},${(lo+S).toFixed(4)}&activity_type=${type}`);
-        (d&&d.segments||[]).forEach(s=>{ const id=String(s.id); if(ssegs[id]||!s.points) return; ssegs[id]={id,name:s.name,coords:decPoly(s.points),km:(s.distance||0)/1000,gr:s.avg_grade}; added++; });
+        (d&&d.segments||[]).forEach(s=>{ const id=String(s.id); if(ssegs[id]||!s.points) return; ssegs[id]={id,pk:1,name:s.name,coords:segPack(decPoly(s.points)),km:(s.distance||0)/1000,gr:s.avg_grade}; added++; });
         sexp[k]=Date.now();
       }
     }
