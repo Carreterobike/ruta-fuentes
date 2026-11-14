@@ -17,6 +17,12 @@ jobs:
       - name: Comprobar la llave
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "Falta el secreto CLOUDFLARE_API_TOKEN en GitHub"; exit 1; fi
+          # por si se pegó con espacios, saltos de línea u otro texto alrededor: nos quedamos con la llave
+          T=$(printf '%s' "$CLOUDFLARE_API_TOKEN" | grep -oE '[A-Za-z0-9_-]{40,}' | tail -1)
+          if [ -z "$T" ]; then echo "La llave guardada en GitHub no parece una llave de Cloudflare"; exit 1; fi
+          echo "::add-mask::$T"
+          echo "CLOUDFLARE_API_TOKEN=$T" >> "$GITHUB_ENV"
+          echo "Llave de $(printf '%s' "$T" | wc -c) letras"
       - name: Preparar la configuración (busca el espacio KV de Ichnos)
         run: |
           npx -y wrangler@3 kv namespace list > ns.json
