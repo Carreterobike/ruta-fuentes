@@ -1,4 +1,4 @@
-# Cada lunes por la noche baja las fuentes de OpenStreetMap y las deja listas para Ichnos
+# Cada lunes por la noche saca las fuentes del mapa de España (OpenStreetMap) y las deja listas para Ichnos
 name: Fuentes
 on:
   schedule:
@@ -9,9 +9,14 @@ permissions:
 jobs:
   fuentes:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - run: curl -sSfL -o spain.osm.pbf https://download.geofabrik.de/europe/spain-latest.osm.pbf
+      - run: |
+          osmium tags-filter spain.osm.pbf nwr/amenity=drinking_water,water_point,fountain nwr/man_made=water_tap nwr/natural=spring -o f.osm.pbf
+          osmium export f.osm.pbf -f geojsonseq --add-unique-id=type_id -o fuentes.geojson
       - run: python3 .github/scripts/fuentes.py
       - run: |
           git config user.name "ichnos-bot"
