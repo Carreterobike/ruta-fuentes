@@ -4044,22 +4044,23 @@ function openRide(r){
   const segs=[]; const dzLb=dz=>dz==null||Math.abs(dz)<5?'':dz<0?'↓ Bajada':'↑ Subida';
   const mine=(key,name,line,dz,src='mine',sid=null)=>{ const res=effortsFor(key,line), lb=dirLabels(res,dz), L0=src==='ss'?lenOf(line):0;
     const ok=e=>src!=='ss'||e.dd<=L0*1.2+40;   // un segmento de Strava medido con tu GPS tiene que medir lo mismo
-    ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) { const st=sid?svT(sid):null; segs.push({src,sid,svpr:sid&&svE(sid)?svE(sid).pr:null,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:st!=null?st:e.t,all:st!=null?stravaBest(sid).map(x=>x.t):res[k].filter(ok).map(x=>x.t),a:e.i,b:e.j}); } })); };
+    ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) { const st=sid?svT(sid):null; segs.push({src,sid,svpr:sid&&svE(sid)?svE(sid).pr:undefined,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:st!=null?st:e.t,all:st!=null?stravaBest(sid).map(x=>x.t):res[k].filter(ok).map(x=>x.t),a:e.i,b:e.j}); } })); };
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
-  if(!fr) (r.sef||[]).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const cc=sg.coords||[]; let a=cc.length>1?nearestIdx(r.coords,cc[0]):-1, b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1;
+  const S0=(r.sef&&r.sef.length)?r.sef:(twin?twin.sef:[]);   // los segmentos que Strava midió en esta salida
+  if(!fr) S0.forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const cc=sg.coords||[]; let a=cc.length>1?nearestIdx(r.coords,cc[0]):-1, b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1;
     segs.push({src:'sv',sid:e.sid,svpr:e.pr,name:sg.name,dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:stravaBest(e.sid).map(x=>x.t),a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });
   // los segmentos de Strava que conoces aunque esta salida no venga de Strava (se miden con tu GPS)
   // si Strava ya ha medido esta salida (o la misma salida que llegó por Strava), solo salen sus segmentos, con su tiempo exacto
   const svDone=(r.sef&&r.sef.length)||(twin&&twin.sef.length);
-  if(!fr){ const have=new Set((r.sef||[]).map(e=>e.sid)); Object.values(ssegs).forEach(sg=>{ if(have.has(sg.id)||!sg.coords||sg.coords.length<2) return; if(svDone&&svT(sg.id)==null) return; const c0=sg.coords[0]; if(!r._bb||c0[0]<r._bb[0]-0.01||c0[0]>r._bb[2]+0.01||c0[1]<r._bb[1]-0.01||c0[1]>r._bb[3]+0.01) return; mine('ss:'+sg.id,sg.name,sg.coords,segDz(sg.coords),'ss',sg.id); }); }
+  if(!fr){ const have=new Set(S0.map(e=>e.sid)); Object.values(ssegs).forEach(sg=>{ if(have.has(sg.id)||!sg.coords||sg.coords.length<2) return; if(svDone&&svT(sg.id)==null) return; const c0=sg.coords[0]; if(!r._bb||c0[0]<r._bb[0]-0.01||c0[0]>r._bb[2]+0.01||c0[1]<r._bb[1]-0.01||c0[1]>r._bb[3]+0.01) return; mine('ss:'+sg.id,sg.name,sg.coords,segDz(sg.coords),'ss',sg.id); }); }
   // la misma trialera partida en trozos se enseña una sola vez
   const segM=[]; segs.forEach(x=>{ if(x.sid&&segM.some(y=>y.sid===x.sid)) return;   // el mismo segmento de Strava solo una vez (con su tiempo exacto)
     const o=segM.find(y=>nrm(y.name)===nrm(x.name)); if(o){ if(o.sid||x.sid) { segM.push({...x}); return; } o.t+=x.t; o.all=null; if(x.a!=null){ o.a=o.a==null?x.a:Math.min(o.a,x.a); o.b=o.b==null?x.b:Math.max(o.b,x.b); } } else segM.push({...x}); });
   // tu mejor tiempo: en dorado; si hoy has hecho la mejor marca, la de antes sale en plateado
   const best=x=>{ const S=x.sid&&ssegs[x.sid]&&ssegs[x.sid].st;
     if(S&&x.t!=null){ const loc=(x.all||[]).slice().sort((p,q)=>p-q); const i=loc.indexOf(x.t); if(i>=0) loc.splice(i,1);
-      if(x.svpr===1||x.t<=S.pr){ const prev=S.n>1&&loc.length>=S.n-1&&loc[0]>=x.t?loc[0]:null;   // "antes" solo si conocemos todas tus veces
+      if(x.svpr===1||(x.svpr===undefined&&x.t<=S.pr)){ const prev=S.n>1&&loc.length>=S.n-1&&loc[0]>=x.t?loc[0]:null;   // "antes" solo si conocemos todas tus veces
         return {pr:true,sub:`<span class="gold">¡mejor marca!</span>${prev!=null?` <span class="silver">antes ${fmtT(prev)}</span>`:S.n<=1?' <span class="silver">primera vez</span>':''}`}; }
       return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold">🏆 ${fmtT(S.pr)}</span>`}; }
     if(x.sid&&x.t!=null&&x.svpr===1) return {pr:true,sub:'<span class="gold">¡mejor marca!</span>'};
