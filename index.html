@@ -635,7 +635,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
   body.crear-on .leaflet-top.leaflet-right{top:calc(136px + env(safe-area-inset-top,0px))}
 }
 
-body:not(.crear-on) #modes{display:none}
+#modes{display:none!important}   /* la modalidad se elige al empezar la ruta (pickMode), sin barra de iconos */
 .mpgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .mpgrid button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;font-size:12.5px}
 .mpgrid button svg{width:34px;height:34px}
