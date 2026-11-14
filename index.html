@@ -1298,10 +1298,10 @@ async function syncNow(manual){
       const rt=idx[k]||0, lt=m.mt[k]||0;
       if(rt&&rt>lt){ const o=await syncReq('/'+k); if(o){
         // segmentos de Strava y mis rutas: se juntan sin recargar la app (si no, se recargaba una y otra vez)
-        if(k==='ichnos-ssegs'&&o.v&&typeof o.v==='object'){ let extra=false; const R=o.v;
+        if(k==='ichnos-ssegs'&&o.v&&typeof o.v==='object'){ let extra=false; const R=segsUnpack(o.v);
           Object.keys(ssegs).forEach(id=>{ if(!R[id]) extra=true; });
           Object.entries(R).forEach(([id,sg])=>{ if(!ssegs[id]) ssegs[id]=sg; else if(sg.st&&(!ssegs[id].st||sg.st.t>ssegs[id].st.t)) ssegs[id].st=sg.st; });
-          syncRaw.set(k,ssegs); m.mt[k]=extra?Date.now():rt; continue; }
+          syncRaw.set(k,segsPack(ssegs)); m.mt[k]=extra?Date.now():rt; continue; }
         if(k==='ichnos-misrutas'){ syncRaw.set(k,o.v||[]); m.mt[k]=rt; try{ misRutas=o.v||[]; renderMisRutas(); }catch(e){} continue; }
         if(o.v==null) syncRaw.del(k); else syncRaw.set(k,o.v); m.mt[k]=rt; gotSettings=true; } }
       else if(!rt||lt>rt){ const v=store.get(k,null); if(v==null&&!lt) continue; const t=lt||1; await syncReq('/'+k,{method:'PUT',body:JSON.stringify({t,v})}); m.mt[k]=t; }
@@ -4221,7 +4221,7 @@ function openRide(r){
     const need=rvList.filter(x=>x.sid&&ssegs[x.sid]&&(!ssegs[x.sid].st||ssegs[x.sid].st.t<(r.sefT||r.date||0))).sort((x,y)=>(x.src==='sv'||x.src==='ss'?1:0)-(y.src==='sv'||y.src==='ss'?1:0));
     for(const x of need){ if(n>=25||rideOpen!==r) break; n++;
       try{ const d=await svGet('segments/'+x.sid), a=d&&d.athlete_segment_stats; if(a&&a.pr_elapsed_time) ssegs[x.sid].st={pr:a.pr_elapsed_time,n:a.effort_count||0,d:a.pr_date||null,t:Date.now()}; }catch(e){ break; } }
-    if(n){ store.set('ichnos-ssegs',ssegs); if(rideOpen===r) reRender(); } };
+    if(n){ saveSsegs(); if(rideOpen===r) reRender(); } };
   $('rvSegs').innerHTML=segHtml(segM);
   $('rvSegs').onclick=ev=>{ const li=ev.target.closest('li[data-i]'); if(li) segToMap(rvList[+li.dataset.i]); };
   // y todas las trialeras del mapa por las que has pasado
@@ -4468,10 +4468,23 @@ function namedTrailLine(name,near){
 
 // ================= SEGMENTOS DE STRAVA Y TRIALERAS DE LA GRUPETA =================
 // Lo de Strava solo lo ves tú (norma de Strava). Lo que compartes con la grupeta pasa a ser vuestro.
-let ssegs=store.get('ichnos-ssegs',{})||{};   // {sid:{id,name,coords:[[lat,lon,ele]],km,gr}}
-// segmentos ligeros: menos puntos (cada ~8 m de error como mucho) y sin decimales de más; ocupan unas 5 veces menos
-function segPack(c){ if(!c||c.length<2) return c; return thinLine(c,15).map(p=>[+(+p[0]).toFixed(5),+(+p[1]).toFixed(5),p[2]!=null?Math.round(p[2]):null]); }
-(function(){ let ch=false; Object.values(ssegs).forEach(sg=>{ if(sg&&!sg.pk&&sg.coords){ sg.coords=segPack(sg.coords); sg.pk=1; delete sg._bb; ch=true; } }); if(ch) store.set('ichnos-ssegs',ssegs); })();
+// segmentos de Strava: en memoria con coords; guardados comprimidos (pocos puntos y en texto corto, como los recorridos de Strava)
+function rdp(c,tol){ if(c.length<3) return c; const k=Math.cos(c[0][0]*Math.PI/180)*111320, M=111320;
+  const keep=new Uint8Array(c.length); keep[0]=keep[c.length-1]=1; const st=[[0,c.length-1]];
+  while(st.length){ const [a,b]=st.pop(); const ax=c[a][1]*k, ay=c[a][0]*M, bx=c[b][1]*k, by=c[b][0]*M, dx=bx-ax, dy=by-ay, L=Math.hypot(dx,dy)||1e-9; let md=-1, mi=-1;
+    for(let i=a+1;i<b;i++){ const d=Math.abs(dy*(c[i][1]*k-ax)-dx*(c[i][0]*M-ay))/L; if(d>md){ md=d; mi=i; } }
+    if(md>tol){ keep[mi]=1; st.push([a,mi],[mi,b]); } }
+  return c.filter((p,i)=>keep[i]); }
+function segPack(c){ if(!c||c.length<2) return c; return rdp(c,4).slice(0,400).map(p=>[+(+p[0]).toFixed(5),+(+p[1]).toFixed(5),p[2]!=null?Math.round(p[2]):null]); }
+function enc3(c){ let o='',pa=0,pb=0,pe=0; const e=v=>{ v=v<0?~(v<<1):(v<<1); let r=''; while(v>=0x20){ r+=String.fromCharCode((0x20|(v&0x1f))+63); v>>=5; } return r+String.fromCharCode(v+63); };
+  c.forEach(p=>{ const a=Math.round(p[0]*1e5), b=Math.round(p[1]*1e5), h=p[2]!=null?Math.round(p[2]):pe; o+=e(a-pa)+e(b-pb)+e(h-pe); pa=a; pb=b; pe=h; }); return o; }
+function dec3(s){ const out=[]; let i=0,a=0,b=0,h=0; const d=()=>{ let r=0,sh=0,v; do{ v=s.charCodeAt(i++)-63; r|=(v&0x1f)<<sh; sh+=5; }while(v>=0x20); return (r&1)?~(r>>1):(r>>1); };
+  while(i<s.length){ a+=d(); b+=d(); h+=d(); out.push([a/1e5,b/1e5,h]); } return out; }
+function segsPack(o){ const r={}; Object.entries(o||{}).forEach(([id,sg])=>{ if(!sg) return; const {coords,_bb,...rest}=sg; r[id]=coords?{...rest,p:enc3(sg.pk?coords:segPack(coords)),pk:1}:rest; }); return r; }
+function segsUnpack(o){ const r={}; Object.entries(o||{}).forEach(([id,sg])=>{ if(!sg) return; if(sg.p!=null){ const {p,...rest}=sg; r[id]={...rest,coords:dec3(p),pk:1}; } else r[id]={...sg,coords:sg.pk?sg.coords:segPack(sg.coords),pk:1}; }); return r; }
+let ssegs=segsUnpack(store.get('ichnos-ssegs',{})||{});   // {sid:{id,name,coords:[[lat,lon,ele]],km,gr}}
+function saveSsegs(){ store.set('ichnos-ssegs',segsPack(ssegs)); }
+(function(){ try{ const raw=store.get('ichnos-ssegs',{})||{}; if(Object.values(raw).some(x=>x&&x.coords)) saveSsegs(); }catch(e){} })();
 let sexp=store.get('ichnos-sexp',{})||{};     // zonas ya buscadas en Strava
 const SS_COL='#FC4C02', GT_COL='#2a9d4b';
 function decPoly(s){ let i=0,lat=0,lng=0; const out=[];
@@ -4495,7 +4508,7 @@ function applyEfforts(r,efforts){
     out.push({sid,t:e.elapsed_time,pr:e.pr_rank||null});
   });
   r.sef=out; r.sefT=(!out.length&&Date.now()-r.date<3*86400000)?null:Date.now();   // recién subida: Strava aún no tiene los segmentos, se vuelve a mirar
-  store.set('ichnos-ssegs',ssegs);
+  saveSsegs();
   return out;
 }
 // trae los segmentos de las salidas de Strava que aún no los tienen (pocas cada vez)
@@ -4530,7 +4543,7 @@ async function exploreSegs(){
       }
     }
   }catch(e){}
-  store.set('ichnos-sexp',sexp); if(added){ store.set('ichnos-ssegs',ssegs); drawSegs(); refreshSegs(); }
+  store.set('ichnos-sexp',sexp); if(added){ saveSsegs(); drawSegs(); refreshSegs(); }
   sxBusy=false;
 }
 map.on('moveend',()=>{ if(T.segmentos) setTimeout(exploreSegs,900); });
