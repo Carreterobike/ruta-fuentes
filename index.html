@@ -1924,6 +1924,32 @@ const STRAVA_NAMES=["Trialera Les Maleses","Cal Dimoni","Cal Dimoni Full Track",
 function myNamesGeo(){ return {type:'FeatureCollection',features:myNames.map(n=>({type:'Feature',properties:{name:n.name,id:n.id},geometry:{type:'LineString',coordinates:n.coords}}))}; }
 function saveMyNames(){ store.set('ichnos-nombres',myNames); glSet(()=>glMap.getSource('mynames').setData(myNamesGeo())); }
 // distancia en metros de un punto a una línea [[lon,lat],...]
+// los trozos de una misma trialera con el mismo nombre se unen en una sola (coords en [lng,lat])
+function joinLines(A,B){ const d=(p,q)=>dist([p[1],p[0]],[q[1],q[0]]), T=40, a0=A[0],a1=A[A.length-1],b0=B[0],b1=B[B.length-1];
+  if(d(a1,b0)<T) return A.concat(B); if(d(a1,b1)<T) return A.concat([...B].reverse());
+  if(d(a0,b1)<T) return B.concat(A); if(d(a0,b0)<T) return [...B].reverse().concat(A); return null; }
+let joinBusy=false;
+async function joinMyNames(){
+  if(joinBusy) return; joinBusy=true; let ch=false;
+  try{
+    // 1) tus trozos que tienen el mismo nombre y se tocan
+    for(let i=0;i<myNames.length;i++) for(let j=i+1;j<myNames.length;j++){ const A=myNames[i],B=myNames[j];
+      if(nrm(A.name)!==nrm(B.name)) continue; const J=joinLines(A.coords,B.coords); if(J){ A.coords=J; myNames.splice(j,1); j=i; ch=true; } }
+    // 2) el trozo del mapa que ya se llama igual y toca el tuyo (p. ej. la primera parte del Chupacabras)
+    for(const n of myNames){ if(n.osmJ===n.coords.length) continue;
+      for(let g=0;g<8;g++){ let grew=false;
+        for(const e of [n.coords[0],n.coords[n.coords.length-1]]){ const [x,y]=t2xy(e[1],e[0]); let fs=[]; try{ fs=await tileTrails(x,y); }catch(_){}
+          for(const f of fs){ if(!f.props.name||nrm(f.props.name)!==nrm(n.name)) continue; const L2=f.line.map(p=>[+p[1].toFixed(6),+p[0].toFixed(6)]);
+            if(distToLine([L2[0][1],L2[0][0]],n.coords)<20&&distToLine([L2[L2.length-1][1],L2[L2.length-1][0]],n.coords)<20) continue;   // ya está dentro
+            const J=joinLines(n.coords,L2); if(J){ n.coords=J; grew=true; ch=true; } } }
+        if(!grew) break; }
+      n.osmJ=n.coords.length; }
+  }catch(e){ console.warn(e); }
+  joinBusy=false;
+  if(ch){ effCache.clear(); toast('He unido los trozos de trialera que tienen el mismo nombre'); }
+  store.set('ichnos-nombres',myNames); glSet(()=>glMap.getSource('mynames').setData(myNamesGeo()));
+}
+setTimeout(()=>joinMyNames(),4000);
 function distToLine(ll,coords){
   const k=Math.cos(ll[0]*Math.PI/180)*111320, m=111320; let best=Infinity;
   const P=[ll[1]*k,ll[0]*m];
@@ -1988,7 +2014,7 @@ function trailAt(latlng){
     if(mine){ mine.name=nn; }
     else{ const c=hit.length?lineOf(hit[0]):null; if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
       myNames.push({id:Date.now(),name:nn,coords:c.map(x=>[+x[0].toFixed(6),+x[1].toFixed(6)])}); }
-    saveMyNames(); toast(`Guardado: "${nn}"`);
+    saveMyNames(); toast(`Guardado: "${nn}"`); joinMyNames();
   };
   d.appendChild(bt);
   if(me){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Cambiar color':'Proponer otro color';
@@ -4391,7 +4417,9 @@ function refreshSegs(){
       const res=effortsFor('trail:'+nm+':'+line[0].map(x=>x.toFixed(3)).join(','),line);
       if(res.f.length||res.b.length) found.push({nm,line,res});
     });
-    myNames.forEach(n=>{ const line=n.coords.map(c=>[c[1],c[0]]); const res=effortsFor('mine:'+n.id,line); if(res.f.length||res.b.length) found.push({nm:n.name,line,res}); });
+    myNames.forEach(n=>{ const line=n.coords.map(c=>[c[1],c[0]]); const res=effortsFor('mine:'+n.id,line); if(!(res.f.length||res.b.length)) return;
+      for(let i=found.length-1;i>=0;i--) if(nrm(found[i].nm)===nrm(n.name)) found.splice(i,1);   // una sola vez cada nombre
+      found.push({nm:n.name,line,res}); });
     found.sort((a,b)=>(b.res.f.length+b.res.b.length)-(a.res.f.length+a.res.b.length)).slice(0,30).forEach(x=>
       add(x.nm,'Trialera',bestTxt(x.res,null),()=>{ map.fitBounds(L.latLngBounds(x.line),{padding:[40,40]});
         const d=document.createElement('div'); d.className='tpop'; d.innerHTML=`<b>${esc(x.nm)}</b><br><small>Trialera · ${fmtKm(lenOf(x.line)/1000)} km</small>`; d.appendChild(timesBlock(x.res,null));
