@@ -1684,7 +1684,7 @@ function updateSheet(){
   $('optExtras').hidden=!T.crear||wz.on;
   if(!$('optLevel').hidden) paintLevel();
   $('secFuentes').hidden=!(route && fuentesAsked) || crearClosed || wz.on;
-  $('lgBox').hidden=!(T.trialeras && trailsMode());
+  $('lgBox').hidden=!(T.trialeras && (!T.crear || trailsMode()));
   $('addF').hidden=!T.fuentes;
   $('secViaje').hidden=!trip||crearClosed||wz.on||!$('rideOn').hidden||store.get('ichnos-viajeX',false);
   $('tripBack').hidden=!(trip&&trip.open!=null);
@@ -1947,14 +1947,14 @@ function paintFEvery(){ $('exFopt').hidden=!wantF;
 $('exFm').querySelectorAll('button').forEach(b=>b.onclick=()=>{ fEvery.m=b.dataset.m; fEvery.v=FV[fEvery.m][1]; store.set('ichnos-exFe',fEvery); paintFEvery(); if(route&&points.length>=2) planFountains(); });
 $('exA').onclick=()=>{ wantA=!wantA; syncRaw.set('ichnos-exA',wantA); paintExtras(); if(route&&points.length>=2){ almOpen=wantA; if(!wantA) lunchLayer.clearLayers(); updateSheet(); if(wantA) searchLunch(); } };
 document.querySelectorAll('#segEbike button').forEach(b=>b.onclick=()=>{ ebikeType=b.dataset.e; syncRaw.set('ichnos-ebike',ebikeType); paintExtras();
-  document.querySelector('#secCapas [data-t="trialeras"]').hidden=!trailsMode(); applyTrails(); updateSheet(); if(points.length>=2) calc(); });
+  document.querySelector('#secCapas [data-t="trialeras"]').hidden=false; applyTrails(); updateSheet(); if(points.length>=2) calc(); });
 setTimeout(paintExtras,0);
-function paintModeUI(){ document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x.dataset.mode===mode)); const t=document.querySelector('#secCapas [data-t="trialeras"]'); if(t) t.hidden=!trailsMode(); }
+function paintModeUI(){ document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x.dataset.mode===mode)); const t=document.querySelector('#secCapas [data-t="trialeras"]'); if(t) t.hidden=false; }
 setTimeout(paintModeUI,0);
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
   mode=b.dataset.mode;
   document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelector('#secCapas [data-t="trialeras"]').hidden = !trailsMode();   // solo en modalidades de montaña
+  document.querySelector('#secCapas [data-t="trialeras"]').hidden = false;   // las trialeras se pueden ver siempre (al crear ruta solo cuentan en montaña)
   store.set('ichnos-modo',mode);
   applyTrails(); updateSheet(); recommendTrails();
   if(points.length>=2) calc();
@@ -1964,7 +1964,7 @@ document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
 const KIND={track:'Pista',path:'Sendero',footway:'Camino peatonal',cycleway:'Carril bici',bridleway:'Camino de herradura',steps:'Escaleras'};
 function applyTrails(){
   glSet(()=>{
-    const show=trailsMode() && T.trialeras;
+    const show=T.trialeras && (!T.crear || trailsMode());
     TRAIL_LAYERS.forEach(id=>glMap.setLayoutProperty(id,'visibility',show?'visible':'none'));
     const gr=mode==='gravel';
     glMap.setPaintProperty('trail-track','line-color',gr?'#8a5a1f':'#8a6a3a');
@@ -2063,7 +2063,7 @@ function lineOf(f){ const g=f.geometry; if(!g) return null; if(g.type==='LineStr
   if(g.type==='MultiLineString') return g.coordinates.reduce((a,b)=>b.length>a.length?b:a,[]); return null; }
 // Lo que sale al tocar una trialera
 function trailAt(latlng){
-  if(!glReady||!trailsMode()||!T.trialeras) return null;
+  if(!glReady||!T.trialeras||(T.crear&&!trailsMode())) return null;
   const pt=glMap.project([latlng.lng,latlng.lat]);
   const hit=glMap.queryRenderedFeatures([[pt.x-8,pt.y-8],[pt.x+8,pt.y+8]],{layers:['trail-rated','trail-track','trail-path']});
   const mine=myNameAt(latlng);
@@ -4702,7 +4702,7 @@ async function devBackfill(){
   store.set('ichnos-devfill',3);
 }
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794751691';
+const BUILD='1794754532';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1]; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1');
     if(T.crear||!$('rideView').hidden){ toast('Hay una versión nueva de Ichnos. Se pondrá al volver a abrir la app.',4000); return; }
