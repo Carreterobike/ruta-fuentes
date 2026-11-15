@@ -359,6 +359,22 @@ export default {
         return J(all[rid] || { l: [], c: [] });
       }
       if (P === '/avisos') return raw(await KV.get('nt:' + me.id) || '[]', cors);
+      // "Algo va mal": el aviso llega al administrador con lo que estaba pasando en la app
+      if (P === '/fallo' && request.method === 'POST') {
+        const b = await request.json().catch(() => ({}));
+        const id = 'bug:' + Date.now() + ':' + me.id;
+        const rec = { id, u: me.id, t: Date.now(), auto: !!b.auto, txt: String(b.txt || '').slice(0, 2000), info: b.info && typeof b.info === 'object' ? JSON.parse(JSON.stringify(b.info).slice(0, 20000) || '{}') : {}, foto: typeof b.foto === 'string' && b.foto.startsWith('data:image/') && b.foto.length < 600000 ? b.foto : null };
+        await KV.put(id, JSON.stringify(rec), { expirationTtl: 90 * 86400 });
+        const adm = await KV.get('admin');
+        if (adm) await notify(KV, adm, { k: 'bug', u: me.id, x: (rec.auto ? '[automático] ' : '') + rec.txt.slice(0, 140), id });
+        return J({ ok: 1 });
+      }
+      if (P === '/fallos' && (await KV.get('admin')) === me.id) {
+        const L = await KV.list({ prefix: 'bug:' }); const out = [];
+        for (const k of L.keys.slice(-40).reverse()) { const v = JSON.parse(await KV.get(k.name) || 'null'); if (v) { v.foto = !!v.foto; out.push(v); } }
+        return J(out);
+      }
+      if (P.startsWith('/fallos/') && (await KV.get('admin')) === me.id) return raw(await KV.get(decodeURIComponent(P.slice(8))) || 'null', cors);
 
       // Mapa compartido: opiniones de sitios, sitios añadidos u ocultados y fuentes
       if (P === '/g' && req.method === 'GET') {
