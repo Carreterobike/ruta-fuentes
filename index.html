@@ -535,6 +535,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .lock .lk-link{background:none;color:#c9ced2;font-weight:600;font-size:14px;padding:4px;text-decoration:underline}
 .lock input[hidden]{display:none}
 #mText{white-space:pre-line}
+.bugf textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:16px;background:var(--bg);color:var(--ink)}.bugi{text-align:left;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;white-space:normal}
 #rvOnMap[hidden]{display:none!important}
 .wz-st{display:flex;gap:4px;margin-bottom:10px}.wz-st i{flex:1;height:4px;border-radius:2px;background:var(--line)}.wz-st i.on{background:var(--acc,#B6E22E)}
 #wzB{display:flex;flex-direction:column;gap:10px}#wzB .sub{font-size:14px;color:var(--muted);line-height:1.45}
@@ -837,6 +838,12 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
     <details class="help"><summary>Cambiar la contraseña</summary>
       <div class="acpw"><input type="password" id="acOld" placeholder="Contraseña actual" autocomplete="current-password"><input type="password" id="acNew" placeholder="Contraseña nueva" autocomplete="new-password"><input type="password" id="acNew2" placeholder="Repite la nueva" autocomplete="new-password"><button class="btn-main" id="acSave">Cambiar contraseña</button></div>
     </details>
+  </section>
+  <section class="pblock" id="bugBox">
+    <div class="pb-h"><h3>¿Algo va mal?</h3></div>
+    <p class="svp">Si ves algo raro (un tiempo que no cuadra, un botón que no va…), cuéntalo aquí. Le llega al administrador con lo que estaba pasando en la app.</p>
+    <button class="btn" id="bugBtn">⚠️ Algo va mal</button>
+    <div id="bugAdm" hidden><button class="btn" id="bugList" style="margin-top:8px">Ver los avisos de fallos</button></div>
   </section>
   <section class="pblock" id="icuBox">
     <div class="pb-h"><h3>Intervals.icu</h3><span class="svchip" id="icuChip">Sin conectar</span></div>
@@ -1268,6 +1275,7 @@ lkMode('entrar');
 function paintAccount(){
   if(!$('acInfo')) return;
   $('acBox').hidden=!me;
+  if($('bugAdm')) $('bugAdm').hidden=!(me&&me.admin);
   if(me) $('acInfo').innerHTML=`Has entrado como <b>${esc(me.name||'')}</b> (usuario <b>${esc(me.user||'')}</b>).`;
   if(typeof paintAdmin==='function') paintAdmin();
   try{ paintIcu(); }catch(e){}
@@ -1387,9 +1395,9 @@ function syncAgo(){ const m=syncMeta(); return m.last?svAgo(m.last):'todavía no
 let toastTimer=null;
 function toast(t,ms=3200){ const el=$('toast'); el.textContent=t; el.hidden=!t; clearTimeout(toastTimer); if(t) toastTimer=setTimeout(()=>el.hidden=true,ms); }
 // Pregunta con dos botones. Devuelve true (sí) o false (no).
-function ask(title,text,yes,no){
+function ask(title,text,yes,no,keep){
   return new Promise(res=>{
-    $('mTitle').textContent=title; $('mText').textContent=text; $('mYes').textContent=yes; $('mNo').textContent=no;
+    $('mTitle').textContent=title; if(!keep) $('mText').textContent=text; $('mYes').textContent=yes; $('mNo').textContent=no||''; $('mNo').hidden=no==null;
     $('modal').hidden=false; $('mYes').focus();
     const done=v=>{ $('modal').hidden=true; $('mYes').onclick=$('mNo').onclick=null; res(v); };
     $('mYes').onclick=()=>done(true); $('mNo').onclick=()=>done(false);
@@ -3037,14 +3045,16 @@ function opToFountains(j){
   });
 }
 // fuentes preparadas cada semana en datos/fuentes (trozos de 0,5°): salen al momento
+// la copia de prueba (/prueba/) lee las mismas fuentes que la app de verdad
+const FUE_BASE=location.pathname.replace(/\/prueba\/.*$/,'/').replace(/[^/]*$/,'')+'datos/fuentes/';
 let fIdx=null; const fTileDone=new Map();
-async function fuentesIdx(){ if(fIdx) return fIdx; try{ const r=await fetch('datos/fuentes/index.json?d='+new Date().toISOString().slice(0,10)); if(r.ok) fIdx=await r.json(); }catch(e){} return fIdx||{t:[]}; }
+async function fuentesIdx(){ if(fIdx) return fIdx; try{ const r=await fetch(FUE_BASE+'index.json?d='+new Date().toISOString().slice(0,10)); if(r.ok) fIdx=await r.json(); }catch(e){} return fIdx||{t:[]}; }
 async function fuentesFile(s,w,n,e){
   const idx=await fuentesIdx(); if(!idx.t||!idx.t.length) throw new Error('sin archivo');
   const have=new Set(idx.t), jobs=[];
   for(let a=Math.floor(s*2)/2;a<n;a+=0.5) for(let b=Math.floor(w*2)/2;b<e;b+=0.5){ const k=a.toFixed(1)+'_'+b.toFixed(1); if(!have.has(k)) continue;
     if(!fTileDone.has(k)) fTileDone.set(k,(async()=>{ const c=await tcGet('fue:'+k+':'+idx.v); let j=c;
-      if(!j){ const r=await fetch('datos/fuentes/'+k+'.json?v='+idx.v); if(!r.ok) throw new Error('fuentes'); j=await r.json(); tcPut('fue:'+k+':'+idx.v,j); }
+      if(!j){ const r=await fetch(FUE_BASE+k+'.json?v='+idx.v); if(!r.ok) throw new Error('fuentes'); j=await r.json(); tcPut('fue:'+k+':'+idx.v,j); }
       opToFountains({elements:j.map(x=>({type:x[0],id:x[1],lat:x[2],lon:x[3],tags:x[4]||{}}))}); })().catch(err=>{ fTileDone.delete(k); throw err; }));
     jobs.push(fTileDone.get(k)); }
   await Promise.all(jobs); }
@@ -4345,14 +4355,21 @@ function openRide(r){
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
   const S0=(r.sef&&r.sef.length)?r.sef:(twin?twin.sef:[]);   // los segmentos que Strava midió en esta salida
-  if(!fr) S0.forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const cc=sg.coords||[]; let a=cc.length>1?nearestIdx(r.coords,cc[0]):-1, b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1;
-    segs.push({src:'sv',sid:e.sid,svpr:e.pr,name:sg.name,dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:stravaBest(e.sid).map(x=>x.t),a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });
+  const S0own=(r.sef&&r.sef.length)?r:twin, nVez={};
+  if(!fr) S0.slice().sort((x,y)=>(x.o??1e9)-(y.o??1e9)).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const cc=sg.coords||[]; let a=-1,b=-1;
+    if(e.o!=null&&r.times&&S0own){ const t0=e.o+((S0own.date||r.date)-r.date)/1000; a=r.times.findIndex(t=>t>=t0); b=r.times.findIndex(t=>t>=t0+e.t); if(a>=0&&b<0) b=r.times.length-1; }
+    else if(cc.length>1){ a=nearestIdx(r.coords,cc[0]); b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1; }
+    nVez[e.sid]=(nVez[e.sid]||0)+1; const vez=nVez[e.sid], veces=S0.filter(x=>x.sid===e.sid).length;
+    segs.push({src:'sv',sid:e.sid,key:e.sid+'#'+vez,svpr:e.pr,name:String(sg.name||'').trim()+(veces>1?` (${vez}.ª vez)`:''),dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:[e.t,...stravaBest(e.sid).filter(z=>!S0own||z.date!==S0own.date).map(x=>x.t)],a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });   // "antes" = tus marcas de otros días
+  // salidas guardadas antes de saber cuándo empieza cada vuelta: se pregunta a Strava una vez y se vuelve a pintar
+  if(!fr&&S0own&&S0.some(e=>e.o==null)&&/^strava-\d+$/.test(S0own.id||'')&&!S0own._oAsk){ S0own._oAsk=1;
+    svGet(`activities/${S0own.id.slice(7)}?include_all_efforts=true`).then(async d=>{ if(!d||!d.segment_efforts) return; applyEfforts(S0own,d.segment_efforts); const c=cleanRide(S0own); c.mt=S0own.mt=Date.now(); await ridesTx('readwrite',x=>x.put(c)); syncDirtyRide(S0own.date); if(rideOpen===r) openRide(r); }).catch(()=>{}); }
   // los segmentos de Strava que conoces aunque esta salida no venga de Strava (se miden con tu GPS)
   // si Strava ya ha medido esta salida (o la misma salida que llegó por Strava), solo salen sus segmentos, con su tiempo exacto
   const svDone=(r.sef&&r.sef.length)||(twin&&twin.sef.length);
   if(!fr){ const have=new Set(S0.map(e=>e.sid)); Object.values(ssegs).forEach(sg=>{ if(have.has(sg.id)||!sg.coords||sg.coords.length<2) return; if(svDone&&svT(sg.id)==null) return; const c0=sg.coords[0]; if(!r._bb||c0[0]<r._bb[0]-0.01||c0[0]>r._bb[2]+0.01||c0[1]<r._bb[1]-0.01||c0[1]>r._bb[3]+0.01) return; mine('ss:'+sg.id,sg.name,sg.coords,segDz(sg.coords),'ss',sg.id); }); }
   // la misma trialera partida en trozos se enseña una sola vez
-  const segM=[]; segs.forEach(x=>{ if(x.sid&&segM.some(y=>y.sid===x.sid)) return;   // el mismo segmento de Strava solo una vez (con su tiempo exacto)
+  const segM=[]; segs.forEach(x=>{ if(x.sid&&segM.some(y=>(y.key||y.sid)===(x.key||x.sid))) return;   // el mismo segmento de Strava solo una vez (con su tiempo exacto)
     const o=segM.find(y=>nrm(y.name)===nrm(x.name)); if(o){ if(o.sid||x.sid) { segM.push({...x}); return; } o.t+=x.t; o.all=null; if(x.a!=null){ o.a=o.a==null?x.a:Math.min(o.a,x.a); o.b=o.b==null?x.b:Math.max(o.b,x.b); } } else segM.push({...x}); });
   // tu mejor tiempo: en dorado; si hoy has hecho la mejor marca, la de antes sale en plateado
   const best=x=>{ const S=x.sid&&ssegs[x.sid]&&ssegs[x.sid].st;
@@ -4665,7 +4682,8 @@ function applyEfforts(r,efforts){
       if(line&&line.length>=2) ssegs[sid]={id:sid,pk:1,name:sg.name||e.name||'Segmento',coords:segPack(line),km:(sg.distance||0)/1000,gr:sg.average_grade,own:1};
       else if(!ssegs[sid]) return;
     }
-    out.push({sid,t:e.elapsed_time,pr:e.pr_rank||null});
+    const o=e.start_date&&r.date?Math.round((Date.parse(e.start_date)-r.date)/1000):null;   // segundos desde la salida: cada vuelta en su sitio
+    out.push({sid,t:e.elapsed_time,pr:e.pr_rank||null,o});
   });
   r.sef=out; r.sefT=(!out.length&&Date.now()-r.date<3*86400000)?null:Date.now();   // recién subida: Strava aún no tiene los segmentos, se vuelve a mirar
   saveSsegs();
@@ -4701,8 +4719,58 @@ async function devBackfill(){
   if(ch){ const chg=rides.filter(r=>r._devNew); await ridesTx('readwrite',st=>chg.forEach(r=>{ delete r._devNew; const c=cleanRide(r); c.mt=r.mt=Date.now(); st.put(c); })); chg.forEach(r=>syncDirtyRide(r.date)); rides.forEach(r=>r._st=null); renderRides(); }
   store.set('ichnos-devfill',3);
 }
+// ---------- fiabilidad ----------
+// los últimos errores de la app se guardan para mandarlos con "Algo va mal"
+const errBuf=[]; const errPush=(m,src)=>{ errBuf.push({t:Date.now(),m:String(m).slice(0,300),s:src?String(src).slice(0,120):''}); if(errBuf.length>25) errBuf.shift(); };
+window.addEventListener('error',e=>errPush(e.message,(e.filename||'').replace(/^.*\//,'')+':'+e.lineno));
+window.addEventListener('unhandledrejection',e=>errPush('promesa: '+((e.reason&&e.reason.message)||e.reason)));
+function appState(){ return { v:typeof BUILD!=='undefined'?BUILD:'', ua:navigator.userAgent.slice(0,160), pant:innerWidth+'x'+innerHeight, pag:(document.querySelector('.page:not([hidden])')||{}).id||'',
+  ruta:route?{km:+(route.length/1000).toFixed(1),pts:points.length,modo:mode}:null, paso:wz&&wz.on?wz.step:null, ficha:(!$('rideView').hidden&&rideOpen)?rideOpen.id:null,
+  salidas:rides.length, strava:!!(me&&me.strava), icu:!!(me&&me.icu), errores:errBuf.slice(-15) }; }
+async function sendBug(txt,foto,auto,extra){ try{ await api('/fallo',{method:'POST',body:{txt,foto,auto:!!auto,info:{...appState(),...(extra||{})}}}); return true; }catch(e){ return false; } }
+function shrinkPhoto(file){ return new Promise(res=>{ const im=new Image(); im.onload=()=>{ const k=Math.min(1,1000/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',0.6)); URL.revokeObjectURL(im.src); }; im.onerror=()=>res(null); im.src=URL.createObjectURL(file); }); }
+$('bugBtn').onclick=async()=>{
+  $('mText').textContent='';
+  const box=document.createElement('div'); box.className='bugf';
+  box.innerHTML=`<textarea id="bugTxt" rows="4" placeholder="Por ejemplo: en la salida de hoy el tiempo en movimiento no es el de Strava"></textarea><label class="btn" style="display:inline-block;margin-top:8px">📷 Añadir una captura<input type="file" accept="image/*" id="bugFile" hidden></label> <small id="bugFn"></small>`;
+  $('mText').appendChild(box); let foto=null;
+  $('bugFile').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; $('bugFn').textContent='Preparando…'; foto=await shrinkPhoto(f); $('bugFn').textContent=foto?'Captura añadida':'No he podido leerla'; };
+  const ok=await ask('¿Qué ha pasado?','','Enviar','Cancelar',true);
+  const txt=(document.getElementById('bugTxt')||{}).value||''; if(!ok) return;
+  if(!txt.trim()&&!foto){ toast('Escribe qué ha pasado o añade una captura.',4000); return; }
+  toast(await sendBug(txt.trim(),foto,false)?'Enviado. Gracias: lo miraremos.':'No hay conexión ahora. Prueba en un rato.',4000); };
+$('bugList').onclick=()=>openBugs();
+async function openBugs(){ let L=[]; try{ L=await api('/fallos')||[]; }catch(e){ toast('No hay conexión ahora.',3000); return; }
+  $('mText').innerHTML=L.length?L.map(b=>`<div class="bugi"><b>${esc(uName(b.u))}</b> · ${fmtDT(b.t)}${b.auto?' · automático':''}<br>${esc(b.txt||'(sin texto)')}${b.foto?'<br><small>📷 con captura</small>':''}<br><small>Versión ${esc((b.info&&b.info.v)||'?')} · ${esc((b.info&&b.info.pag)||'')}${b.info&&b.info.errores&&b.info.errores.length?' · '+b.info.errores.length+' errores':''}</small></div>`).join(''):'No hay avisos de fallos.';
+  await ask('Avisos de fallos','','Vale',null,true); }
+// autocomprobación: tus números contra los de Strava. Si algo no cuadra, se arregla y avisa al administrador
+async function selfTest(opts={}){
+  const out={ok:true,mal:[],arreglado:0,revisadas:0};
+  if(!me||!svOn()) return {...out,nota:'sin Strava'};
+  let L=[]; try{ L=await svGet('athlete/activities?per_page=30&page=1')||[]; }catch(e){ return {...out,nota:'sin conexión'}; }
+  markDups();
+  for(const a of L){ const r=rides.find(x=>x.id==='strava-'+a.id); if(!r) continue; out.revisadas++;
+    const show=r._dup?(rides.find(x=>x._tw===r)||r):r; show._st=null; const st=rideStats(show);
+    const want={mov:a.moving_time,tot:a.elapsed_time,km:a.distance/1000,up:Math.round(a.total_elevation_gain||0)};
+    const bad=[]; if(Math.abs(st.moving-want.mov)>1) bad.push(`en movimiento ${st.moving} en vez de ${want.mov}`); if(Math.abs(st.elapsed-want.tot)>1) bad.push(`tiempo total ${st.elapsed} en vez de ${want.tot}`);
+    if(Math.abs(st.km-want.km)>0.05) bad.push(`km ${st.km.toFixed(2)} en vez de ${want.km.toFixed(2)}`); if(Math.abs((st.up||0)-want.up)>1) bad.push(`desnivel ${st.up} en vez de ${want.up}`);
+    if(bad.length){ out.ok=false; out.mal.push({id:r.id,nombre:r.name,bad}); devFill(r,a); r.upDev=want.up; r._st=null; show._st=null; out.arreglado++;
+      try{ const c=cleanRide(r); c.mt=r.mt=Date.now(); await ridesTx('readwrite',x=>x.put(c)); syncDirtyRide(r.date); }catch(e){} } }
+  if(opts.ficha){ // la lista de la ficha: cada segmento de Strava con el tiempo exacto de Strava
+    for(const r of rides.filter(x=>x.sef&&x.sef.length).sort((a,b)=>b.date-a.date).slice(0,opts.ficha)){
+      const show=rides.find(x=>x._tw===r)||r; openRide(show); await new Promise(z=>setTimeout(z,5000));
+      const lis=[...document.querySelectorAll('#rvSegs li')].map(li=>[li.querySelector('b').textContent.trim(),li.querySelector('em').textContent.replace('🏆','').trim()]);
+      const cnt={}; r.sef.slice().sort((x,y)=>(x.o??1e9)-(y.o??1e9)).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; cnt[e.sid]=(cnt[e.sid]||0)+1; const veces=r.sef.filter(x=>x.sid===e.sid).length;
+        const nm=String(sg.name||'').trim()+(veces>1?` (${cnt[e.sid]}.ª vez)`:''), hit=lis.find(x=>x[0]===nm);
+        if(hit&&hit[1]!==fmtT(e.t)){ out.ok=false; out.mal.push({id:r.id,nombre:r.name,bad:[`${nm}: ${hit[1]} en vez de ${fmtT(e.t)}`]}); } });
+      $('rideView').hidden=true; } }
+  if(!out.ok&&opts.avisar!==false) sendBug('Autocomprobación: números que no cuadraban con Strava (ya arreglados)',null,true,{autotest:out});
+  if(out.arreglado) renderRides();
+  return out; }
+// la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
+setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794754642';
+const BUILD='1794761228';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5200,7 +5268,7 @@ function avText(a){ const w=`<b>${esc(uName(a.u))}</b>`, rn=a.n?` «${esc(a.n)}�
   return {seg:`${w} quiere seguirte.`,acep:`${w} ha aceptado que le sigas. Ya ves sus salidas.`,alta:`${w} se ha unido a Ichnos con tu invitación.`,
     like:`A ${w} le gusta tu salida${rn}.`,com:`${w} ha comentado en tu salida${rn}: “${esc(a.x||'')}”`,
     gjoin:`${w} se ha unido a tu grupeta «${esc(a.x||'')}».`,gsal:`${w} propone una salida en «${esc(a.n||'tu grupeta')}»: ${esc(a.x||'')}.`,gvoy:`${w} se apunta a tu salida «${esc(a.x||'')}».`,
-    prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
+    prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,bug:`⚠️ ${w} dice que algo va mal: “${esc(a.x||'')}”`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
 $('bell').onclick=()=>{
   const seen=store.get('ichnos-avisto',0);
   $('avList').innerHTML=avisos.length?avisos.map((a,i)=>`<li data-i="${i}" class="${a.t>seen?'new':''}">${avText(a)}<small>${fmtDT(a.t)}</small></li>`).join(''):'<p class="svp">No tienes avisos.</p>';
@@ -5209,6 +5277,7 @@ $('bell').onclick=()=>{
     else if(a.k==='seg'){ showPage('pgPerfil'); $('pAmigos').scrollIntoView({behavior:'smooth'}); }
     else if(a.k==='prop'){ showPage('pgPerfil'); loadAdmin(); $('pInvita').scrollIntoView({behavior:'smooth'}); }
     else if(a.k==='propok'||a.k==='propno'){ }
+    else if(a.k==='bug'){ openBugs(); }
     else if(a.k==='gsal'||a.k==='gvoy'||a.k==='gjoin'){ if(a.g){ gCur=a.g; syncRaw.set('ichnos-gcur',gCur); } showPage('pgGrupeta'); renderGroup(); loadGroupData(); }
     else openFriend(a.u); });
   $('avModal').hidden=false; syncRaw.set('ichnos-avisto',Date.now()); paintBell();
