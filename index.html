@@ -3697,7 +3697,12 @@ function parseXmlTrack(text,isTcx){
 function parseFit(buf){
   const dv=new DataView(buf), out=[], ts=[], es=[], hr=[], cad=[], pw=[]; let start=null;
   const hs=dv.getUint8(0), end=Math.min(buf.byteLength,hs+dv.getUint32(4,true)); let p=hs; const defs={};
+  const dev={mov:0,el:0,m:0,up:0,n:0};   // resumen que guarda el propio GPS: tiempo en movimiento, total, distancia y desnivel
   const readMsg=(d)=>{ let lat=null,lon=null,t=null,alt=null,h=null,cd=null,pwr=null;
+    if(d.gnum===18){ for(const [num,size] of d.fields){
+        if(size===4){ const v=dv.getUint32(p,d.little); if(v!==0xffffffff){ if(num===7) dev.el+=v/1000; else if(num===8) dev.mov+=v/1000; else if(num===9) dev.m+=v/100; } }
+        else if(size===2&&num===22){ const v=dv.getUint16(p,d.little); if(v!==0xffff) dev.up+=v; }
+        p+=size; } p+=d.dev; dev.n++; return; }
     for(const [num,size] of d.fields){
       if(d.gnum===20){
         if(size===1){ const v=dv.getUint8(p); if(v!==0xff){ if(num===3) h=v; else if(num===4) cd=v; } }
@@ -3722,7 +3727,7 @@ function parseFit(buf){
       defs[lt]={little,gnum,fields,dev};
     }else{ const d=defs[lt]; if(!d) break; readMsg(d); }
   }
-  return {coords:out,times:ts,eles:es,ex:{hr,cad,pw},name:'',date:start};
+  return {coords:out,times:ts,eles:es,ex:{hr,cad,pw},name:'',date:start,dev:dev.n?{mov:Math.round(dev.mov),el:Math.round(dev.el),m:Math.round(dev.m),up:Math.round(dev.up)}:null};
 }
 async function gunzipBuf(buf){
   if(!window.DecompressionStream) throw new Error('gz');
@@ -3863,7 +3868,9 @@ $('impFile').onchange=async e=>{
       const gb=meta&&meta.gear?gearToBike(meta.gear,sbikes):null;
       const bike=meta?(gb?gb.id:bikeForTipo(tipo)):defaultBike(mode);
       const rtipo=gb?gb.tipo:tipo;
+      const fd=t.dev||{};
       ok.push({id,name:(meta&&meta.name)||t.name||t.file.replace(/\.(gpx|tcx|fit)$/i,''),date:t.date||it.mod||Date.now(),source:src,tipo:rtipo||null,coords:c,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike,km:lineKm(c),upRaw:th.upRaw,upDev:meta&&isFinite(parseFloat(meta.up))?Math.round(parseFloat(String(meta.up).replace(',','.'))):null,movDev:meta&&isFinite(parseFloat(meta.mov))?Math.round(parseFloat(String(meta.mov).replace(',','.'))):null,elDev:meta&&isFinite(parseFloat(meta.el))?Math.round(parseFloat(String(meta.el).replace(',','.'))):null});
+      { const L=ok[ok.length-1]; if(L){ if(L.movDev==null&&fd.mov) L.movDev=fd.mov; if(L.elDev==null&&fd.el) L.elDev=fd.el; if(L.upDev==null&&fd.up) L.upDev=fd.up; if(fd.m) L.kmDev=fd.m; } }   // los números del propio GPS
       if(ok.length>=40){ await saveRides(ok.splice(0),true); }
     }catch(err){ bad++; }
   }
@@ -3997,6 +4004,7 @@ async function icuImport(a){
   const t=await parseTrackBuf('salida.'+(ft==='gpx'||ft==='tcx'?ft:'fit'),buf), th=thinFull(t.coords,t.times,t.eles,t.ex);
   if(th.coords.length<2) return 'x';
   const data={coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,km:lineKm(th.coords),upRaw:th.upRaw,upDev:a.total_elevation_gain!=null?Math.round(a.total_elevation_gain):null,movDev:a.moving_time!=null?Math.round(a.moving_time):null,elDev:a.elapsed_time!=null?Math.round(a.elapsed_time):null,kmDev:a.distance!=null?Math.round(a.distance):null,api:0,source:a.device_name?a.device_name+' (Intervals.icu)':'GPS (Intervals.icu)',icu:String(a.id)};
+  if(t.dev){ if(t.dev.mov) data.movDev=t.dev.mov; if(t.dev.el) data.elDev=t.dev.el; if(t.dev.m) data.kmDev=t.dev.m; if(t.dev.up) data.upDev=t.dev.up; }
   if(dup){ ['movDev','elDev','kmDev','upDev'].forEach(k=>{ if(dup[k]!=null) delete data[k]; });   // los números de Strava mandan: Intervals los calcula a su manera
     await saveRides([{...dup,...data}],true); }              // la de Strava pasa a ser la del GPS: ya la pueden ver tus amigos
   else await saveRides([{id,name:a.name||'Salida',date:t0,tipo,bike:bikeForTipo(tipo),...data}],true);
@@ -4770,7 +4778,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794761228';
+const BUILD='1794761584';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
