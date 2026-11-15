@@ -1599,9 +1599,9 @@ function setBase(name){
     glMap.setPaintProperty('trail-halo','line-opacity',name==='Satélite'?0.85:0.6);
   });
 }
-glMap.on('load',()=>{
+function onGlLoad(){ if(glReady) return;
   try{
-    glMap.addSource('mynames',{type:'geojson',data:myNamesGeo()});
+    if(!glMap.getSource('mynames')) glMap.addSource('mynames',{type:'geojson',data:myNamesGeo()});
     glMap.addLayer({id:'my-names',type:'symbol',source:'mynames',minzoom:12,
       layout:{'symbol-placement':'line','symbol-spacing':160,'text-max-angle':60,'text-field':['get','name'],'text-font':F_BOLD,'text-size':['interpolate',['linear'],['zoom'],12,12.5,15,15,18,18]},
       paint:{'text-color':'#7a2e00','text-halo-color':'#ffffff','text-halo-width':2}});
@@ -1609,7 +1609,10 @@ glMap.on('load',()=>{
   glReady=true;
   LABEL_LAYERS.forEach(id=>glDefaults[id]=glMap.getPaintProperty(id,'text-color'));
   setBase(currentBase); applyTrails();
-});
+}
+glMap.on('load',onGlLoad);
+// a veces (app en segundo plano al abrirse) el mapa acaba de cargar sin avisar: se comprueba cada segundo
+const glChk=setInterval(()=>{ if(glReady){ clearInterval(glChk); return; } try{ if(glMap.isStyleLoaded()) onGlLoad(); }catch(e){} },1000);
 if(window.matchMedia('(min-width:761px)').matches) L.control.zoom({position:'bottomright'}).addTo(map);
 const base={'Mapa':L.layerGroup(),'Satélite':L.layerGroup(),'Relieve':L.layerGroup()};
 base['Satélite'].addTo(map); map.getContainer().classList.add('sat');
@@ -4894,7 +4897,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794769753';
+const BUILD='1794769928';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
