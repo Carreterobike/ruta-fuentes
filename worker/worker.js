@@ -492,7 +492,7 @@ async function mates(KV, a, b) {   // ¿están los dos en alguna grupeta?
   return false;
 }
 // ---------- mapa compartido ----------
-const MOD_OPS = ['sitio', 'sitio-', 'oculto', 'fuente', 'fuente-', 'color', 'color-'];
+const MOD_OPS = ['sitio', 'sitio-', 'oculto', 'fuente', 'fuente-', 'color', 'color-', 'trial', 'trial-'];
 async function gLoad(KV) { const g = {}; for (const k of ['l', 'f', 't', 'c']) g[k] = JSON.parse(await KV.get('g:' + k) || '{}'); g._ch = {}; return g; }
 async function gSave(KV, g) { for (const k of ['l', 'f', 't', 'c']) if (g._ch[k]) await KV.put('g:' + k, JSON.stringify(g[k])); }
 const meta = (o) => ({ name: String(o.name || '').slice(0, 80), lat: +o.lat, lon: +o.lon, cat: String(o.cat || '').slice(0, 20) });
@@ -518,6 +518,14 @@ function applyOp(G, o, by, admin) {
   } else if (o.k === 'tramo') {
     const c = line(o.coords);
     if (c.length >= 2 && (!T[id] || T[id].by === by || admin)) { T[id] = { name: String(o.name || '').slice(0, 80), coords: c, by, t: now }; G._ch.t = 1; }
+  } else if (o.k === 'trial') {   // trialera de la grupeta: nombre, dificultad y recorrido
+    const c = line(o.coords);
+    if (c.length >= 2 && (!T[id] || T[id].by === by || admin)) { const old = T[id] || {}; T[id] = { kind: 'trial', name: String(o.name || '').slice(0, 80), lv: Math.max(0, Math.min(4, +o.lv || 0)), coords: c, by: old.by || by, t: now, tm: old.tm || {} }; G._ch.t = 1; }
+  } else if (o.k === 'trial-') {
+    if (T[id] && T[id].kind === 'trial' && (T[id].by === by || admin)) { delete T[id]; G._ch.t = 1; }
+  } else if (o.k === 'ttime') {   // tu mejor tiempo en una trialera de la grupeta (solo de salidas del GPS, no de Strava)
+    const s_ = Math.round(+o.s);
+    if (T[id] && T[id].kind === 'trial' && s_ > 0 && s_ < 36000) { T[id].tm = T[id].tm || {}; const cur = T[id].tm[by]; if (!cur || s_ < cur.s) { T[id].tm[by] = { s: s_, d: +o.d || now }; G._ch.t = 1; } }
   } else if (o.k === 'tramo-') {
     if (T[id] && (T[id].by === by || admin)) { delete T[id]; G._ch.t = 1; }
   } else if (o.k === 'color') {   // color corregido de una trialera
@@ -532,7 +540,7 @@ function opText(o) {
   const n = (o.m && o.m.name) || o.name || '';
   const LV = ['verde', 'azul', 'roja', 'negra', 'doble negra'];
   return { aviso: `avisa en «${n}»: ${String(o.txt || '').slice(0, 80)}`, fuente: `propone añadir la fuente «${n || 'sin nombre'}»`, 'fuente-': 'propone borrar una fuente',
-    sitio: `propone añadir «${n}»`, 'sitio-': `propone borrar «${n}»`, oculto: `propone ocultar «${n}»`, color: `propone poner «${n || 'una trialera'}» en ${LV[+o.lv] || ''}`, 'color-': 'propone quitar un color' }[o.k] || 'hace una propuesta';
+    sitio: `propone añadir «${n}»`, 'sitio-': `propone borrar «${n}»`, oculto: `propone ocultar «${n}»`, color: `propone poner «${n || 'una trialera'}» en ${LV[+o.lv] || ''}`, 'color-': 'propone quitar un color', trial: `propone la trialera «${n || 'sin nombre'}» (${LV[+o.lv] || ''})`, 'trial-': 'propone borrar una trialera' }[o.k] || 'hace una propuesta';
 }
 
 // ---------- ayudas ----------
