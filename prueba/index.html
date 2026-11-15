@@ -1982,6 +1982,7 @@ function applyTrails(){
   glSet(()=>{
     const show=T.trialeras && (!T.crear || trailsMode());
     TRAIL_LAYERS.forEach(id=>glMap.setLayoutProperty(id,'visibility',show?'visible':'none'));
+    setTimeout(()=>{ try{ drawDirs(); }catch(e){} },0);
     const gr=mode==='gravel';
     glMap.setPaintProperty('trail-track','line-color',gr?'#8a5a1f':'#8a6a3a');
     glMap.setPaintProperty('trail-track','line-width',gr?W(2.2,4,6):W(1.4,2.6,4));
@@ -4897,7 +4898,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794771513';
+const BUILD='1794772660';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5261,8 +5262,41 @@ const DIR_A=`<svg width="22" height="22" viewBox="-11 -11 22 22"><path d="M-3 -6
 const DIR_ST=`<svg width="24" height="24" viewBox="-12 -12 24 24"><circle r="9" fill="#2e9d3a" stroke="#fff" stroke-width="2.5"/><path d="M-3 -4.5 l7.5 4.5 -7.5 4.5z" fill="#fff"/></svg>`;
 const DIR_FL=`<svg width="28" height="32" viewBox="-5 -28 28 32"><line x1="0" y1="0" x2="0" y2="-24" stroke="#111" stroke-width="4.5" opacity=".45"/><line x1="0" y1="0" x2="0" y2="-24" stroke="#fff" stroke-width="2.5"/><path d="M0 -24 h16 l-5 5.5 5 5.5 h-16z" fill="#fff" stroke="#111" stroke-width=".8"/><circle r="3.5" fill="#fff" stroke="#111" stroke-width=".8"/></svg>`;
 const niceName=n=>String(n||'').replace(/[\u{1F000}-\u{1FAFF}\u2600-\u27BF\uFE0F\u200D®™]/gu,'').replace(/[¡!"]+/g,'').replace(/\s+/g,' ').trim();
+// altura del terreno (mapas de alturas gratuitos, teselas z14 ~7 m): se baja solo la zona que miras
+const elevTiles=new Map();
+function elevTile(x,y){ const k=x+'/'+y; if(!elevTiles.has(k)){ const o={d:null}; elevTiles.set(k,o);
+    o.p=fetch(`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/14/${x}/${y}.png`).then(r=>{ if(!r.ok) throw 0; return r.blob(); }).then(createImageBitmap).then(bm=>{
+      const cv=document.createElement('canvas'); cv.width=cv.height=256; const cx=cv.getContext('2d',{willReadFrequently:true}); cx.drawImage(bm,0,0); const px=cx.getImageData(0,0,256,256).data, h=new Float32Array(65536);
+      for(let i=0;i<65536;i++) h[i]=px[i*4]*256+px[i*4+1]+px[i*4+2]/256-32768; o.d=h; }).catch(()=>{ elevTiles.delete(k); }); }
+  return elevTiles.get(k); }
+function elevAt(lat,lon){ const n=16384, fx=(lon+180)/360*n, la=lat*Math.PI/180, fy=(1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*n, x=Math.floor(fx), y=Math.floor(fy);
+  const t=elevTile(x,y); if(!t.d) return null; const px=Math.min(255,Math.floor((fx-x)*256)), py=Math.min(255,Math.floor((fy-y)*256)); return t.d[py*256+px]; }
+// trialeras del mapa en la zona que miras, con los trozos seguidos unidos (se corta en los cruces)
+let osmChainsKey='', osmChains=[];
+async function loadOsmChains(){ if(map.getZoom()<14) return; const b=map.getBounds().pad(0.1), [x0,y0]=t2xy(b.getNorth(),b.getWest()), [x1,y1]=t2xy(b.getSouth(),b.getEast());
+  if((x1-x0+1)*(y1-y0+1)>36) return; const key=[x0,y0,x1,y1].join(','); if(key===osmChainsKey) return; osmChainsKey=key;
+  const pcs=[], nms=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++){ (await tileTrails(x,y)).forEach(f=>pcs.push({c:f.line,sc:f.props.mtb_scale})); nms.push(...await tileNames(x,y)); }
+  if(key!==osmChainsKey) return;
+  // puntas cercanas (≤8 m) = mismo nudo
+  const cell=q=>Math.round(q[0]*9000)+':'+Math.round(q[1]*9000), grid=new Map(), ends=[];
+  pcs.forEach((p,i)=>[0,1].forEach(e=>{ const q=e?p.c[p.c.length-1]:p.c[0], k=cell(q); const o={i,e,q}; ends.push(o); if(!grid.has(k)) grid.set(k,[]); grid.get(k).push(o); }));
+  const near=o=>{ const [a,b]=cell(o.q).split(':').map(Number), r=[]; for(let da=-1;da<=1;da++) for(let db=-1;db<=1;db++){ (grid.get((a+da)+':'+(b+db))||[]).forEach(z=>{ if(z!==o&&dist(z.q,o.q)<=8) r.push(z); }); } return r; };
+  ends.forEach(o=>o.nb=near(o));
+  const used=new Set(), chains=[];
+  const walk=(i,fromEnd)=>{ let c=[], cur=i, e=fromEnd; while(cur!=null&&!used.has(cur)){ used.add(cur); const pc=pcs[cur].c, seg=e===0?pc:pc.slice().reverse(); c=c.length?c.concat(seg.slice(1)):seg.slice();
+      const out=ends.find(z=>z.i===cur&&z.e!==e); const nb=out.nb.filter(z=>!used.has(z.i)); if(out.nb.length!==1||nb.length!==1) break; cur=nb[0].i; e=nb[0].e; } return c; };
+  pcs.forEach((p,i)=>{ if(used.has(i)) return; const st=ends.find(z=>z.i===i&&z.e===0), en=ends.find(z=>z.i===i&&z.e===1);
+    // empezar desde una punta que no sigue (o la que sea si es un círculo)
+    let s0=i, e0=0; if(st.nb.length===1){ let cur=i, e=0, guard=0; while(guard++<500){ const o=ends.find(z=>z.i===cur&&z.e===e); if(o.nb.length!==1||used.has(o.nb[0].i)||o.nb[0].i===i) break; cur=o.nb[0].i; e=1-o.nb[0].e; } s0=cur; e0=e; }
+    const c=walk(s0,e0); if(c.length>1) chains.push(c); });
+  osmChains=chains.map(c=>{ const L0=lenOf(c); let name=null; const pts=[0.25,0.5,0.75].map(f=>c[Math.floor((c.length-1)*f)]);
+    for(const f of nms){ const ll=f.line.map(q=>[q[1],q[0]]); if(pts.filter(p=>distToLine(p,ll)<15).length>=2){ name=f.name; break; } }
+    return {c,L:L0,name}; }).filter(x=>x.L>=150||x.name);
+  drawDirs(); }
 function drawDirs(){
-  dirLayer.clearLayers(); if(!T.trialeras||(T.crear&&!trailsMode())||map.getZoom()<14) return;
+  dirLayer.clearLayers(); const shown=T.trialeras&&!(T.crear&&!trailsMode()), on=shown&&map.getZoom()>=14;
+  if(glReady) try{ glMap.setLayoutProperty('trail-names','visibility',shown&&!on?'visible':'none'); }catch(e){}   // con zoom: los nombres los pone Ichnos, siempre visibles
+  if(!on) return;
   const B=map.getBounds().pad(0.15), z=map.getZoom(), list=[], seenN=new Set();
   const bbOf=c=>{ let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); return [a,b,n,e]; };
   const inView=bb=>!(bb[2]<B.getSouth()||bb[0]>B.getNorth()||bb[3]<B.getWest()||bb[1]>B.getEast());
@@ -5288,6 +5322,22 @@ function drawDirs(){
     const nm=niceName(x.name); if(!nm||!mid) return; const pt=map.latLngToContainerPoint(mid), w=nm.length*7.2+6, bx=[pt.x-w/2,pt.y-34,pt.x+w/2,pt.y-18];
     if(boxes.some(o=>!(bx[2]<o[0]||bx[0]>o[2]||bx[3]<o[1]||bx[1]>o[3]))) return; boxes.push(bx);
     L.marker(mid,{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-nm',html:`<div>${esc(nm)}</div>`,iconSize:[0,0]})}).addTo(dirLayer); });
+  // trialeras del mapa: flechas hacia donde BAJA la pendiente (altura del terreno), y su nombre
+  loadOsmChains().catch(()=>{}); let wait=null;
+  osmChains.forEach(x=>{ const bb=x._bb||(x._bb=bbOf(x.c)); if(!inView(bb)) return;
+    const sm=samplesOf(x.c,40), has=drawn.length&&sm.filter(p=>drawn.some(d=>distToLine(p,d)<15)).length>=sm.length*0.7;   // ya tiene sus flechas
+    const h0=elevAt(x.c[0][0],x.c[0][1]), h1=elevAt(x.c[x.c.length-1][0],x.c[x.c.length-1][1]);
+    if(!has&&(h0==null||h1==null)){ wait=wait||[]; wait.push(elevTile(...t2xy(x.c[0][0],x.c[0][1])).p,elevTile(...t2xy(x.c[x.c.length-1][0],x.c[x.c.length-1][1])).p); }
+    const arrows=!has&&h0!=null&&h1!=null&&Math.abs(h0-h1)>=5;   // casi llano: sin flecha
+    const c=(h0!=null&&h1!=null&&h0<h1)?x.c.slice().reverse():x.c, P=c.map(q=>map.latLngToLayerPoint(q)), at=[x.L/3,2*x.L/3]; let acc=0,k=0,mid=null;
+    if(arrows) drawn.push(c.map(q=>[q[1],q[0]]));
+    for(let i=1;i<c.length;i++){ acc+=dist(c[i-1],c[i]); if(!mid&&acc>=x.L/2) mid=c[i];
+      if(arrows&&k<2&&acc>=at[k]){ k++; const ang=Math.atan2(P[i].y-P[i-1].y,P[i].x-P[i-1].x)*180/Math.PI;
+        L.marker(c[i],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:`<div style="transform:rotate(${ang.toFixed(0)}deg)">${DIR_A}</div>`,iconSize:[22,22],iconAnchor:[11,11]})}).addTo(dirLayer); } }
+    const nm=niceName(x.name); if(!nm||!mid) return; const pt=map.latLngToContainerPoint(mid), w=nm.length*7.2+6, bx=[pt.x-w/2,pt.y-34,pt.x+w/2,pt.y-18];
+    if(boxes.some(o=>!(bx[2]<o[0]||bx[0]>o[2]||bx[3]<o[1]||bx[1]>o[3]))) return; boxes.push(bx);
+    L.marker(mid,{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-nm',html:`<div>${esc(nm)}</div>`,iconSize:[0,0]})}).addTo(dirLayer); });
+  if(wait&&!drawDirs._w){ drawDirs._w=1; Promise.all(wait.filter(Boolean)).then(()=>{ drawDirs._w=0; drawDirs(); }); }
 }
 map.on('zoomend moveend',()=>{ clearTimeout(drawDirs._t); drawDirs._t=setTimeout(drawDirs,120); });
 function fixAt(latlng){ let best=null, bd=25; Object.entries(gData.c||{}).forEach(([id,c])=>{ const d=distToLine([latlng.lat,latlng.lng],c.coords.map(p=>[p[1],p[0]])); if(d<bd){ bd=d; best={id,...c}; } }); return best; }
