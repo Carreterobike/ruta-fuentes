@@ -1686,7 +1686,7 @@ function updateSheet(){
   $('secFuentes').hidden=!(route && fuentesAsked) || crearClosed || wz.on;
   $('lgBox').hidden=!(T.trialeras && trailsMode());
   $('addF').hidden=!T.fuentes;
-  $('secViaje').hidden=!trip||crearClosed||wz.on;
+  $('secViaje').hidden=!trip||crearClosed||wz.on||!!rideOnMap||store.get('ichnos-viajeX',false);
   $('tripBack').hidden=!(trip&&trip.open!=null);
   $('tripBtn').hidden=!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
   $('secSeg').hidden=!T.segmentos;
@@ -2158,7 +2158,7 @@ $('clear').onclick = () => {
   if(T.crear) setToggle('crear',false); crearClosed=true; updateSheet();   // ruta borrada: se cierra la ventana
 };
 $('done').onclick = () => setToggle('crear',false);
-$('viajeX').onclick = () => { crearClosed=true; updateSheet(); };
+$('viajeX').onclick = () => { store.set('ichnos-viajeX',true); updateSheet(); };   // cerrada se queda cerrada hasta que abras otro viaje
 $('crearX').onclick = async () => {
   // cerrar = quitar la ruta del mapa (si no está guardada, te avisa antes)
   if(route||points.length){ const cur=JSON.stringify(points.map(q=>q.slice(0,3)));
@@ -3316,7 +3316,7 @@ const tripKm=()=>trip?trip.stages.reduce((s,x)=>s+(x.len||0),0)/1000:0;
 const tripUp=()=>trip?trip.stages.reduce((s,x)=>s+(x.up||0),0):0;
 function saveTrip(){ if(trip&&trip.state==='ready'){ if(!store.set('ichnos-viaje',{kmDay:trip.kmDay,from:trip.from,to:trip.to,via:trip.via||[],mode:trip.mode,stages:trip.stages})) toast('El viaje es muy grande para guardarlo en este aparato; se verá hasta que cierres la app.',5000); } }
 
-async function startTrip(A,B,names={},via=[]){ crearClosed=false;
+async function startTrip(A,B,names={},via=[]){ crearClosed=false; store.set('ichnos-viajeX',false);
   cancelAll(); ++reqId;
   if(T.crear) await setToggle('crear',false);
   points=[]; route=null; drawPins(); routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers(); fLayer.clearLayers();
@@ -3374,7 +3374,7 @@ async function planTrip(){
   trip.state='ready'; trip.prog=''; saveTrip(); drawTrip(); renderTrip(); fitTrip();
 }
 // rehacer un viaje con las etapas ya decididas (por ejemplo al abrirlo con el código QR en el móvil)
-async function tripFromEnds(ends,kmDay){ crearClosed=false;
+async function tripFromEnds(ends,kmDay){ crearClosed=false; store.set('ichnos-viajeX',false);
   if(T.crear) await setToggle('crear',false);
   points=[]; route=null; drawPins(); routeLayer.clearLayers();
   trip={kmDay:kmDay||defaultKmDay(),mode,from:ends[0],to:ends[ends.length-1],stages:[],state:'calc',open:null};
@@ -4701,7 +4701,7 @@ async function devBackfill(){
   store.set('ichnos-devfill',3);
 }
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794751599';
+const BUILD='1794751678';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1]; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1');
     if(T.crear||!$('rideView').hidden){ toast('Hay una versión nueva de Ichnos. Se pondrá al volver a abrir la app.',4000); return; }
