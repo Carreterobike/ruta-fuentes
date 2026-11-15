@@ -518,6 +518,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .toast{position:fixed;z-index:3000;left:50%;transform:translateX(-50%);top:calc(122px + env(safe-area-inset-top,0px));
   background:var(--ink);color:var(--bg);padding:9px 15px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:var(--shadow);max-width:calc(100% - 24px);text-align:center}
 .modal{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:20px}
+.modal.low .ico{display:none}.modal.low{place-items:end center;background:rgba(0,0,0,.12);padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 .modal .box{width:100%;max-width:360px;background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:22px 20px 18px;display:flex;flex-direction:column;gap:10px;text-align:center}
 .modal .ico{width:54px;height:54px;margin:0 auto}
 .modal h4{margin:0;font-family:var(--display);font-weight:800;font-size:24px;line-height:1.1}
@@ -2116,6 +2117,12 @@ function trailsAt(latlng){
       const sc=h.length?parseInt(String(h[0].properties.mtb_scale??''),10):NaN; if(!isNaN(sc)) x.lv=levelOf(sc); } });
   return out;
 }
+// antes de pintar un color: enseñar en amarillo QUÉ se va a pintar y preguntar
+async function confirmPaint(pl,name){ const pv=L.layerGroup().addTo(map);
+  L.polyline(pl,{color:'#1E2328',weight:14,interactive:false}).addTo(pv); L.polyline(pl,{color:'#FFE14D',weight:9,interactive:false}).addTo(pv);
+  try{ map.fitBounds(L.latLngBounds(pl),{paddingTopLeft:[40,90],paddingBottomRight:[40,Math.round(map.getSize().y*0.45)],maxZoom:17}); }catch(e){}
+  $('modal').classList.add('low'); const ok=await ask('¿Es esta la trialera?','La línea amarilla es lo que se va a pintar'+(name?` (${niceName(name)})`:'')+'.','Sí, esta','No'); $('modal').classList.remove('low');
+  if(!ok){ pv.remove(); toast('Acerca el mapa y toca justo encima de la trialera que quieres.',5000); return null; } return pv; }
 // la trialera entera que pasa por un punto: por su nombre del mapa, o los trozos seguidos hasta los cruces
 async function wholeTrail(P,name){ const [x,y]=t2xy(P[0],P[1]), nm=[];
   for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ try{ nm.push(...await tileNames(x+dx,y+dy)); }catch(e){} }
@@ -2218,13 +2225,22 @@ function trailAt(latlng,force,flv){
   d.appendChild(bt);
   if(me){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Cambiar color':'Proponer otro color';
     cb.onclick=async()=>{ map.closePopup();
-      let c=fxE?fxE.coords.map(p=>[p[1],p[0]]):(hit.length?lineOf(hit[0]):(mine?mine.coords:null));
+      // el trozo más cercano a donde has tocado (y mejor una trialera que una pista)
+      const P0=[latlng.lat,latlng.lng], near=hit.map(f=>({f,c:lineOf(f)})).filter(x=>x.c&&x.c.length>1).map(x=>({...x,d:distToLine(P0,x.c)+(x.f.properties.class==='path'?0:8)})).sort((a,b)=>a.d-b.d)[0];
+      let c=fxE?fxE.coords.map(p=>[p[1],p[0]]):(near?near.c:(mine?mine.coords:null));
+      // si lo que has tocado es un segmento de Strava (sin trialera del mapa con nombre): se pinta el segmento entero
+      const seg=(!fxE&&!osm&&!mine&&!shr&&svs&&svs.coords&&svs.coords.length>1)?svs:null;
+      if(seg) c=seg.coords.map(q=>[q[1],q[0]]);
       // la trialera ENTERA (todos sus trozos), no solo el trozo que has tocado
       try{ const w=await wholeTrail([latlng.lat,latlng.lng],osm||null); if(w&&w.length>1){ const L1=lenOf(w), L0=c&&c.length>1?lenOf(c.map(q=>[q[1],q[0]])):0;
         const mid=c&&c.length>1?c[Math.floor(c.length/2)]:null, inside=!mid||distToLine([mid[1],mid[0]],w.map(q=>[q[1],q[0]]))<15;
-        if(L1>L0+20&&inside) c=w.map(q=>[q[1],q[0]]); } }catch(e){ console.warn(e); }
+        if(!seg&&L1>L0+20&&inside) c=w.map(q=>[q[1],q[0]]); } }catch(e){ console.warn(e); }
       if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
-      const lv=await pickLevel(fx?fx.lv:(!isNaN(sc)?levelOf(sc):null)); if(lv==null) return;
+      // antes de pintar: enseñar en amarillo QUÉ se va a pintar, para no pintar otra cosa sin querer
+      const pv=await confirmPaint(c.map(q=>[q[1],q[0]]),seg?seg.name:name); if(!pv) return;
+      const lv=await pickLevel(fx?fx.lv:(!isNaN(sc)?levelOf(sc):null)); pv.remove(); if(lv==null) return;
+      if(seg){ const nm=String(seg.name).trim(), co=seg.coords.map(q=>[+q[0].toFixed(6),+q[1].toFixed(6)]);   // como "Ponerle color" del segmento
+        gPush([{k:'trial',id:'st'+seg.id,name:nm,lv,coords:co}]); if(me.admin){ const o=gData.t['st'+seg.id]||{}; gData.t['st'+seg.id]={kind:'trial',name:nm,lv,coords:co,by:o.by||me.id,t:Date.now(),tm:o.tm||{}}; drawTrailFix(); toast('Color cambiado para todos'); } else toast('Propuesta enviada a David.',3500); return; }
       const id=fxE?fxE.id:'c'+c[0].map(x=>x.toFixed(5)).join('_');
       // los colores viejos que caen encima de esta trialera se quitan (si no, se mezclan colores en la misma trialera)
       const nl=c, old=me.admin?Object.entries(gData.c||{}).filter(([k,o])=>k!==id&&o.coords&&o.coords.length>1&&(()=>{ const sm=samplesOf(o.coords.map(p=>[p[0],p[1]]),15); return sm.filter(p=>distToLine(p,nl)<15).length>=sm.length*0.6; })()).map(([k])=>k):[];
@@ -4937,7 +4953,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794777445';
+const BUILD='1794778330';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -4979,7 +4995,7 @@ function ssPopup(sg){
   else d.appendChild(timesBlock(effortsFor('ss:'+sg.id,c),segDz(c)));
   d.insertAdjacentHTML('beforeend',`<a class="sv-link" href="https://www.strava.com/segments/${esc(sg.id)}" target="_blank" rel="noopener">Ver en Strava</a>`);
   if(me&&!gData.t['st'+sg.id]){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Ponerle color':'Proponer color';
-    cb.onclick=async()=>{ map.closePopup(); const lv=await pickLevel(null); if(lv==null) return; const nm=String(sg.name).trim(), co=c.map(q=>[+q[0].toFixed(6),+q[1].toFixed(6)]);
+    cb.onclick=async()=>{ map.closePopup(); const pv=await confirmPaint(c.map(q=>[q[0],q[1]]),sg.name); if(!pv) return; const lv=await pickLevel(null); pv.remove(); if(lv==null) return; const nm=String(sg.name).trim(), co=c.map(q=>[+q[0].toFixed(6),+q[1].toFixed(6)]);
       gPush([{k:'trial',id:'st'+sg.id,name:nm,lv,coords:co}]); if(me.admin){ gData.t['st'+sg.id]={kind:'trial',name:nm,lv,coords:co,by:me.id,t:Date.now(),tm:{}}; drawTrailFix(); toast(`"${nm}" ya sale con su color para toda la grupeta.`,3500); } else toast('Propuesta enviada a David.',3500); };
     d.appendChild(cb); }
   if(me&&!gData.t['ss'+sg.id]){ const sh=document.createElement('button'); sh.className='segbtn'; sh.textContent='Compartir con la grupeta';
@@ -5018,7 +5034,7 @@ function gtPopup(id,tr){
   if(tr.kind==='trial'&&me){ const nb=document.createElement('button'); nb.className='segbtn'; nb.textContent=me.admin?'Cambiar nombre':'Proponer otro nombre';
     nb.onclick=async()=>{ map.closePopup(); const nn=await askName('Cambiar el nombre',tr.name||''); if(!nn||nn===tr.name) return; gPush([{k:'trial',id,name:nn,lv:tr.lv,coords:tr.coords}]); if(me.admin){ tr.name=nn; drawTrailFix(); effCache.clear(); toast(`Nombre cambiado para toda la grupeta: "${nn}"`,3500); } else toast('Propuesta enviada a David.',3500); }; d.appendChild(nb); }
   if(tr.kind==='trial'&&me){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Cambiar color':'Proponer otro color';
-    cb.onclick=async()=>{ map.closePopup(); const lv=await pickLevel(tr.lv); if(lv==null) return; gPush([{k:'trial',id,name:tr.name,lv,coords:tr.coords}]); if(me.admin){ tr.lv=lv; drawTrailFix(); toast('Color cambiado para toda la grupeta.',3500); } }; d.appendChild(cb); }
+    cb.onclick=async()=>{ map.closePopup(); const pv=await confirmPaint(tr.coords.map(q=>[q[0],q[1]]),tr.name); if(!pv) return; const lv=await pickLevel(tr.lv); pv.remove(); if(lv==null) return; gPush([{k:'trial',id,name:tr.name,lv,coords:tr.coords}]); if(me.admin){ tr.lv=lv; drawTrailFix(); toast('Color cambiado para toda la grupeta.',3500); } }; d.appendChild(cb); }
   if(isMe(tr.by)||(me&&me.admin)){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar del mapa de la grupeta';
     del.onclick=async()=>{ map.closePopup(); if(await ask('¿Quitar esta trialera de la grupeta?',tr.name,'Sí, quitar','No')){ gPush([{k:tr.kind==='trial'?'trial-':'tramo-',id}]); if(me.admin||isMe(tr.by)){ delete gData.t[id]; drawSegs(); drawTrailFix(); } } }; d.appendChild(del); }
   return d;
