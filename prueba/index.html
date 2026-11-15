@@ -272,6 +272,9 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+.tpick b{display:block;margin-bottom:1px}.tpick>small{display:block;color:var(--muted,#888);margin-bottom:6px}
+.tpick button{display:flex;align-items:center;gap:9px;width:100%;padding:9px 8px;margin:4px 0 0;border:1px solid rgba(128,128,128,.25);border-radius:10px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.tpick button i{flex:none;width:14px;height:14px;border-radius:50%}.tpick button span{flex:1;font-weight:700}.tpick button small{opacity:.7}
 .tpop .segbtn{background:var(--accent);color:var(--accent-ink)}
 .tpop .segbtn.del{background:none;color:#c62828;padding:4px;margin-top:2px}
 
@@ -2070,18 +2073,57 @@ function askName(title,def,o={}){
 }
 function lineOf(f){ const g=f.geometry; if(!g) return null; if(g.type==='LineString') return g.coordinates;
   if(g.type==='MultiLineString') return g.coordinates.reduce((a,b)=>b.length>a.length?b:a,[]); return null; }
+// Todas las trialeras que pasan por un punto (cada una con su color de dificultad)
+function trailsAt(latlng){
+  const out=[], P=[latlng.lat,latlng.lng], seen=new Set();
+  if(!T.trialeras||(T.crear&&!trailsMode())) return out;
+  const add=(name,lv,open)=>{ const k=String(name||'').trim().toLowerCase(); if(!k||seen.has(k)) return; seen.add(k); out.push({name:String(name).trim(),lv,open}); };
+  // trialeras de la grupeta
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind!=='trial'||!tr.coords||tr.coords.length<2) return;
+    if(distToLine(P,tr.coords.map(c=>[c[1],c[0]]))<20) add(tr.name||'Trialera',tr.lv,()=>L.popup({minWidth:230}).setLatLng(latlng).setContent(gtPopup(id,tr)).openOn(map)); });
+  // tus nombres y los de la grupeta
+  myNames.forEach(n=>{ if(n.name&&distToLine(P,n.coords)<20) add(n.name,null,()=>openTrailInfo(latlng,n.name)); });
+  [...Object.values(gData.t||{}).filter(x=>x&&x.kind!=='trial'&&x.lv==null),...Object.values(gData.c||{})].forEach(x=>{
+    if(x&&x.name&&x.coords&&x.coords.length>1&&distToLine(P,x.coords.map(c=>[c[1],c[0]]))<20) add(x.name,x.lv,()=>openTrailInfo(latlng,x.name)); });
+  // nombres del mapa
+  if(glReady){ try{ glMap.queryRenderedFeatures({layers:['trail-names']}).forEach(f=>{ const nm=f.properties.name; if(!nm) return; const c=lineOf(f);
+    if(c&&distToLine(P,c)<15) add(nm,null,()=>openTrailInfo(latlng,nm)); }); }catch(e){} }
+  // color de las que no lo traen: corrección de color o la escala del mapa
+  out.forEach(x=>{ if(x.lv!=null) return; const fx=fixAt(latlng); if(fx){ x.lv=fx.lv; return; }
+    if(glReady){ const pt=glMap.project([latlng.lng,latlng.lat]); const h=glMap.queryRenderedFeatures([[pt.x-8,pt.y-8],[pt.x+8,pt.y+8]],{layers:['trail-rated']});
+      const sc=h.length?parseInt(String(h[0].properties.mtb_scale??''),10):NaN; if(!isNaN(sc)) x.lv=levelOf(sc); } });
+  return out;
+}
+function openTrailInfo(latlng,name){ const info=trailAt(latlng,name); if(info) L.popup({minWidth:200}).setLatLng(latlng).setContent(info).openOn(map); }
+// al tocar: si se pisan varias, ventanita para elegir; si hay una, se abre directa
+function trailClick(latlng){
+  const list=trailsAt(latlng);
+  if(list.length>1){
+    const d=document.createElement('div'); d.className='tpop tpick';
+    d.innerHTML=`<b>Aquí pasan ${list.length} trialeras</b><small>Toca la que quieras ver</small>`;
+    list.forEach(x=>{ const lv=x.lv!=null?LEVELS[x.lv]:null, b=document.createElement('button');
+      b.innerHTML=`<i style="background:${lv?lv.color:'#9e9e9e'}${x.lv>=4?';box-shadow:inset 0 0 0 2px #111,inset 0 0 0 3px #fff':''}"></i><span>${esc(x.name)}</span><small>${lv?(x.lv>=4?'Doble negra':lv.name):'sin apuntar'}</small>`;
+      b.onclick=()=>{ map.closePopup(); x.open(); }; d.appendChild(b); });
+    L.popup({minWidth:220,closeButton:true}).setLatLng(latlng).setContent(d).openOn(map); return true;
+  }
+  if(list.length===1&&list[0].lv!=null&&Object.values(gData.t||{}).some(t=>t.kind==='trial'&&t.name===list[0].name)){ list[0].open(); return true; }
+  const info=trailAt(latlng);
+  if(info){ L.popup({minWidth:200}).setLatLng(latlng).setContent(info).openOn(map); return true; }
+  if(list.length===1){ list[0].open(); return true; }
+  return false;
+}
 // Lo que sale al tocar una trialera
-function trailAt(latlng){
+function trailAt(latlng,force){
   if(!glReady||!T.trialeras||(T.crear&&!trailsMode())) return null;
   const pt=glMap.project([latlng.lng,latlng.lat]);
   const hit=glMap.queryRenderedFeatures([[pt.x-8,pt.y-8],[pt.x+8,pt.y+8]],{layers:['trail-rated','trail-track','trail-path']});
-  const mine=myNameAt(latlng);
-  if(!hit.length && !mine) return null;
+  let mine=myNameAt(latlng); if(force&&mine&&mine.name!==force) mine=null;
+  if(!hit.length && !mine && !force) return null;
   const p=hit.length?hit[0].properties:{};
-  const osm=glMap.queryRenderedFeatures([[pt.x-40,pt.y-40],[pt.x+40,pt.y+40]],{layers:['trail-names']}).map(f=>f.properties.name).find(Boolean);
+  const osm=force||glMap.queryRenderedFeatures([[pt.x-40,pt.y-40],[pt.x+40,pt.y+40]],{layers:['trail-names']}).map(f=>f.properties.name).find(Boolean);
   const kind=KIND[p.subclass]||KIND[p.class]||'';
   const v=String(p.mtb_scale??''), sc=parseInt(v,10);
-  const shr=mine?null:sharedNameAt(latlng), svs=(mine||shr||osm)?null:svSegAt(latlng);
+  let shr=mine?null:sharedNameAt(latlng); if(force&&shr&&shr.name!==force) shr=null; const svs=(mine||shr||osm)?null:svSegAt(latlng);
   const name=mine?mine.name:shr?shr.name:osm?osm:svs?String(svs.name||'').trim():null;
   const d=document.createElement('div'); d.className='tpop';
   let h=`<b>${esc(name||'Trialera sin nombre')}</b>${kind?'<br>'+kind:''}`;
@@ -2152,8 +2194,7 @@ map.on('click', e => {
   if(addingF){ addMyFountainAt(e.latlng); return; }
   if(addingP){ addMyPlaceAt(e.latlng); return; }
   if(T.crear){ points.push([e.latlng.lat,e.latlng.lng]); drawPins(); calc(); return; }
-  const info=trailAt(e.latlng);
-  if(info){ L.popup({minWidth:200}).setLatLng(e.latlng).setContent(info).openOn(map); return; }
+  if(trailClick(e.latlng)) return;
   if(!hintShown){ hintShown=true; toast('Para hacer una ruta, toca "Crear ruta" abajo'); }
 });
 
@@ -4807,7 +4848,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794762609';
+const BUILD='1794763579';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5152,7 +5193,7 @@ function drawTrailFix(){
   trailFix.clearLayers(); if(!T.trialeras) return;
   Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind!=='trial'||!tr.coords||tr.coords.length<2) return; const ll=tr.coords.map(p=>[p[0],p[1]]), lv=LEVELS[tr.lv]||LEVELS[2], dbl=tr.lv>=4;
     L.polyline(ll,{color:'#ffffff',weight:dbl?11:9,opacity:.95,interactive:false}).addTo(trailFix);
-    L.polyline(ll,{color:lv.color,weight:dbl?7:6,bubblingMouseEvents:false}).bindPopup(()=>gtPopup(id,tr),{minWidth:230}).addTo(trailFix);
+    L.polyline(ll,{color:lv.color,weight:dbl?7:6,bubblingMouseEvents:false}).on('click',ev=>{ L.DomEvent.stop(ev); if(mtState||segMode||addingF||addingP||T.crear){ map.fire('click',{latlng:ev.latlng}); return; } if(!trailClick(ev.latlng)) L.popup({minWidth:230}).setLatLng(ev.latlng).setContent(gtPopup(id,tr)).openOn(map); }).addTo(trailFix);
     if(dbl) L.polyline(ll,{color:'#ffffff',weight:1.5,interactive:false}).addTo(trailFix); });
   Object.values(gData.c||{}).forEach(c=>{ const ll=c.coords.map(p=>[p[0],p[1]]), lv=LEVELS[c.lv]||LEVELS[3], dbl=c.lv>=4;
     L.polyline(ll,{color:'#ffffff',weight:dbl?9:7,opacity:.9,interactive:false}).addTo(trailFix);
