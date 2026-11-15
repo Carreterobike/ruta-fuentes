@@ -2100,7 +2100,7 @@ function trailsAt(latlng){
       const sc=h.length?parseInt(String(h[0].properties.mtb_scale??''),10):NaN; if(!isNaN(sc)) x.lv=levelOf(sc); } });
   return out;
 }
-function openTrailInfo(latlng,name){ const go=()=>{ const info=trailAt(latlng,name); if(info) L.popup({minWidth:200}).setLatLng(latlng).setContent(info).openOn(map); };
+function openTrailInfo(latlng,name,flv){ const go=()=>{ const info=trailAt(latlng,name,flv); if(info) L.popup({minWidth:200}).setLatLng(latlng).setContent(info).openOn(map); };
   if(glReady&&map.getZoom()<15){ map.setView(latlng,16); let done=false; const fin=()=>{ if(!done){ done=true; go(); } }; glMap.once('idle',fin); setTimeout(fin,2500); } else go(); }   // de cerca, para que el mapa tenga la trialera y sus tiempos
 // la trialera marcada desde una salida (amarilla) y las que pisa: ni las que siguen la línea mucho más allá
 let hiSel=null;
@@ -2110,10 +2110,12 @@ function hiSelList(){ const H=hiSel, LH=lenOf(H.line), smp=samplesOf(H.line,30),
   if(H.names){ const byName=new Map(); H.names.forEach(f=>{ const k=f.name.trim().toLowerCase(); if(!byName.has(k)) byName.set(k,{name:f.name.trim(),lines:[]}); byName.get(k).lines.push(f.line); });
     byName.forEach((v,k)=>{ const ll=v.lines.map(l=>l.map(q=>[q[1],q[0]])); let n=0, hitP=null; smp.forEach(p=>{ if(ll.some(l=>distToLine(p,l)<18)){ n++; hitP=hitP||p; } }); if(!n) return;
       const o=cnt.get(k); if(o){ o.n=Math.max(o.n,n); return; }
-      let lv=null; const fx=fixAt(L.latLng(hitP[0],hitP[1])); if(fx) lv=fx.lv;   // el mismo color que se ve en el mapa en ese sitio
-      else if(H.rated){ let bd=25; H.rated.forEach(f=>{ const sc=parseInt(String(f.props.mtb_scale??''),10); if(isNaN(sc)) return; const d=distToLine(hitP,f.line.map(q=>[q[1],q[0]])); if(d<bd){ bd=d; lv=levelOf(sc); } }); }
+      // color: el que más se ve en el mapa a lo largo de lo que comparte (corrección de David o escala del mapa)
+      const votes=[0,0,0,0,0]; smp.forEach(p=>{ if(!ll.some(l=>distToLine(p,l)<18)) return; const fx=fixAt(L.latLng(p[0],p[1])); if(fx){ votes[fx.lv]++; return; }
+        if(H.rated){ let bd=20, b=null; H.rated.forEach(f=>{ const sc=parseInt(String(f.props.mtb_scale??''),10); if(isNaN(sc)) return; const d=distToLine(p,f.line.map(q=>[q[1],q[0]])); if(d<bd){ bd=d; b=levelOf(sc); } }); if(b!=null) votes[b]++; } });
+      const vm=Math.max(...votes), lv=vm>0?votes.indexOf(vm):null;
       const m=Math.max(...v.lines.map(lenOf)); const at=L.latLng(hitP[0],hitP[1]);
-      cnt.set(k,{x:{name:v.name,lv,m:v.lines.reduce((a,l)=>a+lenOf(l),0)||m,open:()=>openTrailInfo(at,v.name)},n,ord:[]}); }); }
+      cnt.set(k,{x:{name:v.name,lv,m:v.lines.reduce((a,l)=>a+lenOf(l),0)||m,open:()=>openTrailInfo(at,v.name,lv)},n,ord:[]}); }); }
   const step=LH/Math.max(1,smp.length-1), hk=H.name.toLowerCase(); let self=null; const out=[];
   cnt.forEach(({x,n,ord},k)=>{ if(k===hk||nrm(k)===nrm(hk)){ self=x; return; } const shared=n*step;
     if(shared<Math.max(80,LH*0.1)) return;                   // solo se cruzan o van al lado un momento
@@ -2142,7 +2144,7 @@ function trailClick(latlng){
   return false;
 }
 // Lo que sale al tocar una trialera
-function trailAt(latlng,force){
+function trailAt(latlng,force,flv){
   if(!glReady||!T.trialeras||(T.crear&&!trailsMode())) return null;
   const pt=glMap.project([latlng.lng,latlng.lat]);
   const hit=glMap.queryRenderedFeatures([[pt.x-8,pt.y-8],[pt.x+8,pt.y+8]],{layers:['trail-rated','trail-track','trail-path']});
@@ -2157,7 +2159,8 @@ function trailAt(latlng,force){
   const d=document.createElement('div'); d.className='tpop';
   let h=`<b>${esc(name||'Trialera sin nombre')}</b>${kind?'<br>'+kind:''}`;
   const fx=(typeof fixAt==='function')?fixAt(latlng):null;
-  if(fx){ const lv=LEVELS[fx.lv]||{name:'Doble negra',color:'#111111'}; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${fx.lv>=4?'Doble negra':lv.name}</span> <small>(corregida por ${esc(uName(fx.by))})</small>`; }
+  if(flv!=null){ const lv=LEVELS[flv]; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${flv>=4?'Doble negra':lv.name}</span>`; }
+  else if(fx){ const lv=LEVELS[fx.lv]||{name:'Doble negra',color:'#111111'}; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${fx.lv>=4?'Doble negra':lv.name}</span> <small>(corregida por ${esc(uName(fx.by))})</small>`; }
   else if(!isNaN(sc)){ const lv=LEVELS[levelOf(sc)]; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${lv.name}</span> <small>(S${esc(v)})</small>`; }
   else if(p.class==='track') h+='<br>Pista: apta para todos';
   else h+='<br>Dificultad: sin apuntar';
@@ -4890,7 +4893,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794767246';
+const BUILD='1794767373';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
