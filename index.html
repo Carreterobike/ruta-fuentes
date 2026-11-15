@@ -1685,7 +1685,7 @@ function updateSheet(){
   $('secFuentes').hidden=!(route && fuentesAsked) || crearClosed || wz.on;
   $('lgBox').hidden=!(T.trialeras && trailsMode());
   $('addF').hidden=!T.fuentes;
-  $('secViaje').hidden=!trip||crearClosed;
+  $('secViaje').hidden=!trip||crearClosed||wz.on;
   $('tripBack').hidden=!(trip&&trip.open!=null);
   $('tripBtn').hidden=!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
   $('secSeg').hidden=!T.segmentos;
@@ -2465,7 +2465,7 @@ function wzRender(){
     B.innerHTML=h; $('wzNext').disabled=!(route&&points.length>=2);
     B.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ wz.round=b.dataset.r==='1'; wzRender(); });
     const go=async()=>{ const q=$('wzQ').value.trim(); if(!q) return; $('wzRes').innerHTML='<div class="sub">Buscando…</div>';
-      try{ const j=await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lat=41.54&lon=2.21&lang=es`)).json();
+      try{ const j=await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lat=41.54&lon=2.21`)).json();
         const fs=(j.features||[]); $('wzRes').innerHTML=fs.length?fs.map((f,i)=>{ const pr=f.properties||{}; return `<button class="wz-op" data-i="${i}">${esc(pr.name||q)}<small>${esc([pr.city||pr.town||pr.village,pr.county||pr.state].filter(Boolean).join(' · '))}</small></button>`; }).join(''):'<div class="sub">No lo encuentro. Prueba con otro nombre.</div>';
         $('wzRes').querySelectorAll('[data-i]').forEach(b=>b.onclick=async()=>{ const f=fs[+b.dataset.i]; dest={lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],name:(f.properties||{}).name||q}; $('wzRes').innerHTML='<div class="sub">Calculando la ruta…</div>'; await routeFromHome(wz.round); });
       }catch(e){ $('wzRes').innerHTML='<div class="sub">No hay conexión ahora. Prueba otra vez.</div>'; } };
