@@ -4699,6 +4699,13 @@ async function devBackfill(){
   if(ch){ const chg=rides.filter(r=>r._devNew); await ridesTx('readwrite',st=>chg.forEach(r=>{ delete r._devNew; const c=cleanRide(r); c.mt=r.mt=Date.now(); st.put(c); })); chg.forEach(r=>syncDirtyRide(r.date)); rides.forEach(r=>r._st=null); renderRides(); }
   store.set('ichnos-devfill',3);
 }
+// ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
+const BUILD='1794751300';
+async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
+  if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1]; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1');
+    if(T.crear||!$('rideView').hidden){ toast('Hay una versión nueva de Ichnos. Se pondrá al volver a abrir la app.',4000); return; }
+    location.replace(location.pathname+'?v='+m[1]); } }catch(e){} }
+setTimeout(checkUpdate,3000); document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkUpdate(); });
 setTimeout(devBackfill,8000); setInterval(devBackfill,15*60*1000);
 async function svSweep(){
   if(!svOn()||sxBusy||document.hidden||T.crear) return; sxBusy=true;
