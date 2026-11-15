@@ -277,7 +277,7 @@ details.help p{margin:6px 0 0}
 .icu-st>i{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;background:#eceff1;color:#1E2328}
 .icu-st.ok>i{background:#B6E22E;font-size:0}.icu-st.ok>i::after{content:'✓';font-size:15px}
 .icu-st>div{flex:1;min-width:0}.icu-st b{display:block}.icu-st small{display:block;color:var(--muted,#777);line-height:1.35}
-.icu-st .btn-main{flex:none;min-width:72px}
+.icu-st .btn-main{flex:none;width:auto!important;min-width:76px;margin:0!important;padding:9px 14px;position:static}
 .dir-ic{background:none;border:0;pointer-events:none}
 .dir-nm{background:none;border:0;pointer-events:none}.dir-nm div{transform:translate(-50%,-26px);white-space:nowrap;font:800 12.5px var(--body,system-ui),sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 0 2px #000}
 .tpick b{display:block;margin-bottom:1px}.tpick>small{display:block;color:var(--muted,#888);margin-bottom:6px}
@@ -4921,7 +4921,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794772868';
+const BUILD='1794773008';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
