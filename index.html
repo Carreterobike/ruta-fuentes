@@ -1640,7 +1640,7 @@ map.on('overlayremove',e=>{ if(e.layer===hLayer) store.set('ichnos-mapaper',fals
 
 // ---------- estado ----------
 // T = pestañas encendidas. Se pueden tener varias a la vez; se apagan tocándolas otra vez.
-const T={crear:false,fuentes:false,trialeras:false,segmentos:false};
+const T={crear:false,fuentes:false,trialeras:store.get('ichnos-trialeras',true)!==false,segmentos:false};   // las trialeras se quedan como las dejaste
 let mode=(()=>{ try{ const m=JSON.parse(localStorage.getItem('ichnos-modo')||'"mtb"'); return ['road','gravel','mtb','ebike','run','trail','hike','walk'].includes(m)?m:'mtb'; }catch(e){ return 'mtb'; } })();
 let points=[];          // [lat, lon, 'f' si es una fuente añadida]
 let route=null;         // {coords:[[lat,lon,ele]], cum:[m], length, up, idx:[índice de cada punto]}
@@ -1667,7 +1667,7 @@ async function setToggle(k,on){
     if(on){ if(!points.length&&typeof pickMode==='function'){ if(await pickMode()) wzStart(2); } toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
     else if(route && points.length>=2 && askedVer!==routeVer) await finishRoute();
   }
-  if(k==='trialeras'){ applyTrails(); if(typeof drawTrailFix==='function') drawTrailFix(); }
+  if(k==='trialeras'){ store.set('ichnos-trialeras',on); applyTrails(); if(typeof drawTrailFix==='function') drawTrailFix(); }
   if(k==='fuentes'){ if(on) loadViewFountains(); else { renderFountains(); if(addingF) $('addF').click(); } }
   if(k==='segmentos'){ if(!on && segMode) segCancel(); drawSegs(); refreshSegs(); }
   updateSheet();
@@ -4491,6 +4491,7 @@ $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden
   L.polyline(privacyTrim(r.coords),{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(privacyTrim(r.coords),{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
   const c=r.coords; L.marker([c[0][0],c[0][1]],{icon:START_ICON,interactive:false}).addTo(rideHi); L.marker([c[c.length-1][0],c[c.length-1][1]],{icon:FLAG_ICON,interactive:false}).addTo(rideHi);
   rideOnMap=r; $('roName').textContent=r.name||'Salida'; $('rideOn').hidden=false;
+  if(!isFoot(rideTipo(r))&&!T.trialeras) setToggle('trialeras',true);   // ver una salida de bici: con las trialeras
   map.fitBounds(L.latLngBounds(r.coords),{padding:[40,40]}); };
 // tocar una trialera o un segmento de la ficha: te lleva a ese sitio del mapa, marcado
 // tocar el recuadro del recorrido = verlo en el mapa
@@ -4700,7 +4701,7 @@ async function devBackfill(){
   store.set('ichnos-devfill',3);
 }
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794751300';
+const BUILD='1794751599';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1]; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1');
     if(T.crear||!$('rideView').hidden){ toast('Hay una versión nueva de Ichnos. Se pondrá al volver a abrir la app.',4000); return; }
