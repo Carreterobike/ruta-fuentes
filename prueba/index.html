@@ -274,6 +274,7 @@ details.help p{margin:6px 0 0}
 .tpop .lv{font-weight:700}
 .tpick b{display:block;margin-bottom:1px}.tpick>small{display:block;color:var(--muted,#888);margin-bottom:6px}
 .tpick button{display:flex;align-items:center;gap:9px;width:100%;padding:9px 8px;margin:4px 0 0;border:1px solid rgba(128,128,128,.25);border-radius:10px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.tpick button.sel{border:2px solid #E8B931;background:rgba(232,185,49,.12)}
 .tpick button i{flex:none;width:14px;height:14px;border-radius:50%}.tpick button span{flex:1;font-weight:700}.tpick button small{opacity:.7}
 .tpop .segbtn{background:var(--accent);color:var(--accent-ink)}
 .tpop .segbtn.del{background:none;color:#c62828;padding:4px;margin-top:2px}
@@ -2100,17 +2101,30 @@ function trailsAt(latlng){
   return out;
 }
 function openTrailInfo(latlng,name){ const info=trailAt(latlng,name); if(info) L.popup({minWidth:200}).setLatLng(latlng).setContent(info).openOn(map); }
+// la trialera marcada desde una salida (amarilla) y las que pisa: ni las que siguen la línea mucho más allá
+let hiSel=null;
+function hiSelList(){ const H=hiSel, LH=lenOf(H.line), smp=samplesOf(H.line,30), cnt=new Map();
+  smp.forEach(p=>trailsAt(L.latLng(p[0],p[1])).forEach(x=>{ const k=x.name.toLowerCase(), o=cnt.get(k); if(o) o.n++; else cnt.set(k,{x,n:1}); }));
+  const step=LH/Math.max(1,smp.length-1), hk=H.name.toLowerCase(); let self=null; const out=[];
+  cnt.forEach(({x,n},k)=>{ if(k===hk||nrm(k)===nrm(hk)){ self=x; return; } const shared=n*step;
+    if(shared<50) return;                                   // solo se cruzan
+    if(n>=smp.length*0.9&&(x.m||0)>LH*1.4) return;           // la contiene entera y sigue mucho más: no la pisa
+    out.push(x); });
+  out.sort((a,b)=>(a.m||9e9)-(b.m||9e9));
+  const first=self?{...self,sel:true}:{name:H.name,lv:null,m:LH,sel:true,open:()=>L.popup({minWidth:160}).setLatLng(H.line[Math.floor(H.line.length/2)]).setContent(`<b>${esc(H.name)}</b><br>${H.t!=null?fmtT(H.t):''}`).openOn(map)};
+  return [first,...out]; }
+function trailChooser(latlng,list){
+  const d=document.createElement('div'); d.className='tpop tpick';
+  d.innerHTML=`<b>Aquí pasan ${list.length} trialeras</b><small>Toca la que quieras ver</small>`;
+  list.forEach(x=>{ const lv=x.lv!=null?LEVELS[x.lv]:null, b=document.createElement('button'); if(x.sel) b.className='sel';
+    b.innerHTML=`<i style="background:${lv?lv.color:'#9e9e9e'}${x.lv>=4?';box-shadow:inset 0 0 0 2px #111,inset 0 0 0 3px #fff':''}"></i><span>${esc(x.name)}</span>${x.m?`<small>${x.m<1000?Math.round(x.m/10)*10+' m':fmtKm(x.m/1000)+' km'}</small>`:''}`;
+    b.onclick=()=>{ map.closePopup(); x.open(); }; d.appendChild(b); });
+  L.popup({minWidth:220,closeButton:true}).setLatLng(latlng).setContent(d).openOn(map); }
 // al tocar: si se pisan varias, ventanita para elegir; si hay una, se abre directa
 function trailClick(latlng){
+  if(hiSel&&T.trialeras&&distToLine([latlng.lat,latlng.lng],hiSel.line.map(p=>[p[1],p[0]]))<20){ const hl=hiSelList(); if(hl.length>1){ trailChooser(latlng,hl); return true; } if(hl.length===1){ hl[0].open(); return true; } }
   const list=trailsAt(latlng);
-  if(list.length>1){ list.sort((a,b)=>(a.m||9e9)-(b.m||9e9));
-    const d=document.createElement('div'); d.className='tpop tpick';
-    d.innerHTML=`<b>Aquí pasan ${list.length} trialeras</b><small>Toca la que quieras ver</small>`;
-    list.forEach(x=>{ const lv=x.lv!=null?LEVELS[x.lv]:null, b=document.createElement('button');
-      b.innerHTML=`<i style="background:${lv?lv.color:'#9e9e9e'}${x.lv>=4?';box-shadow:inset 0 0 0 2px #111,inset 0 0 0 3px #fff':''}"></i><span>${esc(x.name)}</span>${x.m?`<small>${x.m<1000?Math.round(x.m/10)*10+' m':fmtKm(x.m/1000)+' km'}</small>`:''}`;
-      b.onclick=()=>{ map.closePopup(); x.open(); }; d.appendChild(b); });
-    L.popup({minWidth:220,closeButton:true}).setLatLng(latlng).setContent(d).openOn(map); return true;
-  }
+  if(list.length>1){ list.sort((a,b)=>(a.m||9e9)-(b.m||9e9)); trailChooser(latlng,list); return true; }
   if(list.length===1&&list[0].lv!=null&&Object.values(gData.t||{}).some(t=>t.kind==='trial'&&t.name===list[0].name)){ list[0].open(); return true; }
   const info=trailAt(latlng);
   if(info){ L.popup({minWidth:200}).setLatLng(latlng).setContent(info).openOn(map); return true; }
@@ -4564,7 +4578,7 @@ $('rvBack').onclick=()=>{ $('rideView').hidden=true; rideOpen=null; };
 $('rvBike').onchange=async e=>{ const r=rideOpen; if(!r) return; r.bike=e.target.value||null; const copy={...r}; Object.keys(copy).forEach(k=>{ if(k.startsWith('_')) delete copy[k]; }); copy.mt=r.mt=Date.now(); await ridesTx('readwrite',st=>st.put(copy)); syncDirtyRide(copy.date); renderBikes(); renderNums(); };
 let rideOnMap=null;
 $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden=true; showPage('pgMapa');
-  rideHi.clearLayers();
+  rideHi.clearLayers(); hiSel=null;
   L.polyline(privacyTrim(r.coords),{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(privacyTrim(r.coords),{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
   const c=r.coords; L.marker([c[0][0],c[0][1]],{icon:START_ICON,interactive:false}).addTo(rideHi); L.marker([c[c.length-1][0],c[c.length-1][1]],{icon:FLAG_ICON,interactive:false}).addTo(rideHi);
   rideOnMap=r; $('roName').textContent=r.name||'Salida'; $('rideOn').hidden=false;
@@ -4580,10 +4594,11 @@ function segToMap(x){ const r=rideOpen; if(!r||!x) return;
   const seg=r.coords.slice(x.a,x.b+1).map(p=>[p[0],p[1]]); if(seg.length<2) return;
   $('rvOnMap').onclick();
   L.polyline(seg,{color:'#1E2328',weight:12,interactive:false}).addTo(rideHi); L.polyline(seg,{color:'#E8B931',weight:7,interactive:false}).addTo(rideHi);
+  hiSel={name:String(x.name||'Trialera').trim(),t:x.t,line:seg};
   setTimeout(()=>{ map.fitBounds(L.latLngBounds(seg),{padding:[60,60]});
     L.popup({minWidth:160}).setLatLng(seg[Math.floor(seg.length/2)]).setContent(`<b>${esc(x.name)}</b><br>${x.t!=null?fmtT(x.t):''}`).openOn(map); },50);
 }
-function clearRideOnMap(){ rideHi.clearLayers(); rideOnMap=null; $('rideOn').hidden=true; updateSheet(); }
+function clearRideOnMap(){ rideHi.clearLayers(); hiSel=null; rideOnMap=null; $('rideOn').hidden=true; updateSheet(); }
 $('roX').onclick=()=>{ mtState=null; mtLayer.clearLayers(); clearRideOnMap(); };
 let mtState=null; const mtLayer=L.layerGroup().addTo(map);
 $('roTrial').onclick=()=>{ if(!rideOnMap) return; mtState={r:rideOnMap,a:null}; mtLayer.clearLayers(); toast('Toca en tu recorrido dónde EMPIEZA la trialera',7000); };
@@ -4854,7 +4869,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794765347';
+const BUILD='1794766397';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5323,7 +5338,7 @@ $('frBack').onclick=()=>{ $('frView').hidden=true; frCur=null; };
 $('frMapBtn').onclick=async()=>{ const uid=frCur; if(!uid) return; toast('Cargando su mapa…',8000);
   let lines=null; try{ lines=await api(`/u/${uid}/p-0000-00`); }catch(e){}
   if(!lines||!lines.length){ toast('Todavía no tiene mapa. Se hace cuando abre Ichnos.',5000); return; }
-  toast(''); $('frView').hidden=true; showPage('pgMapa'); rideHi.clearLayers();
+  toast(''); $('frView').hidden=true; showPage('pgMapa'); rideHi.clearLayers(); hiSel=null;
   const pts=[];
   lines.forEach(l=>{ L.polyline(l,{color:'#ffffff',weight:5,opacity:.6,interactive:false}).addTo(rideHi); L.polyline(l,{color:'#7B61FF',weight:3,opacity:.85,interactive:false}).addTo(rideHi); l.forEach((p,i)=>{ if(i%5===0) pts.push(p); }); });
   const b=L.latLngBounds(pts);
@@ -5460,7 +5475,7 @@ function renderSal(){
       <div class="acts"><button class="${mine?'':'go'}" data-a="go">${mine?'No voy':'Me apunto'}</button>${r.coords&&r.coords.length>1?'<button data-a="map">Ver ruta</button>':''}${r.link?'<button data-a="open">Llevar esta ruta</button>':''}${me&&(x.by===me.id||(g&&g.admin===me.id))?'<button data-a="del">Quitar</button>':''}</div>`;
     el.querySelectorAll('button').forEach(b=>b.onclick=async()=>{
       const a=b.dataset.a;
-      if(a==='map'){ showPage('pgMapa'); rideHi.clearLayers(); const ll=r.coords.map(p=>[p[0],p[1]]);
+      if(a==='map'){ showPage('pgMapa'); rideHi.clearLayers(); hiSel=null; const ll=r.coords.map(p=>[p[0],p[1]]);
         L.polyline(ll,{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(ll,{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
         rideOnMap={_gsal:true}; $('roName').textContent=x.title; $('rideOn').hidden=false; try{ map.fitBounds(L.latLngBounds(ll),{padding:[40,40]}); }catch(e){} return; }
       if(a==='open'){ location.href=r.link; setTimeout(()=>location.reload(),50); return; }
