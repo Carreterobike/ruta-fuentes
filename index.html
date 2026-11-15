@@ -1686,7 +1686,7 @@ function updateSheet(){
   $('secFuentes').hidden=!(route && fuentesAsked) || crearClosed || wz.on;
   $('lgBox').hidden=!(T.trialeras && trailsMode());
   $('addF').hidden=!T.fuentes;
-  $('secViaje').hidden=!trip||crearClosed||wz.on||!!rideOnMap||store.get('ichnos-viajeX',false);
+  $('secViaje').hidden=!trip||crearClosed||wz.on||!$('rideOn').hidden||store.get('ichnos-viajeX',false);
   $('tripBack').hidden=!(trip&&trip.open!=null);
   $('tripBtn').hidden=!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
   $('secSeg').hidden=!T.segmentos;
@@ -4492,6 +4492,7 @@ $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden
   const c=r.coords; L.marker([c[0][0],c[0][1]],{icon:START_ICON,interactive:false}).addTo(rideHi); L.marker([c[c.length-1][0],c[c.length-1][1]],{icon:FLAG_ICON,interactive:false}).addTo(rideHi);
   rideOnMap=r; $('roName').textContent=r.name||'Salida'; $('rideOn').hidden=false;
   if(!isFoot(rideTipo(r))&&!T.trialeras) setToggle('trialeras',true);   // ver una salida de bici: con las trialeras
+  updateSheet();
   map.fitBounds(L.latLngBounds(r.coords),{padding:[40,40]}); };
 // tocar una trialera o un segmento de la ficha: te lleva a ese sitio del mapa, marcado
 // tocar el recuadro del recorrido = verlo en el mapa
@@ -4505,7 +4506,7 @@ function segToMap(x){ const r=rideOpen; if(!r||!x) return;
   setTimeout(()=>{ map.fitBounds(L.latLngBounds(seg),{padding:[60,60]});
     L.popup({minWidth:160}).setLatLng(seg[Math.floor(seg.length/2)]).setContent(`<b>${esc(x.name)}</b><br>${x.t!=null?fmtT(x.t):''}`).openOn(map); },50);
 }
-function clearRideOnMap(){ rideHi.clearLayers(); rideOnMap=null; $('rideOn').hidden=true; }
+function clearRideOnMap(){ rideHi.clearLayers(); rideOnMap=null; $('rideOn').hidden=true; updateSheet(); }
 $('roX').onclick=clearRideOnMap;
 $('roBack').onclick=()=>{ const r=rideOnMap; clearRideOnMap(); if(r&&r._gsal){ showPage('pgGrupeta'); return; } if(r&&r._frMap){ openFriend(r._frMap); return; } if(r){ showPage('pgSalidas'); openRide(r); } };
 $('rvDel').onclick=async()=>{ const r=rideOpen; if(!r) return; if(await ask('¿Borrar esta salida?',r.name,'Sí, bórrala','No')){ $('rideView').hidden=true; clearRideOnMap(); delRide(r.id); } };
@@ -4701,7 +4702,7 @@ async function devBackfill(){
   store.set('ichnos-devfill',3);
 }
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794751678';
+const BUILD='1794751691';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1]; if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1');
     if(T.crear||!$('rideView').hidden){ toast('Hay una versión nueva de Ichnos. Se pondrá al volver a abrir la app.',4000); return; }
