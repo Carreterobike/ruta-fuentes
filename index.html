@@ -279,7 +279,7 @@ details.help p{margin:6px 0 0}
 .icu-st>div{flex:1;min-width:0}.icu-st>div>b{display:block}.icu-st small b{display:inline;color:inherit}.icu-st small{display:block;color:var(--muted,#777);line-height:1.35}
 .icu-st .btn-main{flex:none;width:auto!important;min-width:76px;margin:0!important;padding:9px 14px;position:static}
 .dir-ic{background:none;border:0;pointer-events:none}
-.dir-nm{background:none;border:0;pointer-events:none}.dir-nm div{transform:translate(-50%,-26px);white-space:nowrap;font:800 12.5px var(--body,system-ui),sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 0 2px #000}
+.dir-nm{background:none;border:0;pointer-events:none}.dir-nm div{transform:translate(-50%,-26px);white-space:nowrap;font:800 12.5px var(--body,system-ui),sans-serif;color:#D9F75E;text-shadow:0 0 3px #000,0 0 3px #000,0 0 2px #000}
 .tpick b{display:block;margin-bottom:1px}.tpick>small{display:block;color:var(--muted,#888);margin-bottom:6px}
 .tpick button{display:flex;align-items:center;gap:9px;width:100%;padding:9px 8px;margin:4px 0 0;border:1px solid rgba(128,128,128,.25);border-radius:10px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .tpick button.sel{border:2px solid #E8B931;background:rgba(232,185,49,.12)}
@@ -1596,6 +1596,8 @@ window.glMap=glMap;
 let glReady=false, currentBase='Satélite', namesOn=true;
 const glDefaults={};
 function glSet(fn){ if(glReady) try{ fn(); }catch(e){ console.warn(e); } }
+// en satélite, cada tipo de nombre con su color (pueblos blanco, barrios naranja, montes arena, calles gris, parques verde; trialeras lima)
+const SAT_LBL={'road-names':'#C9CED3','park-labels':'#9FE59A','peaks':'#F0C987','place-small':'#FFB98A','place-suburb':'#FFB98A','place-village':'#FFFFFF','place-city':'#FFFFFF'};
 function setBase(name){
   currentBase=name;
   map.getContainer().classList.toggle('sat',name==='Satélite');
@@ -1605,7 +1607,7 @@ function setBase(name){
     vis('sat',name==='Satélite'); vis('topo',name==='Relieve');
     LABEL_LAYERS.forEach(id=>{
       vis(id,namesOn && name!=='Relieve');
-      glMap.setPaintProperty(id,'text-color',name==='Satélite'?'#ffffff':glDefaults[id]);
+      glMap.setPaintProperty(id,'text-color',name==='Satélite'?(SAT_LBL[id]||'#ffffff'):glDefaults[id]);
       glMap.setPaintProperty(id,'text-halo-color',name==='Satélite'?'#111111':'#ffffff');
     });
     glMap.setPaintProperty('trail-halo','line-opacity',name==='Satélite'?0.85:0.6);
@@ -2179,7 +2181,7 @@ function trailAt(latlng,force,flv){
   const name=mine?mine.name:shr?shr.name:osm?osm:svs?String(svs.name||'').trim():null;
   const d=document.createElement('div'); d.className='tpop';
   let h=`<b>${esc(name||'Trialera sin nombre')}</b>${kind?'<br>'+kind:''}`;
-  const fx=(typeof fixAt==='function')?fixAt(latlng):null;
+  const fx=(typeof fixAt==='function')?fixAt(latlng):null, fxE=fx&&!fx.grp?fx:null;   // fxE: corrección de color que se puede editar
   if(flv!=null){ const lv=LEVELS[flv]; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${flv>=4?'Doble negra':lv.name}</span>`; }
   else if(fx){ const lv=LEVELS[fx.lv]||{name:'Doble negra',color:'#111111'}; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${fx.lv>=4?'Doble negra':lv.name}</span> <small>(corregida por ${esc(uName(fx.by))})</small>`; }
   else if(!isNaN(sc)){ const lv=LEVELS[levelOf(sc)]; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${lv.name}</span> <small>(S${esc(v)})</small>`; }
@@ -2216,14 +2218,14 @@ function trailAt(latlng,force,flv){
   d.appendChild(bt);
   if(me){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Cambiar color':'Proponer otro color';
     cb.onclick=async()=>{ map.closePopup();
-      let c=fx?fx.coords.map(p=>[p[1],p[0]]):(hit.length?lineOf(hit[0]):(mine?mine.coords:null));
+      let c=fxE?fxE.coords.map(p=>[p[1],p[0]]):(hit.length?lineOf(hit[0]):(mine?mine.coords:null));
       // la trialera ENTERA (todos sus trozos), no solo el trozo que has tocado
       try{ const w=await wholeTrail([latlng.lat,latlng.lng],osm||null); if(w&&w.length>1){ const L1=lenOf(w), L0=c&&c.length>1?lenOf(c.map(q=>[q[1],q[0]])):0;
         const mid=c&&c.length>1?c[Math.floor(c.length/2)]:null, inside=!mid||distToLine([mid[1],mid[0]],w.map(q=>[q[1],q[0]]))<15;
         if(L1>L0+20&&inside) c=w.map(q=>[q[1],q[0]]); } }catch(e){ console.warn(e); }
       if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
       const lv=await pickLevel(fx?fx.lv:(!isNaN(sc)?levelOf(sc):null)); if(lv==null) return;
-      const id=fx?fx.id:'c'+c[0].map(x=>x.toFixed(5)).join('_');
+      const id=fxE?fxE.id:'c'+c[0].map(x=>x.toFixed(5)).join('_');
       // los colores viejos que caen encima de esta trialera se quitan (si no, se mezclan colores en la misma trialera)
       const nl=c, old=me.admin?Object.entries(gData.c||{}).filter(([k,o])=>k!==id&&o.coords&&o.coords.length>1&&(()=>{ const sm=samplesOf(o.coords.map(p=>[p[0],p[1]]),15); return sm.filter(p=>distToLine(p,nl)<15).length>=sm.length*0.6; })()).map(([k])=>k):[];
       const nm2=name||old.map(k=>gData.c[k]&&gData.c[k].name).find(Boolean)||'';   // el nombre que ya tenía no se pierde
@@ -4935,7 +4937,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794776740';
+const BUILD='1794777445';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5284,14 +5286,28 @@ async function gReport(id,m,tipo){
 const trailFix=L.layerGroup().addTo(map);
 function drawTrailFix(){
   trailFix.clearLayers(); try{ drawDirs(); }catch(e){ console.warn(e); } if(!T.trialeras) return;
-  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind!=='trial'||!tr.coords||tr.coords.length<2) return; const ll=tr.coords.map(p=>[p[0],p[1]]), lv=LEVELS[tr.lv]||LEVELS[2], dbl=tr.lv>=4;
+  // todo por orden de cuándo se cambió el color: el último cambio queda siempre encima
+  const all=[...Object.entries(gData.t||{}).filter(([id,tr])=>tr.kind==='trial'&&tr.coords&&tr.coords.length>1).map(([id,tr])=>({g:1,id,o:tr})),...Object.entries(gData.c||{}).filter(([id,c])=>c.coords&&c.coords.length>1).map(([id,c])=>({g:0,id,o:c}))].sort((a,b)=>(a.o.t||0)-(b.o.t||0));
+  all.forEach(({g,id,o})=>{ if(!g){ const c=o, ll=c.coords.map(p=>[p[0],p[1]]), lv=LEVELS[c.lv]||LEVELS[3], dbl=c.lv>=4;
+    L.polyline(ll,{color:'#ffffff',weight:dbl?9:7,opacity:.9,interactive:false}).addTo(trailFix);
+    L.polyline(ll,{color:lv.color,weight:dbl?6:4,interactive:false}).addTo(trailFix);
+    if(dbl) L.polyline(ll,{color:'#ffffff',weight:1.5,interactive:false}).addTo(trailFix); return; }
+    const tr=o, ll=tr.coords.map(p=>[p[0],p[1]]), lv=LEVELS[tr.lv]||LEVELS[2], dbl=tr.lv>=4;
     L.polyline(ll,{color:'#ffffff',weight:dbl?11:9,opacity:.95,interactive:false}).addTo(trailFix);
     L.polyline(ll,{color:lv.color,weight:dbl?7:6,bubblingMouseEvents:false}).on('click',ev=>{ L.DomEvent.stop(ev); if(mtState||segMode||addingF||addingP||T.crear){ map.fire('click',{latlng:ev.latlng}); return; } if(!trailClick(ev.latlng)) L.popup({minWidth:230}).setLatLng(ev.latlng).setContent(gtPopup(id,tr)).openOn(map); }).addTo(trailFix);
     if(dbl) L.polyline(ll,{color:'#ffffff',weight:1.5,interactive:false}).addTo(trailFix); });
-  Object.values(gData.c||{}).forEach(c=>{ const ll=c.coords.map(p=>[p[0],p[1]]), lv=LEVELS[c.lv]||LEVELS[3], dbl=c.lv>=4;
-    L.polyline(ll,{color:'#ffffff',weight:dbl?9:7,opacity:.9,interactive:false}).addTo(trailFix);
-    L.polyline(ll,{color:lv.color,weight:dbl?6:4,interactive:false}).addTo(trailFix);
-    if(dbl) L.polyline(ll,{color:'#ffffff',weight:1.5,interactive:false}).addTo(trailFix); });
+}
+// el color nuevo se pinta también ENCIMA de la línea del mapa que sigue (el GPS de Strava va unos metros al lado
+// y si no, se veían las dos: la nueva y la vieja). Se hace con los trozos del mapa que coinciden con la trialera.
+const snapLayer=L.layerGroup().addTo(map);
+function drawSnap(){ snapLayer.clearLayers(); if(!T.trialeras||(T.crear&&!trailsMode())||map.getZoom()<14||!osmPieces.length) return;
+  const B=map.getBounds().pad(0.1);
+  const all=[...Object.values(gData.t||{}).filter(tr=>tr.kind==='trial'&&tr.coords&&tr.coords.length>1),...Object.values(gData.c||{}).filter(c=>c.coords&&c.coords.length>1)].sort((a,b)=>(a.t||0)-(b.t||0));
+  all.forEach(o=>{ const c=o.coords.map(p=>[p[0],p[1]]); if(!c.some(q=>B.contains(q))) return; const lc=c.map(q=>[q[1],q[0]]), lv=LEVELS[o.lv]||LEVELS[2], dbl=o.lv>=4;
+    osmPieces.forEach(pc=>{ const sm=samplesOf(pc,15); if(sm.filter(p=>distToLine(p,lc)<15).length<sm.length*0.7) return;
+      L.polyline(pc,{color:'#ffffff',weight:dbl?9:7,opacity:.9,interactive:false}).addTo(snapLayer);
+      L.polyline(pc,{color:lv.color,weight:dbl?6:4,interactive:false}).addTo(snapLayer);
+      if(dbl) L.polyline(pc,{color:'#ffffff',weight:1.5,interactive:false}).addTo(snapLayer); }); });
 }
 // dirección de bajada: dos flechas, inicio (play verde), final (banderita) y nombre siempre visible
 const dirLayer=L.layerGroup().addTo(map);
@@ -5309,11 +5325,11 @@ function elevTile(x,y){ const k=x+'/'+y; if(!elevTiles.has(k)){ const o={d:null}
 function elevAt(lat,lon){ const n=16384, fx=(lon+180)/360*n, la=lat*Math.PI/180, fy=(1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*n, x=Math.floor(fx), y=Math.floor(fy);
   const t=elevTile(x,y); if(!t.d) return null; const px=Math.min(255,Math.floor((fx-x)*256)), py=Math.min(255,Math.floor((fy-y)*256)); return t.d[py*256+px]; }
 // trialeras del mapa en la zona que miras, con los trozos seguidos unidos (se corta en los cruces)
-let osmChainsKey='', osmChains=[];
+let osmChainsKey='', osmChains=[], osmPieces=[];
 async function loadOsmChains(){ if(map.getZoom()<14) return; const b=map.getBounds().pad(0.1), [x0,y0]=t2xy(b.getNorth(),b.getWest()), [x1,y1]=t2xy(b.getSouth(),b.getEast());
   if((x1-x0+1)*(y1-y0+1)>36) return; const key=[x0,y0,x1,y1].join(','); if(key===osmChainsKey) return; osmChainsKey=key;
   const pcs=[], nms=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++){ (await tileTrails(x,y)).forEach(f=>{ if(f.props.class==='path') pcs.push({c:f.line,sc:f.props.mtb_scale}); }); /* solo trialeras: las pistas, sin flechas */ nms.push(...await tileNames(x,y)); }
-  if(key!==osmChainsKey) return;
+  if(key!==osmChainsKey) return; osmPieces=pcs.map(p=>p.c);
   // puntas cercanas (≤8 m) = mismo nudo
   const cell=q=>Math.round(q[0]*9000)+':'+Math.round(q[1]*9000), grid=new Map(), ends=[];
   pcs.forEach((p,i)=>[0,1].forEach(e=>{ const q=e?p.c[p.c.length-1]:p.c[0], k=cell(q); const o={i,e,q}; ends.push(o); if(!grid.has(k)) grid.set(k,[]); grid.get(k).push(o); }));
@@ -5333,7 +5349,7 @@ async function loadOsmChains(){ if(map.getZoom()<14) return; const b=map.getBoun
 function drawDirs(){
   dirLayer.clearLayers(); const shown=T.trialeras&&!(T.crear&&!trailsMode()), on=shown&&map.getZoom()>=14;
   if(glReady) try{ glMap.setLayoutProperty('trail-names','visibility',shown&&!on?'visible':'none'); }catch(e){}   // con zoom: los nombres los pone Ichnos, siempre visibles
-  if(!on) return;
+  if(!on){ snapLayer.clearLayers(); return; }
   const B=map.getBounds().pad(0.15), z=map.getZoom(), list=[], seenN=new Set();
   const bbOf=c=>{ let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); return [a,b,n,e]; };
   const inView=bb=>!(bb[2]<B.getSouth()||bb[0]>B.getNorth()||bb[3]<B.getWest()||bb[1]>B.getEast());
@@ -5360,7 +5376,7 @@ function drawDirs(){
     if(boxes.some(o=>!(bx[2]<o[0]||bx[0]>o[2]||bx[3]<o[1]||bx[1]>o[3]))) return; boxes.push(bx);
     L.marker(mid,{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-nm',html:`<div>${esc(nm)}</div>`,iconSize:[0,0]})}).addTo(dirLayer); });
   // trialeras del mapa: flechas hacia donde BAJA la pendiente (altura del terreno), y su nombre
-  loadOsmChains().catch(()=>{}); let wait=null;
+  loadOsmChains().catch(()=>{}); try{ drawSnap(); }catch(e){ console.warn(e); } let wait=null;
   osmChains.forEach(x=>{ const bb=x._bb||(x._bb=bbOf(x.c)); if(!inView(bb)) return;
     const sm=samplesOf(x.c,40), has=drawn.length&&sm.filter(p=>drawn.some(d=>distToLine(p,d)<15)).length>=sm.length*0.7;   // ya tiene sus flechas
     const h0=elevAt(x.c[0][0],x.c[0][1]), h1=elevAt(x.c[x.c.length-1][0],x.c[x.c.length-1][1]);
@@ -5377,7 +5393,10 @@ function drawDirs(){
   if(wait&&!drawDirs._w){ drawDirs._w=1; Promise.all(wait.filter(Boolean)).then(()=>{ drawDirs._w=0; drawDirs(); }); }
 }
 map.on('zoomend moveend',()=>{ clearTimeout(drawDirs._t); drawDirs._t=setTimeout(drawDirs,120); });
-function fixAt(latlng){ let best=null, bd=12; Object.entries(gData.c||{}).forEach(([id,c])=>{ const d=distToLine([latlng.lat,latlng.lng],c.coords.map(p=>[p[1],p[0]])); if(d<bd){ bd=d; best={id,...c}; } }); return best; }
+function fixAt(latlng){ let best=null, bt=-1; const P=[latlng.lat,latlng.lng];
+  Object.entries(gData.c||{}).forEach(([id,c])=>{ if(distToLine(P,c.coords.map(p=>[p[1],p[0]]))<12&&(c.t||0)>bt){ bt=c.t||0; best={id,...c}; } });
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind==='trial'&&tr.coords&&tr.coords.length>1&&distToLine(P,tr.coords.map(p=>[p[1],p[0]]))<12&&(tr.t||0)>bt){ bt=tr.t||0; best={id,...tr,grp:true}; } });
+  return best; }
 async function pickLevel(cur){
   const names=['Verde','Azul','Roja','Negra','Doble negra'];
   const v=await askName('',names[cur!=null?cur:1],{title:'¿De qué color es?',hint:'Verde (fácil) · Azul · Roja · Negra · Doble negra (muy difícil)',placeholder:'Color',button:'Guardar color',list:names});
