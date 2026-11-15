@@ -3640,7 +3640,7 @@ function prepRide(r){
   r.coords.forEach((p,i)=>{ s=Math.min(s,p[0]); n=Math.max(n,p[0]); w=Math.min(w,p[1]); e=Math.max(e,p[1]); if(i) cum.push(cum[i-1]+dist(r.coords[i-1],p)); });
   r._bb=[s,w,n,e]; r._cum=cum;
 }
-async function saveRides(list,quiet){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT','sef','sefT','api','icu','upDev','upRaw','upChk','movDev','elDev','kmDev'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); if(!quiet) await loadRides(); }
+async function saveRides(list,quiet){ const now=Date.now(); list.forEach(r=>{ const old=rides.find(x=>x.id===r.id); if(old){ if(old.bike) r.bike=old.bike; ['fotos','notas','sfotos','sfotosT','sef','sefT','api','icu','upDev','upRaw','upChk','movDev','elDev','kmDev','gpsMov','gpsEl','gpsKm','gpsUp','gpsChk'].forEach(k=>{ if(old[k]!=null&&r[k]==null) r[k]=old[k]; }); if(old.tipo&&old.tipo!=='road') r.tipo=old.tipo; } r.mt=now; }); await ridesTx('readwrite',st=>{ list.forEach(r=>st.put(r)); }); list.forEach(r=>syncDirtyRide(r.date)); if(!quiet) await loadRides(); }
 async function delRide(id){ const r=rides.find(x=>x.id===id); await ridesTx('readwrite',st=>st.delete(id)); syncDelRide(id,r&&r.date); await loadRides(); }
 function lineKm(c){ let m=0; for(let i=1;i<c.length;i++) m+=dist(c[i-1],c[i]); return m/1000; }
 function thin(c){ const out=[]; for(const p of c){ if(!out.length||dist(out[out.length-1],p)>=10) out.push([+p[0].toFixed(5),+p[1].toFixed(5)]); } return out; }
@@ -3872,7 +3872,7 @@ $('impFile').onchange=async e=>{
       const rtipo=gb?gb.tipo:tipo;
       const fd=t.dev||{};
       ok.push({id,name:(meta&&meta.name)||t.name||t.file.replace(/\.(gpx|tcx|fit)$/i,''),date:t.date||it.mod||Date.now(),source:src,tipo:rtipo||null,coords:c,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,bike,km:lineKm(c),upRaw:th.upRaw,upDev:meta&&isFinite(parseFloat(meta.up))?Math.round(parseFloat(String(meta.up).replace(',','.'))):null,movDev:meta&&isFinite(parseFloat(meta.mov))?Math.round(parseFloat(String(meta.mov).replace(',','.'))):null,elDev:meta&&isFinite(parseFloat(meta.el))?Math.round(parseFloat(String(meta.el).replace(',','.'))):null});
-      { const L=ok[ok.length-1]; if(L){ if(L.movDev==null&&fd.mov) L.movDev=fd.mov; if(L.elDev==null&&fd.el) L.elDev=fd.el; if(L.upDev==null&&fd.up) L.upDev=fd.up; if(fd.m) L.kmDev=fd.m; } }   // los números del propio GPS
+      { const L=ok[ok.length-1]; if(L){ if(L.movDev==null&&fd.mov) L.movDev=fd.mov; if(L.elDev==null&&fd.el) L.elDev=fd.el; if(L.upDev==null&&fd.up) L.upDev=fd.up; if(fd.m) L.kmDev=fd.m; if(fd.mov){ L.gpsMov=fd.mov; L.gpsEl=fd.el||null; L.gpsKm=fd.m||null; L.gpsUp=fd.up||null; } } }   // los números del propio GPS
       if(ok.length>=40){ await saveRides(ok.splice(0),true); }
     }catch(err){ bad++; }
   }
@@ -4006,6 +4006,7 @@ async function icuImport(a){
   const t=await parseTrackBuf('salida.'+(ft==='gpx'||ft==='tcx'?ft:'fit'),buf), th=thinFull(t.coords,t.times,t.eles,t.ex);
   if(th.coords.length<2) return 'x';
   const data={coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,km:lineKm(th.coords),upRaw:th.upRaw,upDev:a.total_elevation_gain!=null?Math.round(a.total_elevation_gain):null,movDev:a.moving_time!=null?Math.round(a.moving_time):null,elDev:a.elapsed_time!=null?Math.round(a.elapsed_time):null,kmDev:a.distance!=null?Math.round(a.distance):null,api:0,source:a.device_name?a.device_name+' (Intervals.icu)':'GPS (Intervals.icu)',icu:String(a.id)};
+  if(t.dev){ data.gpsMov=t.dev.mov||null; data.gpsEl=t.dev.el||null; data.gpsKm=t.dev.m||null; data.gpsUp=t.dev.up||null; }
   if(t.dev){ if(t.dev.mov) data.movDev=t.dev.mov; if(t.dev.el) data.elDev=t.dev.el; if(t.dev.m) data.kmDev=t.dev.m; if(t.dev.up) data.upDev=t.dev.up; }
   if(dup){ ['movDev','elDev','kmDev','upDev'].forEach(k=>{ if(dup[k]!=null) delete data[k]; });   // los números de Strava mandan: Intervals los calcula a su manera
     await saveRides([{...dup,...data}],true); }              // la de Strava pasa a ser la del GPS: ya la pueden ver tus amigos
@@ -4187,10 +4188,11 @@ function rideStats(r){
   }
   // primero lo que dice el aparato (los mismos números que COROS y Strava); si no hay, lo calcula Ichnos
   const tw=r._tw, pick=(...v)=>v.find(x=>x!=null&&isFinite(x));
-  st.moving=pick(tw&&tw.movDev,r.movDev,st.moving); st.elapsed=pick(tw&&tw.elDev,r.elDev,st.elapsed);
-  const kd=pick(tw&&tw.kmDev,r.kmDev); if(kd) st.km=kd/1000;
+  const g=r.gpsMov!=null?r:(tw&&tw.gpsMov!=null?tw:null);   // los números de tu COROS/Garmin (los más fiables)
+  st.moving=pick(g&&g.gpsMov,tw&&tw.movDev,r.movDev,st.moving); st.elapsed=pick(g&&g.gpsEl,tw&&tw.elDev,r.elDev,st.elapsed);
+  const kd=pick(g&&g.gpsKm,tw&&tw.kmDev,r.kmDev); if(kd) st.km=kd/1000; st.src=g?'gps':(tw&&tw.movDev!=null)||r.movDev!=null?'strava':'ichnos';
   st.vavg=st.moving>0?st.km/(st.moving/3600):null;
-  st.up=pick(tw&&tw.upDev,r.upDev)!=null?Math.round(pick(tw&&tw.upDev,r.upDev)):r.upRaw!=null?r.upRaw:r.eles?gainOf(r.eles):null;
+  st.up=pick(g&&g.gpsUp,tw&&tw.upDev,r.upDev)!=null?Math.round(pick(g&&g.gpsUp,tw&&tw.upDev,r.upDev)):r.upRaw!=null?r.upRaw:r.eles?gainOf(r.eles):null;
   const avgW=(arr,skip0)=>{ if(!arr) return null; let s=0,w=0; for(let i=1;i<n;i++){ const v=arr[i]; if(v==null||(skip0&&v===0)) continue; const dt=t&&t[i]!=null&&t[i-1]!=null?Math.min(30,Math.max(0,t[i]-t[i-1])):1; s+=v*dt; w+=dt; } return w?s/w:null; };
   if(r.hr){ st.hr=avgW(r.hr); const h=r.hr.filter(x=>x>0); st.hrmax=h.length?Math.max(...h):null; }
   if(r.cad) st.cad=avgW(r.cad,true);
@@ -4745,7 +4747,15 @@ async function devBackfill(){
         (L||[]).forEach(a=>{ const r=ir.find(x=>x.id==='icu-'+a.id); if(!r) return; devFill(r,a); if(a.total_elevation_gain!=null) r.upDev=Math.round(a.total_elevation_gain); r._st=null; r._devNew=1; ch++; }); } } }catch(e){}
   if(ch){ const chg=rides.filter(r=>r._devNew); await ridesTx('readwrite',st=>chg.forEach(r=>{ delete r._devNew; const c=cleanRide(r); c.mt=r.mt=Date.now(); st.put(c); })); chg.forEach(r=>syncDirtyRide(r.date)); rides.forEach(r=>r._st=null); renderRides(); }
   store.set('ichnos-devfill',3);
+  await gpsBackfill();
 }
+async function gpsBackfill(){
+  if(typeof icuOn!=='function'||!icuOn()) return; let n=0;
+  for(const r of rides.filter(x=>x.icu&&x.gpsMov==null&&!x.gpsChk).sort((a,b)=>b.date-a.date).slice(0,20)){
+    try{ let buf=await icuGet(`activity/${r.icu}/file`,true); const u8=new Uint8Array(buf); if(u8[0]===0x1f&&u8[1]===0x8b) buf=await gunzipBuf(buf);
+      const d=parseFit(buf).dev; r.gpsChk=1; if(d&&d.mov){ r.gpsMov=d.mov; r.gpsEl=d.el||null; r.gpsKm=d.m||null; r.gpsUp=d.up||null; }
+      r._st=null; const c=cleanRide(r); c.mt=r.mt=Date.now(); await ridesTx('readwrite',x=>x.put(c)); syncDirtyRide(r.date); n++; }catch(e){ break; } }
+  if(n){ rides.forEach(r=>r._st=null); renderRides(); } }
 // ---------- fiabilidad ----------
 // los últimos errores de la app se guardan para mandarlos con "Algo va mal"
 const errBuf=[]; const errPush=(m,src)=>{ errBuf.push({t:Date.now(),m:String(m).slice(0,300),s:src?String(src).slice(0,120):''}); if(errBuf.length>25) errBuf.shift(); };
@@ -4777,7 +4787,7 @@ async function selfTest(opts={}){
   let L=[]; try{ L=await svGet('athlete/activities?per_page=30&page=1')||[]; }catch(e){ return {...out,nota:'sin conexión'}; }
   markDups();
   for(const a of L){ const r=rides.find(x=>x.id==='strava-'+a.id); if(!r) continue; out.revisadas++;
-    const show=r._dup?(rides.find(x=>x._tw===r)||r):r; show._st=null; const st=rideStats(show);
+    const show=r._dup?(rides.find(x=>x._tw===r)||r):r; show._st=null; const st=rideStats(show); if(st.src==='gps') continue;   // manda el GPS: Strava cuenta distinto
     const want={mov:a.moving_time,tot:a.elapsed_time,km:a.distance/1000,up:Math.round(a.total_elevation_gain||0)};
     const bad=[]; if(Math.abs(st.moving-want.mov)>1) bad.push(`en movimiento ${st.moving} en vez de ${want.mov}`); if(Math.abs(st.elapsed-want.tot)>1) bad.push(`tiempo total ${st.elapsed} en vez de ${want.tot}`);
     if(Math.abs(st.km-want.km)>0.05) bad.push(`km ${st.km.toFixed(2)} en vez de ${want.km.toFixed(2)}`); if(Math.abs((st.up||0)-want.up)>1) bad.push(`desnivel ${st.up} en vez de ${want.up}`);
@@ -4797,7 +4807,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794761841';
+const BUILD='1794761980';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
