@@ -2114,6 +2114,13 @@ function trailsAt(latlng){
       const sc=h.length?parseInt(String(h[0].properties.mtb_scale??''),10):NaN; if(!isNaN(sc)) x.lv=levelOf(sc); } });
   return out;
 }
+// la trialera entera que pasa por un punto: por su nombre del mapa, o los trozos seguidos hasta los cruces
+async function wholeTrail(P,name){ const [x,y]=t2xy(P[0],P[1]), nm=[];
+  for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ try{ nm.push(...await tileNames(x+dx,y+dy)); }catch(e){} }
+  if(name){ const ps=nm.filter(f=>f.name===name).map(f=>f.line); if(ps.length){ let seed=ps[0], bd=1e9; ps.forEach(p=>{ const d=distToLine(P,p.map(q=>[q[1],q[0]])); if(d<bd){ bd=d; seed=p; } });
+      if(bd<30){ const ch=chainFrom(seed,ps); if(ch&&ch.length>1) return ch; } } }
+  await loadOsmChains().catch(()=>{}); let best=null, bd=12; osmChains.forEach(o=>{ const d=distToLine(P,o.c.map(q=>[q[1],q[0]])); if(d<bd){ bd=d; best=o; } });
+  return best?best.c:null; }
 function openTrailInfo(latlng,name,flv){ const go=()=>{ const info=trailAt(latlng,name,flv); if(info) L.popup({minWidth:200}).setLatLng(latlng).setContent(info).openOn(map); };
   if(glReady&&map.getZoom()<15){ map.setView(latlng,16); let done=false; const fin=()=>{ if(!done){ done=true; go(); } }; glMap.once('idle',fin); setTimeout(fin,2500); } else go(); }   // de cerca, para que el mapa tenga la trialera y sus tiempos
 // la trialera marcada desde una salida (amarilla) y las que pisa: ni las que siguen la línea mucho más allá
@@ -2210,11 +2217,18 @@ function trailAt(latlng,force,flv){
   if(me){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Cambiar color':'Proponer otro color';
     cb.onclick=async()=>{ map.closePopup();
       let c=fx?fx.coords.map(p=>[p[1],p[0]]):(hit.length?lineOf(hit[0]):(mine?mine.coords:null));
+      // la trialera ENTERA (todos sus trozos), no solo el trozo que has tocado
+      try{ const w=await wholeTrail([latlng.lat,latlng.lng],osm||null); if(w&&w.length>1){ const L1=lenOf(w), L0=c&&c.length>1?lenOf(c.map(q=>[q[1],q[0]])):0;
+        const mid=c&&c.length>1?c[Math.floor(c.length/2)]:null, inside=!mid||distToLine([mid[1],mid[0]],w.map(q=>[q[1],q[0]]))<15;
+        if(L1>L0+20&&inside) c=w.map(q=>[q[1],q[0]]); } }catch(e){ console.warn(e); }
       if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
       const lv=await pickLevel(fx?fx.lv:(!isNaN(sc)?levelOf(sc):null)); if(lv==null) return;
       const id=fx?fx.id:'c'+c[0].map(x=>x.toFixed(5)).join('_');
-      gPush([{k:'color',id,coords:c.map(x=>[+x[1].toFixed(6),+x[0].toFixed(6)]),lv,name:name||''}]);
-      if(me.admin){ gData.c[id]={coords:c.map(x=>[x[1],x[0]]),lv,name:name||'',by:me.id,t:Date.now()}; drawTrailFix(); toast('Color cambiado para todos'); } };
+      // los colores viejos que caen encima de esta trialera se quitan (si no, se mezclan colores en la misma trialera)
+      const nl=c, old=me.admin?Object.entries(gData.c||{}).filter(([k,o])=>k!==id&&o.coords&&o.coords.length>1&&(()=>{ const sm=samplesOf(o.coords.map(p=>[p[0],p[1]]),15); return sm.filter(p=>distToLine(p,nl)<15).length>=sm.length*0.6; })()).map(([k])=>k):[];
+      const nm2=name||old.map(k=>gData.c[k]&&gData.c[k].name).find(Boolean)||'';   // el nombre que ya tenía no se pierde
+      gPush([...old.map(k=>({k:'color-',id:k})),{k:'color',id,coords:c.map(x=>[+x[1].toFixed(6),+x[0].toFixed(6)]),lv,name:nm2}]);
+      if(me.admin){ old.forEach(k=>delete gData.c[k]); gData.c[id]={coords:c.map(x=>[x[1],x[0]]),lv,name:nm2,by:me.id,t:Date.now()}; drawTrailFix(); toast('Color cambiado para todos'); } };
     d.appendChild(cb); }
   if(mine){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar mi nombre';
     del.onclick=()=>{ map.closePopup(); myNames=myNames.filter(n=>n!==mine); saveMyNames(); toast('Nombre quitado'); }; d.appendChild(del); }
@@ -4921,7 +4935,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794775270';
+const BUILD='1794776033';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5363,7 +5377,7 @@ function drawDirs(){
   if(wait&&!drawDirs._w){ drawDirs._w=1; Promise.all(wait.filter(Boolean)).then(()=>{ drawDirs._w=0; drawDirs(); }); }
 }
 map.on('zoomend moveend',()=>{ clearTimeout(drawDirs._t); drawDirs._t=setTimeout(drawDirs,120); });
-function fixAt(latlng){ let best=null, bd=25; Object.entries(gData.c||{}).forEach(([id,c])=>{ const d=distToLine([latlng.lat,latlng.lng],c.coords.map(p=>[p[1],p[0]])); if(d<bd){ bd=d; best={id,...c}; } }); return best; }
+function fixAt(latlng){ let best=null, bd=12; Object.entries(gData.c||{}).forEach(([id,c])=>{ const d=distToLine([latlng.lat,latlng.lng],c.coords.map(p=>[p[1],p[0]])); if(d<bd){ bd=d; best={id,...c}; } }); return best; }
 async function pickLevel(cur){
   const names=['Verde','Azul','Roja','Negra','Doble negra'];
   const v=await askName('',names[cur!=null?cur:1],{title:'¿De qué color es?',hint:'Verde (fácil) · Azul · Roja · Negra · Doble negra (muy difícil)',placeholder:'Color',button:'Guardar color',list:names});
