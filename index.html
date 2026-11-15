@@ -3929,6 +3929,7 @@ async function stravaSync(manual){
     }
     // 3) los segmentos de las salidas que ya tenías
     if(me&&!more&&n<12&&!T.crear) await svEffortsBackfill(12-n);
+    if(me&&n) setTimeout(devBackfill,3000);   // salidas nuevas: sus números exactos de Strava
     sv.last=Date.now(); sv.more=more; syncRaw.set('ichnos-strava',sv);
   }catch(e){ err=e&&e.message; syncRaw.set('ichnos-strava',sv); }
   svBusy=false;
@@ -3986,7 +3987,8 @@ async function icuImport(a){
   const t=await parseTrackBuf('salida.'+(ft==='gpx'||ft==='tcx'?ft:'fit'),buf), th=thinFull(t.coords,t.times,t.eles,t.ex);
   if(th.coords.length<2) return 'x';
   const data={coords:th.coords,times:th.times,eles:th.eles,hr:th.hr,cad:th.cad,pw:th.pw,km:lineKm(th.coords),upRaw:th.upRaw,upDev:a.total_elevation_gain!=null?Math.round(a.total_elevation_gain):null,movDev:a.moving_time!=null?Math.round(a.moving_time):null,elDev:a.elapsed_time!=null?Math.round(a.elapsed_time):null,kmDev:a.distance!=null?Math.round(a.distance):null,api:0,source:a.device_name?a.device_name+' (Intervals.icu)':'GPS (Intervals.icu)',icu:String(a.id)};
-  if(dup) await saveRides([{...dup,...data}],true);              // la de Strava pasa a ser la del GPS: ya la pueden ver tus amigos
+  if(dup){ ['movDev','elDev','kmDev','upDev'].forEach(k=>{ if(dup[k]!=null) delete data[k]; });   // los números de Strava mandan: Intervals los calcula a su manera
+    await saveRides([{...dup,...data}],true); }              // la de Strava pasa a ser la del GPS: ya la pueden ver tus amigos
   else await saveRides([{id,name:a.name||'Salida',date:t0,tipo,bike:bikeForTipo(tipo),...data}],true);
   return true;
 }
@@ -4681,19 +4683,23 @@ async function svEffortsBackfill(maxN){
 let sxBusy=false;
 // trae poco a poco los segmentos de TODAS tus salidas de Strava (nombre, tu tiempo y tus mejores marcas)
 async function devBackfill(){
-  if(store.get('ichnos-devfill',0)>=2) return;
+  const full=store.get('ichnos-devfill',0)<3;   // la primera vez repasa todas; luego solo las últimas
   let ch=0;
-  try{ if(svOn()){ const need=new Map(rides.filter(r=>/^strava-\d+$/.test(r.id)&&r.movDev==null).map(r=>[r.id.slice(7),r]));
-      for(let page=1;page<=15&&need.size;page++){ const L=await svGet(`athlete/activities?per_page=200&page=${page}`); if(!L||!L.length) break;
-        L.forEach(a=>{ const r=need.get(String(a.id)); if(!r) return; devFill(r,a); if(r.upDev==null&&a.total_elevation_gain!=null) r.upDev=Math.round(a.total_elevation_gain); r._st=null; r._devNew=1; need.delete(String(a.id)); ch++; }); } } }catch(e){}
+  try{ if(svOn()){ const need=new Map(rides.filter(r=>/^strava-\d+$/.test(r.id)).map(r=>[r.id.slice(7),r]));
+      for(let page=1;page<=(full?15:1)&&need.size;page++){ const L=await svGet(`athlete/activities?per_page=${full?200:30}&page=${page}`); if(!L||!L.length) break;
+        L.forEach(a=>{ const r=need.get(String(a.id)); if(!r) return; need.delete(String(a.id));
+          const up=a.total_elevation_gain!=null?Math.round(a.total_elevation_gain):r.upDev;
+          if(r.movDev===a.moving_time&&r.elDev===a.elapsed_time&&r.kmDev===Math.round(a.distance)&&r.upDev===up) return;
+          devFill(r,a); r.upDev=up; r._st=null; r._devNew=1; ch++; }); } } }catch(e){}
+  if(!full){ if(ch){ const chg=rides.filter(r=>r._devNew); await ridesTx('readwrite',st=>chg.forEach(r=>{ delete r._devNew; const c=cleanRide(r); c.mt=r.mt=Date.now(); st.put(c); })); chg.forEach(r=>syncDirtyRide(r.date)); rides.forEach(r=>r._st=null); renderRides(); } return; }
   try{ if(typeof icuOn==='function'&&icuOn()){ const ir=rides.filter(r=>/^icu-/.test(r.id)&&r.movDev==null);
       if(ir.length){ const t0=Math.min(...ir.map(r=>r.date))-86400000, t1=Math.max(...ir.map(r=>r.date))+86400000;
         const L=await icuGet(`athlete/0/activities?oldest=${ymd(t0)}&newest=${ymd(t1)}`);
         (L||[]).forEach(a=>{ const r=ir.find(x=>x.id==='icu-'+a.id); if(!r) return; devFill(r,a); if(a.total_elevation_gain!=null) r.upDev=Math.round(a.total_elevation_gain); r._st=null; r._devNew=1; ch++; }); } } }catch(e){}
   if(ch){ const chg=rides.filter(r=>r._devNew); await ridesTx('readwrite',st=>chg.forEach(r=>{ delete r._devNew; const c=cleanRide(r); c.mt=r.mt=Date.now(); st.put(c); })); chg.forEach(r=>syncDirtyRide(r.date)); rides.forEach(r=>r._st=null); renderRides(); }
-  store.set('ichnos-devfill',2);
+  store.set('ichnos-devfill',3);
 }
-setTimeout(devBackfill,8000);
+setTimeout(devBackfill,8000); setInterval(devBackfill,15*60*1000);
 async function svSweep(){
   if(!svOn()||sxBusy||document.hidden||T.crear) return; sxBusy=true;
   try{ await svEffortsBackfill(40); }catch(e){}
