@@ -272,6 +272,12 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+.icu-steps{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.icu-st{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(128,128,128,.25);border-radius:12px}
+.icu-st>i{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;background:#eceff1;color:#1E2328}
+.icu-st.ok>i{background:#B6E22E;font-size:0}.icu-st.ok>i::after{content:'✓';font-size:15px}
+.icu-st>div{flex:1;min-width:0}.icu-st b{display:block}.icu-st small{display:block;color:var(--muted,#777);line-height:1.35}
+.icu-st .btn-main{flex:none;min-width:72px}
 .dir-ic{background:none;border:0;pointer-events:none}
 .dir-nm{background:none;border:0;pointer-events:none}.dir-nm div{transform:translate(-50%,-26px);white-space:nowrap;font:800 12.5px var(--body,system-ui),sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 0 2px #000}
 .tpick b{display:block;margin-bottom:1px}.tpick>small{display:block;color:var(--muted,#888);margin-bottom:6px}
@@ -854,12 +860,16 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
   <section class="pblock" id="icuBox">
     <div class="pb-h"><h3>Intervals.icu</h3><span class="svchip" id="icuChip">Sin conectar</span></div>
     <div id="icuOff">
-      <p class="svp">Para que <b>tus amigos vean tus salidas</b> tienen que llegar directas de tu GPS, no por Strava (norma de Strava). Intervals.icu es gratis y se conecta con COROS, Garmin, Wahoo, Suunto y Polar.</p>
-      <p class="svp"><b>1.</b> Crea una cuenta gratis en <b>intervals.icu</b> y, en sus Ajustes (Settings), conecta tu GPS (por ejemplo el COROS DURA o tu Garmin). No conectes allí Strava para esto.</p>
-      <button class="sv-btn icu" id="icuGo" hidden>Conectar Intervals.icu</button>
-      <div id="icuKeyBox">
-        <p class="svp"><b>2.</b> En intervals.icu ve a <b>Settings</b>, baja hasta <b>Developer Settings</b>, pulsa <b>(view)</b> al lado de <b>API Key</b>, cópiala y pégala aquí:</p>
-        <div class="inv-add"><input id="icuKey" placeholder="Tu API Key de Intervals.icu" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="icuKeyBtn">Conectar</button></div>
+      <p class="svp">Para que <b>tus amigos vean tus salidas</b>, tienen que llegar directas de tu ciclocomputador, no por Strava (norma de Strava). Intervals.icu es gratis y se conecta con Garmin, COROS, Wahoo, Hammerhead, Suunto y Polar.</p>
+      <div class="icu-steps">
+        <div class="icu-st" data-s="1"><i>1</i><div><b>Crea tu cuenta en Intervals.icu</b><small>Gratis. Pulsa "Sign up" y vuelve aquí.</small></div><button class="btn-main" id="icuS1">Abrir</button></div>
+        <div class="icu-st" data-s="2"><i>2</i><div><b>Conecta tu ciclocomputador</b><small>Arriba del todo verás Garmin, COROS, Wahoo… Pulsa el tuyo y acepta. Strava no.</small></div><button class="btn-main" id="icuS2">Abrir</button></div>
+        <button class="sv-btn icu" id="icuGo" hidden>3 · Conectar con Ichnos</button>
+        <div id="icuKeyBox">
+          <div class="icu-st" data-s="3"><i>3</i><div><b>Copia tu clave</b><small>Baja del todo hasta <b>Developer Settings</b>, pulsa <b>(view)</b> al lado de <b>API Key</b> y cópiala. Vuelve aquí.</small></div><button class="btn-main" id="icuS3">Abrir</button></div>
+          <div class="icu-st" data-s="4"><i>4</i><div><b>Pega la clave</b><small>Y ya está: tus salidas llegan solas.</small></div><button class="btn-main" id="icuPaste">Pegar</button></div>
+          <div class="inv-add"><input id="icuKey" placeholder="O pégala aquí a mano" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="icuKeyBtn">Conectar</button></div>
+        </div>
       </div>
     </div>
     <div id="icuOn" hidden>
@@ -4132,6 +4142,19 @@ $('icuKeyBtn').onclick=async()=>{ const k=$('icuKey').value.trim(); if(!k) retur
   try{ const r=await api('/icu/clave',{method:'POST',body:{key:k}}); $('icuKey').value=''; me.icu=true; syncRaw.set('ichnos-auth',me); paintIcu(); toast(`Intervals.icu conectado${r.name?' ('+r.name+')':''}. Trayendo tus salidas…`,5000); icuSync(false); }
   catch(e){ toast(e.status?e.message:'No hay conexión ahora.',6000); }
   $('icuKeyBtn').disabled=false; };
+// pasos guiados (se recuerda cuáles has hecho)
+const icuStepsDone=()=>new Set(store.get('ichnos-icu-pasos',[])||[]);
+function icuMark(n){ const d=icuStepsDone(); d.add(n); store.set('ichnos-icu-pasos',[...d]); paintIcuSteps(); }
+function paintIcuSteps(){ const d=icuStepsDone(); document.querySelectorAll('.icu-st').forEach(e=>e.classList.toggle('ok',d.has(+e.dataset.s))); }
+const icuOpen=(n,u)=>{ icuMark(n); window.open(u,'_blank','noopener'); };
+$('icuS1').onclick=()=>icuOpen(1,'https://intervals.icu/');
+$('icuS2').onclick=()=>icuOpen(2,'https://intervals.icu/settings');
+$('icuS3').onclick=()=>icuOpen(3,'https://intervals.icu/settings');
+$('icuPaste').onclick=async()=>{ let t=''; try{ t=(await navigator.clipboard.readText()||'').trim(); }catch(e){}
+  if(!t){ $('icuKey').focus(); toast('No he podido leer lo copiado. Mantén el dedo en la casilla de abajo y pulsa Pegar.',6000); return; }
+  if(!/^[A-Za-z0-9_-]{16,}$/.test(t)){ toast('Lo que tienes copiado no parece la clave. Vuelve al paso 3 y copia la API Key.',6000); return; }
+  $('icuKey').value=t; icuMark(4); $('icuKeyBtn').onclick(); };
+paintIcuSteps();
 $('icuGo').onclick=()=>{ if(me) location.href=BRIDGE+'/icu/conectar?t='+encodeURIComponent(me.t)+'&r='+encodeURIComponent(location.origin+location.pathname); };
 $('icuNow').onclick=()=>icuSync(true);
 $('icuOut').onclick=async()=>{ if(await ask('¿Desconectar Intervals.icu?','Las salidas que ya tienes se quedan.','Sí, desconectar','No')){ try{ await api('/icu/quitar',{method:'POST'}); me.icu=false; syncRaw.set('ichnos-auth',me); paintIcu(); }catch(e){ toast('No se ha podido ahora.',4000); } } };
@@ -4609,7 +4632,7 @@ $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden
   rideHi.clearLayers(); hiSel=null;
   L.polyline(privacyTrim(r.coords),{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(privacyTrim(r.coords),{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
   const c=r.coords; L.marker([c[0][0],c[0][1]],{icon:START_ICON,interactive:false}).addTo(rideHi); L.marker([c[c.length-1][0],c[c.length-1][1]],{icon:FLAG_ICON,interactive:false}).addTo(rideHi);
-  rideOnMap=r; $('roName').textContent=r.name||'Salida'; $('rideOn').hidden=false;
+  rideOnMap=r; $('roName').textContent=r.name||'Salida'; $('rideOn').hidden=false; $('roTrial').hidden=!(rideOnMap&&rideOnMap.coords);
   if(!isFoot(rideTipo(r))&&!T.trialeras) setToggle('trialeras',true);   // ver una salida de bici: con las trialeras
   updateSheet();
   map.fitBounds(L.latLngBounds(r.coords),{padding:[40,40]}); };
@@ -4629,9 +4652,9 @@ function segToMap(x){ const r=rideOpen; if(!r||!x) return;
 function clearRideOnMap(){ rideHi.clearLayers(); hiSel=null; rideOnMap=null; $('rideOn').hidden=true; updateSheet(); }
 $('roX').onclick=()=>{ mtState=null; mtLayer.clearLayers(); clearRideOnMap(); };
 let mtState=null; const mtLayer=L.layerGroup().addTo(map);
-$('roTrial').onclick=()=>{ if(!rideOnMap) return; mtState={r:rideOnMap,a:null}; mtLayer.clearLayers(); toast('Toca en tu recorrido dónde EMPIEZA la trialera',7000); };
+$('roTrial').onclick=()=>{ if(!rideOnMap) return; mtState={r:rideOnMap,a:null}; mtLayer.clearLayers(); toast('Toca en el recorrido dónde EMPIEZA la trialera',7000); };
 async function mtClick(ll){ const st=mtState, r=st.r, c=r.coords; const i=nearestIdx(c,[ll.lat,ll.lng]);
-  if(i<0||dist(c[i],[ll.lat,ll.lng])>60){ toast('Toca encima de la línea de tu salida.',3500); return; }
+  if(i<0||dist(c[i],[ll.lat,ll.lng])>60){ toast('Toca encima de la línea de la salida.',3500); return; }
   if(st.a==null){ st.a=i; L.circleMarker([c[i][0],c[i][1]],{radius:9,color:'#fff',weight:3,fillColor:'#2e9d3a',fillOpacity:1}).addTo(mtLayer); toast('Ahora toca dónde ACABA la trialera',7000); return; }
   let a=st.a, b=i; if(b<a) [a,b]=[b,a]; if(b-a<3){ toast('Es muy corta. Toca un poco más lejos.',3500); return; }
   mtState=null; const piece=c.slice(a,b+1);
@@ -4898,7 +4921,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794772660';
+const BUILD='1794772868';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5455,7 +5478,7 @@ $('frMapBtn').onclick=async()=>{ const uid=frCur; if(!uid) return; toast('Cargan
   const pts=[];
   lines.forEach(l=>{ L.polyline(l,{color:'#ffffff',weight:5,opacity:.6,interactive:false}).addTo(rideHi); L.polyline(l,{color:'#7B61FF',weight:3,opacity:.85,interactive:false}).addTo(rideHi); l.forEach((p,i)=>{ if(i%5===0) pts.push(p); }); });
   const b=L.latLngBounds(pts);
-  rideOnMap={_frMap:uid}; $('roName').textContent='Mapa de '+uName(uid); $('rideOn').hidden=false;
+  rideOnMap={_frMap:uid}; $('roName').textContent='Mapa de '+uName(uid); $('rideOn').hidden=false; $('roTrial').hidden=!(rideOnMap&&rideOnMap.coords);
   try{ map.fitBounds(b,{padding:[40,40]}); }catch(e){} };
 async function openFriendRide(uid,x){
   toast('Abriendo la salida…',8000);
@@ -5590,7 +5613,7 @@ function renderSal(){
       const a=b.dataset.a;
       if(a==='map'){ showPage('pgMapa'); rideHi.clearLayers(); hiSel=null; const ll=r.coords.map(p=>[p[0],p[1]]);
         L.polyline(ll,{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(ll,{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
-        rideOnMap={_gsal:true}; $('roName').textContent=x.title; $('rideOn').hidden=false; try{ map.fitBounds(L.latLngBounds(ll),{padding:[40,40]}); }catch(e){} return; }
+        rideOnMap={_gsal:true}; $('roName').textContent=x.title; $('rideOn').hidden=false; $('roTrial').hidden=!(rideOnMap&&rideOnMap.coords); try{ map.fitBounds(L.latLngBounds(ll),{padding:[40,40]}); }catch(e){} return; }
       if(a==='open'){ location.href=r.link; setTimeout(()=>location.reload(),50); return; }
       if(a==='del'&&!await ask('¿Quitar esta salida?',x.title,'Sí, quitar','No')) return;
       try{ gSal=await api(`/grupos/${gCur}/salidas/${x.id}`,{method:'POST',body:a==='del'?{del:true}:{go:!mine}}); renderSal(); }catch(e){ toast('No hay conexión ahora.',4000); }
