@@ -4935,7 +4935,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794776045';
+const BUILD='1794776606';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5312,7 +5312,7 @@ function elevAt(lat,lon){ const n=16384, fx=(lon+180)/360*n, la=lat*Math.PI/180,
 let osmChainsKey='', osmChains=[];
 async function loadOsmChains(){ if(map.getZoom()<14) return; const b=map.getBounds().pad(0.1), [x0,y0]=t2xy(b.getNorth(),b.getWest()), [x1,y1]=t2xy(b.getSouth(),b.getEast());
   if((x1-x0+1)*(y1-y0+1)>36) return; const key=[x0,y0,x1,y1].join(','); if(key===osmChainsKey) return; osmChainsKey=key;
-  const pcs=[], nms=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++){ (await tileTrails(x,y)).forEach(f=>pcs.push({c:f.line,sc:f.props.mtb_scale})); nms.push(...await tileNames(x,y)); }
+  const pcs=[], nms=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++){ (await tileTrails(x,y)).forEach(f=>{ if(f.props.class==='path') pcs.push({c:f.line,sc:f.props.mtb_scale}); }); /* solo trialeras: las pistas, sin flechas */ nms.push(...await tileNames(x,y)); }
   if(key!==osmChainsKey) return;
   // puntas cercanas (≤8 m) = mismo nudo
   const cell=q=>Math.round(q[0]*9000)+':'+Math.round(q[1]*9000), grid=new Map(), ends=[];
