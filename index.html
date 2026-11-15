@@ -538,7 +538,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 #rvOnMap[hidden]{display:none!important}
 .wz-st{display:flex;gap:4px;margin-bottom:10px}.wz-st i{flex:1;height:4px;border-radius:2px;background:var(--line)}.wz-st i.on{background:var(--acc,#B6E22E)}
 #wzB{display:flex;flex-direction:column;gap:10px}#wzB .sub{font-size:14px;color:var(--muted);line-height:1.45}
-.wz-nav{display:flex;gap:8px;margin-top:14px}.wz-nav button{flex:1;min-height:48px;border-radius:14px;font-weight:800;font-size:15px}
+.wz-nav{display:flex;gap:8px;margin-top:14px;position:sticky;bottom:0;padding:10px 0 4px;background:var(--card)}.wz-nav button{flex:1;min-height:48px;border-radius:14px;font-weight:800;font-size:15px}
 .wz-op{display:flex;align-items:center;gap:10px;width:100%;text-align:left;min-height:52px;padding:10px 14px;border-radius:14px;border:2px solid var(--line);background:var(--card,transparent);color:var(--ink);font-size:15px;font-weight:700}
 .wz-op.on{border-color:#8fbf1f;background:rgba(182,226,46,.14)}.wz-op small{display:block;font-weight:500;color:var(--muted);font-size:12.5px}
 .wz-q{display:flex;gap:8px}.wz-q input{flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;background:var(--bg);color:var(--ink)}
@@ -2500,7 +2500,7 @@ function wzRender(){
       const best=()=>{ const near=L0.filter(x=>x.dRoute<=600); const pool=near.length?near:L0; return pool.slice().sort((a,b)=>((nota(b.p.id)||0)-(nota(a.p.id)||0))||a.dRoute-b.dRoute)[0]; };
       const paint=()=>{ const ib=best();
         B.innerHTML=`<div class="sub">Bares cerca del km ${fmtKm(almTarget()/1000)}. La <b>nota Ichnos</b> es la media de lo que habéis puntuado en la grupeta.</div>
-          ${wzOp('ich',wz.ichnos,'✨ Que elija Ichnos',ib?`${esc(ib.p.name)} · mejor nota de la grupeta y menos desvío`:'')}
+          ${wzOp('ich',wz.ichnos,'✨ Que elija Ichnos',ib?`${esc(ib.p.name)} · ${nota(ib.p.id)!=null?'la mejor nota de la grupeta y poco desvío':'nadie lo ha puntuado aún: el que menos te desvía'}`:'')}
           ${L0.map((x,i)=>{ const n=nota(x.p.id); return wzOp('b'+i,!wz.ichnos&&wz.bar===x,esc(x.p.name),`km ${fmtKm(x.km)} · ${x.dRoute<60?'en la ruta':'+'+(x.dRoute<1000?Math.round(x.dRoute)+' m':fmtKm(x.dRoute/1000)+' km')} · ${n!=null?'nota Ichnos ★'+String(Math.round(n*10)/10).replace('.',','):'sin nota todavía'}`); }).join('')}`;
         B.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ const o=b.dataset.o; if(o==='ich'){ wz.ichnos=true; wz.bar=best(); } else { wz.ichnos=false; wz.bar=L0[+o.slice(1)]; } paint(); }); };
       if(wz.ichnos||!wz.bar) wz.bar=best(); paint(); $('wzNext').disabled=false; })();
@@ -2514,21 +2514,21 @@ function wzRender(){
       if(wz.a&&wz.bar){ rows.push(`<div class="wz-op">🍴 ${esc(wz.bar.p.name)} · km ${fmtKm(wz.bar.km)}<small>${wz.bar.dRoute<60?'en la ruta':'+'+Math.round(wz.bar.dRoute)+' m de la ruta'}</small></div>`); if(wz.bar.dRoute>=60) off.push(wz.bar.dRoute); }
       const extra=off.reduce((a,b)=>a+2*b,0)/1000;
       B.innerHTML=`${rows.join('')||'<div class="sub">No hay paradas.</div>'}
-        ${off.length?`<div class="sub">Para pasar por todas hay que salir un poco de la ruta: unos <b>+${fmtKm(extra)} km</b>.</div><div class="wz-row2"><button id="wzYes" class="primary">Sí, desviar</button><button id="wzNo">No, solo marcar</button></div>`:'<div class="sub">Todas tus paradas están en la ruta. No hace falta desviar.</div>'}`;
+        ${off.length?`<div class="sub">Para pasar por todas hay que salir un poco de la ruta: <b>como poco +${fmtKm(extra)} km</b> (depende de por dónde vayan los caminos).</div><div class="wz-row2"><button id="wzYes" class="primary">Sí, desviar</button><button id="wzNo">No, solo marcar</button></div>`:'<div class="sub">Todas tus paradas están en la ruta. No hace falta desviar.</div>'}`;
       if(!off.length){ $('wzNext').hidden=false; return; }
-      $('wzYes').onclick=async()=>{ $('wzYes').disabled=true; $('wzYes').textContent='Desviando…';
+      $('wzYes').onclick=async()=>{ $('wzYes').disabled=true; $('wzYes').textContent='Desviando…'; wz.kmPre=route?route.length:null;
         const offF=fp.picks.filter(f=>f.d>25&&viaIdx(f)<0); if(offF.length) await routeThroughFountains(offF);
         if(wz.a&&wz.bar&&wz.bar.dRoute>=60) await lunchAt(wz.bar.p,almWhere==='final');
-        fDraw(fp.picks,[]); fPlanVer=routeVer; wzGo(6); };
+        fDraw(fp.picks,[]); fPlanVer=routeVer; wz.kmPre=wz.kmPre||null; wzGo(6); };
       $('wzNo').onclick=()=>{ fPlanVer=routeVer; wzGo(6); }; })();
     return; }
   if(step===6){ $('wzT').textContent='Tu ruta está lista'; $('wzNext').textContent='Terminar';
     const fk=wz.stops&&wz.stops.picks.length?wz.stops.picks.map(f=>Math.round(nearestOnRoute([f.lat,f.lon]).km)).sort((a,b)=>a-b):[];
     let wx=''; try{ const hh=wxData&&wxData[0]&&wxData[0].hourly; if(hh){ let i=hh.time.indexOf(wxHour); if(i<0) i=0; wx=`🌤️ ${new Date(hh.time[i]).toLocaleString('es-ES',{weekday:'long',hour:'2-digit',minute:'2-digit'})}: ${Math.round(hh.temperature_2m[i])}°, viento ${Math.round(hh.wind_speed_10m[i])} km/h, lluvia ${hh.precipitation_probability[i]}%`; } }catch(e){}
     const def=(MODES[mode]?MODES[mode].label:'Ruta')+' '+fmtKm((route?route.length:0)/1000)+' km';
-    B.innerHTML=`<div class="wz-sum"><b>${kmTxt()}</b>
+    B.innerHTML=`<div class="wz-sum"><b>${kmTxt()}</b>${wz.kmPre&&route&&route.length>wz.kmPre+50?` <small>(el desvío suma ${fmtKm((route.length-wz.kmPre)/1000)} km)</small>`:''}
       ${wz.f?`<br>💧 ${fk.length?'Fuentes en el km '+(fk.length>1?fk.slice(0,-1).join(', ')+' y '+fk[fk.length-1]:fk[0]):'Sin fuentes en la ruta'}`:''}
-      ${wz.a&&wz.bar?`<br>🍴 Almuerzo: ${esc(wz.bar.p.name)}, km ${fmtKm(wz.bar.km)}${almWhere==='hora'?' sobre las '+almPref.hora:''}`:''}
+      ${wz.a&&wz.bar?`<br>🍴 Almuerzo: ${esc(wz.bar.p.name)}, km ${fmtKm(route?nearestOnRoute([wz.bar.p.lat,wz.bar.p.lon]).km:wz.bar.km)}${almWhere==='hora'?' sobre las '+almPref.hora:''}`:''}
       ${wx?'<br>'+wx:''}</div>
       <input class="wz-in" id="wzName" value="${esc(def)}" aria-label="Nombre de la ruta">
       <div class="wz-row2"><button id="wzSave" class="primary">🔖 Guardar</button><button id="wzGpx">GPX</button></div>
