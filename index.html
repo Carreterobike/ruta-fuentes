@@ -535,6 +535,15 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .lock .lk-link{background:none;color:#c9ced2;font-weight:600;font-size:14px;padding:4px;text-decoration:underline}
 .lock input[hidden]{display:none}
 #mText{white-space:pre-line}
+#rvOnMap[hidden]{display:none!important}
+.wz-st{display:flex;gap:4px;margin-bottom:10px}.wz-st i{flex:1;height:4px;border-radius:2px;background:var(--line)}.wz-st i.on{background:var(--acc,#B6E22E)}
+#wzB{display:flex;flex-direction:column;gap:10px}#wzB .sub{font-size:14px;color:var(--muted);line-height:1.45}
+.wz-nav{display:flex;gap:8px;margin-top:14px}.wz-nav button{flex:1;min-height:48px;border-radius:14px;font-weight:800;font-size:15px}
+.wz-op{display:flex;align-items:center;gap:10px;width:100%;text-align:left;min-height:52px;padding:10px 14px;border-radius:14px;border:2px solid var(--line);background:var(--card,transparent);color:var(--ink);font-size:15px;font-weight:700}
+.wz-op.on{border-color:#8fbf1f;background:rgba(182,226,46,.14)}.wz-op small{display:block;font-weight:500;color:var(--muted);font-size:12.5px}
+.wz-q{display:flex;gap:8px}.wz-q input{flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;background:var(--bg);color:var(--ink)}
+.wz-sum{font-size:15px;line-height:1.75}.wz-in{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.wz-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.wz-row2 button{min-height:48px;border-radius:14px;font-weight:800}
 .almopt{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.almopt[hidden]{display:none}.almopt label{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600}.almopt input{border:1px solid var(--line);border-radius:10px;padding:8px;font-size:16px;background:var(--bg);color:var(--ink);width:92px}
 #secCrear .sec-h h3{white-space:nowrap}
 .planlbl{background:#fff;color:#1b1b1b;border:0;border-radius:8px;font-weight:800;font-size:12px;padding:2px 6px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
@@ -919,6 +928,12 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
         <div class="addp"><select id="apCat" aria-label="Tipo de sitio"><option value="taller">Tienda / taller de bici</option><option value="comer">Bar / restaurante</option><option value="dormir">Alojamiento</option><option value="salud">Hospital / urgencias</option><option value="farmacia">Farmacia</option><option value="super">Supermercado</option></select><button id="apBtn">＋ Añadir sitio</button></div>
         <p class="note">¿Falta alguno o ya no existe? Añádelo aquí, o toca el sitio y pulsa "Ya no existe". Sitios: © OpenStreetMap y Overture Maps.</p>
       </section>
+      <section class="sec" id="secWiz" hidden>
+        <div class="wz-st" id="wzSt"></div>
+        <div class="sec-h"><h3 id="wzT"></h3><button class="qbtn x" id="wzX" aria-label="Cerrar">✕</button></div>
+        <div id="wzB"></div>
+        <div class="wz-nav"><button id="wzBack">Atrás</button><button id="wzNext" class="primary">Siguiente</button></div>
+      </section>
       <section class="sec" id="secCrear" hidden>
         <div class="sec-h"><h3>Tu ruta</h3><span class="status" id="status">Toca el mapa para poner la salida</span><button class="qbtn x" id="crearX" aria-label="Cerrar">✕</button></div>
         <div class="opts" id="optGravel" hidden>
@@ -1130,8 +1145,8 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <div class="rideview" id="rideView" hidden role="dialog" aria-modal="true" aria-labelledby="rvName">
   <header class="rv-h"><button id="rvBack" aria-label="Volver">←</button><div><b id="rvName"></b><small id="rvDate"></small></div></header>
   <div class="rv-body">
-    <div class="rvcard"><svg id="rvMap" class="rvmap" role="img" aria-label="Recorrido de la salida"></svg>
-    <div class="rv-acts"><button class="btn" id="rvOnMap">Ver en el mapa</button><label id="rvBikeL">Bici <select id="rvBike"></select></label><a class="sv-link" id="rvStrava" target="_blank" rel="noopener" hidden>Ver en Strava</a></div>
+    <div class="rvcard"><svg id="rvMap" class="rvmap" role="button" tabindex="0" aria-label="Recorrido de la salida. Tócalo para verlo en el mapa" style="cursor:pointer"></svg>
+    <div class="rv-acts"><button class="btn" id="rvOnMap" hidden>Ver en el mapa</button><label id="rvBikeL">Bici <select id="rvBike"></select></label><a class="sv-link" id="rvStrava" target="_blank" rel="noopener" hidden>Ver en Strava</a></div>
     <div class="rv-grid" id="rvGrid"></div>
     <p class="note" id="rvNoData" hidden>Esta salida no tiene horas ni pulso. Si la trajiste con una versión anterior de Ichnos, vuelve a traer su archivo para ver todos los datos.</p></div>
     <div class="rvcard" id="rvPhotos"><div class="ch-t">Fotos</div><div class="ph-grid" id="rvPh"></div>
@@ -1648,7 +1663,7 @@ async function setToggle(k,on){
   if(k==='crear'&&on&&rideOnMap) clearRideOnMap();
   if(k==='crear'){ if(on) crearClosed=false;
     $('map').classList.toggle('crear',on); document.body.classList.toggle('crear-on',on); drawPins(); applyTrails(); setTimeout(recommendTrails,50);
-    if(on){ if(!points.length&&typeof pickMode==='function') await pickMode(); toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
+    if(on){ if(!points.length&&typeof pickMode==='function'){ if(await pickMode()) wzStart(2); } toast(points.length?'Sigue tocando el mapa para alargar la ruta':'Toca el mapa para poner la salida'); }
     else if(route && points.length>=2 && askedVer!==routeVer) await finishRoute();
   }
   if(k==='trialeras'){ applyTrails(); if(typeof drawTrailFix==='function') drawTrailFix(); }
@@ -1657,16 +1672,17 @@ async function setToggle(k,on){
   updateSheet();
 }
 let crearClosed=false;   // la ventana de la ruta cerrada con la ✕
+let wz={on:false,step:2,round:true,f:false,a:false,bar:null,ichnos:true,stops:null};
 function updateSheet(){
-  const showCrear=!crearClosed && (T.crear || !!route || points.length>0 || !$('calcCancel').hidden);
+  const showCrear=!crearClosed && (!wz.on||wz.step===2) && (T.crear || !!route || points.length>0 || !$('calcCancel').hidden);
   $('secCrear').hidden=!showCrear;
-  $('done').hidden=!(T.crear && points.length>=2);
+  $('done').hidden=!(T.crear && points.length>=2) || wz.on;
   $('optGravel').hidden=!(T.crear && mode==='gravel');
   $('optLevel').hidden=!(T.crear && curLevel()!=null);
   $('optEbike').hidden=!(T.crear && mode==='ebike');
-  $('optExtras').hidden=!T.crear;
+  $('optExtras').hidden=!T.crear||wz.on;
   if(!$('optLevel').hidden) paintLevel();
-  $('secFuentes').hidden=!(route && fuentesAsked) || crearClosed;
+  $('secFuentes').hidden=!(route && fuentesAsked) || crearClosed || wz.on;
   $('lgBox').hidden=!(T.trialeras && trailsMode());
   $('addF').hidden=!T.fuentes;
   $('secViaje').hidden=!trip||crearClosed;
@@ -1676,7 +1692,8 @@ function updateSheet(){
   $('secCapas').hidden=!capasOpen;
   $('almBtn').hidden=true;   // el almuerzo se pide arriba, en "Añadir a tu ruta"
   try{ $('gpropBtn').hidden=!(route && points.length>=2 && !trip && groups.length); }catch(e){}
-  $('secAlm').hidden=!(almOpen && route) || crearClosed;
+  $('secAlm').hidden=!(almOpen && route) || crearClosed || wz.on;
+  $('secWiz').hidden=!wz.on||crearClosed;
   $('secHechas').hidden=!rec;
   const any=[...document.querySelectorAll('.sec')].some(s=>!s.hidden);
   const wasHidden=$('sheet').hidden;
@@ -2146,7 +2163,7 @@ $('crearX').onclick = async () => {
   if(route||points.length){ const cur=JSON.stringify(points.map(q=>q.slice(0,3)));
     const saved=misRutas.some(x=>JSON.stringify(x.p)===cur);
     if(!saved&&route&&!await ask('¿Quitar la ruta del mapa?','No la has guardado. Si la quieres para otro día, pulsa antes "🔖 Guardar ruta".','Quitar ruta','Volver')) return; }
-  crearClosed=true; almOpen=false; askedVer=routeVer; if(T.crear) await setToggle('crear',false);
+  wz.on=false; crearClosed=true; almOpen=false; askedVer=routeVer; if(T.crear) await setToggle('crear',false);
   points=[]; drawPins(); await calc(); almOpen=false; planLayer.clearLayers(); lunchLayer.clearLayers(); crearClosed=true; updateSheet(); };
 function deleteSeg(k){ map.closePopup(); if(k===0) points.splice(0,1); else points.splice(k+1,1); drawPins(); calc(); }
 function deletePoint(i){ map.closePopup(); points.splice(i,1); drawPins(); calc(); }
@@ -2342,17 +2359,31 @@ async function useRoute(coords, up, label, my){
   if(fitNext){ fitNext=false; map.fitBounds(L.latLngBounds(coords.map(c=>[c[0],c[1]])),{padding:[40,40]}); }
   if(my===reqId) setStatus(`${label}: ruta lista.`);
   if(typeof fPlanVer!=='undefined'&&!fPlanBusy&&fPlanVer!==routeVer) planLayer.clearLayers();
+  if(wz.on&&wz.step===2) wzRender();
   updateSheet();
 }
 
 // ---------- al terminar la ruta: preguntar por las fuentes ----------
 let fuentesAsked=false;
 async function finishRoute(){
-  askedVer=routeVer;
+  askedVer=routeVer; if(wz.used) return;
   if(wantA){ almOpen=true; updateSheet(); searchLunch(); }
   if(!wantF||fPlanVer===routeVer) return;
   await planFountains();
 }
+// elige una fuente por tramo y las marca en el mapa, sin tocar la ruta
+async function fPick(){
+  await loadFountains(); if(!route) return {picks:[],gaps:[]};
+  const near=nearRouteFountains(); askedIds=new Set(near.map(f=>f.id)); fuentesAsked=true;
+  const totKm=route.length/1000, totS=estTime(route.length,route.up||0);
+  const step=fEvery.m==='km'?fEvery.v:fEvery.v*60/Math.max(1,totS)*totKm, picks=[], gaps=[];
+  for(let k=step;k<totKm-step*0.3;k+=step){ const lo=k-step*0.4, hi=k+step*0.4;
+    const c=near.filter(f=>f.km>=lo&&f.km<=hi&&!picks.includes(f)).sort((x,y)=>(Math.abs(x.km-k)+x.d/60)-(Math.abs(y.km-k)+y.d/60));
+    if(c.length) picks.push(c[0]); else gaps.push([Math.max(0,lo),Math.min(totKm,hi)]); }
+  fDraw(picks,gaps); return {picks,gaps}; }
+function fDraw(picks,gaps){ planLayer.clearLayers();
+  picks.forEach(f=>{ const km=nearestOnRoute([f.lat,f.lon]).km; L.circleMarker([f.lat,f.lon],{radius:9,color:'#fff',weight:3,fillColor:'#1677c9',fillOpacity:1}).bindTooltip(`💧 km ${Math.round(km)}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-8]}).addTo(planLayer); });
+  gaps.forEach(g=>{ const pt=routeAt((g[0]+g[1])/2*1000); L.circleMarker([pt[0],pt[1]],{radius:7,color:'#fff',weight:2,fillColor:'#c92a2a',fillOpacity:1}).bindTooltip(`Sin fuente km ${Math.round(g[0])}–${Math.round(g[1])}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-6]}).addTo(planLayer); }); }
 // una fuente cada X km (o cada X tiempo): las elige, pasa la ruta por ellas y las marca en el mapa
 let fPlanVer=-1, fPlanBusy=false;
 const planLayer=L.layerGroup().addTo(map);
@@ -2406,6 +2437,112 @@ async function routeThroughFountains(list,single){
   askedVer=routeVer;
   toast(single?`La ruta ahora pasa por ${nameOf(list[0])}.`:`Ruta cambiada: pasa por ${list.length===1?'1 fuente':list.length+' fuentes'}.`);
 }
+
+// ---------- crear ruta paso a paso ----------
+// 2 destino o dibujar · 3 paradas · 4 cuándo y dónde · 45 elegir bar · 5 ¿desvío? · 6 resumen y guardar
+const WZ_ORDER=[2,3,4,45,5,6];
+function wzStart(st){ wz={on:true,used:true,step:st||2,round:wz.round!==false,f:false,a:false,bar:null,ichnos:true,stops:null}; crearClosed=false; wzRender(); updateSheet(); }
+function wzEnd(){ wz.on=false; updateSheet(); }
+function wzGo(st){ wz.step=st; wzRender(); updateSheet(); try{ $('sheet').querySelector('.sheet-body').scrollTop=0; }catch(e){} }
+function wzNextStep(){ const s=wz.step;
+  if(s===2) return 3; if(s===3) return (wz.f||wz.a)?4:6; if(s===4) return wz.a?45:5; if(s===45) return 5; if(s===5) return 6; return 6; }
+function wzPrevStep(){ const s=wz.step;
+  if(s===3) return 2; if(s===4) return 3; if(s===45) return 4; if(s===5) return wz.a?45:4; if(s===6) return (wz.f||wz.a)?5:3; return 2; }
+const kmTxt=()=>route?`${fmtKm(route.length/1000)} km · +${n0(route.up||0)} m · ${fmtDur(estTime(route.length,route.up||0))} aprox.`:'';
+function wzOp(id,on,txt,sm){ return `<button class="wz-op${on?' on':''}" data-o="${id}">${txt}${sm?`<small>${sm}</small>`:''}</button>`; }
+function wzRender(){
+  if(!wz.on) return;
+  const step=wz.step, idx=Math.max(0,WZ_ORDER.indexOf(step));
+  $('wzSt').innerHTML=[2,3,4,5,6,7].map((x,i)=>`<i class="${i<=Math.min(idx,5)?'on':''}"></i>`).join('');
+  $('wzBack').hidden=step===2; $('wzNext').hidden=false; $('wzNext').disabled=false; $('wzNext').textContent='Siguiente';
+  const B=$('wzB'); let h='';
+  if(step===2){ $('wzT').textContent='¿A dónde vas?';
+    h=`<div class="sub">Busca un destino o dibuja la ruta tocando el mapa (salida y puntos).</div>
+      <div class="wz-q"><input id="wzQ" type="search" placeholder="Pueblo, montaña, bar…" autocomplete="off" aria-label="Buscar destino"><button id="wzQb" class="primary">Buscar</button></div>
+      <div id="wzRes"></div>
+      <div class="segc"><button data-r="1" class="${wz.round?'on':''}">Ida y vuelta</button><button data-r="0" class="${wz.round?'':'on'}">Solo ida</button></div>
+      <div class="sub">${route&&points.length>=2?'Tu ruta: <b>'+kmTxt()+'</b>':'Todavía no hay ruta. Busca un destino o toca el mapa.'}</div>`;
+    B.innerHTML=h; $('wzNext').disabled=!(route&&points.length>=2);
+    B.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ wz.round=b.dataset.r==='1'; wzRender(); });
+    const go=async()=>{ const q=$('wzQ').value.trim(); if(!q) return; $('wzRes').innerHTML='<div class="sub">Buscando…</div>';
+      try{ const j=await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lat=41.54&lon=2.21&lang=es`)).json();
+        const fs=(j.features||[]); $('wzRes').innerHTML=fs.length?fs.map((f,i)=>{ const pr=f.properties||{}; return `<button class="wz-op" data-i="${i}">${esc(pr.name||q)}<small>${esc([pr.city||pr.town||pr.village,pr.county||pr.state].filter(Boolean).join(' · '))}</small></button>`; }).join(''):'<div class="sub">No lo encuentro. Prueba con otro nombre.</div>';
+        $('wzRes').querySelectorAll('[data-i]').forEach(b=>b.onclick=async()=>{ const f=fs[+b.dataset.i]; dest={lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],name:(f.properties||{}).name||q}; $('wzRes').innerHTML='<div class="sub">Calculando la ruta…</div>'; await routeFromHome(wz.round); });
+      }catch(e){ $('wzRes').innerHTML='<div class="sub">No hay conexión ahora. Prueba otra vez.</div>'; } };
+    $('wzQb').onclick=go; $('wzQ').onkeydown=e=>{ if(e.key==='Enter') go(); };
+    return; }
+  if(step===3){ $('wzT').textContent='¿Quieres paradas?';
+    B.innerHTML=`<div class="sub">Puedes elegir una, las dos o ninguna.</div>${wzOp('f',wz.f,'💧 Fuentes')}${wzOp('a',wz.a,'🍴 Almuerzo')}${wzOp('n',!wz.f&&!wz.a,'Sin paradas')}`;
+    B.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ const o=b.dataset.o; if(o==='n'){ wz.f=false; wz.a=false; } else wz[o]=!wz[o]; wzRender(); });
+    return; }
+  if(step===4){ $('wzT').textContent='¿Cuándo y dónde?';
+    if(wz.f) h+=`<div class="sub"><b>💧 Una fuente…</b></div><div class="segc" id="wzFm"><button data-m="km" class="${fEvery.m==='km'?'on':''}">Cada km</button><button data-m="t" class="${fEvery.m==='t'?'on':''}">Cada tiempo</button></div>
+      <div class="segc" id="wzFv">${FV[fEvery.m].map(v=>`<button data-v="${v}" class="${v===fEvery.v?'on':''}">${fvTxt(fEvery.m,v)}</button>`).join('')}</div>`;
+    if(wz.a) h+=`<div class="sub" style="margin-top:6px"><b>🍴 Almuerzo</b></div><div class="segc" id="wzAw">${[['mitad','A mitad'],['final','Al final'],['km','En el km'],['hora','A una hora']].map(([w,t])=>`<button data-w="${w}" class="${almWhere===w?'on':''}">${t}</button>`).join('')}</div>
+      ${almWhere==='km'?`<div class="almopt"><label>Almuerzo en el km <input type="number" id="wzKm" min="1" max="500" value="${almPref.km}" inputmode="numeric"></label></div>`:''}
+      ${almWhere==='hora'?`<div class="almopt"><label>Salgo a las <input type="time" id="wzSal" value="${almPref.sal}"></label><label>Almuerzo a las <input type="time" id="wzHora" value="${almPref.hora}"></label></div>`:''}
+      <div class="sub" id="wzAt">${route?`Almuerzo por el km ${fmtKm(almTarget()/1000)}.`:''}</div>`;
+    B.innerHTML=h;
+    B.querySelectorAll('#wzFm [data-m]').forEach(b=>b.onclick=()=>{ fEvery.m=b.dataset.m; fEvery.v=FV[fEvery.m][1]; store.set('ichnos-exFe',fEvery); wzRender(); });
+    B.querySelectorAll('#wzFv [data-v]').forEach(b=>b.onclick=()=>{ fEvery.v=+b.dataset.v; store.set('ichnos-exFe',fEvery); wzRender(); });
+    B.querySelectorAll('#wzAw [data-w]').forEach(b=>b.onclick=()=>{ almWhere=b.dataset.w; almPref.w=almWhere; store.set('ichnos-alm',almPref); wzRender(); });
+    const sv=()=>{ store.set('ichnos-alm',almPref); const a=$('wzAt'); if(a&&route) a.textContent=`Almuerzo por el km ${fmtKm(almTarget()/1000)}.`; };
+    if($('wzKm')) $('wzKm').onchange=()=>{ almPref.km=Math.max(1,+$('wzKm').value||1); sv(); };
+    if($('wzSal')) $('wzSal').onchange=()=>{ almPref.sal=$('wzSal').value||'08:30'; sv(); };
+    if($('wzHora')) $('wzHora').onchange=()=>{ almPref.hora=$('wzHora').value||'10:30'; sv(); };
+    return; }
+  if(step===45){ $('wzT').textContent='Elige dónde almorzar';
+    B.innerHTML='<div class="sub">Buscando bares…</div>'; $('wzNext').disabled=true;
+    (async()=>{ await searchLunch(); if(!wz.on||wz.step!==45) return;
+      const nota=id=>{ const ns=opAll(id).filter(o=>o.nota).map(o=>o.nota); return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null; };
+      const L0=almRes.slice(0,8);
+      if(!L0.length){ B.innerHTML='<div class="sub">No encuentro bares cerca de ese punto. Puedes cambiar dónde almuerzas (Atrás) o seguir sin almuerzo.</div>'; wz.bar=null; $('wzNext').disabled=false; return; }
+      const best=()=>{ const near=L0.filter(x=>x.dRoute<=600); const pool=near.length?near:L0; return pool.slice().sort((a,b)=>((nota(b.p.id)||0)-(nota(a.p.id)||0))||a.dRoute-b.dRoute)[0]; };
+      const paint=()=>{ const ib=best();
+        B.innerHTML=`<div class="sub">Bares cerca del km ${fmtKm(almTarget()/1000)}. La <b>nota Ichnos</b> es la media de lo que habéis puntuado en la grupeta.</div>
+          ${wzOp('ich',wz.ichnos,'✨ Que elija Ichnos',ib?`${esc(ib.p.name)} · mejor nota de la grupeta y menos desvío`:'')}
+          ${L0.map((x,i)=>{ const n=nota(x.p.id); return wzOp('b'+i,!wz.ichnos&&wz.bar===x,esc(x.p.name),`km ${fmtKm(x.km)} · ${x.dRoute<60?'en la ruta':'+'+(x.dRoute<1000?Math.round(x.dRoute)+' m':fmtKm(x.dRoute/1000)+' km')} · ${n!=null?'nota Ichnos ★'+String(Math.round(n*10)/10).replace('.',','):'sin nota todavía'}`); }).join('')}`;
+        B.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ const o=b.dataset.o; if(o==='ich'){ wz.ichnos=true; wz.bar=best(); } else { wz.ichnos=false; wz.bar=L0[+o.slice(1)]; } paint(); }); };
+      if(wz.ichnos||!wz.bar) wz.bar=best(); paint(); $('wzNext').disabled=false; })();
+    return; }
+  if(step===5){ $('wzT').textContent='¿Desvío la ruta?';
+    B.innerHTML='<div class="sub">Mirando tus paradas…</div>'; $('wzNext').hidden=true;
+    (async()=>{ let fp={picks:[],gaps:[]}; if(wz.f) fp=await fPick(); else planLayer.clearLayers(); if(!wz.on||wz.step!==5) return;
+      wz.stops=fp; const rows=[], off=[];
+      fp.picks.forEach(f=>{ const k=nearestOnRoute([f.lat,f.lon]).km; rows.push(`<div class="wz-op">💧 Fuente km ${Math.round(k)}<small>${f.d<=25?'en la ruta':'+'+Math.round(f.d)+' m de la ruta'}</small></div>`); if(f.d>25) off.push(f.d); });
+      fp.gaps.forEach(g=>rows.push(`<div class="wz-op">⚠️ Sin fuente entre el km ${Math.round(g[0])} y el ${Math.round(g[1])}</div>`));
+      if(wz.a&&wz.bar){ rows.push(`<div class="wz-op">🍴 ${esc(wz.bar.p.name)} · km ${fmtKm(wz.bar.km)}<small>${wz.bar.dRoute<60?'en la ruta':'+'+Math.round(wz.bar.dRoute)+' m de la ruta'}</small></div>`); if(wz.bar.dRoute>=60) off.push(wz.bar.dRoute); }
+      const extra=off.reduce((a,b)=>a+2*b,0)/1000;
+      B.innerHTML=`${rows.join('')||'<div class="sub">No hay paradas.</div>'}
+        ${off.length?`<div class="sub">Para pasar por todas hay que salir un poco de la ruta: unos <b>+${fmtKm(extra)} km</b>.</div><div class="wz-row2"><button id="wzYes" class="primary">Sí, desviar</button><button id="wzNo">No, solo marcar</button></div>`:'<div class="sub">Todas tus paradas están en la ruta. No hace falta desviar.</div>'}`;
+      if(!off.length){ $('wzNext').hidden=false; return; }
+      $('wzYes').onclick=async()=>{ $('wzYes').disabled=true; $('wzYes').textContent='Desviando…';
+        const offF=fp.picks.filter(f=>f.d>25&&viaIdx(f)<0); if(offF.length) await routeThroughFountains(offF);
+        if(wz.a&&wz.bar&&wz.bar.dRoute>=60) await lunchAt(wz.bar.p,almWhere==='final');
+        fDraw(fp.picks,[]); fPlanVer=routeVer; wzGo(6); };
+      $('wzNo').onclick=()=>{ fPlanVer=routeVer; wzGo(6); }; })();
+    return; }
+  if(step===6){ $('wzT').textContent='Tu ruta está lista'; $('wzNext').textContent='Terminar';
+    const fk=wz.stops&&wz.stops.picks.length?wz.stops.picks.map(f=>Math.round(nearestOnRoute([f.lat,f.lon]).km)).sort((a,b)=>a-b):[];
+    let wx=''; try{ const hh=wxData&&wxData[0]&&wxData[0].hourly; if(hh){ let i=hh.time.indexOf(wxHour); if(i<0) i=0; wx=`🌤️ ${new Date(hh.time[i]).toLocaleString('es-ES',{weekday:'long',hour:'2-digit',minute:'2-digit'})}: ${Math.round(hh.temperature_2m[i])}°, viento ${Math.round(hh.wind_speed_10m[i])} km/h, lluvia ${hh.precipitation_probability[i]}%`; } }catch(e){}
+    const def=(MODES[mode]?MODES[mode].label:'Ruta')+' '+fmtKm((route?route.length:0)/1000)+' km';
+    B.innerHTML=`<div class="wz-sum"><b>${kmTxt()}</b>
+      ${wz.f?`<br>💧 ${fk.length?'Fuentes en el km '+(fk.length>1?fk.slice(0,-1).join(', ')+' y '+fk[fk.length-1]:fk[0]):'Sin fuentes en la ruta'}`:''}
+      ${wz.a&&wz.bar?`<br>🍴 Almuerzo: ${esc(wz.bar.p.name)}, km ${fmtKm(wz.bar.km)}${almWhere==='hora'?' sobre las '+almPref.hora:''}`:''}
+      ${wx?'<br>'+wx:''}</div>
+      <input class="wz-in" id="wzName" value="${esc(def)}" aria-label="Nombre de la ruta">
+      <div class="wz-row2"><button id="wzSave" class="primary">🔖 Guardar</button><button id="wzGpx">GPX</button></div>
+      ${(typeof groups!=='undefined'&&groups.length)?'<button id="wzProp" class="wz-op" style="justify-content:center">Proponer a la grupeta</button>':''}`;
+    $('wzSave').onclick=()=>{ if(!route) return; const nm=$('wzName').value.trim()||def;
+      misRutas.unshift({id:Date.now(),name:nm,t:Date.now(),mode,p:points.map(x=>x.slice(0,3)),km:+(route.length/1000).toFixed(1),up:Math.round(route.up||0)});
+      store.set('ichnos-misrutas',misRutas); renderMisRutas(); $('wzSave').textContent='✓ Guardada'; $('wzSave').disabled=true; toast(`Guardada: "${nm}". La tienes en Salidas, en "Mis rutas".`,4500); };
+    $('wzGpx').onclick=()=>$('gpx').click();
+    if($('wzProp')) $('wzProp').onclick=()=>$('gpropBtn').click();
+    return; }
+}
+$('wzNext').onclick=async()=>{ if(wz.step===6){ askedVer=routeVer; fPlanVer=routeVer; wz.on=false; if(T.crear) await setToggle('crear',false); updateSheet(); return; } wzGo(wzNextStep()); };
+$('wzBack').onclick=()=>wzGo(wzPrevStep());
+$('wzX').onclick=async()=>{ const was=wz.on; wz.on=false; if(was) await $('crearX').onclick(); updateSheet(); };
 
 // ---------- mis rutas: guardar una ruta para hacerla otro día ----------
 let misRutas=store.get('ichnos-misrutas',[]);
@@ -4344,6 +4481,9 @@ $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden
   rideOnMap=r; $('roName').textContent=r.name||'Salida'; $('rideOn').hidden=false;
   map.fitBounds(L.latLngBounds(r.coords),{padding:[40,40]}); };
 // tocar una trialera o un segmento de la ficha: te lleva a ese sitio del mapa, marcado
+// tocar el recuadro del recorrido = verlo en el mapa
+$('rvMap').addEventListener('click',()=>$('rvOnMap').onclick());
+$('rvMap').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $('rvOnMap').onclick(); } });
 function segToMap(x){ const r=rideOpen; if(!r||!x) return;
   if(x.a==null||x.b==null){ toast('No sé dónde está este tramo en el mapa'); return; }
   const seg=r.coords.slice(x.a,x.b+1).map(p=>[p[0],p[1]]); if(seg.length<2) return;
@@ -4806,8 +4946,8 @@ async function routeFromHome(round){
   drawPins(); calc();
   if(!perfil.homeExact) toast('Sale del centro de tu ciudad. Pon tu calle en el perfil para salir desde la puerta.',5000);
 }
-$('destGo').onclick=async()=>{ if(await pickMode()) routeFromHome(false); };
-$('destRound').onclick=async()=>{ if(await pickMode()) routeFromHome(true); };
+$('destGo').onclick=async()=>{ if(await pickMode()){ wz.round=false; await routeFromHome(false); wzStart(2); } };
+$('destRound').onclick=async()=>{ if(await pickMode()){ wz.round=true; await routeFromHome(true); wzStart(2); } };
 // al cambiar de modalidad con la tarjeta abierta, actualizar el texto
 document.querySelectorAll('#modes button').forEach(b=>b.addEventListener('click',()=>{ if(dest&&!$('destCard').hidden) $('destMode').textContent=`Se hará en ${MODES[mode].label}${mode==='gravel'?' · '+GRAVEL[gravelType].toLowerCase():''}${curLevel()!=null?' · nivel '+LEVELS[curLevel()].col:''}.`; }));
 
