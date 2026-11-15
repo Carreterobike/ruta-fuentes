@@ -2083,7 +2083,7 @@ function trailsAt(latlng){
     if(distToLine(P,tr.coords.map(c=>[c[1],c[0]]))<20) add(tr.name||'Trialera',tr.lv,()=>L.popup({minWidth:230}).setLatLng(latlng).setContent(gtPopup(id,tr)).openOn(map),lenOf(tr.coords)); });
   // tus nombres y los de la grupeta
   myNames.forEach(n=>{ if(n.name&&distToLine(P,n.coords)<20) add(n.name,null,()=>openTrailInfo(latlng,n.name),lenOf(n.coords.map(c=>[c[1],c[0]]))); });
-  [...Object.values(gData.t||{}).filter(x=>x&&x.kind!=='trial'&&x.lv==null),...Object.values(gData.c||{})].forEach(x=>{
+  [...Object.values(gData.c||{}),...Object.values(gData.t||{}).filter(x=>x&&x.kind!=='trial'&&x.lv==null)].forEach(x=>{
     if(x&&x.name&&x.coords&&x.coords.length>1&&distToLine(P,x.coords.map(c=>[c[1],c[0]]))<20) add(x.name,x.lv,()=>openTrailInfo(latlng,x.name),lenOf(x.coords)); });
   // nombres del mapa
   if(glReady){ try{ glMap.queryRenderedFeatures({layers:['trail-names']}).forEach(f=>{ const nm=f.properties.name; if(!nm) return; const c=lineOf(f);
@@ -4853,7 +4853,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794765089';
+const BUILD='1794765213';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
