@@ -2110,7 +2110,7 @@ function hiSelList(){ const H=hiSel, LH=lenOf(H.line), smp=samplesOf(H.line,30),
   if(H.names){ const byName=new Map(); H.names.forEach(f=>{ const k=f.name.trim().toLowerCase(); if(!byName.has(k)) byName.set(k,{name:f.name.trim(),lines:[]}); byName.get(k).lines.push(f.line); });
     byName.forEach((v,k)=>{ const ll=v.lines.map(l=>l.map(q=>[q[1],q[0]])); let n=0, hitP=null; smp.forEach(p=>{ if(ll.some(l=>distToLine(p,l)<18)){ n++; hitP=hitP||p; } }); if(!n) return;
       const o=cnt.get(k); if(o){ o.n=Math.max(o.n,n); return; }
-      let lv=null; const fx=Object.values(gData.c||{}).find(c=>c.name&&nrm(c.name)===nrm(v.name)); if(fx) lv=fx.lv;
+      let lv=null; const fx=fixAt(L.latLng(hitP[0],hitP[1])); if(fx) lv=fx.lv;   // el mismo color que se ve en el mapa en ese sitio
       else if(H.rated){ let bd=25; H.rated.forEach(f=>{ const sc=parseInt(String(f.props.mtb_scale??''),10); if(isNaN(sc)) return; const d=distToLine(hitP,f.line.map(q=>[q[1],q[0]])); if(d<bd){ bd=d; lv=levelOf(sc); } }); }
       const m=Math.max(...v.lines.map(lenOf)); const at=L.latLng(hitP[0],hitP[1]);
       cnt.set(k,{x:{name:v.name,lv,m:v.lines.reduce((a,l)=>a+lenOf(l),0)||m,open:()=>openTrailInfo(at,v.name)},n,ord:[]}); }); }
@@ -4890,7 +4890,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794767112';
+const BUILD='1794767246';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
