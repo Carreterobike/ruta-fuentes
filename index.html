@@ -1030,6 +1030,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
   <div class="rideon" id="rideOn" hidden>
     <button id="roBack" aria-label="Volver a la ficha de la salida">←</button>
     <span><small>Viendo tu salida</small><b id="roName"></b></span>
+    <button id="roTrial" aria-label="Marcar una trialera en esta salida">✂️ Trialera</button>
     <button id="roX" class="x">✕ Quitar</button>
   </div>
   <div class="lbar" id="lbar" role="group" aria-label="Qué ver en el mapa">
@@ -2146,6 +2147,7 @@ function trailAt(latlng){
 // ================= TOCAR EL MAPA =================
 let hintShown=false;
 map.on('click', e => {
+  if(mtState){ mtClick(e.latlng); return; }
   if(segMode){ segClick(e.latlng); return; }
   if(addingF){ addMyFountainAt(e.latlng); return; }
   if(addingP){ addMyPlaceAt(e.latlng); return; }
@@ -4361,6 +4363,7 @@ function openRide(r){
     const ok=e=>src!=='ss'||e.dd<=L0*1.2+40;   // un segmento de Strava medido con tu GPS tiene que medir lo mismo
     ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) { const st=sid?svT(sid):null; segs.push({src,sid,svpr:sid&&svE(sid)?svE(sid).pr:undefined,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:st!=null?st:e.t,all:st!=null?stravaBest(sid).map(x=>x.t):res[k].filter(ok).map(x=>x.t),a:e.i,b:e.j}); } })); };
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind==='trial'&&tr.coords&&tr.coords.length>1) mine('gt:'+id,tr.name,tr.coords,segDz(tr.coords)); });
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
   const S0=(r.sef&&r.sef.length)?r.sef:(twin?twin.sef:[]);   // los segmentos que Strava midió en esta salida
   const S0own=(r.sef&&r.sef.length)?r:twin, nVez={};
@@ -4532,7 +4535,23 @@ function segToMap(x){ const r=rideOpen; if(!r||!x) return;
     L.popup({minWidth:160}).setLatLng(seg[Math.floor(seg.length/2)]).setContent(`<b>${esc(x.name)}</b><br>${x.t!=null?fmtT(x.t):''}`).openOn(map); },50);
 }
 function clearRideOnMap(){ rideHi.clearLayers(); rideOnMap=null; $('rideOn').hidden=true; updateSheet(); }
-$('roX').onclick=clearRideOnMap;
+$('roX').onclick=()=>{ mtState=null; mtLayer.clearLayers(); clearRideOnMap(); };
+let mtState=null; const mtLayer=L.layerGroup().addTo(map);
+$('roTrial').onclick=()=>{ if(!rideOnMap) return; mtState={r:rideOnMap,a:null}; mtLayer.clearLayers(); toast('Toca en tu recorrido dónde EMPIEZA la trialera',7000); };
+async function mtClick(ll){ const st=mtState, r=st.r, c=r.coords; const i=nearestIdx(c,[ll.lat,ll.lng]);
+  if(i<0||dist(c[i],[ll.lat,ll.lng])>60){ toast('Toca encima de la línea de tu salida.',3500); return; }
+  if(st.a==null){ st.a=i; L.circleMarker([c[i][0],c[i][1]],{radius:9,color:'#fff',weight:3,fillColor:'#2e9d3a',fillOpacity:1}).addTo(mtLayer); toast('Ahora toca dónde ACABA la trialera',7000); return; }
+  let a=st.a, b=i; if(b<a) [a,b]=[b,a]; if(b-a<3){ toast('Es muy corta. Toca un poco más lejos.',3500); return; }
+  mtState=null; const piece=c.slice(a,b+1);
+  L.polyline(piece,{color:'#ffffff',weight:11,interactive:false}).addTo(mtLayer); L.polyline(piece,{color:'#B6E22E',weight:7,interactive:false}).addTo(mtLayer);
+  const name=await askName('Nueva trialera','',{title:'¿Cómo se llama esta trialera?',hint:`${fmtKm(lenOf(piece)/1000)} km. Ponle el nombre que le dais en la grupeta.`,placeholder:'Nombre de la trialera',button:'Siguiente',list:[]});
+  if(!name){ mtLayer.clearLayers(); return; }
+  const lv=await pickLevel(2); if(lv==null){ mtLayer.clearLayers(); return; }
+  const coords=thinLine(piece.map((p,k)=>[+p[0].toFixed(6),+p[1].toFixed(6),r.eles&&r.eles[a+k]!=null?Math.round(r.eles[a+k]):null]),5).slice(0,400);
+  const id='tr'+Date.now().toString(36);
+  gPush([{k:'trial',id,name:name.trim(),lv,coords}]); mtLayer.clearLayers();
+  if(me&&me.admin){ gData.t[id]={kind:'trial',name:name.trim(),lv,coords,by:me.id,t:Date.now(),tm:{}}; effCache.clear(); drawTrailFix(); toast(`"${name.trim()}" está en el mapa de toda la grupeta.`,4500); }
+  else toast('Enviada al administrador. Cuando la apruebe, saldrá en el mapa de todos.',5000); }
 $('roBack').onclick=()=>{ const r=rideOnMap; clearRideOnMap(); if(r&&r._gsal){ showPage('pgGrupeta'); return; } if(r&&r._frMap){ openFriend(r._frMap); return; } if(r){ showPage('pgSalidas'); openRide(r); } };
 $('rvDel').onclick=async()=>{ const r=rideOpen; if(!r) return; if(await ask('¿Borrar esta salida?',r.name,'Sí, bórrala','No')){ $('rideView').hidden=true; clearRideOnMap(); delRide(r.id); } };
 const rideHi=L.layerGroup().addTo(map);
@@ -4778,7 +4797,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794761584';
+const BUILD='1794761841';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -4841,7 +4860,7 @@ function myPubTimes(){   // tus mejores tiempos en las trialeras de la grupeta, 
 }
 function gtPopup(id,tr){
   const d=document.createElement('div'); d.className='tpop', c=tr.coords;
-  d.innerHTML=`<b>${esc(tr.name)}</b><br><small>Trialera de la grupeta · ${fmtKm(lenOf(c)/1000)} km · la añadió ${esc(uName(tr.by))}</small>`;
+  d.innerHTML=`<b>${esc(tr.name)}</b><br><small>${tr.kind==='trial'?`<span style="color:${(LEVELS[tr.lv]||LEVELS[2]).color==='#111111'?'inherit':(LEVELS[tr.lv]||LEVELS[2]).color};font-weight:800">● ${(LEVELS[tr.lv]||LEVELS[2]).name}</span> · `:''}Trialera de la grupeta · ${fmtKm(lenOf(c)/1000)} km · la añadió ${esc(uName(tr.by))}</small>`;
   d.appendChild(timesBlock(effortsFor('gt:'+id,c),segDz(c)));
   const cl=document.createElement('div'); cl.className='tms'; cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div><small>Cargando…</small>'; d.appendChild(cl);
   loadFrTimes().then(ft=>{
@@ -4852,8 +4871,10 @@ function gtPopup(id,tr){
     const one=k=>rows[k].length?`<div class="tm"><b>${lb[k]}</b><ol>${rows[k].sort((a,b)=>a.t-b.t).map(x=>`<li><b>${fmtT(x.t)}</b> ${esc(uName(x.u))}</li>`).join('')}</ol></div>`:'';
     cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div>'+((one('f')+one('b'))||'<small>Todavía nadie tiene tiempo aquí. Cuentan las salidas subidas con archivo o directas del reloj (las de Strava no se pueden enseñar a otros).</small>');
   });
+  if(tr.kind==='trial'&&me){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Cambiar color':'Proponer otro color';
+    cb.onclick=async()=>{ map.closePopup(); const lv=await pickLevel(tr.lv); if(lv==null) return; gPush([{k:'trial',id,name:tr.name,lv,coords:tr.coords}]); if(me.admin){ tr.lv=lv; drawTrailFix(); toast('Color cambiado para toda la grupeta.',3500); } }; d.appendChild(cb); }
   if(isMe(tr.by)||(me&&me.admin)){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar del mapa de la grupeta';
-    del.onclick=async()=>{ map.closePopup(); if(await ask('¿Quitar esta trialera de la grupeta?',tr.name,'Sí, quitar','No')){ gPush([{k:'tramo-',id}]); delete gData.t[id]; drawSegs(); } }; d.appendChild(del); }
+    del.onclick=async()=>{ map.closePopup(); if(await ask('¿Quitar esta trialera de la grupeta?',tr.name,'Sí, quitar','No')){ gPush([{k:tr.kind==='trial'?'trial-':'tramo-',id}]); if(me.admin||isMe(tr.by)){ delete gData.t[id]; drawSegs(); drawTrailFix(); } } }; d.appendChild(del); }
   return d;
 }
 
@@ -4902,7 +4923,7 @@ function drawSegs(){
   Object.values(ssegs).forEach(sg=>{ if(!sg.coords||sg.coords.length<2||(gData.t||{})['ss'+sg.id]) return; const ll=sg.coords.map(c=>[c[0],c[1]]);
     L.polyline(ll,{color:'#ffffff',weight:7,opacity:.8,interactive:false}).addTo(segLayer);
     L.polyline(ll,{color:SS_COL,weight:4,bubblingMouseEvents:false}).bindPopup(()=>ssPopup(sg),{minWidth:230}).addTo(segLayer); });
-  Object.entries(gData.t||{}).forEach(([id,tr])=>{ const ll=tr.coords.map(c=>[c[0],c[1]]);
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind==='trial') return; const ll=tr.coords.map(c=>[c[0],c[1]]);
     L.polyline(ll,{color:'#ffffff',weight:9,opacity:.9,interactive:false}).addTo(segLayer);
     L.polyline(ll,{color:GT_COL,weight:5,bubblingMouseEvents:false}).bindPopup(()=>gtPopup(id,tr),{minWidth:230}).addTo(segLayer); });
   mySegs.forEach(sg=>{
@@ -5119,6 +5140,10 @@ async function gReport(id,m,tipo){
 const trailFix=L.layerGroup().addTo(map);
 function drawTrailFix(){
   trailFix.clearLayers(); if(!T.trialeras) return;
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind!=='trial'||!tr.coords||tr.coords.length<2) return; const ll=tr.coords.map(p=>[p[0],p[1]]), lv=LEVELS[tr.lv]||LEVELS[2], dbl=tr.lv>=4;
+    L.polyline(ll,{color:'#ffffff',weight:dbl?11:9,opacity:.95,interactive:false}).addTo(trailFix);
+    L.polyline(ll,{color:lv.color,weight:dbl?7:6,bubblingMouseEvents:false}).bindPopup(()=>gtPopup(id,tr),{minWidth:230}).addTo(trailFix);
+    if(dbl) L.polyline(ll,{color:'#ffffff',weight:1.5,interactive:false}).addTo(trailFix); });
   Object.values(gData.c||{}).forEach(c=>{ const ll=c.coords.map(p=>[p[0],p[1]]), lv=LEVELS[c.lv]||LEVELS[3], dbl=c.lv>=4;
     L.polyline(ll,{color:'#ffffff',weight:dbl?9:7,opacity:.9,interactive:false}).addTo(trailFix);
     L.polyline(ll,{color:lv.color,weight:dbl?6:4,interactive:false}).addTo(trailFix);
