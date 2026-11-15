@@ -272,6 +272,8 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+.dir-ic{background:none;border:0;pointer-events:none}
+.dir-nm{background:none;border:0;pointer-events:none}.dir-nm div{transform:translate(-50%,-26px);white-space:nowrap;font:800 12.5px var(--body,system-ui),sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 0 2px #000}
 .tpick b{display:block;margin-bottom:1px}.tpick>small{display:block;color:var(--muted,#888);margin-bottom:6px}
 .tpick button{display:flex;align-items:center;gap:9px;width:100%;padding:9px 8px;margin:4px 0 0;border:1px solid rgba(128,128,128,.25);border-radius:10px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .tpick button.sel{border:2px solid #E8B931;background:rgba(232,185,49,.12)}
@@ -4895,7 +4897,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794770137';
+const BUILD='1794771654';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5243,7 +5245,7 @@ async function gReport(id,m,tipo){
 // colores corregidos de trialeras (los pone David; los demás los proponen)
 const trailFix=L.layerGroup().addTo(map);
 function drawTrailFix(){
-  trailFix.clearLayers(); if(!T.trialeras) return;
+  trailFix.clearLayers(); try{ drawDirs(); }catch(e){ console.warn(e); } if(!T.trialeras) return;
   Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind!=='trial'||!tr.coords||tr.coords.length<2) return; const ll=tr.coords.map(p=>[p[0],p[1]]), lv=LEVELS[tr.lv]||LEVELS[2], dbl=tr.lv>=4;
     L.polyline(ll,{color:'#ffffff',weight:dbl?11:9,opacity:.95,interactive:false}).addTo(trailFix);
     L.polyline(ll,{color:lv.color,weight:dbl?7:6,bubblingMouseEvents:false}).on('click',ev=>{ L.DomEvent.stop(ev); if(mtState||segMode||addingF||addingP||T.crear){ map.fire('click',{latlng:ev.latlng}); return; } if(!trailClick(ev.latlng)) L.popup({minWidth:230}).setLatLng(ev.latlng).setContent(gtPopup(id,tr)).openOn(map); }).addTo(trailFix);
@@ -5253,6 +5255,41 @@ function drawTrailFix(){
     L.polyline(ll,{color:lv.color,weight:dbl?6:4,interactive:false}).addTo(trailFix);
     if(dbl) L.polyline(ll,{color:'#ffffff',weight:1.5,interactive:false}).addTo(trailFix); });
 }
+// dirección de bajada: dos flechas, inicio (play verde), final (banderita) y nombre siempre visible
+const dirLayer=L.layerGroup().addTo(map);
+const DIR_A=`<svg width="22" height="22" viewBox="-11 -11 22 22"><path d="M-3 -6 l6 6 -6 6" fill="none" stroke="#111" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><path d="M-3 -6 l6 6 -6 6" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const DIR_ST=`<svg width="24" height="24" viewBox="-12 -12 24 24"><circle r="9" fill="#2e9d3a" stroke="#fff" stroke-width="2.5"/><path d="M-3 -4.5 l7.5 4.5 -7.5 4.5z" fill="#fff"/></svg>`;
+const DIR_FL=`<svg width="28" height="32" viewBox="-5 -28 28 32"><line x1="0" y1="0" x2="0" y2="-24" stroke="#111" stroke-width="4.5" opacity=".45"/><line x1="0" y1="0" x2="0" y2="-24" stroke="#fff" stroke-width="2.5"/><path d="M0 -24 h16 l-5 5.5 5 5.5 h-16z" fill="#fff" stroke="#111" stroke-width=".8"/><circle r="3.5" fill="#fff" stroke="#111" stroke-width=".8"/></svg>`;
+const niceName=n=>String(n||'').replace(/[\u{1F000}-\u{1FAFF}\u2600-\u27BF\uFE0F\u200D®™]/gu,'').replace(/[¡!"]+/g,'').replace(/\s+/g,' ').trim();
+function drawDirs(){
+  dirLayer.clearLayers(); if(!T.trialeras||(T.crear&&!trailsMode())||map.getZoom()<14) return;
+  const B=map.getBounds().pad(0.15), z=map.getZoom(), list=[], seenN=new Set();
+  const bbOf=c=>{ let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); return [a,b,n,e]; };
+  const inView=bb=>!(bb[2]<B.getSouth()||bb[0]>B.getNorth()||bb[3]<B.getWest()||bb[1]>B.getEast());
+  // trialeras de la grupeta (en el sentido en que se marcaron)
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind!=='trial'||!tr.coords||tr.coords.length<2) return; const c=tr.coords.map(q=>[q[0],q[1]]); if(!inView(bbOf(c))) return;
+    seenN.add(nrm(tr.name)); if(id.startsWith('st')) seenN.add('#'+id.slice(2)); list.push({name:tr.name,c,L:lenOf(c),grp:true}); });
+  // tus bajadas de Strava (solo las ves tú): las cortas primero
+  Object.values(ssegs).forEach(sg=>{ const c=sg.coords; if(!sg.name||!c||c.length<2||sg.gr==null||sg.gr>-3) return; const L0=sg.km?sg.km*1000:lenOf(c); if(L0>3000) return;
+    if(!sg._bb) Object.defineProperty(sg,'_bb',{value:bbOf(c),enumerable:false,writable:true,configurable:true}); if(!inView(sg._bb)) return;
+    if(seenN.has('#'+sg.id)||seenN.has(nrm(sg.name))) return; list.push({name:sg.name,c:c.map(q=>[q[0],q[1]]),L:L0}); });
+  list.sort((a,b)=>(b.grp?1:0)-(a.grp?1:0)||a.L-b.L);
+  // la misma bajada en varias versiones: solo la primera (la más corta)
+  const drawn=[], boxes=[];
+  list.forEach(x=>{ const sm=samplesOf(x.c,40), cv=sm.filter(p=>drawn.some(d=>distToLine(p,d)<15)).length; if(drawn.length&&cv>=sm.length*0.7) return;
+    drawn.push(x.c.map(q=>[q[1],q[0]]));
+    const P=x.c.map(q=>map.latLngToLayerPoint(q)), at=[x.L/3,2*x.L/3]; let acc=0,k=0,mid=null,mi=0;
+    for(let i=1;i<x.c.length;i++){ acc+=dist(x.c[i-1],x.c[i]); if(!mid&&acc>=x.L/2){ mid=x.c[i]; mi=i; }
+      if(k<2&&acc>=at[k]){ k++; const ang=Math.atan2(P[i].y-P[i-1].y,P[i].x-P[i-1].x)*180/Math.PI;
+        L.marker(x.c[i],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:`<div style="transform:rotate(${ang.toFixed(0)}deg)">${DIR_A}</div>`,iconSize:[22,22],iconAnchor:[11,11]})}).addTo(dirLayer); } }
+    if(z>=15){ L.marker(x.c[0],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:DIR_ST,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(dirLayer);
+      L.marker(x.c[x.c.length-1],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:DIR_FL,iconSize:[28,32],iconAnchor:[5,28]})}).addTo(dirLayer); }
+    // nombre: siempre, salvo que choque con otro ya puesto
+    const nm=niceName(x.name); if(!nm||!mid) return; const pt=map.latLngToContainerPoint(mid), w=nm.length*7.2+6, bx=[pt.x-w/2,pt.y-34,pt.x+w/2,pt.y-18];
+    if(boxes.some(o=>!(bx[2]<o[0]||bx[0]>o[2]||bx[3]<o[1]||bx[1]>o[3]))) return; boxes.push(bx);
+    L.marker(mid,{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-nm',html:`<div>${esc(nm)}</div>`,iconSize:[0,0]})}).addTo(dirLayer); });
+}
+map.on('zoomend moveend',()=>{ clearTimeout(drawDirs._t); drawDirs._t=setTimeout(drawDirs,120); });
 function fixAt(latlng){ let best=null, bd=25; Object.entries(gData.c||{}).forEach(([id,c])=>{ const d=distToLine([latlng.lat,latlng.lng],c.coords.map(p=>[p[1],p[0]])); if(d<bd){ bd=d; best={id,...c}; } }); return best; }
 async function pickLevel(cur){
   const names=['Verde','Azul','Roja','Negra','Doble negra'];
