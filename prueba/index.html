@@ -2226,8 +2226,9 @@ function trailAt(latlng,force,flv){
       const id=fx?fx.id:'c'+c[0].map(x=>x.toFixed(5)).join('_');
       // los colores viejos que caen encima de esta trialera se quitan (si no, se mezclan colores en la misma trialera)
       const nl=c, old=me.admin?Object.entries(gData.c||{}).filter(([k,o])=>k!==id&&o.coords&&o.coords.length>1&&(()=>{ const sm=samplesOf(o.coords.map(p=>[p[0],p[1]]),15); return sm.filter(p=>distToLine(p,nl)<15).length>=sm.length*0.6; })()).map(([k])=>k):[];
-      gPush([...old.map(k=>({k:'color-',id:k})),{k:'color',id,coords:c.map(x=>[+x[1].toFixed(6),+x[0].toFixed(6)]),lv,name:name||''}]);
-      if(me.admin){ old.forEach(k=>delete gData.c[k]); gData.c[id]={coords:c.map(x=>[x[1],x[0]]),lv,name:name||'',by:me.id,t:Date.now()}; drawTrailFix(); toast('Color cambiado para todos'); } };
+      const nm2=name||old.map(k=>gData.c[k]&&gData.c[k].name).find(Boolean)||'';   // el nombre que ya tenía no se pierde
+      gPush([...old.map(k=>({k:'color-',id:k})),{k:'color',id,coords:c.map(x=>[+x[1].toFixed(6),+x[0].toFixed(6)]),lv,name:nm2}]);
+      if(me.admin){ old.forEach(k=>delete gData.c[k]); gData.c[id]={coords:c.map(x=>[x[1],x[0]]),lv,name:nm2,by:me.id,t:Date.now()}; drawTrailFix(); toast('Color cambiado para todos'); } };
     d.appendChild(cb); }
   if(mine){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar mi nombre';
     del.onclick=()=>{ map.closePopup(); myNames=myNames.filter(n=>n!==mine); saveMyNames(); toast('Nombre quitado'); }; d.appendChild(del); }
@@ -4934,7 +4935,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794775909';
+const BUILD='1794776045';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
