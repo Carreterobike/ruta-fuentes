@@ -4360,7 +4360,7 @@ function openRide(r){
     if(e.o!=null&&r.times&&S0own){ const t0=e.o+((S0own.date||r.date)-r.date)/1000; a=r.times.findIndex(t=>t>=t0); b=r.times.findIndex(t=>t>=t0+e.t); if(a>=0&&b<0) b=r.times.length-1; }
     else if(cc.length>1){ a=nearestIdx(r.coords,cc[0]); b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1; }
     nVez[e.sid]=(nVez[e.sid]||0)+1; const vez=nVez[e.sid], veces=S0.filter(x=>x.sid===e.sid).length;
-    segs.push({src:'sv',sid:e.sid,key:e.sid+'#'+vez,svpr:e.pr,name:String(sg.name||'').trim()+(veces>1?` (${vez}.ª vez)`:''),dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:stravaBest(e.sid).map(x=>x.t),a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });
+    segs.push({src:'sv',sid:e.sid,key:e.sid+'#'+vez,svpr:e.pr,name:String(sg.name||'').trim()+(veces>1?` (${vez}.ª vez)`:''),dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:[e.t,...stravaBest(e.sid).filter(z=>!S0own||z.date!==S0own.date).map(x=>x.t)],a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });   // "antes" = tus marcas de otros días
   // salidas guardadas antes de saber cuándo empieza cada vuelta: se pregunta a Strava una vez y se vuelve a pintar
   if(!fr&&S0own&&S0.some(e=>e.o==null)&&/^strava-\d+$/.test(S0own.id||'')&&!S0own._oAsk){ S0own._oAsk=1;
     svGet(`activities/${S0own.id.slice(7)}?include_all_efforts=true`).then(async d=>{ if(!d||!d.segment_efforts) return; applyEfforts(S0own,d.segment_efforts); const c=cleanRide(S0own); c.mt=S0own.mt=Date.now(); await ridesTx('readwrite',x=>x.put(c)); syncDirtyRide(S0own.date); if(rideOpen===r) openRide(r); }).catch(()=>{}); }
@@ -4770,7 +4770,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794761008';
+const BUILD='1794761132';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
