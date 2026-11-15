@@ -4355,14 +4355,21 @@ function openRide(r){
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
   const S0=(r.sef&&r.sef.length)?r.sef:(twin?twin.sef:[]);   // los segmentos que Strava midió en esta salida
-  if(!fr) S0.forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const cc=sg.coords||[]; let a=cc.length>1?nearestIdx(r.coords,cc[0]):-1, b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1;
-    segs.push({src:'sv',sid:e.sid,svpr:e.pr,name:sg.name,dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:stravaBest(e.sid).map(x=>x.t),a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });
+  const S0own=(r.sef&&r.sef.length)?r:twin, nVez={};
+  if(!fr) S0.slice().sort((x,y)=>(x.o??1e9)-(y.o??1e9)).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const cc=sg.coords||[]; let a=-1,b=-1;
+    if(e.o!=null&&r.times&&S0own){ const t0=e.o+((S0own.date||r.date)-r.date)/1000; a=r.times.findIndex(t=>t>=t0); b=r.times.findIndex(t=>t>=t0+e.t); if(a>=0&&b<0) b=r.times.length-1; }
+    else if(cc.length>1){ a=nearestIdx(r.coords,cc[0]); b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1; }
+    nVez[e.sid]=(nVez[e.sid]||0)+1; const vez=nVez[e.sid], veces=S0.filter(x=>x.sid===e.sid).length;
+    segs.push({src:'sv',sid:e.sid,key:e.sid+'#'+vez,svpr:e.pr,name:String(sg.name||'').trim()+(veces>1?` (${vez}.ª vez)`:''),dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:stravaBest(e.sid).map(x=>x.t),a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });
+  // salidas guardadas antes de saber cuándo empieza cada vuelta: se pregunta a Strava una vez y se vuelve a pintar
+  if(!fr&&S0own&&S0.some(e=>e.o==null)&&/^strava-\d+$/.test(S0own.id||'')&&!S0own._oAsk){ S0own._oAsk=1;
+    svGet(`activities/${S0own.id.slice(7)}?include_all_efforts=true`).then(async d=>{ if(!d||!d.segment_efforts) return; applyEfforts(S0own,d.segment_efforts); const c=cleanRide(S0own); c.mt=S0own.mt=Date.now(); await ridesTx('readwrite',x=>x.put(c)); syncDirtyRide(S0own.date); if(rideOpen===r) openRide(r); }).catch(()=>{}); }
   // los segmentos de Strava que conoces aunque esta salida no venga de Strava (se miden con tu GPS)
   // si Strava ya ha medido esta salida (o la misma salida que llegó por Strava), solo salen sus segmentos, con su tiempo exacto
   const svDone=(r.sef&&r.sef.length)||(twin&&twin.sef.length);
   if(!fr){ const have=new Set(S0.map(e=>e.sid)); Object.values(ssegs).forEach(sg=>{ if(have.has(sg.id)||!sg.coords||sg.coords.length<2) return; if(svDone&&svT(sg.id)==null) return; const c0=sg.coords[0]; if(!r._bb||c0[0]<r._bb[0]-0.01||c0[0]>r._bb[2]+0.01||c0[1]<r._bb[1]-0.01||c0[1]>r._bb[3]+0.01) return; mine('ss:'+sg.id,sg.name,sg.coords,segDz(sg.coords),'ss',sg.id); }); }
   // la misma trialera partida en trozos se enseña una sola vez
-  const segM=[]; segs.forEach(x=>{ if(x.sid&&segM.some(y=>y.sid===x.sid)) return;   // el mismo segmento de Strava solo una vez (con su tiempo exacto)
+  const segM=[]; segs.forEach(x=>{ if(x.sid&&segM.some(y=>(y.key||y.sid)===(x.key||x.sid))) return;   // el mismo segmento de Strava solo una vez (con su tiempo exacto)
     const o=segM.find(y=>nrm(y.name)===nrm(x.name)); if(o){ if(o.sid||x.sid) { segM.push({...x}); return; } o.t+=x.t; o.all=null; if(x.a!=null){ o.a=o.a==null?x.a:Math.min(o.a,x.a); o.b=o.b==null?x.b:Math.max(o.b,x.b); } } else segM.push({...x}); });
   // tu mejor tiempo: en dorado; si hoy has hecho la mejor marca, la de antes sale en plateado
   const best=x=>{ const S=x.sid&&ssegs[x.sid]&&ssegs[x.sid].st;
@@ -4675,7 +4682,8 @@ function applyEfforts(r,efforts){
       if(line&&line.length>=2) ssegs[sid]={id:sid,pk:1,name:sg.name||e.name||'Segmento',coords:segPack(line),km:(sg.distance||0)/1000,gr:sg.average_grade,own:1};
       else if(!ssegs[sid]) return;
     }
-    out.push({sid,t:e.elapsed_time,pr:e.pr_rank||null});
+    const o=e.start_date&&r.date?Math.round((Date.parse(e.start_date)-r.date)/1000):null;   // segundos desde la salida: cada vuelta en su sitio
+    out.push({sid,t:e.elapsed_time,pr:e.pr_rank||null,o});
   });
   r.sef=out; r.sefT=(!out.length&&Date.now()-r.date<3*86400000)?null:Date.now();   // recién subida: Strava aún no tiene los segmentos, se vuelve a mirar
   saveSsegs();
@@ -4752,7 +4760,9 @@ async function selfTest(opts={}){
     for(const r of rides.filter(x=>x.sef&&x.sef.length).sort((a,b)=>b.date-a.date).slice(0,opts.ficha)){
       const show=rides.find(x=>x._tw===r)||r; openRide(show); await new Promise(z=>setTimeout(z,5000));
       const lis=[...document.querySelectorAll('#rvSegs li')].map(li=>[li.querySelector('b').textContent.trim(),li.querySelector('em').textContent.replace('🏆','').trim()]);
-      r.sef.forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; const nm=String(sg.name||'').trim(), hit=lis.find(x=>x[0]===nm); if(hit&&hit[1]!==fmtT(e.t)){ out.ok=false; out.mal.push({id:r.id,nombre:r.name,bad:[`${nm}: ${hit[1]} en vez de ${fmtT(e.t)}`]}); } });
+      const cnt={}; r.sef.slice().sort((x,y)=>(x.o??1e9)-(y.o??1e9)).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; cnt[e.sid]=(cnt[e.sid]||0)+1; const veces=r.sef.filter(x=>x.sid===e.sid).length;
+        const nm=String(sg.name||'').trim()+(veces>1?` (${cnt[e.sid]}.ª vez)`:''), hit=lis.find(x=>x[0]===nm);
+        if(hit&&hit[1]!==fmtT(e.t)){ out.ok=false; out.mal.push({id:r.id,nombre:r.name,bad:[`${nm}: ${hit[1]} en vez de ${fmtT(e.t)}`]}); } });
       $('rideView').hidden=true; } }
   if(!out.ok&&opts.avisar!==false) sendBug('Autocomprobación: números que no cuadraban con Strava (ya arreglados)',null,true,{autotest:out});
   if(out.arreglado) renderRides();
@@ -4760,7 +4770,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794760872';
+const BUILD='1794761008';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
