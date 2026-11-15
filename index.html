@@ -538,6 +538,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 #rvOnMap[hidden]{display:none!important}
 .wz-st{display:flex;gap:4px;margin-bottom:10px}.wz-st i{flex:1;height:4px;border-radius:2px;background:var(--line)}.wz-st i.on{background:var(--acc,#B6E22E)}
 #wzB{display:flex;flex-direction:column;gap:10px}#wzB .sub{font-size:14px;color:var(--muted);line-height:1.45}
+.wz-last .wz-nav{position:static!important}
 .wz-nav{display:flex;gap:8px;margin-top:14px;position:sticky;bottom:0;padding:10px 0 4px;background:var(--card)}.wz-nav button{flex:1;min-height:48px;border-radius:14px;font-weight:800;font-size:15px}
 .wz-op{display:flex;align-items:center;gap:10px;width:100%;text-align:left;min-height:52px;padding:10px 14px;border-radius:14px;border:2px solid var(--line);background:var(--card,transparent);color:var(--ink);font-size:15px;font-weight:700}
 .wz-op.on{border-color:#8fbf1f;background:rgba(182,226,46,.14)}.wz-op small{display:block;font-weight:500;color:var(--muted);font-size:12.5px}
@@ -2454,7 +2455,7 @@ function wzRender(){
   if(!wz.on) return;
   const step=wz.step, idx=Math.max(0,WZ_ORDER.indexOf(step));
   $('wzSt').innerHTML=[2,3,4,5,6,7].map((x,i)=>`<i class="${i<=Math.min(idx,5)?'on':''}"></i>`).join('');
-  $('wzBack').hidden=step===2; $('wzNext').hidden=false; $('wzNext').disabled=false; $('wzNext').textContent='Siguiente';
+  $('secWiz').classList.toggle('wz-last',step===6); $('wzBack').hidden=step===2; $('wzNext').hidden=false; $('wzNext').disabled=false; $('wzNext').textContent='Siguiente';
   const B=$('wzB'); let h='';
   if(step===2){ $('wzT').textContent='¿A dónde vas?';
     h=`<div class="sub">Busca un destino o dibuja la ruta tocando el mapa (salida y puntos).</div>
