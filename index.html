@@ -2102,7 +2102,7 @@ function trailClick(latlng){
     const d=document.createElement('div'); d.className='tpop tpick';
     d.innerHTML=`<b>Aquí pasan ${list.length} trialeras</b><small>Toca la que quieras ver</small>`;
     list.forEach(x=>{ const lv=x.lv!=null?LEVELS[x.lv]:null, b=document.createElement('button');
-      b.innerHTML=`<i style="background:${lv?lv.color:'#9e9e9e'}${x.lv>=4?';box-shadow:inset 0 0 0 2px #111,inset 0 0 0 3px #fff':''}"></i><span>${esc(x.name)}</span><small>${lv?(x.lv>=4?'Doble negra':lv.name):'sin apuntar'}</small>`;
+      b.innerHTML=`<i style="background:${lv?lv.color:'#9e9e9e'}${x.lv>=4?';box-shadow:inset 0 0 0 2px #111,inset 0 0 0 3px #fff':''}"></i><span>${esc(x.name)}</span>`;
       b.onclick=()=>{ map.closePopup(); x.open(); }; d.appendChild(b); });
     L.popup({minWidth:220,closeButton:true}).setLatLng(latlng).setContent(d).openOn(map); return true;
   }
@@ -4848,7 +4848,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794763732';
+const BUILD='1794764145';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -4922,6 +4922,8 @@ function gtPopup(id,tr){
     const one=k=>rows[k].length?`<div class="tm"><b>${lb[k]}</b><ol>${rows[k].sort((a,b)=>a.t-b.t).map(x=>`<li><b>${fmtT(x.t)}</b> ${esc(uName(x.u))}</li>`).join('')}</ol></div>`:'';
     cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div>'+((one('f')+one('b'))||'<small>Todavía nadie tiene tiempo aquí. Cuentan las salidas subidas con archivo o directas del reloj (las de Strava no se pueden enseñar a otros).</small>');
   });
+  if(tr.kind==='trial'&&me){ const nb=document.createElement('button'); nb.className='segbtn'; nb.textContent=me.admin?'Cambiar nombre':'Proponer otro nombre';
+    nb.onclick=async()=>{ map.closePopup(); const nn=await askName('Cambiar el nombre',tr.name||''); if(!nn||nn===tr.name) return; gPush([{k:'trial',id,name:nn,lv:tr.lv,coords:tr.coords}]); if(me.admin){ tr.name=nn; drawTrailFix(); effCache.clear(); toast(`Nombre cambiado para toda la grupeta: "${nn}"`,3500); } else toast('Propuesta enviada a David.',3500); }; d.appendChild(nb); }
   if(tr.kind==='trial'&&me){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Cambiar color':'Proponer otro color';
     cb.onclick=async()=>{ map.closePopup(); const lv=await pickLevel(tr.lv); if(lv==null) return; gPush([{k:'trial',id,name:tr.name,lv,coords:tr.coords}]); if(me.admin){ tr.lv=lv; drawTrailFix(); toast('Color cambiado para toda la grupeta.',3500); } }; d.appendChild(cb); }
   if(isMe(tr.by)||(me&&me.admin)){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar del mapa de la grupeta';
