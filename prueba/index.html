@@ -2087,8 +2087,8 @@ function trailsAt(latlng){
   [...Object.values(gData.c||{}),...Object.values(gData.t||{}).filter(x=>x&&x.kind!=='trial'&&x.lv==null)].forEach(x=>{
     if(x&&x.name&&x.coords&&x.coords.length>1&&distToLine(P,x.coords.map(c=>[c[1],c[0]]))<20) add(x.name,x.lv,()=>openTrailInfo(latlng,x.name),lenOf(x.coords)); });
   // nombres del mapa
-  if(glReady){ try{ glMap.querySourceFeatures('omt',{sourceLayer:'transportation_name',filter:IS_TRAIL}).forEach(f=>{ const nm=f.properties.name; if(!nm) return; const c=lineOf(f);
-    if(c&&distToLine(P,c)<15&&!seen.has(nm.trim().toLowerCase())){ let m=null; try{ const ln=namedTrailLine(nm,P); if(ln&&ln.length>1) m=lenOf(ln); }catch(e){} add(nm,null,()=>openTrailInfo(latlng,nm),m); } }); }catch(e){} }
+  if(glReady){ try{ glMap.querySourceFeatures('omt',{sourceLayer:'transportation_name',filter:IS_TRAIL}).forEach(f=>{ const nm=f.properties.name; if(!nm) return; const g=f.geometry, parts=!g?[]:g.type==='LineString'?[g.coordinates]:g.type==='MultiLineString'?g.coordinates:[];
+    if(parts.some(c=>c.length>1&&distToLine(P,c)<18)&&!seen.has(nm.trim().toLowerCase())){ let m=null; try{ const ln=namedTrailLine(nm,P); if(ln&&ln.length>1) m=lenOf(ln); }catch(e){} add(nm,null,()=>openTrailInfo(latlng,nm),m); } }); }catch(e){} }
   // segmentos de Strava que pasan por aquí (p. ej. Purgatorio, que junta trozos de otras)
   Object.values(ssegs).forEach(sg=>{ const c=sg.coords; if(!sg.name||!c||c.length<2) return;
     if(!sg._bb){ let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); Object.defineProperty(sg,'_bb',{value:[a,b,n,e],enumerable:false,writable:true,configurable:true}); }
@@ -4871,7 +4871,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794766560';
+const BUILD='1794766685';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
