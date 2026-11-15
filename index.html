@@ -2793,7 +2793,7 @@ function renderLunch(){
     li.appendChild(b); li.onclick=()=>map.setView([x.p.lat,x.p.lon],16); ul.appendChild(li); });
 }
 setTimeout(()=>document.querySelectorAll('#secCapas .ic[data-pin]').forEach(e=>{ e.innerHTML=pinSvg(PIN_C[e.dataset.pin],e.dataset.pin); }),0);
-function paintCapas(){ const n=['fuentes','trialeras','segmentos'].filter(k=>T[k]).length+placesOn.size; $('capasN').textContent=n||''; $('capasBtn').classList.toggle('on',capasOpen); document.querySelectorAll('#secCapas [data-p]').forEach(b=>b.classList.toggle('on',placesOn.has(b.dataset.p))); }
+function paintCapas(){ ['fuentes','trialeras','segmentos'].forEach(k=>document.querySelectorAll(`#secCapas [data-t="${k}"]`).forEach(b=>b.classList.toggle('on',!!T[k]))); const n=['fuentes','trialeras','segmentos'].filter(k=>T[k]).length+placesOn.size; $('capasN').textContent=n||''; $('capasBtn').classList.toggle('on',capasOpen); document.querySelectorAll('#secCapas [data-p]').forEach(b=>b.classList.toggle('on',placesOn.has(b.dataset.p))); }
 $('capasBtn').onclick=()=>{ capasOpen=!capasOpen; paintCapas(); updateSheet(); };
 $('apBtn').onclick=()=>{ addingP=$('apCat').value; $('map').classList.add('crear'); capasOpen=false; paintCapas(); updateSheet(); toast('Toca en el mapa dónde está el sitio',6000); };
 setTimeout(()=>{ loadMyPlaces(); renderPlaces(); },0);
@@ -4702,7 +4702,7 @@ async function devBackfill(){
   store.set('ichnos-devfill',3);
 }
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794754557';
+const BUILD='1794754642';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
