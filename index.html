@@ -55,6 +55,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   color:var(--muted);font-weight:700;font-size:12.5px;letter-spacing:.3px}
 .bnav button svg{width:25px;height:25px}
 .bnav button.on{color:var(--ink);box-shadow:inset 0 3px 0 var(--accent)}
+.bnav{background:#1E2328!important;border-top:0!important}.bnav button{color:#8f9aa1!important}
+.bnav button.on{color:#B6E22E!important;box-shadow:none!important;position:relative}.bnav button.on::after{content:'';position:absolute;bottom:calc(6px + env(safe-area-inset-bottom,0px));left:50%;width:18px;height:3px;margin-left:-9px;border-radius:2px;background:#B6E22E}
+.bnav .plus{color:#1E2328!important}.bnav .plus.on::after{display:none}
 
 /* perfil */
 #pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,.rideview{background-color:#232a30;background-image:var(--topo);background-attachment:local}
@@ -166,6 +169,17 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .capas-ctl button.on{background:var(--ink);color:var(--bg)}
 .capas-ctl b{position:absolute;top:-5px;right:-5px;background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:11px;padding:0 6px;line-height:18px}
 .capas-ctl b:empty{display:none}
+.mapgrp{position:relative;background:var(--card);border-radius:14px;box-shadow:var(--shadow);overflow:visible;display:flex;flex-direction:column}
+.mapgrp>.leaflet-control.leaflet-control-layers-expanded{position:absolute!important;right:0;top:0;z-index:900!important;background:var(--card)!important;border-radius:14px!important;box-shadow:var(--shadow)!important;width:290px;border-top:0!important;padding:10px 12px!important}
+.mapgrp>.leaflet-control,.mapgrp>.capas-ctl{margin:0!important;box-shadow:none!important;background:transparent!important;border-radius:0!important}
+.mapgrp>*+*{border-top:1px solid var(--line,#e5e5e5)!important}
+.mapgrp .capas-ctl button,.mapgrp .leaflet-control-layers-toggle{box-shadow:none!important;background:transparent;border-radius:0}
+.mapgrp>:first-child,.mapgrp>:first-child .leaflet-control-layers-toggle{border-radius:14px 14px 0 0!important}.mapgrp>:last-child,.mapgrp>:last-child button{border-radius:0 0 14px 14px!important}
+.mapgrp .capas-ctl button.on{background:var(--ink)!important;color:var(--bg)}
+.wx.in-search{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:5;margin:0!important}
+.wx.in-search.mini .wxpill{box-shadow:none;background:var(--bg2,#f1f3f2);padding:6px 10px;font-size:14px}
+.wx.in-search:not(.mini){top:calc(100% + 8px);transform:none;right:0}
+.search input{padding-right:92px!important}
 #wxfx{position:absolute;inset:0;z-index:760;pointer-events:none}#wxfx[hidden]{display:none}#wxfx canvas{position:absolute;inset:0}
 .fxcard{position:absolute;left:12px;right:70px;top:62px;pointer-events:auto;background:rgba(20,28,38,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;border-radius:18px;padding:10px 12px;max-width:420px}
 .fx-top{display:flex;align-items:center;gap:12px}.fx-top>b{font:800 44px/1 var(--display,system-ui)}.fx-top>div{flex:1;min-width:0}.fx-top span{display:block;font-weight:800}.fx-top small{display:block;font-size:12px;opacity:.85}
@@ -264,6 +278,7 @@ details.help p{margin:6px 0 0}
 .lgbox.min .lg-head b{transform:rotate(-90deg)}
 .lgbox.min{width:auto}
 .lgbox.min .lg-body{display:none}
+.lgbox.min{border-radius:999px}.lgbox.min .lg-head{font-size:0;gap:4px;padding:8px 10px}.lgbox.min .lg-head b{font-size:12px}
 .dots{display:flex;gap:3px}.dots i{width:9px;height:9px;border-radius:50%}
 .lg-body{max-height:min(46vh,420px);overflow-y:auto;border-top:1px solid var(--line)}
 .lg-row{width:100%;border:0;background:none;display:flex;align-items:center;gap:8px;padding:7px 11px;text-align:left;font-size:13px}
@@ -275,10 +290,25 @@ details.help p{margin:6px 0 0}
 .lg-row b{color:var(--muted);font-size:11px;transition:transform .2s}
 .lg-row[aria-expanded="true"] b{transform:rotate(90deg)}
 .lg-tip{padding:0 11px 9px 41px;color:var(--muted);line-height:1.4;font-size:12.5px}
-@media (min-width:761px){.lgbox{left:auto;top:auto;right:max(12px,env(safe-area-inset-right,0px));bottom:150px}}
+@media (min-width:761px){.lgbox{left:auto;top:auto;right:max(60px,env(safe-area-inset-right,0px));bottom:150px}}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+.ico{display:inline-block;width:1.1em;height:1.1em;vertical-align:-.18em;background:currentColor;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;margin-right:.2em}
+.ico-drop{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2.7s-6 6.4-6 11a6 6 0 0 0 12 0c0-4.6-6-11-6-11z'/%3E%3C/svg%3E")}
+.ico-fork{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7'/%3E%3C/svg%3E")}
+.ico-camera{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E")}
+.ico-bookmark{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z'/%3E%3C/svg%3E")}
+.ico-download{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3'/%3E%3C/svg%3E")}
+.ico-trophy{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.7V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 22M14 14.7V17c0 .6.5 1 1 1.2 1.1.6 2 2 2 3.8M18 2H6v7a6 6 0 0 0 12 0z'/%3E%3C/svg%3E")}
+.ico-thumb{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10v12M15 5.9 14 10h5.8a2 2 0 0 1 1.9 2.6l-2.3 8a2 2 0 0 1-1.9 1.4H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.8-1.1L12 2a3.1 3.1 0 0 1 3 3.9z'/%3E%3C/svg%3E")}
+.ico-chat{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.9 20A9 9 0 1 0 4 16.1L2 22z'/%3E%3C/svg%3E")}
+.ico-scissors{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='6' cy='6' r='3'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Cpath d='M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12'/%3E%3C/svg%3E")}
+.ico-tree{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l5 7h-3l4 6H6l4-6H7zM12 16v5'/%3E%3C/svg%3E")}
+.ico-sparkles{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z'/%3E%3C/svg%3E")}
+.ico-alert{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01'/%3E%3C/svg%3E")}
+.ico-heart{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z'/%3E%3C/svg%3E")}
+
 .gcard.hero{background:#B6E22E;color:#1E2328;border:0;padding:14px}.gcard.hero .tt{font-size:20px}.gcard.hero small{color:#2b3a10}
 .hero-k{font-size:11px;font-weight:800;letter-spacing:.6px;opacity:.75}
 .hero-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font-weight:700;font-size:14px}
@@ -670,7 +700,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 
 /* ===== móvil: barra de 5 con el + en medio, mapa más despejado ===== */
 .bnav .m-only{display:none}
-@media (min-width:761px){ .bnav [data-pg=pgGrupeta]{order:1} .bnav [data-pg=pgSalidas]{order:2} .bnav [data-pg=pgMapa]{order:3} }
+/* orden: Mapa · Salidas · (+) · Grupeta · Perfil, en el móvil y en el Mac */
 @media (max-width:760px){
   :root{--navh:76px}
   .bnav .m-only{display:flex}
@@ -882,7 +912,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
   <section class="pblock" id="bugBox">
     <div class="pb-h"><h3>¿Algo va mal?</h3></div>
     <p class="svp">Si ves algo raro (un tiempo que no cuadra, un botón que no va…), cuéntalo aquí. Le llega al administrador con lo que estaba pasando en la app.</p>
-    <button class="btn" id="bugBtn">⚠️ Algo va mal</button>
+    <button class="btn" id="bugBtn"><i class="ico ico-alert"></i>Algo va mal</button>
     <div id="bugAdm" hidden><button class="btn" id="bugList" style="margin-top:8px">Ver los avisos de fallos</button></div>
   </section>
   <section class="pblock" id="icuBox">
@@ -946,7 +976,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
   <div class="top">
     <div class="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-      <input id="q" type="search" placeholder="Buscar pueblo, calle, montaña…" autocomplete="off" aria-label="Buscar un sitio">
+      <input id="q" type="search" placeholder="Buscar sitio o trialera…" autocomplete="off" aria-label="Buscar un sitio">
       <ul class="results" id="results" hidden></ul>
     </div>
     <div class="mbar" id="modes" role="group" aria-label="Modalidad">
@@ -998,7 +1028,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
         </div>
         <div class="opts" id="optExtras" hidden>
           <label>Añadir a tu ruta</label>
-          <div class="segc extras"><button id="exF">💧 Fuentes</button><button id="exA">🍴 Almuerzo</button></div>
+          <div class="segc extras"><button id="exF"><i class="ico ico-drop"></i>Fuentes</button><button id="exA"><i class="ico ico-fork"></i>Almuerzo</button></div>
           <div id="exFopt" hidden>
             <label>Una fuente…</label>
             <div class="segc" id="exFm"><button data-m="km">Cada km</button><button data-m="t">Cada tiempo</button></div>
@@ -1020,14 +1050,14 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
         <div class="actions">
           <button id="undo" disabled>Quitar último</button>
           <button id="clear" disabled>Borrar ruta</button>
-          <button id="saveRoute" disabled>🔖 Guardar ruta</button>
-          <button id="offRoute" disabled>📥 Sin cobertura</button>
+          <button id="saveRoute" disabled><i class="ico ico-bookmark"></i>Guardar ruta</button>
+          <button id="offRoute" disabled><i class="ico ico-download"></i>Sin cobertura</button>
           <button id="gpx" class="primary" disabled>GPX</button>
           <button id="done" class="dark" hidden>Terminar ruta</button>
           <button id="calcCancel" hidden>Cancelar</button>
           <button id="tripBtn" hidden>Hacer por etapas</button>
           <button id="tripBack" hidden>← Volver al viaje</button>
-          <button id="almBtn" hidden>🍴 Almuerzo</button>
+          <button id="almBtn" hidden><i class="ico ico-fork"></i>Almuerzo</button>
           <button id="gpropBtn" hidden>Proponer a la grupeta</button>
         </div>
       </section>
@@ -1075,7 +1105,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
   <div class="rideon" id="rideOn" hidden>
     <button id="roBack" aria-label="Volver a la ficha de la salida">←</button>
     <span><small>Viendo tu salida</small><b id="roName"></b></span>
-    <button id="roTrial" aria-label="Marcar una trialera en esta salida">✂️ Trialera</button>
+    <button id="roTrial" aria-label="Marcar una trialera en esta salida"><i class="ico ico-scissors"></i>Trialera</button>
     <button id="roX" class="x">✕ Quitar</button>
   </div>
   <div class="lbar" id="lbar" role="group" aria-label="Qué ver en el mapa">
@@ -1202,7 +1232,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
     <div class="rvcard"><svg id="trShape" class="rvmap" viewBox="0 0 320 150" role="button" tabindex="0" aria-label="Ver la trialera en el mapa" style="cursor:pointer"></svg>
       <div class="tr-est" id="trEst" hidden></div>
       <div class="ch-t" style="margin-top:10px">¿Cómo está hoy?</div>
-      <div class="tr-estb" id="trEstB"><button data-e="perfecta">👍 Perfecta</button><button data-e="barro">💧 Embarrada</button><button data-e="arbol">🌳 Árbol caído</button><button data-e="limpia">🧹 Limpiada</button></div>
+      <div class="tr-estb" id="trEstB"><button data-e="perfecta"><i class="ico ico-thumb"></i>Perfecta</button><button data-e="barro"><i class="ico ico-drop"></i>Embarrada</button><button data-e="arbol"><i class="ico ico-tree"></i>Árbol caído</button><button data-e="limpia"><i class="ico ico-sparkles"></i>Limpiada</button></div>
       <div class="tr-acts"><button class="btn-main" id="trGo">Llévame aquí</button><button class="btn-ghost" id="trMap">Ver en el mapa</button></div></div>
     <div class="rvcard" id="trTimes"></div>
     <div class="rvcard"><div class="ch-t">Comentarios</div><ul class="tr-com" id="trCom"></ul>
@@ -1217,7 +1247,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
     <div class="rv-grid" id="rvGrid"></div>
     <p class="note" id="rvNoData" hidden>Esta salida no tiene horas ni pulso. Si la trajiste con una versión anterior de Ichnos, vuelve a traer su archivo para ver todos los datos.</p></div>
     <div class="rvcard" id="rvPhotos"><div class="ch-t">Fotos</div><div class="ph-grid" id="rvPh"></div>
-      <button class="btn" id="rvPhAdd">📷 Añadir fotos</button><input type="file" id="rvPhFile" accept="image/*" multiple hidden></div>
+      <button class="btn" id="rvPhAdd"><i class="ico ico-camera"></i>Añadir fotos</button><input type="file" id="rvPhFile" accept="image/*" multiple hidden></div>
     <div class="rvcard" id="rvNotes"><div class="rvlike"><button id="rvLike" aria-label="Me gusta"><svg viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M7 10v11H3V10z"/><path d="M7 10l4-8c1.7 0 2.8 1.4 2.4 3L12.8 9H19a2 2 0 0 1 2 2.3l-1.3 7.6A2.5 2.5 0 0 1 17.3 21H7"/></svg><span id="rvLikeN">0</span></button><small id="rvLikers"></small></div>
       <div class="ch-t">Comentarios</div><ul class="notes" id="rvNoteList"></ul>
       <div class="note-add"><textarea id="rvNoteTxt" rows="2" placeholder="¿Qué tal la salida? Bares, fuentes, cómo estaba el camino…"></textarea><button class="btn-main" id="rvNoteBtn">Publicar comentario</button></div></div>
@@ -1243,7 +1273,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794863114';   // versión de la app (la pone build.py)
+const BUILD='1794864312';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2412,7 +2442,7 @@ function trailAt(latlng,force,flv){
     {sw:'repeating-linear-gradient(90deg,#4a4a4a 0 4px,transparent 4px 7px)',name:'Sin apuntar',sc:'',tip:'Sendero del que nadie ha apuntado la dificultad. Ve con cuidado la primera vez.'}];
   $('lgBody').innerHTML=rows.map((r,i)=>`<button class="lg-row" data-i="${i}" aria-expanded="false"><i class="sw${r.dbl?' dbl':''}" style="background:${r.sw}"></i><span>${r.name}${r.sc?` <small>${r.sc}</small>`:''}</span><b>›</b></button><div class="lg-tip" hidden>${r.tip}</div>`).join('');
   $('lgBody').querySelectorAll('.lg-row').forEach(b=>b.onclick=()=>{ const open=b.getAttribute('aria-expanded')!=='true'; b.setAttribute('aria-expanded',open); b.nextElementSibling.hidden=!open; });
-  if(store.get('ichnos-lgmin',false)) $('lgBox').classList.add('min');
+  if(store.get('ichnos-lgmin',true)) $('lgBox').classList.add('min');
   $('lgHead').onclick=()=>{ const m=$('lgBox').classList.toggle('min'); $('lgHead').setAttribute('aria-expanded',!m); store.set('ichnos-lgmin',m); };
 })();
 
@@ -2448,7 +2478,7 @@ $('crearX').onclick = async () => {
   // cerrar = quitar la ruta del mapa (si no está guardada, te avisa antes)
   if(route||points.length){ const cur=JSON.stringify(points.map(q=>q.slice(0,3)));
     const saved=misRutas.some(x=>JSON.stringify(x.p)===cur);
-    if(!saved&&route&&!await ask('¿Quitar la ruta del mapa?','No la has guardado. Si la quieres para otro día, pulsa antes "🔖 Guardar ruta".','Quitar ruta','Volver')) return; }
+    if(!saved&&route&&!await ask('¿Quitar la ruta del mapa?','No la has guardado. Si la quieres para otro día, pulsa antes "Guardar ruta".','Quitar ruta','Volver')) return; }
   wz.on=false; crearClosed=true; almOpen=false; askedVer=routeVer; if(T.crear) await setToggle('crear',false);
   points=[]; drawPins(); await calc(); almOpen=false; planLayer.clearLayers(); lunchLayer.clearLayers(); crearClosed=true; updateSheet(); };
 function deleteSeg(k){ map.closePopup(); if(k===0) points.splice(0,1); else points.splice(k+1,1); drawPins(); calc(); }
@@ -2466,7 +2496,7 @@ function drawPins(){
     const isF=p[2]==='f' && i>0 && i<points.length-1, isB=p[2]==='b' && i>0 && i<points.length-1;
     const last=i===points.length-1 && points.length>1;
     const label = isF?TAP_W:i;
-    const icon = i===0 ? START_ICON : last ? FLAG_ICON : L.divIcon({className:'',html:`<div class="pin${isF?' f':''}${isB?' b':''}">${isB?'🍴':label}</div>`,iconSize:[26,26],iconAnchor:[13,13]});
+    const icon = i===0 ? START_ICON : last ? FLAG_ICON : L.divIcon({className:'',html:`<div class="pin${isF?' f':''}${isB?' b':''}">${isB?'<i class="ico ico-fork"></i>':label}</div>`,iconSize:[26,26],iconAnchor:[13,13]});
     const m=L.marker([p[0],p[1]],{icon,
       draggable:T.crear}).addTo(pinLayer);
     m.on('dragend',ev=>{const ll=ev.target.getLatLng();points[i]=[ll.lat,ll.lng];calc();});
@@ -2640,7 +2670,7 @@ async function useRoute(coords, up, label, my){
   routeVer++;
   if(trip&&trip.open!=null) syncOpenStage(coords,up);
   drawRouteSegments(coords, cum); drawArrows();
-  $('gpx').disabled=false; $('saveRoute').disabled=false; $('offRoute').disabled=false; $('offRoute').textContent='📥 Sin cobertura'; renderStats(); renderFountains();
+  $('gpx').disabled=false; $('saveRoute').disabled=false; $('offRoute').disabled=false; $('offRoute').innerHTML='<i class="ico ico-download"></i>Sin cobertura'; renderStats(); renderFountains();
   loadWeather();
   if(fitNext){ fitNext=false; map.fitBounds(L.latLngBounds(coords.map(c=>[c[0],c[1]])),{padding:[40,40]}); }
   if(my===reqId) setStatus(`${label}: ruta lista.`);
@@ -2668,7 +2698,7 @@ async function fPick(){
     if(c.length) picks.push(c[0]); else gaps.push([Math.max(0,lo),Math.min(totKm,hi)]); }
   fDraw(picks,gaps); return {picks,gaps}; }
 function fDraw(picks,gaps){ planLayer.clearLayers();
-  picks.forEach(f=>{ const km=nearestOnRoute([f.lat,f.lon]).km; L.circleMarker([f.lat,f.lon],{radius:9,color:'#fff',weight:3,fillColor:'#1677c9',fillOpacity:1}).bindTooltip(`💧 km ${Math.round(km)}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-8]}).addTo(planLayer); });
+  picks.forEach(f=>{ const km=nearestOnRoute([f.lat,f.lon]).km; L.circleMarker([f.lat,f.lon],{radius:9,color:'#fff',weight:3,fillColor:'#1677c9',fillOpacity:1}).bindTooltip(`<i class="ico ico-drop"></i>km ${Math.round(km)}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-8]}).addTo(planLayer); });
   gaps.forEach(g=>{ const pt=routeAt((g[0]+g[1])/2*1000); L.circleMarker([pt[0],pt[1]],{radius:7,color:'#fff',weight:2,fillColor:'#c92a2a',fillOpacity:1}).bindTooltip(`Sin fuente km ${Math.round(g[0])}–${Math.round(g[1])}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-6]}).addTo(planLayer); }); }
 // una fuente cada X km (o cada X tiempo): las elige, pasa la ruta por ellas y las marca en el mapa
 let fPlanVer=-1, fPlanBusy=false;
@@ -2699,7 +2729,7 @@ async function planFountains(){
     }
     planLayer.clearLayers();
     const kms=picks.map(f=>({f,km:nearestOnRoute([f.lat,f.lon]).km})).sort((x,y)=>x.km-y.km);
-    kms.forEach(x=>L.circleMarker([x.f.lat,x.f.lon],{radius:9,color:'#fff',weight:3,fillColor:'#1677c9',fillOpacity:1}).bindTooltip(`💧 km ${Math.round(x.km)}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-8]}).addTo(planLayer));
+    kms.forEach(x=>L.circleMarker([x.f.lat,x.f.lon],{radius:9,color:'#fff',weight:3,fillColor:'#1677c9',fillOpacity:1}).bindTooltip(`<i class="ico ico-drop"></i>km ${Math.round(x.km)}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-8]}).addTo(planLayer));
     gaps.forEach(g=>{ const pt=routeAt((g[0]+g[1])/2*1000); L.circleMarker([pt[0],pt[1]],{radius:7,color:'#fff',weight:2,fillColor:'#c92a2a',fillOpacity:1}).bindTooltip(`Sin fuente km ${Math.round(g[0])}–${Math.round(g[1])}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-6]}).addTo(planLayer); });
     let msg=!picks.length&&!gaps.length?`La ruta es más corta que ${fvTxt(fEvery.m,fEvery.v)}: no hace falta parar a por agua.`:'';
     if(kms.length) msg=`Fuentes en el km ${kms.length>1?kms.slice(0,-1).map(x=>Math.round(x.km)).join(', ')+' y '+Math.round(kms[kms.length-1].km):Math.round(kms[0].km)}.`;
@@ -2758,13 +2788,13 @@ function wzRender(){
     $('wzQb').onclick=go; $('wzQ').onkeydown=e=>{ if(e.key==='Enter') go(); };
     return; }
   if(step===3){ $('wzT').textContent='¿Quieres paradas?';
-    B.innerHTML=`<div class="sub">Puedes elegir una, las dos o ninguna.</div>${wzOp('f',wz.f,'💧 Fuentes')}${wzOp('a',wz.a,'🍴 Almuerzo')}${wzOp('n',!wz.f&&!wz.a,'Sin paradas')}`;
+    B.innerHTML=`<div class="sub">Puedes elegir una, las dos o ninguna.</div>${wzOp('f',wz.f,'<i class="ico ico-drop"></i>Fuentes')}${wzOp('a',wz.a,'<i class="ico ico-fork"></i>Almuerzo')}${wzOp('n',!wz.f&&!wz.a,'Sin paradas')}`;
     B.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ const o=b.dataset.o; if(o==='n'){ wz.f=false; wz.a=false; } else wz[o]=!wz[o]; wzRender(); });
     return; }
   if(step===4){ $('wzT').textContent='¿Cuándo y dónde?';
-    if(wz.f) h+=`<div class="sub"><b>💧 Una fuente…</b></div><div class="segc" id="wzFm"><button data-m="km" class="${fEvery.m==='km'?'on':''}">Cada km</button><button data-m="t" class="${fEvery.m==='t'?'on':''}">Cada tiempo</button></div>
+    if(wz.f) h+=`<div class="sub"><b><i class="ico ico-drop"></i>Una fuente…</b></div><div class="segc" id="wzFm"><button data-m="km" class="${fEvery.m==='km'?'on':''}">Cada km</button><button data-m="t" class="${fEvery.m==='t'?'on':''}">Cada tiempo</button></div>
       <div class="segc" id="wzFv">${FV[fEvery.m].map(v=>`<button data-v="${v}" class="${v===fEvery.v?'on':''}">${fvTxt(fEvery.m,v)}</button>`).join('')}</div>`;
-    if(wz.a) h+=`<div class="sub" style="margin-top:6px"><b>🍴 Almuerzo</b></div><div class="segc" id="wzAw">${[['mitad','A mitad'],['final','Al final'],['km','En el km'],['hora','A una hora']].map(([w,t])=>`<button data-w="${w}" class="${almWhere===w?'on':''}">${t}</button>`).join('')}</div>
+    if(wz.a) h+=`<div class="sub" style="margin-top:6px"><b><i class="ico ico-fork"></i>Almuerzo</b></div><div class="segc" id="wzAw">${[['mitad','A mitad'],['final','Al final'],['km','En el km'],['hora','A una hora']].map(([w,t])=>`<button data-w="${w}" class="${almWhere===w?'on':''}">${t}</button>`).join('')}</div>
       ${almWhere==='km'?`<div class="almopt"><label>Almuerzo en el km <input type="number" id="wzKm" min="1" max="500" value="${almPref.km}" inputmode="numeric"></label></div>`:''}
       ${almWhere==='hora'?`<div class="almopt"><label>Salgo a las <input type="time" id="wzSal" value="${almPref.sal}"></label><label>Almuerzo a las <input type="time" id="wzHora" value="${almPref.hora}"></label></div>`:''}
       <div class="sub" id="wzAt">${route?`Almuerzo por el km ${fmtKm(almTarget()/1000)}.`:''}</div>`;
@@ -2795,9 +2825,9 @@ function wzRender(){
     B.innerHTML='<div class="sub">Mirando tus paradas…</div>'; $('wzNext').hidden=true;
     (async()=>{ let fp={picks:[],gaps:[]}; if(wz.f) fp=await fPick(); else planLayer.clearLayers(); if(!wz.on||wz.step!==5) return;
       wz.stops=fp; const rows=[], off=[];
-      fp.picks.forEach(f=>{ const k=nearestOnRoute([f.lat,f.lon]).km; rows.push(`<div class="wz-op">💧 Fuente km ${Math.round(k)}<small>${f.d<=25?'en la ruta':'+'+Math.round(f.d)+' m de la ruta'}</small></div>`); if(f.d>25) off.push(f.d); });
-      fp.gaps.forEach(g=>rows.push(`<div class="wz-op">⚠️ Sin fuente entre el km ${Math.round(g[0])} y el ${Math.round(g[1])}</div>`));
-      if(wz.a&&wz.bar){ rows.push(`<div class="wz-op">🍴 ${esc(wz.bar.p.name)} · km ${fmtKm(wz.bar.km)}<small>${wz.bar.dRoute<60?'en la ruta':'+'+Math.round(wz.bar.dRoute)+' m de la ruta'}</small></div>`); if(wz.bar.dRoute>=60) off.push(wz.bar.dRoute); }
+      fp.picks.forEach(f=>{ const k=nearestOnRoute([f.lat,f.lon]).km; rows.push(`<div class="wz-op"><i class="ico ico-drop"></i>Fuente km ${Math.round(k)}<small>${f.d<=25?'en la ruta':'+'+Math.round(f.d)+' m de la ruta'}</small></div>`); if(f.d>25) off.push(f.d); });
+      fp.gaps.forEach(g=>rows.push(`<div class="wz-op"><i class="ico ico-alert"></i>Sin fuente entre el km ${Math.round(g[0])} y el ${Math.round(g[1])}</div>`));
+      if(wz.a&&wz.bar){ rows.push(`<div class="wz-op"><i class="ico ico-fork"></i>${esc(wz.bar.p.name)} · km ${fmtKm(wz.bar.km)}<small>${wz.bar.dRoute<60?'en la ruta':'+'+Math.round(wz.bar.dRoute)+' m de la ruta'}</small></div>`); if(wz.bar.dRoute>=60) off.push(wz.bar.dRoute); }
       const extra=off.reduce((a,b)=>a+2*b,0)/1000;
       B.innerHTML=`${rows.join('')||'<div class="sub">No hay paradas.</div>'}
         ${off.length?`<div class="sub">Para pasar por todas hay que salir un poco de la ruta: <b>como poco +${fmtKm(extra)} km</b> (depende de por dónde vayan los caminos).</div><div class="wz-row2"><button id="wzYes" class="primary">Sí, desviar</button><button id="wzNo">No, solo marcar</button></div>`:'<div class="sub">Todas tus paradas están en la ruta. No hace falta desviar.</div>'}`;
@@ -2813,12 +2843,12 @@ function wzRender(){
     let wx=''; try{ const hh=wxData&&wxData[0]&&wxData[0].hourly; if(hh){ let i=hh.time.indexOf(wxHour); if(i<0) i=0; wx=`🌤️ ${new Date(hh.time[i]).toLocaleString('es-ES',{weekday:'long',hour:'2-digit',minute:'2-digit'})}: ${Math.round(hh.temperature_2m[i])}°, viento ${Math.round(hh.wind_speed_10m[i])} km/h, lluvia ${hh.precipitation_probability[i]}%`; } }catch(e){}
     const def=(MODES[mode]?MODES[mode].label:'Ruta')+' '+fmtKm((route?route.length:0)/1000)+' km';
     B.innerHTML=`<div class="wz-sum"><b>${kmTxt()}</b>${wz.kmPre&&route&&route.length>wz.kmPre+50?` <small>(el desvío suma ${fmtKm((route.length-wz.kmPre)/1000)} km)</small>`:''}
-      ${wz.f?`<br>💧 ${fk.length?'Fuentes en el km '+(fk.length>1?fk.slice(0,-1).join(', ')+' y '+fk[fk.length-1]:fk[0]):'Sin fuentes en la ruta'}`:''}
-      ${wz.a&&wz.bar?`<br>🍴 Almuerzo: ${esc(wz.bar.p.name)}, km ${fmtKm(route?nearestOnRoute([wz.bar.p.lat,wz.bar.p.lon]).km:wz.bar.km)}${almWhere==='hora'?' sobre las '+almPref.hora:''}`:''}
+      ${wz.f?`<br><i class="ico ico-drop"></i>${fk.length?'Fuentes en el km '+(fk.length>1?fk.slice(0,-1).join(', ')+' y '+fk[fk.length-1]:fk[0]):'Sin fuentes en la ruta'}`:''}
+      ${wz.a&&wz.bar?`<br><i class="ico ico-fork"></i>Almuerzo: ${esc(wz.bar.p.name)}, km ${fmtKm(route?nearestOnRoute([wz.bar.p.lat,wz.bar.p.lon]).km:wz.bar.km)}${almWhere==='hora'?' sobre las '+almPref.hora:''}`:''}
       ${wx?'<br>'+wx:''}</div>
       <input class="wz-in" id="wzName" value="${esc(def)}" aria-label="Nombre de la ruta">
-      <div class="wz-row2"><button id="wzSave" class="primary">🔖 Guardar</button><button id="wzGpx">GPX</button></div>
-      <button id="wzOff" class="wz-op" style="justify-content:center">📥 Guardar para usar sin cobertura</button>
+      <div class="wz-row2"><button id="wzSave" class="primary"><i class="ico ico-bookmark"></i>Guardar</button><button id="wzGpx">GPX</button></div>
+      <button id="wzOff" class="wz-op" style="justify-content:center"><i class="ico ico-download"></i>Guardar para usar sin cobertura</button>
       ${(typeof groups!=='undefined'&&groups.length)?'<button id="wzProp" class="wz-op" style="justify-content:center">Proponer a la grupeta</button>':''}`;
     $('wzOff').onclick=()=>{ if(route) saveOffline(route.coords,$('wzName').value.trim()||def,$('wzOff')); };
     $('wzSave').onclick=()=>{ if(!route) return; const nm=$('wzName').value.trim()||def;
@@ -2865,7 +2895,7 @@ function renderStats(){
 // ================= CAPAS Y LUGARES (bares, alojamiento, salud, talleres…) =================
 let capasOpen=false, almOpen=false;
 const PCAT={
-  comer:{t:'Bar / restaurante',col:'#d9480f',pin:'bar',ic:'🍴',q:'nwr["amenity"~"^(restaurant|bar|cafe|pub|fast_food|biergarten)$"](BB);'},
+  comer:{t:'Bar / restaurante',col:'#d9480f',pin:'bar',ic:'<i class="ico ico-fork"></i>',q:'nwr["amenity"~"^(restaurant|bar|cafe|pub|fast_food|biergarten)$"](BB);'},
   dormir:{t:'Alojamiento',col:'#7048e8',pin:'cama',ic:'🛏',q:'nwr["tourism"~"^(hotel|hostel|guest_house|motel|alpine_hut|camp_site|apartment|wilderness_hut)$"](BB);'},
   salud:{t:'Hospital / urgencias',col:'#c92a2a',pin:'hosp',ic:'✚',q:'nwr["amenity"~"^(hospital|clinic)$"](BB);nwr["healthcare"~"^(hospital|centre)$"](BB);'},
   farmacia:{t:'Farmacia',col:'#2b8a3e',pin:'farm',ic:'💊',q:'nwr["amenity"="pharmacy"](BB);'},
@@ -3070,7 +3100,7 @@ function renderLunch(){
   const ul=$('almList'); ul.innerHTML='';
   lunchLayer.clearLayers();
   if(route){ const tm=almTarget(), pt=almWhere==='final'?route.coords[route.coords.length-1]:routeAt(tm);
-    L.circleMarker([pt[0],pt[1]],{radius:9,color:'#fff',weight:3,fillColor:'#d9480f',fillOpacity:1}).bindTooltip(`🍴 Almuerzo · km ${fmtKm(tm/1000)}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-8]}).addTo(lunchLayer);
+    L.circleMarker([pt[0],pt[1]],{radius:9,color:'#fff',weight:3,fillColor:'#d9480f',fillOpacity:1}).bindTooltip(`<i class="ico ico-fork"></i>Almuerzo · km ${fmtKm(tm/1000)}`,{permanent:true,direction:'top',className:'planlbl',offset:[0,-8]}).addTo(lunchLayer);
     almRes.slice(0,8).forEach(x=>L.circleMarker([x.p.lat,x.p.lon],{radius:7,color:'#fff',weight:2,fillColor:'#f08c00',fillOpacity:1}).bindTooltip(esc(x.p.name),{direction:'top'}).on('click',()=>lunchAt(x.p,almWhere==='final')).addTo(lunchLayer)); }
   $('almNote').textContent=almRes.length?(almWhere==='final'?'Bares cerca del final de tu ruta. Los que tienen tu nota salen primero. También están en el mapa.':`Bares cerca del km ${fmtKm(almTarget()/1000)}. Los que tienen tu nota salen primero. También están en el mapa.`):'No hay bares registrados cerca de ese punto.';
   almRes.forEach(x=>{ const o=opin[x.p.id], li=document.createElement('li'); li.className='fli';
@@ -3350,13 +3380,13 @@ async function saveOffline(coords,name,btn){
   tiles.forEach(k=>{ const [z,x,y]=k.split('/'); urls.push(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`); if(+z<=14) urls.push(omt.replace('{z}',z).replace('{x}',x).replace('{y}',y)); });
   ['Noto Sans Regular','Noto Sans Bold','Noto Sans Italic'].forEach(f=>['0-255','256-511','8192-8447'].forEach(r=>urls.push(`https://tiles.openfreemap.org/fonts/${encodeURIComponent(f)}/${r}.pbf`)));
   const cache=await caches.open('ichnos-tiles'); let done=0, bad=0; const total=urls.length, lab=btn?btn.textContent:'';
-  const show=()=>{ const t=`📥 Guardando… ${Math.round(done/total*100)} %`; if(btn) btn.textContent=t; };
+  const show=()=>{ const t=`Guardando… ${Math.round(done/total*100)} %`; if(btn) btn.textContent=t; };
   const q=urls.slice(); await Promise.all([...Array(6)].map(async()=>{ while(q.length){ const u=q.shift(); try{ if(!(await cache.match(u))){ const r=await fetch(u,{mode:'cors'}); if(r.ok) await cache.put(u,r); else bad++; } }catch(e){ bad++; } done++; if(done%10===0) show(); } }));
   // trialeras y fuentes de la zona también quedan guardadas
   try{ const k14=new Set(pts.map(p=>tz(p[0],p[1],14).join('/'))); for(const k of k14){ const [x,y]=k.split('/').map(Number); await tileTrails(x,y); await tileNames(x,y); } }catch(e){}
   try{ const B=L.latLngBounds(c); await fuentesFile(B.getSouth()-.05,B.getWest()-.05,B.getNorth()+.05,B.getEast()+.05); }catch(e){}
   const mb=Math.round(total*0.025);
-  if(btn){ btn.textContent='✓ Guardada sin cobertura'; }
+  if(btn){ btn.innerHTML='<i class="ico ico-download"></i>Guardada sin cobertura ✓'; }
   toast(bad>total*0.2?'Se ha guardado solo una parte: vuelve a pulsar con mejor conexión.':`Listo: "${name||'la ruta'}" se puede ver sin cobertura (unos ${mb} MB).`,5000); }
 async function fuentesFile(s,w,n,e){
   const idx=await fuentesIdx(); if(!idx.t||!idx.t.length) throw new Error('sin archivo');
@@ -4582,7 +4612,7 @@ function renderRideList(){
     const st=rideStats(r), sh=shapeSvg(r.coords,64,64), li=document.createElement('li');
     li.innerHTML=`<svg viewBox="0 0 64 64" class="rthumb"><path d="${sh.d}" fill="none" stroke="#1E2328" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="${sh.d}" fill="none" stroke="#B6E22E" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
       <span><b>${esc(r.name)}</b><small>${modPill(r.tipo)}${fmtD(r.date)}${r.bike?' · '+esc(bikeName(bikeById(r.bike))):''}</small>
-      <small class="rnums"><i>${fmtKm(st.km)} km</i><i>${fmtH(st.moving)}</i>${st.up!=null?`<i>+${n0(st.up)} m</i>`:''}${st.hr?`<i>♥ ${Math.round(st.hr)}</i>`:''}${(r.fotos||[]).length+(r.sfotos||[]).length?`<i class="ph">📷 ${(r.fotos||[]).length+(r.sfotos||[]).length}</i>`:''}${(()=>{ const so=me?socOf(me.id,r.id):{l:[],c:[]}, nc=(r.notas||[]).length+so.c.length; return (so.l.length?`<i class="lk">👍 ${so.l.length}</i>`:'')+(nc?`<i class="ph">💬 ${nc}</i>`:''); })()}</small></span>${mainPhoto(r)?`<img class="rphoto" src="${esc(mainPhoto(r))}" alt="" loading="lazy">`:''}`;
+      <small class="rnums"><i>${fmtKm(st.km)} km</i><i>${fmtH(st.moving)}</i>${st.up!=null?`<i>+${n0(st.up)} m</i>`:''}${st.hr?`<i><i class="ico ico-heart"></i>${Math.round(st.hr)}</i>`:''}${(r.fotos||[]).length+(r.sfotos||[]).length?`<i class="ph"><i class="ico ico-camera"></i>${(r.fotos||[]).length+(r.sfotos||[]).length}</i>`:''}${(()=>{ const so=me?socOf(me.id,r.id):{l:[],c:[]}, nc=(r.notas||[]).length+so.c.length; return (so.l.length?`<i class="lk"><i class="ico ico-thumb"></i>${so.l.length}</i>`:'')+(nc?`<i class="ph"><i class="ico ico-chat"></i>${nc}</i>`:''); })()}</small></span>${mainPhoto(r)?`<img class="rphoto" src="${esc(mainPhoto(r))}" alt="" loading="lazy">`:''}`;
     li.onclick=()=>openRide(r);
     ul.appendChild(li);
   });
@@ -4710,15 +4740,15 @@ function openRide(r){
     if(S&&x.t!=null){ const loc=(x.all||[]).slice().sort((p,q)=>p-q); const i=loc.indexOf(x.t); if(i>=0) loc.splice(i,1);
       if(x.svpr===1||(x.svpr===undefined&&x.t<=S.pr)){ const prev=S.n>1&&loc.length>=S.n-1&&loc[0]>=x.t?loc[0]:null;   // "antes" solo si conocemos todas tus veces
         return {pr:true,sub:`<span class="gold">¡mejor marca!</span>${prev!=null?` <span class="silver">antes ${fmtT(prev)}</span>`:S.n<=1?' <span class="silver">primera vez</span>':''}`}; }
-      return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold">🏆 ${fmtT(S.pr)}</span>`}; }
+      return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold"><i class="ico ico-trophy"></i>${fmtT(S.pr)}</span>`}; }
     if(x.sid&&x.t!=null&&x.svpr===1) return {pr:true,sub:'<span class="gold">¡mejor marca!</span>'};
     if(x.t==null||!x.all||!x.all.length) return {pr:false,sub:''}; const rest=[...x.all].sort((p,q)=>p-q), i=rest.indexOf(x.t); if(i>=0) rest.splice(i,1);
     if(!rest.length) return {pr:false,sub:'primera vez'};
     if(x.t<=rest[0]) return {pr:true,sub:`<span class="gold">¡mejor marca!</span> <span class="silver">antes ${fmtT(rest[0])}</span>`};
-    return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold">🏆 ${fmtT(rest[0])}</span>`}; };
+    return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold"><i class="ico ico-trophy"></i>${fmtT(rest[0])}</span>`}; };
   let rvList=[], svOpen=false;
   const row=(x,i)=>{ const bb=best(x);
-    return `<li data-i="${i}"><span><b>${esc(niceName(x.name)||x.name)}</b><small>${x.dir||''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'🏆 ':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; };
+    return `<li data-i="${i}"><span><b>${esc(niceName(x.name)||x.name)}</b><small>${x.dir||''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'<i class="ico ico-trophy"></i>':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; };
   const segHtml=list=>{ rvList=list.slice().sort((x,y)=>(x.a??1e9)-(y.a??1e9));
     return rvList.length?`<div class="ch-t">Trialeras y segmentos</div><ul class="routes">${rvList.map(row).join('')}</ul>`:''; };
   const reRender=()=>{ $('rvSegs').innerHTML=segHtml(rvList); };
@@ -5112,7 +5142,7 @@ function shrinkPhoto(file){ return new Promise(res=>{ const im=new Image(); im.o
 $('bugBtn').onclick=async()=>{
   $('mText').textContent='';
   const box=document.createElement('div'); box.className='bugf';
-  box.innerHTML=`<textarea id="bugTxt" rows="4" placeholder="Por ejemplo: en la salida de hoy el tiempo en movimiento no es el de Strava"></textarea><label class="btn" style="display:inline-block;margin-top:8px">📷 Añadir una captura<input type="file" accept="image/*" id="bugFile" hidden></label> <small id="bugFn"></small>`;
+  box.innerHTML=`<textarea id="bugTxt" rows="4" placeholder="Por ejemplo: en la salida de hoy el tiempo en movimiento no es el de Strava"></textarea><label class="btn" style="display:inline-block;margin-top:8px"><i class="ico ico-camera"></i>Añadir una captura<input type="file" accept="image/*" id="bugFile" hidden></label> <small id="bugFn"></small>`;
   $('mText').appendChild(box); let foto=null;
   $('bugFile').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; $('bugFn').textContent='Preparando…'; foto=await shrinkPhoto(f); $('bugFn').textContent=foto?'Captura añadida':'No he podido leerla'; };
   const ok=await ask('¿Qué ha pasado?','','Enviar','Cancelar',true);
@@ -5121,7 +5151,7 @@ $('bugBtn').onclick=async()=>{
   toast(await sendBug(txt.trim(),foto,false)?'Enviado. Gracias: lo miraremos.':'No hay conexión ahora. Prueba en un rato.',4000); };
 $('bugList').onclick=()=>openBugs();
 async function openBugs(){ let L=[]; try{ L=await api('/fallos')||[]; }catch(e){ toast('No hay conexión ahora.',3000); return; }
-  $('mText').innerHTML=L.length?L.map(b=>`<div class="bugi"><b>${esc(uName(b.u))}</b> · ${fmtDT(b.t)}${b.auto?' · automático':''}<br>${esc(b.txt||'(sin texto)')}${b.foto?'<br><small>📷 con captura</small>':''}<br><small>Versión ${esc((b.info&&b.info.v)||'?')} · ${esc((b.info&&b.info.pag)||'')}${b.info&&b.info.errores&&b.info.errores.length?' · '+b.info.errores.length+' errores':''}</small></div>`).join(''):'No hay avisos de fallos.';
+  $('mText').innerHTML=L.length?L.map(b=>`<div class="bugi"><b>${esc(uName(b.u))}</b> · ${fmtDT(b.t)}${b.auto?' · automático':''}<br>${esc(b.txt||'(sin texto)')}${b.foto?'<br><small><i class="ico ico-camera"></i>con captura</small>':''}<br><small>Versión ${esc((b.info&&b.info.v)||'?')} · ${esc((b.info&&b.info.pag)||'')}${b.info&&b.info.errores&&b.info.errores.length?' · '+b.info.errores.length+' errores':''}</small></div>`).join(''):'No hay avisos de fallos.';
   await ask('Avisos de fallos','','Vale',null,true); }
 // autocomprobación: tus números contra los de Strava. Si algo no cuadra, se arregla y avisa al administrador
 async function selfTest(opts={}){
@@ -5139,7 +5169,7 @@ async function selfTest(opts={}){
   if(opts.ficha){ // la lista de la ficha: cada segmento de Strava con el tiempo exacto de Strava
     for(const r of rides.filter(x=>x.sef&&x.sef.length).sort((a,b)=>b.date-a.date).slice(0,opts.ficha)){
       const show=rides.find(x=>x._tw===r)||r; openRide(show); await new Promise(z=>setTimeout(z,5000));
-      const lis=[...document.querySelectorAll('#rvSegs li')].map(li=>[li.querySelector('b').textContent.trim(),li.querySelector('em').textContent.replace('🏆','').trim()]);
+      const lis=[...document.querySelectorAll('#rvSegs li')].map(li=>[li.querySelector('b').textContent.trim(),li.querySelector('em').textContent.trim()]);
       const cnt={}; r.sef.slice().sort((x,y)=>(x.o??1e9)-(y.o??1e9)).forEach(e=>{ const sg=ssegs[e.sid]; if(!sg) return; cnt[e.sid]=(cnt[e.sid]||0)+1; const veces=r.sef.filter(x=>x.sid===e.sid).length;
         const nm=String(sg.name||'').trim()+(veces>1?` (${cnt[e.sid]}.ª vez)`:''), hit=lis.find(x=>x[0]===nm);
         if(hit&&hit[1]!==fmtT(e.t)){ out.ok=false; out.mal.push({id:r.id,nombre:r.name,bad:[`${nm}: ${hit[1]} en vez de ${fmtT(e.t)}`]}); } });
@@ -5371,6 +5401,9 @@ const WxCtl=L.Control.extend({onAdd(){
   return div;
 }});
 new WxCtl({position:'topright'}).addTo(map);
+(function(){ const tr=document.querySelector('.leaflet-top.leaflet-right'); if(!tr) return; const g=document.createElement('div'); g.className='leaflet-control mapgrp';
+  const parts=[tr.querySelector('.leaflet-control-layers'),...tr.querySelectorAll('.capas-ctl')].filter(Boolean); tr.insertBefore(g,tr.firstChild); parts.forEach(p=>g.appendChild(p));
+  const wx=$('wx'), sb=document.querySelector('.search'); if(wx&&sb){ sb.appendChild(wx); wx.classList.add('in-search'); } })();
 function hourOptions(){
   const now=new Date(), opts=[];
   for(let h=0;h<=8;h++){const d=new Date(now.getTime()+h*3600e3);opts.push([isoHour(d),h===0?'Ahora':`A las ${d.getHours()}:00`]);}
@@ -5733,7 +5766,7 @@ function sumLi(x,uid,who){
   const pic=x.ph?`<img class="rphoto" src="${esc(x.ph)}" alt="" loading="lazy">`:'';
   const lead=who?`<div class="av">${initial(uName(uid))}</div>`:`<div class="rthumb ic">${isFoot(x.tp)?FOOT_SVG:CYC_SVG}</div>`;
   return `${lead}<span>${who?`<small class="who"><b>${esc(uName(uid))}</b> · ${fmtD(x.d)}</small>`:''}<b>${esc(x.n)}</b>${who?'':`<small>${modPill(x.tp)}${fmtD(x.d)}${x.bk?' · '+esc(x.bk):''}</small>`}
-    <small class="rnums"><i>${fmtKm(x.km)} km</i>${x.s?`<i>${fmtH(x.s)}</i>`:''}${x.up!=null?`<i>+${n0(x.up)} m</i>`:''}${x.nf?`<i class="ph">📷 ${x.nf}</i>`:''}${lk?`<i class="lk">👍 ${lk}</i>`:''}${nc?`<i class="ph">💬 ${nc}</i>`:''}</small></span>${pic}`;
+    <small class="rnums"><i>${fmtKm(x.km)} km</i>${x.s?`<i>${fmtH(x.s)}</i>`:''}${x.up!=null?`<i>+${n0(x.up)} m</i>`:''}${x.nf?`<i class="ph"><i class="ico ico-camera"></i>${x.nf}</i>`:''}${lk?`<i class="lk"><i class="ico ico-thumb"></i>${lk}</i>`:''}${nc?`<i class="ph"><i class="ico ico-chat"></i>${nc}</i>`:''}</small></span>${pic}`;
 }
 function paintFollowBtn(id){ const o=fw.out[id], b=$('frFollow');
   b.textContent=o==='ok'?'Siguiendo':o==='pend'?'Pendiente':'Seguir'; b.className='btn'+(o?'':' primary');
@@ -5810,7 +5843,7 @@ function avText(a){ const w=`<b>${esc(uName(a.u))}</b>`, rn=a.n?` «${esc(a.n)}�
   return {seg:`${w} quiere seguirte.`,acep:`${w} ha aceptado que le sigas. Ya ves sus salidas.`,alta:`${w} se ha unido a Ichnos con tu invitación.`,
     like:`A ${w} le gusta tu salida${rn}.`,com:`${w} ha comentado en tu salida${rn}: “${esc(a.x||'')}”`,
     gjoin:`${w} se ha unido a tu grupeta «${esc(a.x||'')}».`,gsal:`${w} propone una salida en «${esc(a.n||'tu grupeta')}»: ${esc(a.x||'')}.`,gvoy:`${w} se apunta a tu salida «${esc(a.x||'')}».`,
-    prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,bug:`⚠️ ${w} dice que algo va mal: “${esc(a.x||'')}”`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
+    prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,bug:`<i class="ico ico-alert"></i>${w} dice que algo va mal: “${esc(a.x||'')}”`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
 $('bell').onclick=()=>{
   const seen=store.get('ichnos-avisto',0);
   $('avList').innerHTML=avisos.length?avisos.map((a,i)=>`<li data-i="${i}" class="${a.t>seen?'new':''}">${avText(a)}<small>${fmtDT(a.t)}</small></li>`).join(''):'<p class="svp">No tienes avisos.</p>';
