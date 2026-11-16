@@ -272,7 +272,7 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
-.mpill{display:inline-block;font-size:11px;font-weight:700;line-height:1.5;padding:0 8px;border-radius:999px;margin-right:6px;vertical-align:1px;font-style:normal}
+.mpill{display:inline-block!important;width:auto!important;flex:none!important;font-size:11px;font-weight:700;line-height:1.5;padding:0 8px;border-radius:999px;margin-right:6px;vertical-align:1px;font-style:normal}
 .mpill.btt{background:#e8f7d0;color:#3b6a00}.mpill.road{background:#dfeefe;color:#0c447c}.mpill.grav{background:#f6ead6;color:#7a4b06}.mpill.ebk{background:#d9f3ee;color:#0f5c4f}
 .mpill.run{background:#ffe3d6;color:#8a3412}.mpill.trl{background:#efe2fb;color:#5a2d8a}.mpill.hike{background:#e6eedb;color:#3d5a1e}.mpill.walk{background:#ececec;color:#444}
 .icu-steps{display:flex;flex-direction:column;gap:8px;margin:8px 0}
@@ -4955,7 +4955,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794807727';
+const BUILD='1794807859';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5486,7 +5486,7 @@ const FOOT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 const CYC_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="4.3"/><circle cx="18.5" cy="17" r="4.3"/><path d="M5.5 17 10 10.2h6.8L18.5 17M10 10.2 12.6 17 16.8 10.2M12.6 17H5.5M8.3 8.4h3.4"/></svg>';
 // etiqueta de color con la modalidad (BTT, Carretera, Gravel, E-bike, Running, Trail, Senderismo, Caminar)
 const MOD_LBL={mtb:['BTT','btt'],road:['Carretera','road'],gravel:['Gravel','grav'],ebike:['E-bike','ebk'],run:['Running','run'],trail:['Trail','trl'],hike:['Senderismo','hike'],walk:['Caminar','walk']};
-const modPill=t=>{ const m=MOD_LBL[t]; return m?`<span class="mpill ${m[1]}">${m[0]}</span>`:''; };
+const modPill=t=>{ const m=MOD_LBL[t]; return m?`<em class="mpill ${m[1]}">${m[0]}</em>`:''; };
 function sumLi(x,uid,who){
   const soc=socOf(uid,x.id), nc=(x.nc||0)+soc.c.length, lk=soc.l.length;
   const pic=x.ph?`<img class="rphoto" src="${esc(x.ph)}" alt="" loading="lazy">`:'';
