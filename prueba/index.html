@@ -272,6 +272,9 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+.mpill{display:inline-block;font-size:11px;font-weight:700;line-height:1.5;padding:0 8px;border-radius:999px;margin-right:6px;vertical-align:1px;font-style:normal}
+.mpill.btt{background:#e8f7d0;color:#3b6a00}.mpill.road{background:#dfeefe;color:#0c447c}.mpill.grav{background:#f6ead6;color:#7a4b06}.mpill.ebk{background:#d9f3ee;color:#0f5c4f}
+.mpill.run{background:#ffe3d6;color:#8a3412}.mpill.trl{background:#efe2fb;color:#5a2d8a}.mpill.hike{background:#e6eedb;color:#3d5a1e}.mpill.walk{background:#ececec;color:#444}
 .icu-steps{display:flex;flex-direction:column;gap:8px;margin:8px 0}
 .icu-st{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(128,128,128,.25);border-radius:12px}
 .icu-st>i{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;background:#eceff1;color:#1E2328}
@@ -4404,7 +4407,7 @@ function renderRideList(){
   list.slice(0,shown).forEach(r=>{
     const st=rideStats(r), sh=shapeSvg(r.coords,64,64), li=document.createElement('li');
     li.innerHTML=`<svg viewBox="0 0 64 64" class="rthumb"><path d="${sh.d}" fill="none" stroke="#1E2328" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="${sh.d}" fill="none" stroke="#B6E22E" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
-      <span><b>${esc(r.name)}</b><small>${fmtD(r.date)}${r.bike?' · '+esc(bikeName(bikeById(r.bike))):''}</small>
+      <span><b>${esc(r.name)}</b><small>${modPill(r.tipo)}${fmtD(r.date)}${r.bike?' · '+esc(bikeName(bikeById(r.bike))):''}</small>
       <small class="rnums"><i>${fmtKm(st.km)} km</i><i>${fmtH(st.moving)}</i>${st.up!=null?`<i>+${n0(st.up)} m</i>`:''}${st.hr?`<i>♥ ${Math.round(st.hr)}</i>`:''}${(r.fotos||[]).length+(r.sfotos||[]).length?`<i class="ph">📷 ${(r.fotos||[]).length+(r.sfotos||[]).length}</i>`:''}${(()=>{ const so=me?socOf(me.id,r.id):{l:[],c:[]}, nc=(r.notas||[]).length+so.c.length; return (so.l.length?`<i class="lk">👍 ${so.l.length}</i>`:'')+(nc?`<i class="ph">💬 ${nc}</i>`:''); })()}</small></span>${mainPhoto(r)?`<img class="rphoto" src="${esc(mainPhoto(r))}" alt="" loading="lazy">`:''}`;
     li.onclick=()=>openRide(r);
     ul.appendChild(li);
@@ -4448,8 +4451,7 @@ function groupSegs(list){
 }
 function openRide(r){
   rideOpen=r; const st=rideStats(r), c=r.coords, fr=r._fr;
-  $('rvName').textContent=r.name; $('rvDate').textContent=[fr?fr.name:'',fmtD(r.date),fr?r.bk:'',r.source].filter(Boolean).join(' · ');
-  if(/garmin/i.test(r.source||'')) $('rvDate').textContent+=' · Datos de Garmin';   // Garmin pide que se diga
+  $('rvName').textContent=r.name; $('rvDate').innerHTML=modPill(r.tipo)+esc([fr?fr.name:'',fmtD(r.date),fr?r.bk:'',r.source].filter(Boolean).join(' · ')+(/garmin/i.test(r.source||'')?' · Datos de Garmin':''));   // Garmin pide que se diga   // Garmin pide que se diga
   $('rvBikeL').hidden=!!fr; $('rvPhAdd').hidden=!!fr; document.querySelector('.rvdel').hidden=!!fr;
   const sm=/^strava-(\d+)$/.exec(r.id||''); $('rvStrava').hidden=!sm; if(sm) $('rvStrava').href='https://www.strava.com/activities/'+sm[1];
   $('rvNoteTxt').placeholder=fr?`Escribe algo a ${fr.name}…`:'¿Qué tal la salida? Bares, fuentes, cómo estaba el camino…';
@@ -4953,7 +4955,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794778160';
+const BUILD='1794807727';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5482,11 +5484,14 @@ $('usQ').oninput=renderUsers; $('usClose').onclick=()=>$('usModal').hidden=true;
 let frCur=null, frRes=[], frShown=20;
 const FOOT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4" r="2.2" fill="currentColor"/><path d="M13 7.6 9.8 13.2l3.6 2.6-1.3 5.4M9.8 13.2l-4.3 2.4M13 7.6l3.3 3.4 3.4-.8M13 7.6l-4.3.9-2.2 3.2"/></svg>';
 const CYC_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="4.3"/><circle cx="18.5" cy="17" r="4.3"/><path d="M5.5 17 10 10.2h6.8L18.5 17M10 10.2 12.6 17 16.8 10.2M12.6 17H5.5M8.3 8.4h3.4"/></svg>';
+// etiqueta de color con la modalidad (BTT, Carretera, Gravel, E-bike, Running, Trail, Senderismo, Caminar)
+const MOD_LBL={mtb:['BTT','btt'],road:['Carretera','road'],gravel:['Gravel','grav'],ebike:['E-bike','ebk'],run:['Running','run'],trail:['Trail','trl'],hike:['Senderismo','hike'],walk:['Caminar','walk']};
+const modPill=t=>{ const m=MOD_LBL[t]; return m?`<span class="mpill ${m[1]}">${m[0]}</span>`:''; };
 function sumLi(x,uid,who){
   const soc=socOf(uid,x.id), nc=(x.nc||0)+soc.c.length, lk=soc.l.length;
   const pic=x.ph?`<img class="rphoto" src="${esc(x.ph)}" alt="" loading="lazy">`:'';
   const lead=who?`<div class="av">${initial(uName(uid))}</div>`:`<div class="rthumb ic">${isFoot(x.tp)?FOOT_SVG:CYC_SVG}</div>`;
-  return `${lead}<span>${who?`<small class="who"><b>${esc(uName(uid))}</b> · ${fmtD(x.d)}</small>`:''}<b>${esc(x.n)}</b>${who?'':`<small>${fmtD(x.d)}${x.bk?' · '+esc(x.bk):''}</small>`}
+  return `${lead}<span>${who?`<small class="who"><b>${esc(uName(uid))}</b> · ${fmtD(x.d)}</small>`:''}<b>${esc(x.n)}</b>${who?'':`<small>${modPill(x.tp)}${fmtD(x.d)}${x.bk?' · '+esc(x.bk):''}</small>`}
     <small class="rnums"><i>${fmtKm(x.km)} km</i>${x.s?`<i>${fmtH(x.s)}</i>`:''}${x.up!=null?`<i>+${n0(x.up)} m</i>`:''}${x.nf?`<i class="ph">📷 ${x.nf}</i>`:''}${lk?`<i class="lk">👍 ${lk}</i>`:''}${nc?`<i class="ph">💬 ${nc}</i>`:''}</small></span>${pic}`;
 }
 function paintFollowBtn(id){ const o=fw.out[id], b=$('frFollow');
