@@ -4982,7 +4982,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794857304';
+const BUILD='1794857517';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
@@ -5305,7 +5305,15 @@ function gMigrate(){   // una vez: lo que ya tenías pasa al mapa de todos
   syncRaw.set('ichnos-gmig',me.id); if(ops.length) gPush(ops);
 }
 async function gLoad(){ if(!me) return; gApply(); gMigrate(); await gFlush(); try{ gSet(await api('/g')); }catch(e){} }
-function gSet(d){ if(!d) return; gData={l:d.l||{},f:d.f||{},t:d.t||{},c:d.c||{}}; syncRaw.set('ichnos-g',gData); gApply(); }
+function gSet(d){ if(!d) return; gData={l:d.l||{},f:d.f||{},t:d.t||{},c:d.c||{}}; syncRaw.set('ichnos-g',gData); gApply();
+  if(me&&me.admin&&Object.keys(gData.c).length&&!regMigrate._run) setTimeout(regMigrate,3000); }
+// si llega un color del sistema viejo (una app sin actualizar), se pasa solo a la lista única
+async function regMigrate(){ if(regMigrate._run) return; regMigrate._run=1;
+  try{ const items=Object.entries(gData.c||{}).sort((a,b)=>(a[1].t||0)-(b[1].t||0));
+    for(const [k,o] of items){ if(!o.coords||o.coords.length<2) continue; const co=await snapToMap(o.coords.map(p=>[p[0],p[1]]));
+      for(let i=0;i<4;i++){ try{ const d=await api('/g',{method:'POST',body:{ops:[{k:'trial',id:'r'+k.slice(1),name:o.name||'',lv:o.lv,coords:co},{k:'color-',id:k}]}}); gData={l:d.l||{},f:d.f||{},t:d.t||{},c:d.c||{}}; break; }catch(e){ await new Promise(r=>setTimeout(r,2500)); } }
+      await new Promise(r=>setTimeout(r,1600)); }
+    syncRaw.set('ichnos-g',gData); gApply(); }catch(e){ console.warn(e); } regMigrate._run=0; }
 function gApply(){
   Object.entries(gData.l).forEach(([id,p])=>{ if(p.m&&p.m.add&&!isMe(p.m.by)&&!(opin[id]&&opin[id].mine)) pStore.set(id,{id,lat:p.m.lat,lon:p.m.lon,cat:p.m.cat,tags:{},name:p.m.name,shared:p.m.by}); });
   pStore.forEach((p,id)=>{ if(p.shared&&!(gData.l[id]&&gData.l[id].m&&gData.l[id].m.add)) pStore.delete(id); });
