@@ -510,7 +510,7 @@ async function mates(KV, a, b) {   // ¿están los dos en alguna grupeta?
 }
 // ---------- mapa compartido ----------
 const MOD_OPS = ['sitio', 'sitio-', 'oculto', 'fuente', 'fuente-', 'color', 'color-', 'trial', 'trial-'];
-const MIN_BUILD = 0;   // versiones de la app más viejas no pueden cambiar el mapa de todos
+const MIN_BUILD = 1794859010;   // versiones de la app más viejas no pueden cambiar el mapa de todos
 // ---- Lo compartido de la grupeta, de uno en uno ----
 export class GStore {
   constructor(state, env) {
