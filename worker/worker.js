@@ -575,7 +575,14 @@ function applyOp(G, o, by, admin) {
     if (c.length >= 2 && (!T[id] || T[id].by === by || admin)) { T[id] = { name: String(o.name || '').slice(0, 80), coords: c, by, t: now }; G._ch.t = 1; }
   } else if (o.k === 'trial') {   // trialera de la grupeta: nombre, dificultad y recorrido
     const c = line(o.coords);
-    if (c.length >= 2 && (!T[id] || T[id].by === by || admin)) { const old = T[id] || {}; T[id] = { kind: 'trial', name: String(o.name || '').slice(0, 80), lv: Math.max(0, Math.min(4, +o.lv || 0)), coords: c, by: old.by || by, t: now, tm: old.tm || {} }; G._ch.t = 1; }
+    if (c.length >= 2 && (!T[id] || T[id].by === by || admin)) { const old = T[id] || {}; T[id] = { kind: 'trial', name: String(o.name || '').slice(0, 80), lv: Math.max(0, Math.min(4, +o.lv || 0)), coords: c, by: old.by || by, t: now, tm: old.tm || {}, est: old.est, com: old.com }; G._ch.t = 1; }
+  } else if (o.k === 'estado') {   // cómo está la trialera hoy (lo puede decir cualquiera de la grupeta)
+    if (T[id] && T[id].kind === 'trial' && ['perfecta', 'barro', 'arbol', 'limpia'].includes(o.e)) { T[id].est = { e: o.e, by, t: now }; G._ch.t = 1; }
+  } else if (o.k === 'tcom') {     // comentario en la ficha de la trialera
+    const txt = String(o.txt || '').trim().slice(0, 300);
+    if (T[id] && T[id].kind === 'trial' && txt) { T[id].com = (T[id].com || []).concat([{ by, t: now, txt }]).slice(-30); G._ch.t = 1; }
+  } else if (o.k === 'tcom-') {
+    if (T[id] && T[id].com) { const n = T[id].com.length; T[id].com = T[id].com.filter(c => !(c.t === +o.ct && (c.by === by || admin))); if (T[id].com.length !== n) G._ch.t = 1; }
   } else if (o.k === 'trial-') {
     if (T[id] && T[id].kind === 'trial' && (T[id].by === by || admin)) { delete T[id]; G._ch.t = 1; }
   } else if (o.k === 'ttime') {   // tu mejor tiempo en una trialera de la grupeta (solo de salidas del GPS, no de Strava)
