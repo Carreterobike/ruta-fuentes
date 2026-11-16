@@ -1243,7 +1243,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794862243';   // versión de la app (la pone build.py)
+const BUILD='1794862483';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -5726,7 +5726,7 @@ let frCur=null, frRes=[], frShown=20;
 const FOOT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4" r="2.2" fill="currentColor"/><path d="M13 7.6 9.8 13.2l3.6 2.6-1.3 5.4M9.8 13.2l-4.3 2.4M13 7.6l3.3 3.4 3.4-.8M13 7.6l-4.3.9-2.2 3.2"/></svg>';
 const CYC_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17" r="4.3"/><circle cx="18.5" cy="17" r="4.3"/><path d="M5.5 17 10 10.2h6.8L18.5 17M10 10.2 12.6 17 16.8 10.2M12.6 17H5.5M8.3 8.4h3.4"/></svg>';
 // etiqueta de color con la modalidad (BTT, Carretera, Gravel, E-bike, Running, Trail, Senderismo, Caminar)
-const MOD_LBL={mtb:['BTT','btt'],road:['Carretera','road'],gravel:['Gravel','grav'],ebike:['E-bike','ebk'],run:['Running','run'],trail:['Trail','trl'],hike:['Senderismo','hike'],walk:['Caminar','walk']};
+const MOD_LBL={mtb:['BTT','btt'],road:['Carretera','road'],gravel:['Gravel','grav'],ebike:['E-bike','ebk'],run:['Correr','run'],trail:['Trail','trl'],hike:['Senderismo','hike'],walk:['Caminar','walk']};
 const modPill=t=>{ const m=MOD_LBL[t]; return m?`<em class="mpill ${m[1]}">${m[0]}</em>`:''; };
 function sumLi(x,uid,who){
   const soc=socOf(uid,x.id), nc=(x.nc||0)+soc.c.length, lk=soc.l.length;
