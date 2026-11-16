@@ -166,6 +166,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .capas-ctl button.on{background:var(--ink);color:var(--bg)}
 .capas-ctl b{position:absolute;top:-5px;right:-5px;background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:11px;padding:0 6px;line-height:18px}
 .capas-ctl b:empty{display:none}
+#map3d{position:absolute;inset:0;z-index:750;background:#9cc3e6}#map3d[hidden]{display:none}
+#map3d .maplibregl-ctrl-bottom-left{bottom:150px;left:6px}
 .lbar button.capas svg{width:17px;height:17px}
 .lbar button.capas b{background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:12px;padding:0 7px;min-width:20px}
 .lbar button.capas b:empty{display:none}
@@ -1211,7 +1213,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794860490';   // versión de la app (la pone build.py)
+const BUILD='1794860701';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1674,6 +1676,35 @@ const CapasCtl=L.Control.extend({onAdd(){ const d=L.DomUtil.create('div','capas-
   d.innerHTML='<button id="capasBtn" aria-label="Mostrar: qué ver en el mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.4-6-10a6 6 0 0 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg><span>Mostrar</span><b id="capasN"></b></button>';
   L.DomEvent.disableClickPropagation(d); return d; }});
 new CapasCtl({position:'topright'}).addTo(map);
+// ===== 3D, como Google Maps: el mismo mapa inclinado, con el relieve de verdad =====
+const D3Ctl=L.Control.extend({onAdd(){ const d=L.DomUtil.create('div','capas-ctl'); d.innerHTML='<button id="b3d" aria-label="Ver el mapa en 3D"><b style="position:static;background:none;color:inherit;font:800 17px var(--display,system-ui);padding:0">3D</b></button>';
+  L.DomEvent.disableClickPropagation(d); d.querySelector('button').onclick=()=>toggle3D(); return d; }});
+new D3Ctl({position:'topright'}).addTo(map);
+let map3d=null;
+function ov3dData(){ const F=[]; const ln=(c,col,name,w)=>{ if(c&&c.length>1) F.push({type:'Feature',properties:{col,name:niceName(name||''),w},geometry:{type:'LineString',coordinates:c.map(p=>[p[1],p[0]])}}); };
+  if(T.trialeras) Object.values(gData.t||{}).forEach(tr=>{ if(tr.kind==='trial') ln(tr.coords,(LEVELS[tr.lv]||LEVELS[2]).color,tr.name,6); });
+  if(route&&route.coords) ln(route.coords,'#B6E22E','',6);
+  if(rideOnMap&&rideOnMap.coords) ln(privacyTrim(rideOnMap.coords),'#B6E22E','',5);
+  return {type:'FeatureCollection',features:F}; }
+function toggle3D(){ const host=$('map'), btn=$('b3d');
+  if(map3d){ const c=map3d.getCenter(), z=map3d.getZoom(); try{ map3d.remove(); }catch(e){} map3d=null; $('map3d').hidden=true; btn.classList.remove('on'); btn.querySelector('b').textContent='3D';
+    map.setView([c.lat,c.lng],Math.round(z+1),{animate:false}); return; }
+  if(!glReady){ toast('Espera a que cargue el mapa.'); return; }
+  let d=$('map3d'); if(!d){ d=document.createElement('div'); d.id='map3d'; host.appendChild(d);
+    ['pointerdown','mousedown','touchstart','touchmove','wheel','dblclick','click','contextmenu'].forEach(ev=>d.addEventListener(ev,e=>e.stopPropagation(),{passive:true})); }
+  d.hidden=false; btn.classList.add('on'); btn.querySelector('b').textContent='2D';
+  const st=JSON.parse(JSON.stringify(glMap.getStyle()));
+  st.sources.dem={type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:14};
+  st.terrain={source:'dem',exaggeration:1.4};
+  const iSat=st.layers.findIndex(l=>l.id==='sat'); st.layers.splice(iSat+1,0,{id:'hs3d',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':0.3,'hillshade-shadow-color':'#1a2416'}});
+  st.sources.ov3d={type:'geojson',data:ov3dData()};
+  st.layers.push({id:'ov3d-c',type:'line',source:'ov3d',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#ffffff','line-width':['+',['get','w'],3]}});
+  st.layers.push({id:'ov3d',type:'line',source:'ov3d',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':['get','col'],'line-width':['get','w']}});
+  st.layers.push({id:'ov3d-n',type:'symbol',source:'ov3d',layout:{'symbol-placement':'line','text-field':['get','name'],'text-font':F_BOLD,'text-size':14,'symbol-spacing':220},paint:{'text-color':'#ffffff','text-halo-color':'#111','text-halo-width':2}});
+  map3d=new maplibregl.Map({container:d,style:st,center:glMap.getCenter(),zoom:glMap.getZoom(),pitch:0,bearing:0,maxPitch:70,attributionControl:false});
+  map3d.addControl(new maplibregl.NavigationControl({visualizePitch:true,showZoom:false}),'bottom-left');
+  map3d.once('load',()=>map3d.easeTo({pitch:62,bearing:-20,duration:1400}));
+  toast('Con dos dedos: inclinar y girar.',3500); }
 if(store.get('ichnos-mapaper',false)) hLayer.addTo(map);
 map.on('overlayadd',e=>{ if(e.layer===hLayer){ store.set('ichnos-mapaper',true); drawHeat(); if(!rides.length) toast('Todavía no tienes salidas. Tráelas o grábalas en la página Salidas.',4500); } });
 map.on('overlayremove',e=>{ if(e.layer===hLayer) store.set('ichnos-mapaper',false); });
@@ -4520,7 +4551,7 @@ function openRide(r){
   // números
   const cell=(v,l)=>`<div><b>${v}</b><small>${l}</small></div>`;
   $('rvBig').innerHTML=`<div><b>${fmtKm(st.km)}</b><small>km</small></div><div><b>${fmtH(st.moving)}</b><small>en movimiento</small></div><div><b>${st.up!=null?'+'+n0(st.up):'–'}</b><small>m de desnivel</small></div>`;
-  $('rvGrid').innerHTML=cell(fmtKm(st.km)+'<em> km</em>','Distancia')+cell(fmtH(st.moving),'En movimiento')+cell(st.up!=null?n0(st.up)+'<em> m</em>':'–','Desnivel')+
+  $('rvGrid').innerHTML=
     cell(st.vavg?fmtKm(st.vavg)+'<em> km/h</em>':'–','Velocidad media')+cell(st.vmax?fmtKm(st.vmax)+'<em> km/h</em>':'–','Velocidad máx.')+cell(fmtH(st.elapsed),'Tiempo total')+
     (st.hr?cell(Math.round(st.hr)+'<em> ppm</em>','Pulso medio')+cell(Math.round(st.hrmax)+'<em> ppm</em>','Pulso máx.'):'')+
     (st.cad?cell(Math.round(st.cad)+'<em> rpm</em>','Cadencia media'):'')+(st.pw?cell(Math.round(st.pw)+'<em> W</em>','Potencia media'):'')+
