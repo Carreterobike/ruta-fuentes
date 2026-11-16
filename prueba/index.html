@@ -2162,9 +2162,9 @@ async function confirmPaint(pl,name){ const pv=L.layerGroup().addTo(map);
 async function wholeTrail(P,name){ const [x,y]=t2xy(P[0],P[1]), nm=[];
   for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ try{ nm.push(...await tileNames(x+dx,y+dy)); }catch(e){} }
   if(name){ const ps=nm.filter(f=>f.name===name).map(f=>f.line); if(ps.length){ let seed=ps[0], bd=1e9; ps.forEach(p=>{ const d=distToLine(P,p.map(q=>[q[1],q[0]])); if(d<bd){ bd=d; seed=p; } });
-      if(bd<30){ const ch=chainFrom(seed,ps); if(ch&&ch.length>1) return ch; } } }
+      if(bd<30){ const ch=chainFrom(seed,ps); if(ch&&ch.length>1){ ch.name=name; return ch; } } } }
   await loadOsmChains().catch(()=>{}); let best=null, bd=12; osmChains.forEach(o=>{ const d=distToLine(P,o.c.map(q=>[q[1],q[0]])); if(d<bd){ bd=d; best=o; } });
-  return best?best.c:null; }
+  if(!best) return null; const r=best.c.slice(); r.name=best.name||null; return r; }
 function openTrailInfo(latlng,name,flv){ const go=()=>{ const info=trailAt(latlng,name,flv); if(info) L.popup({minWidth:200}).setLatLng(latlng).setContent(info).openOn(map); };
   if(glReady&&map.getZoom()<15){ map.setView(latlng,16); let done=false; const fin=()=>{ if(!done){ done=true; go(); } }; glMap.once('idle',fin); setTimeout(fin,2500); } else go(); }   // de cerca, para que el mapa tenga la trialera y sus tiempos
 // la trialera marcada desde una salida (amarilla) y las que pisa: ni las que siguen la línea mucho más allá
@@ -2268,11 +2268,12 @@ function trailAt(latlng,force,flv){
       if(reg) c=reg.coords.map(p=>[p[0],p[1]]);
       else if(fxE) c=fxE.coords.map(p=>[p[0],p[1]]);
       else if(seg) c=seg.coords.map(p=>[p[0],p[1]]);
-      else { try{ const w=await wholeTrail(P0,osm||null); if(w&&w.length>1) c=w.map(q=>[q[0],q[1]]); }catch(e){}
+      let wName=null;
+      if(!reg&&!fxE&&!seg){ try{ const w=await wholeTrail(P0,osm||null); if(w&&w.length>1){ c=w.map(q=>[q[0],q[1]]); wName=w.name||null; } }catch(e){}
         if(!c&&near) c=near.c.map(q=>[q[1],q[0]]); if(!c&&mine) c=mine.coords.map(q=>[q[1],q[0]]); }
       if(!c||c.length<2){ toast('No he podido coger esta trialera. Acerca un poco el mapa y prueba otra vez.'); return; }
       c=await snapToMap(c);
-      const nm=reg?reg.name:(seg?seg.name:(name||(fxE&&fxE.name)||''));
+      const nm=reg?reg.name:(seg?seg.name:(name||(fxE&&fxE.name)||wName||''));
       const pv=await confirmPaint(c,nm); if(!pv) return;
       const lv=await pickLevel(fx?fx.lv:(!isNaN(sc)?levelOf(sc):null)); pv.remove(); if(lv==null) return;
       const id=reg?reg.id:(seg?'st'+seg.id:(fxE?'r'+fxE.id.slice(1):'r'+c[0][1].toFixed(5)+'_'+c[0][0].toFixed(5)));
@@ -4982,7 +4983,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794857517';
+const BUILD='1794857694';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
