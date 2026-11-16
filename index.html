@@ -279,6 +279,12 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+.tr-est{margin-top:10px;border-radius:12px;padding:9px 12px;font-size:14px}.tr-est b{font-weight:800}
+.tr-est.barro,.tr-est.arbol{background:#fff4e0;color:#7a4b06}.tr-est.perfecta,.tr-est.limpia{background:#e8f7d0;color:#3b6a00}
+.tr-estb{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.tr-estb button{border:1px solid var(--line,#d9d9d9);background:#fff;color:var(--ink,#1E2328);border-radius:999px;padding:7px 11px;font:700 13px var(--body,system-ui);cursor:pointer}
+.tr-acts{display:flex;gap:8px;margin-top:12px}.tr-acts>*{flex:1}
+.tr-com{list-style:none;margin:6px 0 10px;padding:0}.tr-com li{padding:7px 0;border-top:1px solid var(--line,#eee);font-size:14px}.tr-com small{display:block;color:var(--muted,#777);font-size:12px}
+#trTimes .tpop{max-width:none}#trTimes .tpop>b:first-child,#trTimes .tpop>br:first-of-type,#trTimes .tpop>small:first-of-type{display:none}
 .rv-big{display:flex;gap:10px;margin:2px 0 10px}.rv-big>div{flex:1;min-width:0}.rv-big b{display:block;font:800 28px/1.05 var(--display,system-ui);font-variant-numeric:tabular-nums;white-space:nowrap}.rv-big small{font-size:11.5px;color:var(--muted,#777)}
 #secViaje.mini>:not(.sec-h){display:none!important}#secViaje.mini .sec-h h3{cursor:pointer}#secViaje.mini .sec-h h3::after{content:' ▸';opacity:.6}
 .updbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:3500;display:flex;align-items:center;gap:10px;justify-content:space-between;background:#1E2328;color:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700}
@@ -1184,6 +1190,19 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <div class="modal" id="avModal" hidden role="dialog" aria-modal="true" aria-labelledby="avTitle">
   <div class="box lbox"><h4 id="avTitle">Avisos</h4><ul class="avlist" id="avList"></ul><button class="btn-ghost" id="avClose">Cerrar</button></div>
 </div>
+<div class="rideview" id="trView" hidden role="dialog" aria-modal="true" aria-labelledby="trName">
+  <header class="rv-h"><button id="trBack" aria-label="Volver">←</button><div><b id="trName"></b><small id="trSub"></small></div></header>
+  <div class="rv-body">
+    <div class="rvcard"><svg id="trShape" class="rvmap" viewBox="0 0 320 150" role="button" tabindex="0" aria-label="Ver la trialera en el mapa" style="cursor:pointer"></svg>
+      <div class="tr-est" id="trEst" hidden></div>
+      <div class="ch-t" style="margin-top:10px">¿Cómo está hoy?</div>
+      <div class="tr-estb" id="trEstB"><button data-e="perfecta">👍 Perfecta</button><button data-e="barro">💧 Embarrada</button><button data-e="arbol">🌳 Árbol caído</button><button data-e="limpia">🧹 Limpiada</button></div>
+      <div class="tr-acts"><button class="btn-main" id="trGo">Llévame aquí</button><button class="btn-ghost" id="trMap">Ver en el mapa</button></div></div>
+    <div class="rvcard" id="trTimes"></div>
+    <div class="rvcard"><div class="ch-t">Comentarios</div><ul class="tr-com" id="trCom"></ul>
+      <div class="inv-add"><input id="trComT" maxlength="300" placeholder="Escribe algo de esta trialera"><button class="btn-main" id="trComB">Enviar</button></div></div>
+  </div>
+</div>
 <div class="rideview" id="rideView" hidden role="dialog" aria-modal="true" aria-labelledby="rvName">
   <header class="rv-h"><button id="rvBack" aria-label="Volver">←</button><div><b id="rvName"></b><small id="rvDate"></small></div></header>
   <div class="rv-body">
@@ -1218,7 +1237,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794861309';   // versión de la app (la pone build.py)
+const BUILD='1794861786';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -5153,9 +5172,34 @@ function myPubTimes(){   // tus mejores tiempos en las trialeras de la grupeta, 
     if(res.f.length||res.b.length) o[id]={f:res.f[0]?res.f[0].t:null,b:res.b[0]?res.b[0].t:null,lf:lb.f,lb:lb.b}; });
   return o;
 }
+// ===== FICHA DE CADA TRIALERA (como Trailforks): estado del camino, tiempos, clasificación y comentarios =====
+const EST_TXT={perfecta:'Perfecta',barro:'Embarrada',arbol:'Árbol caído',limpia:'Recién limpiada'};
+const hace=t=>{ const m=Math.round((Date.now()-t)/60000); return m<60?`hace ${Math.max(1,m)} min`:m<1440?`hace ${Math.round(m/60)} h`:`hace ${Math.round(m/1440)} días`; };
+let trCur=null;
+function openTrail(id){ const tr=gData.t[id]; if(!tr) return; trCur=id; const c=tr.coords.map(p=>[p[0],p[1]]), lv=LEVELS[tr.lv]||LEVELS[2], dz=segDz(c);
+  $('trName').textContent=niceName(tr.name)||tr.name||'Trialera sin nombre';
+  $('trSub').innerHTML=`<em class="mpill" style="background:${lv.color};color:#fff">${tr.lv>=4?'Doble negra':lv.name}</em>${dz!=null&&dz<0?'Bajada':dz>0?'Subida':'Trialera'} · ${lenOf(c)<1000?Math.round(lenOf(c)/10)*10+' m':fmtKm(lenOf(c)/1000)+' km'}${dz!=null?` · ${dz>0?'+':''}${dz} m`:''}`;
+  const sh=shapeSvg(c,320,150,14); $('trShape').innerHTML=`<rect width="320" height="150" rx="12" fill="#2c3a26"/><path d="${sh.d}" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="${sh.d}" fill="none" stroke="${lv.color}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const e=tr.est; $('trEst').hidden=!e; if(e){ $('trEst').className='tr-est '+e.e; $('trEst').innerHTML=`<b>${EST_TXT[e.e]||''}</b> · lo dijo ${isMe(e.by)?'tú':esc(uName(e.by))} ${hace(e.t)}`; }
+  $('trView').hidden=false; const tp=gtPopup(id,tr); $('trTimes').innerHTML=''; $('trTimes').appendChild(tp);
+  if(dz==null){ const a=c[0], b=c[c.length-1]; Promise.all([elevTile(...t2xy(a[0],a[1])).p,elevTile(...t2xy(b[0],b[1])).p]).then(()=>{ const h0=elevAt(a[0],a[1]), h1=elevAt(b[0],b[1]); if(h0==null||h1==null||trCur!==id) return; const d=Math.round(h1-h0);
+    $('trSub').innerHTML=`<em class="mpill" style="background:${lv.color};color:#fff">${tr.lv>=4?'Doble negra':lv.name}</em>${d<-5?'Bajada':d>5?'Subida':'Llana'} · ${lenOf(c)<1000?Math.round(lenOf(c)/10)*10+' m':fmtKm(lenOf(c)/1000)+' km'} · ${d>0?'+':''}${d} m`; }).catch(()=>{}); }
+  $('trCom').innerHTML=(tr.com||[]).slice().reverse().map(x=>`<li>${esc(x.txt)}<small>${isMe(x.by)?'Tú':esc(uName(x.by))} · ${hace(x.t)}</small></li>`).join('')||'<li><small>Todavía nadie ha comentado.</small></li>';
+  $('trView').hidden=false; $('trView').scrollTop=0; }
+$('trBack').onclick=()=>{ $('trView').hidden=true; trCur=null; };
+$('trTimes').addEventListener('click',e=>{ if(e.target.closest('button.segbtn')) $('trView').hidden=true; },true);   // cambiar color/nombre se hace en el mapa
+$('trEstB').onclick=e=>{ const b=e.target.closest('button'); if(!b||!trCur||!me) return; const tr=gData.t[trCur]; gPush([{k:'estado',id:trCur,e:b.dataset.e}]);
+  tr.est={e:b.dataset.e,by:me.id,t:Date.now()}; openTrail(trCur); toast('Gracias: la grupeta ya lo ve.',2500); };
+$('trComB').onclick=()=>{ const t=$('trComT').value.trim(); if(!t||!trCur||!me) return; const tr=gData.t[trCur]; gPush([{k:'tcom',id:trCur,txt:t}]);
+  tr.com=(tr.com||[]).concat([{by:me.id,t:Date.now(),txt:t}]); $('trComT').value=''; openTrail(trCur); };
+const trFly=()=>{ const tr=gData.t[trCur]; if(!tr) return; $('trView').hidden=true; $('rideView').hidden=true; showPage('pgMapa'); try{ map.invalidateSize(); }catch(e){} map.fitBounds(L.latLngBounds(tr.coords.map(p=>[p[0],p[1]])),{padding:[60,60],maxZoom:17}); return tr; };
+$('trMap').onclick=trFly; $('trShape').onclick=trFly;
+$('trGo').onclick=()=>{ const tr=trFly(); if(!tr) return; const p=tr.coords[0]; goTo({geometry:{coordinates:[p[1],p[0]]},properties:{name:niceName(tr.name)||'Trialera'}}); };
 function gtPopup(id,tr){
   const d=document.createElement('div'); d.className='tpop', c=tr.coords;
   d.innerHTML=`<b>${esc(niceName(tr.name)||tr.name||'Trialera sin nombre')}</b><br><small>${tr.kind==='trial'?`<span style="color:${(LEVELS[tr.lv]||LEVELS[2]).color==='#111111'?'inherit':(LEVELS[tr.lv]||LEVELS[2]).color};font-weight:800">● ${(LEVELS[tr.lv]||LEVELS[2]).name}</span> · `:''}Trialera de la grupeta · ${fmtKm(lenOf(c)/1000)} km · la añadió ${esc(uName(tr.by))}</small>`;
+  if(tr.kind==='trial'&&$('trView').hidden){ if(tr.est) d.insertAdjacentHTML('beforeend',`<div class="tr-est ${tr.est.e}" style="margin:6px 0 0;padding:5px 9px;font-size:12.5px"><b>${EST_TXT[tr.est.e]||''}</b> · ${hace(tr.est.t)}</div>`);
+    const fb=document.createElement('button'); fb.className='segbtn main'; fb.textContent='Ver ficha'; fb.onclick=()=>{ map.closePopup(); openTrail(id); }; d.appendChild(fb); }
   d.appendChild(timesBlock(effortsFor('gt:'+id,c),segDz(c)));
   const cl=document.createElement('div'); cl.className='tms'; cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div><small>Cargando…</small>'; d.appendChild(cl);
   loadFrTimes().then(ft=>{
@@ -5341,10 +5385,15 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.search')) $('resul
 async function searchPlaces(){
   const q=$('q').value.trim(), ul=$('results');
   if(q.length<2){ ul.hidden=true; return; }
-  const c=map.getCenter();
+  const c=map.getCenter(), qn=nrm(q);
+  const trs=Object.entries(gData.t||{}).filter(([k,o])=>o.kind==='trial'&&o.name&&nrm(niceName(o.name)||o.name).includes(qn)).slice(0,5);
   try{
     const j=await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=7&lat=${c.lat.toFixed(3)}&lon=${c.lng.toFixed(3)}`)).json();
     qRes=j.features||[]; ul.innerHTML='';
+    trs.forEach(([k,o])=>{ const li=document.createElement('li'), lv=LEVELS[o.lv]||LEVELS[2];
+      li.innerHTML=`<b><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${lv.color};margin-right:6px"></i>${esc(niceName(o.name)||o.name)}</b><small>Trialera · ${lenOf(o.coords.map(p=>[p[0],p[1]]))<1000?Math.round(lenOf(o.coords.map(p=>[p[0],p[1]]))/10)*10+' m':fmtKm(lenOf(o.coords.map(p=>[p[0],p[1]]))/1000)+' km'}</small>`;
+      li.onclick=()=>{ ul.hidden=true; $('q').blur(); map.fitBounds(L.latLngBounds(o.coords.map(p=>[p[0],p[1]])),{padding:[60,60],maxZoom:17}); openTrail(k); }; ul.appendChild(li); });
+    if(!qRes.length&&trs.length){ ul.hidden=false; return; }
     if(!qRes.length){ ul.innerHTML='<li><small>No he encontrado ese sitio. Prueba a escribirlo de otra forma.</small></li>'; ul.hidden=false; return; }
     qRes.forEach(f=>{
       const p=f.properties, li=document.createElement('li');
