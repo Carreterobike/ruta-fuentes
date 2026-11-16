@@ -272,6 +272,7 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+.rv-big{display:flex;gap:10px;margin:2px 0 10px}.rv-big>div{flex:1;min-width:0}.rv-big b{display:block;font:800 28px/1.05 var(--display,system-ui);font-variant-numeric:tabular-nums;white-space:nowrap}.rv-big small{font-size:11.5px;color:var(--muted,#777)}
 #secViaje.mini>:not(.sec-h){display:none!important}#secViaje.mini .sec-h h3{cursor:pointer}#secViaje.mini .sec-h h3::after{content:' ▸';opacity:.6}
 .updbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:3500;display:flex;align-items:center;gap:10px;justify-content:space-between;background:#1E2328;color:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700}
 .updbar button{background:#B6E22E;color:#1E2328;border:0;border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
@@ -285,13 +286,14 @@ details.help p{margin:6px 0 0}
 .icu-st>div{flex:1;min-width:0}.icu-st>div>b{display:block}.icu-st small b{display:inline;color:inherit}.icu-st small{display:block;color:var(--muted,#777);line-height:1.35}
 .icu-st .btn-main{flex:none;width:auto!important;min-width:76px;margin:0!important;padding:9px 14px;position:static}
 .dir-ic{background:none;border:0;pointer-events:none}
-.dir-nm{background:none;border:0;pointer-events:none}.dir-nm div{transform:translate(-50%,-26px);white-space:nowrap;font:800 12.5px var(--body,system-ui),sans-serif;color:#D9F75E;text-shadow:0 0 3px #000,0 0 3px #000,0 0 2px #000}
+.dir-nm{background:none;border:0;pointer-events:none}.dir-nm div{transform:translate(-50%,-26px);white-space:nowrap;font:800 12.5px var(--body,system-ui),sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 0 2px #000,0 0 1px #000}
 .tpick b{display:block;margin-bottom:1px}.tpick>small{display:block;color:var(--muted,#888);margin-bottom:6px}
 .tpick button{display:flex;align-items:center;gap:9px;width:100%;padding:9px 8px;margin:4px 0 0;border:1px solid rgba(128,128,128,.25);border-radius:10px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .tpick button.sel{border:2px solid #E8B931;background:rgba(232,185,49,.12)}
 .tpick button i{flex:none;width:14px;height:14px;border-radius:50%}.tpick button span{flex:1;font-weight:700}.tpick button small{opacity:.7}
-.tpop .segbtn{background:var(--accent);color:var(--accent-ink)}
-.tpop .segbtn.del{background:none;color:#c62828;padding:4px;margin-top:2px}
+.tpop .segbtn{background:#fff;color:var(--ink,#1E2328);border:1px solid var(--line,#d9d9d9)}
+.tpop .segbtn.main{background:var(--accent);color:var(--accent-ink);border:0}
+.tpop .segbtn.del{background:#fff;color:#c62828;border:1px solid #f0c4c4;padding:7px 10px;margin-top:6px}
 
 /* opciones de crear ruta */
 .opts{display:flex;flex-direction:column;gap:6px}
@@ -321,7 +323,7 @@ details.help p{margin:6px 0 0}
 .addf.on{background:#1677c9;color:#fff}
 .pk{font-weight:700}.pk.potable{color:#1677c9}.pk.natural{color:#c47a00}.pk.mine{color:var(--accent-strong)}
 .fpop .tags.natural{color:#c47a00}.fpop .tags.mine{color:#5f8a00}
-.segbtn.del2{background:#c62828}
+.segbtn.del2{background:#fff;color:var(--ink,#1E2328);border:1px solid var(--line,#d9d9d9)}
 .fcbox{max-width:440px;max-height:90vh;text-align:left}
 .fcbox h4,.fcbox>p{text-align:center}
 .fclist{overflow-y:auto;max-height:42vh;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -630,6 +632,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .wx .where{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;display:flex;justify-content:space-between}
 .wx .more{border:0;background:none;color:var(--accent-strong);font-weight:700;font-size:11px;padding:0;text-transform:uppercase;letter-spacing:.6px}
 .wx.mini .grid,.wx.mini .dir,.wx.mini select{display:none}
+.wx.mini{width:auto;padding:0;background:none;box-shadow:none}.wxpill{border:0;background:#fff;color:var(--ink,#1E2328);border-radius:999px;padding:7px 12px;font:800 15px var(--display,system-ui);box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
 .wind{display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none}
 .wind svg{width:34px;height:34px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
 .wind span{background:rgba(20,20,20,.85);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:999px;white-space:nowrap}
@@ -1177,7 +1180,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <div class="rideview" id="rideView" hidden role="dialog" aria-modal="true" aria-labelledby="rvName">
   <header class="rv-h"><button id="rvBack" aria-label="Volver">←</button><div><b id="rvName"></b><small id="rvDate"></small></div></header>
   <div class="rv-body">
-    <div class="rvcard"><svg id="rvMap" class="rvmap" role="button" tabindex="0" aria-label="Recorrido de la salida. Tócalo para verlo en el mapa" style="cursor:pointer"></svg>
+    <div class="rvcard"><div class="rv-big" id="rvBig"></div><svg id="rvMap" class="rvmap" role="button" tabindex="0" aria-label="Recorrido de la salida. Tócalo para verlo en el mapa" style="cursor:pointer"></svg>
     <div class="rv-acts"><button class="btn" id="rvOnMap" hidden>Ver en el mapa</button><label id="rvBikeL">Bici <select id="rvBike"></select></label><a class="sv-link" id="rvStrava" target="_blank" rel="noopener" hidden>Ver en Strava</a></div>
     <div class="rv-grid" id="rvGrid"></div>
     <p class="note" id="rvNoData" hidden>Esta salida no tiene horas ni pulso. Si la trajiste con una versión anterior de Ichnos, vuelve a traer su archivo para ver todos los datos.</p></div>
@@ -1208,7 +1211,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794859090';   // versión de la app (la pone build.py)
+const BUILD='1794860490';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3597,7 +3600,7 @@ function drawTrip(){
 function stagePopup(i){
   const s=trip.stages[i], d=document.createElement('div'); d.className='tpop';
   d.innerHTML=`<b>Etapa ${i+1}</b><br>${esc(s.a.name||'')} → ${esc(s.b.name||'')}<br>${fmtKm(s.len/1000)} km · +${Math.round(s.up||0)} m`+surfBar(s.coords);
-  const o=document.createElement('button'); o.className='segbtn'; o.textContent='Abrir esta etapa'; o.onclick=()=>{ map.closePopup(); openStage(i); }; d.appendChild(o);
+  const o=document.createElement('button'); o.className='segbtn main'; o.textContent='Abrir esta etapa'; o.onclick=()=>{ map.closePopup(); openStage(i); }; d.appendChild(o);
   const g=document.createElement('button'); g.className='segbtn ghost'; g.textContent='Llevar esta etapa'; g.onclick=()=>{ map.closePopup(); carryStage(i); }; d.appendChild(g);
   return d;
 }
@@ -4516,6 +4519,7 @@ function openRide(r){
   $('rvBike').value=r.bike||'';
   // números
   const cell=(v,l)=>`<div><b>${v}</b><small>${l}</small></div>`;
+  $('rvBig').innerHTML=`<div><b>${fmtKm(st.km)}</b><small>km</small></div><div><b>${fmtH(st.moving)}</b><small>en movimiento</small></div><div><b>${st.up!=null?'+'+n0(st.up):'–'}</b><small>m de desnivel</small></div>`;
   $('rvGrid').innerHTML=cell(fmtKm(st.km)+'<em> km</em>','Distancia')+cell(fmtH(st.moving),'En movimiento')+cell(st.up!=null?n0(st.up)+'<em> m</em>':'–','Desnivel')+
     cell(st.vavg?fmtKm(st.vavg)+'<em> km/h</em>':'–','Velocidad media')+cell(st.vmax?fmtKm(st.vmax)+'<em> km/h</em>':'–','Velocidad máx.')+cell(fmtH(st.elapsed),'Tiempo total')+
     (st.hr?cell(Math.round(st.hr)+'<em> ppm</em>','Pulso medio')+cell(Math.round(st.hrmax)+'<em> ppm</em>','Pulso máx.'):'')+
@@ -5001,7 +5005,8 @@ async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+D
     if(T.crear||!$('rideView').hidden){ showUpdBar(); return; }   // no te corta lo que estás haciendo: aviso para actualizar cuando quieras
     if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1');
     location.replace(location.pathname+'?v='+m[1]); } }catch(e){} }
-setTimeout(checkUpdate,3000); document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkUpdate(); });
+setTimeout(checkUpdate,3000);
+setTimeout(()=>{ if(!document.querySelector('.page:not(.off)')||!$('pgPerfil').classList.contains('off')){ showPage('pgMapa'); try{ map.invalidateSize(); }catch(e){} } },0);   // la app abre en el Mapa document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkUpdate(); });
 setTimeout(devBackfill,8000); setInterval(devBackfill,15*60*1000);
 async function svSweep(){
   if(!svOn()||sxBusy||document.hidden||T.crear) return; sxBusy=true;
@@ -5214,6 +5219,8 @@ function renderWeather(){
   const h=wxData[0].hourly; let i=h.time.indexOf(wxHour); if(i<0) i=0;
   const v=k=>h[k][i], dn=dirName(v('wind_direction_10m'));
   const opts=hourOptions().map(([val,lab])=>`<option value="${val}"${val===wxHour?' selected':''}>${lab}</option>`).join('');
+  if($('wx').classList.contains('mini')){ const wc=v('weather_code'), ic=wc<=1?'☀️':wc<=2?'⛅':wc<=3?'☁️':wc<=48?'🌫️':wc<=67||(wc>=80&&wc<=82)?'🌧️':wc<=77||wc===85||wc===86?'❄️':'⛈️';
+    $('wx').innerHTML=`<button class="wxpill" id="wxMore" aria-label="Ver el tiempo">${ic} ${Math.round(v('temperature_2m'))}°</button>`; $('wxMore').onclick=()=>{ $('wx').classList.toggle('mini'); renderWeather(); }; windLayer.clearLayers(); return; }
   $('wx').innerHTML=`<div class="where"><span>${wxWhere}</span><button class="more" id="wxMore">${$('wx').classList.contains('mini')?'Ver más':'Ver menos'}</button></div>
     <div class="top2"><span class="temp">${Math.round(v('temperature_2m'))}°</span><span class="desc">${WMO[v('weather_code')]||''}<br>Lluvia ${v('precipitation_probability')??0}%</span></div>
     <div class="grid">
