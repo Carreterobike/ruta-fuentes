@@ -2139,11 +2139,11 @@ async function snapToMap(c){   // c: [[lat,lon],...]
   let tol=1.2; let z=rdp(r,tol); while(z.length>380&&tol<20){ tol*=1.6; z=rdp(r,tol); }
   return z.map(p=>[+p[0].toFixed(6),+p[1].toFixed(6)]); }
 // guardar una trialera de la lista (crear o cambiar) y comprobar que en el mapa se ve como se ha guardado
-function regSave(id,name,lv,coords){ const nm=String(name||'Trialera').trim()||'Trialera';
+function regSave(id,name,lv,coords){ const nm=String(name||'').trim();
   // quitar lo viejo que pisa esta misma trialera: colores antiguos (gData.c) y otra entrada con el mismo nombre
   const lc=coords.map(q=>[q[1],q[0]]), over=o=>{ const sm=samplesOf(o.coords.map(p=>[p[0],p[1]]),15); return sm.length&&sm.filter(p=>distToLine(p,lc)<15).length>=sm.length*0.6; };
   const oldC=me.admin?Object.entries(gData.c||{}).filter(([k,o])=>o.coords&&o.coords.length>1&&over(o)).map(([k])=>k):[];
-  const oldT=me.admin?Object.entries(gData.t||{}).filter(([k,o])=>k!==id&&o.kind==='trial'&&o.coords&&o.coords.length>1&&nrm(o.name)===nrm(nm)&&over(o)).map(([k])=>k):[];
+  const oldT=me.admin?Object.entries(gData.t||{}).filter(([k,o])=>k!==id&&o.kind==='trial'&&o.coords&&o.coords.length>1&&nm&&nrm(o.name)===nrm(nm)&&over(o)).map(([k])=>k):[];
   gPush([...oldC.map(k=>({k:'color-',id:k})),...oldT.map(k=>({k:'trial-',id:k})),{k:'trial',id,name:nm,lv,coords}]);
   if(!me.admin){ toast('Propuesta enviada a David.',3500); return; }
   oldC.forEach(k=>delete gData.c[k]); oldT.forEach(k=>delete gData.t[k]);
@@ -2151,7 +2151,7 @@ function regSave(id,name,lv,coords){ const nm=String(name||'Trialera').trim()||'
   // comprobación: en cada punto de la trialera, lo que manda (lo último cambiado) tiene que ser esta
   const sm=samplesOf(coords.map(p=>[p[0],p[1]]),25), okN=sm.filter(p=>{ const f=fixAt(L.latLng(p[0],p[1])); return f&&f.id===id; }).length;
   if(okN<sm.length*0.9){ toast('Guardado, pero algo no cuadra en el mapa: se ha avisado para revisarlo.',5000); try{ sendBug(`regSave ${id} ${nm}: ${okN}/${sm.length} puntos`,null,true); }catch(e){} }
-  else toast(`"${niceName(nm)}" ya sale así para toda la grupeta.`,3500); }
+  else toast(nm?`"${niceName(nm)}" ya sale así para toda la grupeta.`:'Color cambiado para toda la grupeta.',3500); }
 // antes de pintar un color: enseñar en amarillo QUÉ se va a pintar y preguntar
 async function confirmPaint(pl,name){ const pv=L.layerGroup().addTo(map);
   L.polyline(pl,{color:'#1E2328',weight:14,interactive:false}).addTo(pv); L.polyline(pl,{color:'#FFE14D',weight:9,interactive:false}).addTo(pv);
@@ -2276,7 +2276,7 @@ function trailAt(latlng,force,flv){
       const pv=await confirmPaint(c,nm); if(!pv) return;
       const lv=await pickLevel(fx?fx.lv:(!isNaN(sc)?levelOf(sc):null)); pv.remove(); if(lv==null) return;
       const id=reg?reg.id:(seg?'st'+seg.id:(fxE?'r'+fxE.id.slice(1):'r'+c[0][1].toFixed(5)+'_'+c[0][0].toFixed(5)));
-      regSave(id,nm||'Trialera',lv,c); };
+      regSave(id,nm||'',lv,c); };
     d.appendChild(cb); }
   if(mine){ const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Quitar mi nombre';
     del.onclick=()=>{ map.closePopup(); myNames=myNames.filter(n=>n!==mine); saveMyNames(); toast('Nombre quitado'); }; d.appendChild(del); }
@@ -4538,7 +4538,7 @@ function openRide(r){
     ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) { const st=sid?svT(sid):null; segs.push({src,sid,svpr:sid&&svE(sid)?svE(sid).pr:undefined,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:st!=null?st:e.t,all:st!=null?stravaBest(sid).map(x=>x.t):res[k].filter(ok).map(x=>x.t),a:e.i,b:e.j}); } })); };
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
   const svHere=new Set([...(r.sef||[]),...((twin&&twin.sef)||[])].map(e=>'st'+e.sid));   // segmento de Strava con color: sale una vez, con el tiempo exacto de Strava
-  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind==='trial'&&tr.coords&&tr.coords.length>1&&!svHere.has(id)) mine('gt:'+id,tr.name,tr.coords,segDz(tr.coords),'grp'); });
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind==='trial'&&tr.coords&&tr.coords.length>1&&!svHere.has(id)) mine('gt:'+id,tr.name||'Trialera sin nombre',tr.coords,segDz(tr.coords),'grp'); });
   myNames.forEach(n=>mine('mine:'+n.id,n.name,n.coords.map(x=>[x[1],x[0]]),null));
   const S0=(r.sef&&r.sef.length)?r.sef:(twin?twin.sef:[]);   // los segmentos que Strava midió en esta salida
   const S0own=(r.sef&&r.sef.length)?r:twin, nVez={};
@@ -4982,7 +4982,7 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794857132';
+const BUILD='1794857304';
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
     if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
