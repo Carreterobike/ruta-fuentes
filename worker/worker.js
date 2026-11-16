@@ -13,7 +13,7 @@ export default {
     const url = new URL(req.url);
     const cors = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Authorization, X-Ichnos-Key, Content-Type',
+      'Access-Control-Allow-Headers': 'Authorization, X-Ichnos-Key, X-Ichnos-Build, Content-Type',
       'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
     };
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
@@ -377,6 +377,17 @@ export default {
       if (P.startsWith('/fallos/') && (await KV.get('admin')) === me.id) return raw(await KV.get(decodeURIComponent(P.slice(8))) || 'null', cors);
 
       // Mapa compartido: opiniones de sitios, sitios añadidos u ocultados y fuentes
+      // Lo compartido de la grupeta vive en un "Durable Object": atiende los cambios de uno en uno (no se pisan aunque guardéis a la vez)
+      const GS = env.GSTORE ? async (o) => (await env.GSTORE.get(env.GSTORE.idFromName('g')).fetch('https://g/', { method: 'POST', body: JSON.stringify(o) })).json() : null;
+      if (P === '/g' && req.method === 'POST' && +(req.headers.get('X-Ichnos-Build') || 0) < MIN_BUILD)
+        return J({ error: 'Tu Ichnos es una versión vieja: ciérrala del todo y ábrela otra vez para actualizarla.', viejo: 1 }, 426);
+      if (GS && P === '/g' && req.method === 'GET') return J(await GS({ act: 'get' }));
+      if (GS && P === '/g' && req.method === 'POST') {
+        const b = await body(), ops = Array.isArray(b.ops) ? b.ops.slice(0, 500) : [];
+        const r = await GS({ act: 'post', ops, by: me.id, admin: isAdmin });
+        if (r.pend) { const adm = await KV.get('admin'); if (adm && adm !== me.id) await notify(KV, adm, { k: 'prop', u: me.id, x: r.x }); }
+        delete r.x; return J(r);
+      }
       if (P === '/g' && req.method === 'GET') {
         return J({ l: JSON.parse(await KV.get('g:l') || '{}'), f: JSON.parse(await KV.get('g:f') || '{}'), t: JSON.parse(await KV.get('g:t') || '{}'), c: JSON.parse(await KV.get('g:c') || '{}') });
       }
@@ -432,9 +443,15 @@ export default {
           const codes = JSON.parse(await KV.get('invs') || '[]');
           const invs = [];
           for (const c of codes) { const i = JSON.parse(await KV.get('inv:' + c) || 'null'); if (i) invs.push(i); }
-          return J({ invs, users: await usersList(KV), props: JSON.parse(await KV.get('g:p') || '{}') });
+          return J({ invs, users: await usersList(KV), props: GS ? await GS({ act: 'props' }) : JSON.parse(await KV.get('g:p') || '{}') });
         }
         const b = await body();
+        if (GS && P === '/admin/propuestas' && req.method === 'POST') {
+          const r = await GS({ act: 'decide', pid: b.pid, ok: !!b.ok, by: me.id });
+          if (r.error) return J({ error: r.error }, 404);
+          if (r.pby !== me.id) await notify(KV, r.pby, { k: b.ok ? 'propok' : 'propno', u: me.id, x: r.x });
+          return J({ ok: true, l: r.l, f: r.f, t: r.t, c: r.c });
+        }
         if (P === '/admin/propuestas' && req.method === 'POST') {
           const PR = JSON.parse(await KV.get('g:p') || '{}'), pr = PR[b.pid];
           if (!pr) return J({ error: 'Esa propuesta ya no está.' }, 404);
@@ -493,6 +510,44 @@ async function mates(KV, a, b) {   // ¿están los dos en alguna grupeta?
 }
 // ---------- mapa compartido ----------
 const MOD_OPS = ['sitio', 'sitio-', 'oculto', 'fuente', 'fuente-', 'color', 'color-', 'trial', 'trial-'];
+const MIN_BUILD = 0;   // versiones de la app más viejas no pueden cambiar el mapa de todos
+// ---- Lo compartido de la grupeta, de uno en uno ----
+export class GStore {
+  constructor(state, env) {
+    this.s = state.storage; this.env = env;
+    state.blockConcurrencyWhile(async () => {   // la primera vez se trae lo que había en KV
+      if (!(await this.s.get('init'))) { for (const k of ['l', 'f', 't', 'c', 'p']) await this.s.put('g:' + k, JSON.parse(await env.KV.get('g:' + k) || '{}')); await this.s.put('init', 1); }
+    });
+  }
+  async load() { const g = {}; for (const k of ['l', 'f', 't', 'c']) g[k] = (await this.s.get('g:' + k)) || {}; g._ch = {}; return g; }
+  async save(g) { for (const k of ['l', 'f', 't', 'c']) if (g._ch[k]) await this.s.put('g:' + k, g[k]); }
+  async fetch(req) {
+    const b = await req.json(), out = o => new Response(JSON.stringify(o), { headers: { 'Content-Type': 'application/json' } });
+    if (b.act === 'get') { const G = await this.load(); return out({ l: G.l, f: G.f, t: G.t, c: G.c }); }
+    if (b.act === 'props') return out((await this.s.get('g:p')) || {});
+    if (b.act === 'post') {
+      const G = await this.load(), PR = (await this.s.get('g:p')) || {}; let np = 0, x = ''; const now = Date.now();
+      for (const o of b.ops || []) {
+        if (!String(o.id || '')) continue;
+        if (o.k === 'aviso' || (!b.admin && MOD_OPS.includes(o.k))) { PR['p' + now.toString(36) + rnd(4)] = { op: o, by: b.by, t: now }; np++; x = x || opText(o); continue; }
+        applyOp(G, o, b.by, b.admin);
+      }
+      await this.save(G); if (np) await this.s.put('g:p', PR);
+      return out({ l: G.l, f: G.f, t: G.t, c: G.c, pend: np, x: np === 1 ? x : np + ' propuestas' });
+    }
+    if (b.act === 'decide') {
+      const PR = (await this.s.get('g:p')) || {}, pr = PR[b.pid]; if (!pr) return out({ error: 'Esa propuesta ya no está.' });
+      const G = await this.load();
+      if (b.ok) { const o = pr.op;
+        if (o.k === 'aviso') { if (G.f[o.id]) { delete G.f[o.id]; G._ch.f = 1; } else applyOp(G, { k: 'oculto', id: o.id, m: o.m || {}, on: true }, b.by, true); }
+        else applyOp(G, o, pr.by, true);
+        await this.save(G); }
+      delete PR[b.pid]; await this.s.put('g:p', PR);
+      return out({ ok: true, pby: pr.by, x: opText(pr.op), l: G.l, f: G.f, t: G.t, c: G.c });
+    }
+    return out({ error: 'act' });
+  }
+}
 async function gLoad(KV) { const g = {}; for (const k of ['l', 'f', 't', 'c']) g[k] = JSON.parse(await KV.get('g:' + k) || '{}'); g._ch = {}; return g; }
 async function gSave(KV, g) { for (const k of ['l', 'f', 't', 'c']) if (g._ch[k]) await KV.put('g:' + k, JSON.stringify(g[k])); }
 const meta = (o) => ({ name: String(o.name || '').slice(0, 80), lat: +o.lat, lon: +o.lon, cat: String(o.cat || '').slice(0, 20) });
@@ -528,9 +583,9 @@ function applyOp(G, o, by, admin) {
     if (T[id] && T[id].kind === 'trial' && s_ > 0 && s_ < 36000) { T[id].tm = T[id].tm || {}; const cur = T[id].tm[by]; if (!cur || s_ < cur.s) { T[id].tm[by] = { s: s_, d: +o.d || now }; G._ch.t = 1; } }
   } else if (o.k === 'tramo-') {
     if (T[id] && (T[id].by === by || admin)) { delete T[id]; G._ch.t = 1; }
-  } else if (o.k === 'color') {   // color corregido de una trialera
+  } else if (o.k === 'color') {   // sistema viejo: ya no se usa (las trialeras van todas a la lista única, op 'trial')
     const c = line(o.coords), lv = +o.lv;
-    if (c.length >= 2 && lv >= 0 && lv <= 4) { C[id] = { coords: c, lv, name: String(o.name || '').slice(0, 80), by, t: now }; G._ch.c = 1; }
+    if (false && c.length >= 2 && lv >= 0 && lv <= 4) { C[id] = { coords: c, lv, name: String(o.name || '').slice(0, 80), by, t: now }; G._ch.c = 1; }
   } else if (o.k === 'color-') {
     if (C[id]) { delete C[id]; G._ch.c = 1; }
   }

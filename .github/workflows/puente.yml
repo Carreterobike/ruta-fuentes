@@ -36,6 +36,12 @@ jobs:
           [[kv_namespaces]]
           binding = "KV"
           id = "$KV_ID"
+          [[durable_objects.bindings]]
+          name = "GSTORE"
+          class_name = "GStore"
+          [[migrations]]
+          tag = "v1"
+          new_sqlite_classes = ["GStore"]
           TOML
           sed -i 's/^ *//' worker/wrangler.toml
           cat worker/wrangler.toml
