@@ -272,6 +272,9 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+#secViaje.mini>:not(.sec-h){display:none!important}#secViaje.mini .sec-h h3{cursor:pointer}#secViaje.mini .sec-h h3::after{content:' ▸';opacity:.6}
+.updbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:3500;display:flex;align-items:center;gap:10px;justify-content:space-between;background:#1E2328;color:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700}
+.updbar button{background:#B6E22E;color:#1E2328;border:0;border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
 .mpill{display:inline-block!important;width:auto!important;flex:none!important;font-size:11px;font-weight:700;line-height:1.5;padding:0 8px;border-radius:999px;margin-right:6px;vertical-align:1px;font-style:normal}
 .mpill.btt{background:#e8f7d0;color:#3b6a00}.mpill.road{background:#dfeefe;color:#0c447c}.mpill.grav{background:#f6ead6;color:#7a4b06}.mpill.ebk{background:#d9f3ee;color:#0f5c4f}
 .mpill.run{background:#ffe3d6;color:#8a3412}.mpill.trl{background:#efe2fb;color:#5a2d8a}.mpill.hike{background:#e6eedb;color:#3d5a1e}.mpill.walk{background:#ececec;color:#444}
@@ -1205,6 +1208,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const BUILD='1794858934';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1220,10 +1224,11 @@ window.addEventListener('scroll',()=>{ const a=document.activeElement; if(!a||!/
 const BRIDGE='https://ichnos-strava.dcarreterov86.workers.dev';
 let me=store.get('ichnos-auth',null);   // {t,id,user,name,admin,strava}
 async function api(path,{method='GET',body}={}){
-  const h={}; if(me&&me.t) h.Authorization='Bearer '+me.t; if(body!=null) h['Content-Type']='application/json';
+  const h={'X-Ichnos-Build':BUILD}; if(me&&me.t) h.Authorization='Bearer '+me.t; if(body!=null) h['Content-Type']='application/json';
   const r=await fetch(BRIDGE+path,{method,headers:h,body:body==null?undefined:(typeof body==='string'?body:JSON.stringify(body))});
   let j=null; try{ j=await r.json(); }catch(e){}
   if(r.status===401&&me&&!path.startsWith('/auth')){ sessionLost(); }
+  if(r.status===426){ showUpdBar(true); }   // versión vieja: hay que actualizar antes de cambiar nada
   if(!r.ok){ const e=new Error((j&&j.error)||'http'); e.status=r.status; throw e; }
   return j;
 }
@@ -2149,7 +2154,7 @@ function regSave(id,name,lv,coords){ const nm=String(name||'').trim();
   oldC.forEach(k=>delete gData.c[k]); oldT.forEach(k=>delete gData.t[k]);
   const o=gData.t[id]||{}; gData.t[id]={kind:'trial',name:nm,lv,coords,by:o.by||me.id,t:Date.now(),tm:o.tm||{}}; effCache&&effCache.clear&&effCache.clear(); drawTrailFix();
   // comprobación: en cada punto de la trialera, lo que manda (lo último cambiado) tiene que ser esta
-  const sm=samplesOf(coords.map(p=>[p[0],p[1]]),25), okN=sm.filter(p=>{ const f=fixAt(L.latLng(p[0],p[1])); return f&&f.id===id; }).length;
+  const sm=samplesOf(coords.map(p=>[p[0],p[1]]),25), okN=sm.filter(p=>{ const f=fixAt({lat:p[0],lng:p[1]}); return f&&f.id===id; }).length;
   if(okN<sm.length*0.9){ toast('Guardado, pero algo no cuadra en el mapa: se ha avisado para revisarlo.',5000); try{ sendBug(`regSave ${id} ${nm}: ${okN}/${sm.length} puntos`,null,true); }catch(e){} }
   else toast(nm?`"${niceName(nm)}" ya sale así para toda la grupeta.`:'Color cambiado para toda la grupeta.',3500); }
 // antes de pintar un color: enseñar en amarillo QUÉ se va a pintar y preguntar
@@ -2194,7 +2199,7 @@ function trailChooser(latlng,list){
   const d=document.createElement('div'); d.className='tpop tpick';
   d.innerHTML=`<b>Aquí pasan ${list.length} trialeras</b><small>Toca la que quieras ver</small>`;
   list.forEach(x=>{ const lv=x.lv!=null?LEVELS[x.lv]:null, b=document.createElement('button'); if(x.sel) b.className='sel';
-    b.innerHTML=`<i style="background:${lv?lv.color:'#9e9e9e'}${x.lv>=4?';box-shadow:inset 0 0 0 2px #111,inset 0 0 0 3px #fff':''}"></i><span>${esc(x.name)}</span>${x.m?`<small>${x.m<1000?Math.round(x.m/10)*10+' m':fmtKm(x.m/1000)+' km'}</small>`:''}`;
+    b.innerHTML=`<i style="background:${lv?lv.color:'#9e9e9e'}${x.lv>=4?';box-shadow:inset 0 0 0 2px #111,inset 0 0 0 3px #fff':''}"></i><span>${esc(niceName(x.name)||x.name)}</span>${x.m?`<small>${x.m<1000?Math.round(x.m/10)*10+' m':fmtKm(x.m/1000)+' km'}</small>`:''}`;
     b.onclick=()=>{ map.closePopup(); x.open(); }; d.appendChild(b); });
   L.popup({minWidth:230,closeButton:true,autoPanPaddingTopLeft:[16,80],autoPanPaddingBottomRight:[16,90]}).setLatLng(latlng).setContent(d).openOn(map); }
 // al tocar: si se pisan varias, ventanita para elegir; si hay una, se abre directa
@@ -2222,7 +2227,7 @@ function trailAt(latlng,force,flv){
   let shr=mine?null:sharedNameAt(latlng); if(force&&shr&&shr.name!==force) shr=null; const svs=(mine||shr||osm)?null:svSegAt(latlng);
   const name=mine?mine.name:shr?shr.name:osm?osm:svs?String(svs.name||'').trim():null;
   const d=document.createElement('div'); d.className='tpop';
-  let h=`<b>${esc(name||'Trialera sin nombre')}</b>${kind?'<br>'+kind:''}`;
+  let h=`<b>${esc(niceName(name)||name||'Trialera sin nombre')}</b>${kind?'<br>'+kind:''}`;
   const fx=(typeof fixAt==='function')?fixAt(latlng):null, fxE=fx&&!fx.grp?fx:null;   // fxE: corrección de color que se puede editar
   if(flv!=null){ const lv=LEVELS[flv]; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${flv>=4?'Doble negra':lv.name}</span>`; }
   else if(fx){ const lv=LEVELS[fx.lv]||{name:'Doble negra',color:'#111111'}; h+=`<br>Dificultad: <span class="lv" style="color:${lv.color==='#111111'?'inherit':lv.color}">${fx.lv>=4?'Doble negra':lv.name}</span> <small>(corregida por ${esc(uName(fx.by))})</small>`; }
@@ -2298,6 +2303,8 @@ function trailAt(latlng,force,flv){
 // ================= TOCAR EL MAPA =================
 let hintShown=false;
 map.on('click', e => {
+  // al tocar el mapa se recogen las ventanas que lo tapan (el viaje por etapas y el tiempo); se abren tocándolas
+  if(!$('secViaje').hidden) $('secViaje').classList.add('mini'); if($('wx')&&!$('wx').classList.contains('mini')&&$('wxMore')) $('wxMore').click();
   if(mtState){ mtClick(e.latlng); return; }
   if(segMode){ segClick(e.latlng); return; }
   if(addingF){ addMyFountainAt(e.latlng); return; }
@@ -2318,6 +2325,7 @@ $('clear').onclick = () => {
   if(T.crear) setToggle('crear',false); crearClosed=true; updateSheet();   // ruta borrada: se cierra la ventana
 };
 $('done').onclick = () => setToggle('crear',false);
+$('secViaje').querySelector('.sec-h h3').onclick=()=>$('secViaje').classList.toggle('mini');
 $('viajeX').onclick = () => { store.set('ichnos-viajeX',true); updateSheet(); };   // cerrada se queda cerrada hasta que abras otro viaje
 $('crearX').onclick = async () => {
   // cerrar = quitar la ruta del mapa (si no está guardada, te avisa antes)
@@ -4571,7 +4579,7 @@ function openRide(r){
     return {pr:false,sub:`<span class="ink">tu mejor tiempo:</span> <span class="gold">🏆 ${fmtT(rest[0])}</span>`}; };
   let rvList=[], svOpen=false;
   const row=(x,i)=>{ const bb=best(x);
-    return `<li data-i="${i}"><span><b>${esc(x.name)}</b><small>${x.dir||''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'🏆 ':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; };
+    return `<li data-i="${i}"><span><b>${esc(niceName(x.name)||x.name)}</b><small>${x.dir||''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'🏆 ':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; };
   const segHtml=list=>{ rvList=list.slice().sort((x,y)=>(x.a??1e9)-(y.a??1e9));
     return rvList.length?`<div class="ch-t">Trialeras y segmentos</div><ul class="routes">${rvList.map(row).join('')}</ul>`:''; };
   const reRender=()=>{ $('rvSegs').innerHTML=segHtml(rvList); };
@@ -4709,7 +4717,7 @@ function segToMap(x){ const r=rideOpen; if(!r||!x) return;
   L.polyline(seg,{color:'#1E2328',weight:12,interactive:false}).addTo(rideHi); L.polyline(seg,{color:'#E8B931',weight:7,interactive:false}).addTo(rideHi);
   hiSel={name:String(x.name||'Trialera').trim(),t:x.t,line:seg}; hiSelLoad(hiSel).catch(()=>{});
   setTimeout(()=>{ map.fitBounds(L.latLngBounds(seg),{padding:[60,60]});
-    L.popup({minWidth:160}).setLatLng(seg[Math.floor(seg.length/2)]).setContent(`<b>${esc(x.name)}</b><br>${x.t!=null?fmtT(x.t):''}`).openOn(map); },50);
+    L.popup({minWidth:160}).setLatLng(seg[Math.floor(seg.length/2)]).setContent(`<b>${esc(niceName(x.name)||x.name)}</b><br>${x.t!=null?fmtT(x.t):''}`).openOn(map); },50);
 }
 function clearRideOnMap(){ rideHi.clearLayers(); hiSel=null; rideOnMap=null; $('rideOn').hidden=true; updateSheet(); }
 $('roX').onclick=()=>{ mtState=null; mtLayer.clearLayers(); clearRideOnMap(); };
@@ -4983,10 +4991,14 @@ async function selfTest(opts={}){
 // la primera vez que se abre una versión nueva, se comprueba sola (solo el administrador, sin abrir nada en pantalla)
 setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(typeof BUILD!=='undefined'?BUILD:'')) return; store.set('ichnos-testv',String(BUILD)); try{ await selfTest(); }catch(e){ errPush('selfTest '+e.message); } },25000);
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
-const BUILD='1794857694';
+/* BUILD va arriba del todo */
+// barra "Hay una versión nueva" (toca para actualizar)
+function showUpdBar(force){ let b=$('updBar'); if(!b){ b=document.createElement('div'); b.id='updBar'; b.className='updbar';
+    b.innerHTML='<span>Hay una versión nueva de Ichnos</span><button>Actualizar</button>'; b.querySelector('button').onclick=()=>location.replace(location.pathname+'?v='+Date.now()); document.body.appendChild(b); }
+  b.hidden=false; if(force) toast('Tu Ichnos es una versión vieja: pulsa «Actualizar» abajo.',6000); }
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
-    if(T.crear||!$('rideView').hidden) return;   // no te corta lo que estás haciendo: se pone la próxima vez
+    if(T.crear||!$('rideView').hidden){ showUpdBar(); return; }   // no te corta lo que estás haciendo: aviso para actualizar cuando quieras
     if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1');
     location.replace(location.pathname+'?v='+m[1]); } }catch(e){} }
 setTimeout(checkUpdate,3000); document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkUpdate(); });
@@ -5019,7 +5031,7 @@ function stravaBest(sid){ const l=[]; rides.forEach(r=>(r.sef||[]).forEach(e=>{ 
 const segDz=c=>c[c.length-1][2]!=null&&c[0][2]!=null?c[c.length-1][2]-c[0][2]:null;
 function ssPopup(sg){
   const d=document.createElement('div'); d.className='tpop', c=sg.coords;
-  d.innerHTML=`<b>${esc(sg.name)}</b><br><small>Segmento de Strava · ${fmtKm(sg.km||lenOf(c)/1000)} km${sg.gr!=null?` · ${String(Math.round(sg.gr*10)/10).replace('.',',')} %`:''} · solo lo ves tú</small>`;
+  d.innerHTML=`<b>${esc(niceName(sg.name)||sg.name)}</b><br><small>Segmento de Strava · ${fmtKm(sg.km||lenOf(c)/1000)} km${sg.gr!=null?` · ${String(Math.round(sg.gr*10)/10).replace('.',',')} %`:''} · solo lo ves tú</small>`;
   const sb=stravaBest(sg.id);
   if(sb.length) d.insertAdjacentHTML('beforeend',`<div class="tms"><div class="tms-h">Tus tiempos en Strava</div><div class="tm"><span>Mejor <b class="best">${fmtT(sb[0].t)}</b> · ${sb.length} ${sb.length===1?'vez':'veces'} · último ${fmtD(sb.reduce((x,y)=>y.date>x.date?y:x).date)}</span></div></div>`);
   else d.appendChild(timesBlock(effortsFor('ss:'+sg.id,c),segDz(c)));
@@ -5050,7 +5062,7 @@ function myPubTimes(){   // tus mejores tiempos en las trialeras de la grupeta, 
 }
 function gtPopup(id,tr){
   const d=document.createElement('div'); d.className='tpop', c=tr.coords;
-  d.innerHTML=`<b>${esc(tr.name)}</b><br><small>${tr.kind==='trial'?`<span style="color:${(LEVELS[tr.lv]||LEVELS[2]).color==='#111111'?'inherit':(LEVELS[tr.lv]||LEVELS[2]).color};font-weight:800">● ${(LEVELS[tr.lv]||LEVELS[2]).name}</span> · `:''}Trialera de la grupeta · ${fmtKm(lenOf(c)/1000)} km · la añadió ${esc(uName(tr.by))}</small>`;
+  d.innerHTML=`<b>${esc(niceName(tr.name)||tr.name||'Trialera sin nombre')}</b><br><small>${tr.kind==='trial'?`<span style="color:${(LEVELS[tr.lv]||LEVELS[2]).color==='#111111'?'inherit':(LEVELS[tr.lv]||LEVELS[2]).color};font-weight:800">● ${(LEVELS[tr.lv]||LEVELS[2]).name}</span> · `:''}Trialera de la grupeta · ${fmtKm(lenOf(c)/1000)} km · la añadió ${esc(uName(tr.by))}</small>`;
   d.appendChild(timesBlock(effortsFor('gt:'+id,c),segDz(c)));
   const cl=document.createElement('div'); cl.className='tms'; cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div><small>Cargando…</small>'; d.appendChild(cl);
   loadFrTimes().then(ft=>{
@@ -5102,7 +5114,7 @@ async function segClick(ll){
 function segPopup(sg){
   const d=document.createElement('div'); d.className='tpop';
   const c=sg.coords, dz=c[c.length-1][2]!=null&&c[0][2]!=null?c[c.length-1][2]-c[0][2]:null;
-  d.innerHTML=`<b>${esc(sg.name)}</b><br><small>Segmento tuyo · ${fmtKm(lenOf(c)/1000)} km${dz!=null?` · ${dz>=0?'+':''}${dz} m`:''}</small>`;
+  d.innerHTML=`<b>${esc(niceName(sg.name)||sg.name)}</b><br><small>Segmento tuyo · ${fmtKm(lenOf(c)/1000)} km${dz!=null?` · ${dz>=0?'+':''}${dz} m`:''}</small>`;
   d.appendChild(timesBlock(effortsFor('my:'+sg.id,c),dz));
   const del=document.createElement('button'); del.className='segbtn del'; del.textContent='Borrar segmento';
   del.onclick=async()=>{ map.closePopup(); if(await ask('¿Borrar este segmento?',sg.name,'Sí, bórralo','No')){ mySegs=mySegs.filter(x=>x!==sg); store.set('ichnos-segmentos',mySegs); effCache.delete('my:'+sg.id); drawSegs(); refreshSegs(); } };
@@ -5403,7 +5415,7 @@ async function loadOsmChains(){ if(map.getZoom()<14) return; const b=map.getBoun
   drawDirs(); }
 function drawDirs(){
   dirLayer.clearLayers(); const shown=T.trialeras&&!(T.crear&&!trailsMode()), on=shown&&map.getZoom()>=14;
-  if(glReady) try{ glMap.setLayoutProperty('trail-names','visibility',shown&&!on?'visible':'none'); }catch(e){}   // con zoom: los nombres los pone Ichnos, siempre visibles
+  if(glReady) try{ glMap.setLayoutProperty('trail-names','visibility',shown&&map.getZoom()<15?'visible':'none'); }catch(e){}   // con zoom: los nombres los pone Ichnos, siempre visibles
   if(!on){ snapLayer.clearLayers(); return; }
   const B=map.getBounds().pad(0.15), z=map.getZoom(), list=[], seenN=new Set();
   const bbOf=c=>{ let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); return [a,b,n,e]; };
@@ -5432,7 +5444,7 @@ function drawDirs(){
     L.marker(mid,{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-nm',html:`<div>${esc(nm)}</div>`,iconSize:[0,0]})}).addTo(dirLayer); });
   // trialeras del mapa: flechas hacia donde BAJA la pendiente (altura del terreno), y su nombre
   loadOsmChains().catch(()=>{}); try{ drawSnap(); }catch(e){ console.warn(e); } let wait=null;
-  osmChains.forEach(x=>{ const bb=x._bb||(x._bb=bbOf(x.c)); if(!inView(bb)) return;
+  if(z>=15) osmChains.forEach(x=>{   // las del mapa general (flechas y nombres) un poco más cerca, para que de lejos no haya lío const bb=x._bb||(x._bb=bbOf(x.c)); if(!inView(bb)) return;
     const sm=samplesOf(x.c,40), has=drawn.length&&sm.filter(p=>drawn.some(d=>distToLine(p,d)<15)).length>=sm.length*0.7;   // ya tiene sus flechas
     const h0=elevAt(x.c[0][0],x.c[0][1]), h1=elevAt(x.c[x.c.length-1][0],x.c[x.c.length-1][1]);
     if(!has&&(h0==null||h1==null)){ wait=wait||[]; wait.push(elevTile(...t2xy(x.c[0][0],x.c[0][1])).p,elevTile(...t2xy(x.c[x.c.length-1][0],x.c[x.c.length-1][1])).p); }
