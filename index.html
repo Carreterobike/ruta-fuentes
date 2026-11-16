@@ -279,6 +279,11 @@ details.help p{margin:6px 0 0}
 .ninput{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:16px;background:var(--bg);color:var(--ink)}
 .tpop{font-family:var(--body);min-width:190px;line-height:1.45}
 .tpop .lv{font-weight:700}
+.gcard.hero{background:#B6E22E;color:#1E2328;border:0;padding:14px}.gcard.hero .tt{font-size:20px}.gcard.hero small{color:#2b3a10}
+.hero-k{font-size:11px;font-weight:800;letter-spacing:.6px;opacity:.75}
+.hero-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font-weight:700;font-size:14px}
+.hero-av{display:flex}.hero-av i{width:28px;height:28px;border-radius:50%;background:#1E2328;color:#fff;font-style:normal;font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid #B6E22E;margin-left:-6px}
+.gcard.hero .acts button{background:#fff;color:#1E2328}.gcard.hero .acts button.go{background:#1E2328;color:#fff}
 .tr-est{margin-top:10px;border-radius:12px;padding:9px 12px;font-size:14px}.tr-est b{font-weight:800}
 .tr-est.barro,.tr-est.arbol{background:#fff4e0;color:#7a4b06}.tr-est.perfecta,.tr-est.limpia{background:#e8f7d0;color:#3b6a00}
 .tr-estb{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.tr-estb button{border:1px solid var(--line,#d9d9d9);background:#fff;color:var(--ink,#1E2328);border-radius:999px;padding:7px 11px;font:700 13px var(--body,system-ui);cursor:pointer}
@@ -815,12 +820,12 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
   <div id="grOne" hidden>
     <div class="grtabs" id="grTabs"></div>
     <section class="pblock">
-      <div class="pb-h"><h3 id="grName"></h3><button class="pb-btn" id="grInvite">Invitar</button></div>
-      <div class="grmem" id="grMem"></div>
-    </section>
-    <section class="pblock">
       <div class="pb-h"><h3>Próximas salidas</h3><button class="pb-btn" id="grPropose">＋ Proponer</button></div>
       <div class="gsal" id="grSal"></div>
+    </section>
+    <section class="pblock">
+      <div class="pb-h"><h3 id="grName"></h3><button class="pb-btn" id="grInvite">Invitar</button></div>
+      <div class="grmem" id="grMem"></div>
     </section>
     <section class="pblock">
       <div class="pb-h"><h3>Chat de la grupeta</h3></div>
@@ -1016,6 +1021,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
           <button id="undo" disabled>Quitar último</button>
           <button id="clear" disabled>Borrar ruta</button>
           <button id="saveRoute" disabled>🔖 Guardar ruta</button>
+          <button id="offRoute" disabled>📥 Sin cobertura</button>
           <button id="gpx" class="primary" disabled>GPX</button>
           <button id="done" class="dark" hidden>Terminar ruta</button>
           <button id="calcCancel" hidden>Cancelar</button>
@@ -1237,7 +1243,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794861786';   // versión de la app (la pone build.py)
+const BUILD='1794862229';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2436,6 +2442,7 @@ $('clear').onclick = () => {
 };
 $('done').onclick = () => setToggle('crear',false);
 $('secViaje').querySelector('.sec-h h3').onclick=()=>$('secViaje').classList.toggle('mini');
+$('offRoute').onclick=()=>{ if(route) saveOffline(route.coords,'la ruta',$('offRoute')); };
 $('viajeX').onclick = () => { store.set('ichnos-viajeX',true); updateSheet(); };   // cerrada se queda cerrada hasta que abras otro viaje
 $('crearX').onclick = async () => {
   // cerrar = quitar la ruta del mapa (si no está guardada, te avisa antes)
@@ -2548,7 +2555,7 @@ let skipLong=false;
 async function calc(){
   const my=++reqId; cancelAll();
   routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers();
-  route=null; $('gpx').disabled=true; $('saveRoute').disabled=true; renderStats(); if(points.length<2){ try{ planLayer.clearLayers(); lunchLayer.clearLayers(); }catch(e){} }
+  route=null; $('gpx').disabled=true; $('saveRoute').disabled=true; $('offRoute').disabled=true; renderStats(); if(points.length<2){ try{ planLayer.clearLayers(); lunchLayer.clearLayers(); }catch(e){} }
   if(points.length<2){
     askedIds=new Set(); fuentesAsked=false; askedVer=-1; renderFountains();
     loadWeather(); setStatus(points.length? 'Toca el siguiente punto o la llegada' : 'Toca el mapa para poner la salida'); updateSheet(); return;
@@ -2633,7 +2640,7 @@ async function useRoute(coords, up, label, my){
   routeVer++;
   if(trip&&trip.open!=null) syncOpenStage(coords,up);
   drawRouteSegments(coords, cum); drawArrows();
-  $('gpx').disabled=false; $('saveRoute').disabled=false; renderStats(); renderFountains();
+  $('gpx').disabled=false; $('saveRoute').disabled=false; $('offRoute').disabled=false; $('offRoute').textContent='📥 Sin cobertura'; renderStats(); renderFountains();
   loadWeather();
   if(fitNext){ fitNext=false; map.fitBounds(L.latLngBounds(coords.map(c=>[c[0],c[1]])),{padding:[40,40]}); }
   if(my===reqId) setStatus(`${label}: ruta lista.`);
@@ -2811,7 +2818,9 @@ function wzRender(){
       ${wx?'<br>'+wx:''}</div>
       <input class="wz-in" id="wzName" value="${esc(def)}" aria-label="Nombre de la ruta">
       <div class="wz-row2"><button id="wzSave" class="primary">🔖 Guardar</button><button id="wzGpx">GPX</button></div>
+      <button id="wzOff" class="wz-op" style="justify-content:center">📥 Guardar para usar sin cobertura</button>
       ${(typeof groups!=='undefined'&&groups.length)?'<button id="wzProp" class="wz-op" style="justify-content:center">Proponer a la grupeta</button>':''}`;
+    $('wzOff').onclick=()=>{ if(route) saveOffline(route.coords,$('wzName').value.trim()||def,$('wzOff')); };
     $('wzSave').onclick=()=>{ if(!route) return; const nm=$('wzName').value.trim()||def;
       misRutas.unshift({id:Date.now(),name:nm,t:Date.now(),mode,p:points.map(x=>x.slice(0,3)),km:+(route.length/1000).toFixed(1),up:Math.round(route.up||0)});
       store.set('ichnos-misrutas',misRutas); renderMisRutas(); $('wzSave').textContent='✓ Guardada'; $('wzSave').disabled=true; toast(`Guardada: "${nm}". La tienes en Salidas, en "Mis rutas".`,4500); };
@@ -3330,6 +3339,25 @@ function opToFountains(j){
 const FUE_BASE=location.pathname.replace(/\/prueba\/.*$/,'/').replace(/[^/]*$/,'')+'datos/fuentes/';
 let fIdx=null; const fTileDone=new Map();
 async function fuentesIdx(){ if(fIdx) return fIdx; try{ const r=await fetch(FUE_BASE+'index.json?d='+new Date().toISOString().slice(0,10)); if(r.ok) fIdx=await r.json(); }catch(e){} return fIdx||{t:[]}; }
+// ===== SIN COBERTURA: guardar en el móvil el mapa (satélite y mapa), trialeras y fuentes de una ruta =====
+if('serviceWorker' in navigator&&!navigator.webdriver&&/github\.io$/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(()=>{});
+async function saveOffline(coords,name,btn){
+  if(!('caches' in window)){ toast('Este móvil no deja guardar el mapa.'); return; }
+  const c=coords.map(p=>[p[0],p[1]]), tiles=new Set(), tz=(lat,lon,z)=>{ const n=2**z, la=lat*Math.PI/180; return [Math.floor((lon+180)/360*n),Math.floor((1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*n)]; };
+  const pts=samplesOf(c,40);
+  for(const z of [11,12,13,14,15,16]){ const pad=z>=15?1:0; pts.forEach(p=>{ const [x,y]=tz(p[0],p[1],z); for(let dx=-pad;dx<=pad;dx++) for(let dy=-pad;dy<=pad;dy++) tiles.add(z+'/'+(x+dx)+'/'+(y+dy)); }); }
+  const omt=await omtUrl(), urls=[];
+  tiles.forEach(k=>{ const [z,x,y]=k.split('/'); urls.push(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`); if(+z<=14) urls.push(omt.replace('{z}',z).replace('{x}',x).replace('{y}',y)); });
+  ['Noto Sans Regular','Noto Sans Bold','Noto Sans Italic'].forEach(f=>['0-255','256-511','8192-8447'].forEach(r=>urls.push(`https://tiles.openfreemap.org/fonts/${encodeURIComponent(f)}/${r}.pbf`)));
+  const cache=await caches.open('ichnos-tiles'); let done=0, bad=0; const total=urls.length, lab=btn?btn.textContent:'';
+  const show=()=>{ const t=`📥 Guardando… ${Math.round(done/total*100)} %`; if(btn) btn.textContent=t; };
+  const q=urls.slice(); await Promise.all([...Array(6)].map(async()=>{ while(q.length){ const u=q.shift(); try{ if(!(await cache.match(u))){ const r=await fetch(u,{mode:'cors'}); if(r.ok) await cache.put(u,r); else bad++; } }catch(e){ bad++; } done++; if(done%10===0) show(); } }));
+  // trialeras y fuentes de la zona también quedan guardadas
+  try{ const k14=new Set(pts.map(p=>tz(p[0],p[1],14).join('/'))); for(const k of k14){ const [x,y]=k.split('/').map(Number); await tileTrails(x,y); await tileNames(x,y); } }catch(e){}
+  try{ const B=L.latLngBounds(c); await fuentesFile(B.getSouth()-.05,B.getWest()-.05,B.getNorth()+.05,B.getEast()+.05); }catch(e){}
+  const mb=Math.round(total*0.025);
+  if(btn){ btn.textContent='✓ Guardada sin cobertura'; }
+  toast(bad>total*0.2?'Se ha guardado solo una parte: vuelve a pulsar con mejor conexión.':`Listo: "${name||'la ruta'}" se puede ver sin cobertura (unos ${mb} MB).`,5000); }
 async function fuentesFile(s,w,n,e){
   const idx=await fuentesIdx(); if(!idx.t||!idx.t.length) throw new Error('sin archivo');
   const have=new Set(idx.t), jobs=[];
@@ -4635,7 +4663,7 @@ function openRide(r){
   $('rvNoData').hidden=!!(r.times&&(r.hr||r.eles));
   // gráficos
   const series=[];
-  if(r.eles) series.push({k:'Altitud',u:'m',v:r.eles,col:'#8f979a'});
+  if(r.eles) series.push({k:'Altitud',u:'m',v:r.eles,col:'#8f979a',surf:1});
   if(st.sp) series.push({k:'Velocidad',u:'km/h',v:st.sp,col:'#5f8a00'});
   if(r.hr) series.push({k:'Pulso',u:'ppm',v:r.hr,col:'#e5484d'});
   if(r.cad) series.push({k:'Cadencia',u:'rpm',v:r.cad,col:'#4aa3ec'});
@@ -4784,6 +4812,19 @@ async function loadStravaPhotos(r,quiet){
   }catch(e){}
 }
 function moveRvDot(i){ const r=rideOpen; if(!r||!rvP) return; const p=rvP(r.coords[i]); const d=document.getElementById('rvDot'); if(d){ d.setAttribute('cx',p[0]); d.setAttribute('cy',p[1]); } }
+// tipo de suelo por donde pasó la salida: carreteras y calles = asfalto; pistas y senderos = tierra (salvo que el mapa diga lo contrario)
+const roadTileCache=new Map();
+function tileRoads(x,y){ const k=x+'/'+y; if(!roadTileCache.has(k)) roadTileCache.set(k,(async()=>{ const c=await tcGet('srf:'+k); if(c) return c;
+    const u=(await omtUrl()).replace('{z}',14).replace('{x}',x).replace('{y}',y); const r=await fetch(u); if(!r.ok) throw new Error('tile');
+    const L_=mvtLines(await r.arrayBuffer(),'transportation',14,x,y,pr=>!/rail|ferry|aerialway|transit/.test(pr.class||'')).map(f=>{ const cl=f.props.class, sf=f.props.surface;
+      return {line:f.line,s:sf==='unpaved'?'u':sf==='paved'?'p':(/^(path|track)$/.test(cl)?'u':'p')}; });
+    tcPut('srf:'+k,L_); return L_; })().catch(()=>{ roadTileCache.delete(k); return []; })); return roadTileCache.get(k); }
+async function rideSurface(r,idx){ if(r._surf&&r._surf.n===idx.length) return r._surf.v; const c=r.coords, keys=new Set(); idx.forEach(i=>keys.add(t2xy(c[i][0],c[i][1]).join('/')));
+  if(keys.size>60) return null; const ln=[]; for(const k of keys){ const [x,y]=k.split('/').map(Number); ln.push(...await tileRoads(x,y)); }
+  const kx=Math.cos(c[0][0]*Math.PI/180)*111320, M=111320, segs=[]; ln.forEach(f=>{ for(let i=1;i<f.line.length;i++){ const a=f.line[i-1], b=f.line[i]; segs.push([a[1]*kx,a[0]*M,b[1]*kx,b[0]*M,f.s]); } });
+  const v=idx.map(i=>{ const qx=c[i][1]*kx, qy=c[i][0]*M; let bd=20, s=null; for(const [ax,ay,bx,by,t] of segs){ if(Math.min(ax,bx)-20>qx||Math.max(ax,bx)+20<qx||Math.min(ay,by)-20>qy||Math.max(ay,by)+20<qy) continue;
+      const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy; let tt=L2?((qx-ax)*dx+(qy-ay)*dy)/L2:0; tt=Math.max(0,Math.min(1,tt)); const d=Math.hypot(qx-ax-tt*dx,qy-ay-tt*dy); if(d<bd){ bd=d; s=t; } } return s; });
+  Object.defineProperty(r,'_surf',{value:{n:idx.length,v},enumerable:false,configurable:true,writable:true}); return v; }
 function chartEl(r,s){
   const W=600,H=110, c=r.coords, cum=r._cum, L0=cum[cum.length-1]||1, n=c.length, step=Math.max(1,Math.floor(n/400));
   const idx=[]; for(let i=0;i<n;i+=step) idx.push(i); if(idx[idx.length-1]!==n-1) idx.push(n-1);
@@ -4804,6 +4845,13 @@ function chartEl(r,s){
     tip.hidden=false; tip.style.left=Math.min(rc.width-90,Math.max(0,x*rc.width-45))+'px';
     tip.textContent=`km ${fmtKm(cum[i]/1000)} · ${v!=null?Math.round(v):'–'} ${s.u}`; moveRvDot(i); };
   svg.addEventListener('pointermove',at); svg.addEventListener('pointerdown',at); svg.addEventListener('touchmove',e=>{ at(e); },{passive:true});
+  // altura pintada por tipo de suelo (asfalto / tierra), como Komoot
+  if(s.surf) rideSurface(r,idx).then(sf=>{ if(!sf||!box.isConnected) return; let out='', cur=null, seg='';
+    const col={p:'#7fae12',u:'#a8743a'}, flush=()=>{ if(seg&&cur) out+=`<path d="${seg}" fill="none" stroke="${col[cur]}" stroke-width="3.2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`; };
+    idx.forEach((i,k)=>{ const v=s.v[i]; if(v==null||!isFinite(v)) return; const t=sf[k]||null; const pt=X(i)+','+Y(v);
+      if(t!==cur){ const prev=seg.split(/[ML]/).pop(); flush(); seg=(prev?'M'+prev+'L':'M')+pt; cur=t; } else seg+='L'+pt; }); flush();
+    svg.insertAdjacentHTML('beforeend',out); const pu=sf.filter(x=>x==='p').length, uu=sf.filter(x=>x==='u').length;
+    if(pu+uu) box.querySelector('.ch-t').insertAdjacentHTML('beforeend',` <small><span style="color:#a8743a;font-weight:800">■ tierra ${Math.round(uu/(pu+uu)*100)} %</span> · <span style="color:#7fae12;font-weight:800">■ asfalto ${Math.round(pu/(pu+uu)*100)} %</span></small>`); }).catch(()=>{});
   return box;
 }
 $('rvBack').onclick=()=>{ $('rideView').hidden=true; rideOpen=null; };
@@ -5848,9 +5896,9 @@ const fmtWhen=t=>{ const d=new Date(t); const s=d.toLocaleDateString('es-ES',{we
 function renderSal(){
   const g=curGroup(), list=Object.values(gSal).filter(x=>x.when>Date.now()-6*3600000).sort((a,b)=>a.when-b.when);
   $('grSal').innerHTML=list.length?'':'<p class="svp">No hay salidas propuestas. Crea una ruta en el mapa y pulsa <b>Proponer a la grupeta</b>.</p>';
-  list.forEach(x=>{
+  list.forEach((x,ix)=>{
     const go=Object.keys(x.going||{}), mine=!!(me&&x.going&&x.going[me.id]), r=x.route||{};
-    const el=document.createElement('div'); el.className='gcard';
+    const el=document.createElement('div'); el.className='gcard'+(ix===0?' hero':'');
     el.innerHTML=`<div class="when">${fmtWhen(x.when)}</div><div class="tt">${esc(x.title)}</div>
       <small>${[r.km?fmtKm(r.km)+' km':'',r.up?'+'+n0(r.up)+' m':'',r.mode&&MODES[r.mode]?MODES[r.mode].label:'','la propone '+uName(x.by)].filter(Boolean).map(esc).join(' · ')}</small>
       ${x.notes?`<div>${esc(x.notes)}</div>`:''}
@@ -5866,8 +5914,17 @@ function renderSal(){
       try{ gSal=await api(`/grupos/${gCur}/salidas/${x.id}`,{method:'POST',body:a==='del'?{del:true}:{go:!mine}}); renderSal(); }catch(e){ toast('No hay conexión ahora.',4000); }
     });
     $('grSal').appendChild(el);
+    if(ix===0){   // la próxima: grande, con el tiempo que hará y quién va
+      el.insertAdjacentHTML('afterbegin','<div class="hero-k">PRÓXIMA SALIDA</div>');
+      el.querySelector('.acts').insertAdjacentHTML('beforebegin',`<div class="hero-row"><span class="hero-wx" id="heroWx"></span><span class="hero-av">${go.slice(0,4).map(u=>`<i>${esc(initial(uName(u)))}</i>`).join('')}${go.length>4?`<i>+${go.length-4}</i>`:''}</span></div>`);
+      const p0=r.coords&&r.coords[0]; if(p0&&x.when-Date.now()<15*86400000) heroWeather(p0,x.when); }
   });
 }
+async function heroWeather(p,when){ try{ const d=new Date(when), day=isoHour(d).slice(0,10);
+  const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${(+p[0]).toFixed(3)}&longitude=${(+p[1]).toFixed(3)}&hourly=temperature_2m,weather_code,wind_speed_10m,precipitation_probability&wind_speed_unit=kmh&timezone=auto&start_date=${day}&end_date=${day}`)).json();
+  const h=j.hourly, i=Math.max(0,h.time.indexOf(isoHour(d))), wc=h.weather_code[i];
+  const ic=wc<=1?'☀️':wc<=2?'⛅':wc<=3?'☁️':wc<=48?'🌫️':wc<=67||(wc>=80&&wc<=82)?'🌧️':wc<=77||wc===85||wc===86?'❄️':'⛈️';
+  if($('heroWx')) $('heroWx').textContent=`${ic} ${Math.round(h.temperature_2m[i])}° · viento ${Math.round(h.wind_speed_10m[i])} km/h · lluvia ${h.precipitation_probability[i]??0}%`; }catch(e){} }
 function renderChat(){
   const ul=$('grChat'), atEnd=ul.scrollTop+ul.clientHeight>=ul.scrollHeight-20;
   ul.innerHTML=gChat.length?gChat.map(c=>`<li class="${isMe(c.u)?'mine':''}"><b>${esc(uName(c.u))}</b>${esc(c.x)}<small>${fmtDT(c.t)}</small></li>`).join(''):'<p class="svp">Todavía no hay mensajes.</p>';
