@@ -166,6 +166,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .capas-ctl button.on{background:var(--ink);color:var(--bg)}
 .capas-ctl b{position:absolute;top:-5px;right:-5px;background:var(--accent);color:var(--accent-ink);border-radius:999px;font-size:11px;padding:0 6px;line-height:18px}
 .capas-ctl b:empty{display:none}
+#wxfx{position:absolute;inset:0;z-index:760;pointer-events:none}#wxfx[hidden]{display:none}#wxfx canvas{position:absolute;inset:0}
+.fxcard{position:absolute;left:12px;right:70px;top:62px;pointer-events:auto;background:rgba(20,28,38,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;border-radius:18px;padding:10px 12px;max-width:420px}
+.fx-top{display:flex;align-items:center;gap:12px}.fx-top>b{font:800 44px/1 var(--display,system-ui)}.fx-top>div{flex:1;min-width:0}.fx-top span{display:block;font-weight:800}.fx-top small{display:block;font-size:12px;opacity:.85}
+.fx-top button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer}
+.fxcard input[type=range]{width:100%;margin-top:8px;accent-color:#B6E22E}
 #map3d{position:absolute;inset:0;z-index:750;background:#9cc3e6}#map3d[hidden]{display:none}
 #map3d .maplibregl-ctrl-bottom-left{bottom:150px;left:6px}
 .lbar button.capas svg{width:17px;height:17px}
@@ -1213,7 +1218,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794860863';   // versión de la app (la pone build.py)
+const BUILD='1794861309';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1680,6 +1685,58 @@ new CapasCtl({position:'topright'}).addTo(map);
 const D3Ctl=L.Control.extend({onAdd(){ const d=L.DomUtil.create('div','capas-ctl'); d.innerHTML='<button id="b3d" aria-label="Ver el mapa en 3D"><b style="position:static;background:none;color:inherit;font:800 17px var(--display,system-ui);padding:0">3D</b></button>';
   L.DomEvent.disableClickPropagation(d); d.querySelector('button').onclick=()=>toggle3D(); return d; }});
 new D3Ctl({position:'topright'}).addTo(map);
+// ===== El tiempo sobre el mapa, estilo iPhone: cielo, nubes, lluvia y gotas en la pantalla =====
+const FxCtl=L.Control.extend({onAdd(){ const d=L.DomUtil.create('div','capas-ctl'); d.innerHTML='<button id="bwx" aria-label="Ver el tiempo en el mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7z"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/></svg><span>Tiempo</span></button>';
+  L.DomEvent.disableClickPropagation(d); d.querySelector('button').onclick=()=>wxFx(); return d; }});
+new FxCtl({position:'topright'}).addTo(map);
+const FX={on:false,k:0,raf:0,t:0,clouds:[],rain:[],glass:[],snow:[],flash:0};
+function fxKind(wc){ return wc<=1?'sol':wc===2?'claros':wc===3?'nubes':wc<=48?'niebla':wc<=57?'llovizna':wc<=67||(wc>=80&&wc<=82)?'lluvia':wc<=77||wc===85||wc===86?'nieve':'tormenta'; }
+function cloudSprite(dark){ const c=document.createElement('canvas'); c.width=360; c.height=200; const x=c.getContext('2d');
+  for(let i=0;i<14;i++){ const cx=60+Math.random()*240, cy=80+Math.random()*60-Math.abs(cx-180)*.15, r=40+Math.random()*50; const g=x.createRadialGradient(cx,cy-r*.3,0,cx,cy,r);
+    g.addColorStop(0,dark?'rgba(205,212,222,.95)':'rgba(255,255,255,.95)'); g.addColorStop(.55,dark?'rgba(150,160,175,.55)':'rgba(236,242,248,.55)'); g.addColorStop(1,'rgba(200,210,220,0)'); x.fillStyle=g; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill(); }
+  return c; }
+function wxFx(){ const btn=$('bwx');
+  if(FX.on){ FX.on=false; cancelAnimationFrame(FX.raf); $('wxfx').hidden=true; btn.classList.remove('on'); return; }
+  if(!wxData||!wxData[0]||!wxData[0].hourly){ toast('Cargando el tiempo… vuelve a tocar en un momento.'); try{ loadWeather&&loadWeather(); }catch(e){} return; }
+  let d=$('wxfx'); if(!d){ d=document.createElement('div'); d.id='wxfx'; d.innerHTML='<canvas></canvas><div class="fxcard" id="fxCard"></div>'; $('map').appendChild(d);
+    ['pointerdown','mousedown','touchstart','wheel','click'].forEach(ev=>$('fxCard').addEventListener(ev,e=>e.stopPropagation(),{passive:true})); }
+  d.hidden=false; btn.classList.add('on'); FX.on=true;
+  const h=wxData[0].hourly, now=isoHour(new Date()); FX.i0=Math.max(0,h.time.indexOf(now)); FX.i=FX.i0;
+  FX.spr=[cloudSprite(0),cloudSprite(1)]; fxCard(); fxLoop(); }
+function fxCard(){ const h=wxData[0].hourly, i=FX.i, v=k=>h[k]?h[k][i]:null, wc=v('weather_code'), dn=dirName(v('wind_direction_10m'));
+  const hh=new Date(h.time[i]).getHours(), lab=i===FX.i0?'Ahora':(new Date(h.time[i]).getDate()!==new Date().getDate()?'Mañana ':'')+hh+':00';
+  $('fxCard').innerHTML=`<div class="fx-top"><b>${Math.round(v('temperature_2m'))}°</b><div><span>${WMO[wc]||''}</span><small>${lab} · ${v('precipitation')?String(v('precipitation')).replace('.',',')+' mm · ':''}lluvia ${v('precipitation_probability')??0}%</small><small>Viento ${Math.round(v('wind_speed_10m'))} km/h del ${dn[0].toLowerCase()} · rachas ${Math.round(v('wind_gusts_10m'))}</small></div><button id="fxX" aria-label="Quitar el tiempo">✕</button></div>
+    <input type="range" id="fxH" min="${FX.i0}" max="${Math.min(h.time.length-1,FX.i0+30)}" step="1" value="${i}" aria-label="Hora">`;
+  $('fxH').oninput=e=>{ FX.i=+e.target.value; fxCard(); }; $('fxX').onclick=()=>wxFx();
+  FX.k=fxKind(wc); FX.cc=v('cloud_cover')??(FX.k==='sol'?5:60); FX.mm=v('precipitation')||0; FX.wind=v('wind_speed_10m')||0; }
+function fxLoop(){ if(!FX.on) return; const d=$('wxfx'), C=d.querySelector('canvas'), dpr=Math.min(2,window.devicePixelRatio||1), W=d.clientWidth, H=d.clientHeight;
+  if(C.width!==W*dpr||C.height!==H*dpr){ C.width=W*dpr; C.height=H*dpr; C.style.width=W+'px'; C.style.height=H+'px'; }
+  const x=C.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H); const k=FX.k, t=++FX.t;
+  const wet=/lluvia|llovizna|tormenta/.test(k), dark=wet||k==='nubes'||k==='nieve';
+  // cielo: tinte de color
+  const tint=x.createLinearGradient(0,0,0,H);
+  if(k==='sol'||k==='claros'){ tint.addColorStop(0,'rgba(255,214,140,.28)'); tint.addColorStop(.5,'rgba(255,214,140,.06)'); tint.addColorStop(1,'rgba(255,214,140,0)'); }
+  else if(k==='niebla'){ tint.addColorStop(0,'rgba(235,238,240,.55)'); tint.addColorStop(1,'rgba(235,238,240,.35)'); }
+  else { const a=k==='tormenta'?.55:wet?.42:.28; tint.addColorStop(0,`rgba(55,68,86,${a+.1})`); tint.addColorStop(1,`rgba(40,50,64,${a})`); }
+  x.fillStyle=tint; x.fillRect(0,0,W,H);
+  // sol: resplandor y rayos que giran
+  if(k==='sol'||k==='claros'){ const sx=W*.82, sy=H*.12; const g=x.createRadialGradient(sx,sy,0,sx,sy,Math.max(W,H)*.6); g.addColorStop(0,'rgba(255,248,215,.85)'); g.addColorStop(.08,'rgba(255,226,150,.55)'); g.addColorStop(.35,'rgba(255,210,120,.12)'); g.addColorStop(1,'rgba(255,210,120,0)'); x.fillStyle=g; x.fillRect(0,0,W,H);
+    x.save(); x.translate(sx,sy); x.rotate(t*.0015); for(let i=0;i<14;i++){ x.rotate(Math.PI/7); const rg=x.createLinearGradient(0,0,Math.max(W,H),0); rg.addColorStop(0,'rgba(255,240,190,.18)'); rg.addColorStop(1,'rgba(255,240,190,0)'); x.fillStyle=rg; x.beginPath(); x.moveTo(0,0); x.lineTo(Math.max(W,H),-28); x.lineTo(Math.max(W,H),28); x.fill(); } x.restore();
+    [[.62,.32,26,.18],[.48,.47,14,.22],[.36,.6,40,.1]].forEach(([fx,fy,r,a])=>{ const px=sx+(W*.5-sx)*fx*2, py=sy+(H*.5-sy)*fy*2; const lg=x.createRadialGradient(px,py,0,px,py,r); lg.addColorStop(0,`rgba(255,250,220,${a})`); lg.addColorStop(1,'rgba(255,250,220,0)'); x.fillStyle=lg; x.beginPath(); x.arc(px,py,r,0,7); x.fill(); }); }
+  // nubes que pasan (más cuantas más nubes haya)
+  const nC=k==='sol'?0:Math.round(2+FX.cc/14); while(FX.clouds.length<nC) FX.clouds.push({x:Math.random()*W*1.4-W*.2,y:Math.random()*H*.75,s:.6+Math.random()*1.1,v:.15+Math.random()*.35}); FX.clouds.length=nC;
+  const drift=.4+FX.wind/25; FX.clouds.forEach(c=>{ c.x+=c.v*drift; if(c.x>W+200) { c.x=-380*c.s; c.y=Math.random()*H*.75; } x.globalAlpha=k==='niebla'?.5:.7; x.drawImage(FX.spr[dark?1:0],c.x,c.y,360*c.s,200*c.s); }); x.globalAlpha=1;
+  // lluvia en diagonal
+  if(wet){ const n=Math.min(500,Math.round((k==='llovizna'?90:180)+FX.mm*60)); while(FX.rain.length<n) FX.rain.push({x:Math.random()*W*1.3,y:Math.random()*H,v:12+Math.random()*10,l:16+Math.random()*24}); FX.rain.length=n;
+    x.strokeStyle='rgba(225,236,250,.75)'; x.lineWidth=1.6; x.lineCap='round'; x.beginPath(); FX.rain.forEach(r=>{ r.y+=r.v; r.x-=r.v*(.18+FX.wind/120); if(r.y>H){ r.y=-20; r.x=Math.random()*W*1.3; } x.moveTo(r.x,r.y); x.lineTo(r.x+r.l*(.18+FX.wind/120),r.y-r.l); }); x.stroke();
+    // gotas en el cristal
+    if(FX.glass.length<30&&Math.random()<.2) FX.glass.push({x:Math.random()*W,y:Math.random()*H*.8,r:4+Math.random()*8,v:0,st:Math.random()*120});
+    FX.glass.forEach(g=>{ g.st--; if(g.st<0) g.v=Math.min(2.5,g.v+.03+g.r*.004); g.y+=g.v; const gr=x.createRadialGradient(g.x-g.r*.35,g.y-g.r*.4,0,g.x,g.y,g.r*1.2); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(.3,'rgba(225,236,248,.4)'); gr.addColorStop(.85,'rgba(40,55,75,.25)'); gr.addColorStop(1,'rgba(255,255,255,.35)');
+      x.fillStyle=gr; x.beginPath(); x.ellipse(g.x,g.y,g.r,g.r*1.18,0,0,7); x.fill(); x.strokeStyle='rgba(255,255,255,.45)'; x.lineWidth=1; x.stroke(); if(g.v>.3){ x.strokeStyle='rgba(230,240,250,.18)'; x.lineWidth=g.r*.8; x.beginPath(); x.moveTo(g.x,g.y-g.r); x.lineTo(g.x,g.y-g.r-g.v*14); x.stroke(); } });
+    FX.glass=FX.glass.filter(g=>g.y<H+20); }
+  if(k==='nieve'){ while(FX.snow.length<160) FX.snow.push({x:Math.random()*W,y:Math.random()*H,r:1+Math.random()*3,v:.5+Math.random()*1.2,p:Math.random()*6}); x.fillStyle='rgba(255,255,255,.9)'; FX.snow.forEach(f=>{ f.y+=f.v; f.x+=Math.sin(t*.02+f.p)*.6; if(f.y>H){ f.y=-5; f.x=Math.random()*W; } x.beginPath(); x.arc(f.x,f.y,f.r,0,7); x.fill(); }); }
+  if(k==='tormenta'){ if(t%220===0||(t%220===12)) FX.flash=10; if(FX.flash>0){ x.fillStyle=`rgba(255,255,255,${FX.flash*.045})`; x.fillRect(0,0,W,H); FX.flash--; } }
+  FX.raf=requestAnimationFrame(fxLoop); }
 let map3d=null;
 function ov3dData(){ const F=[]; const ln=(c,col,name,w)=>{ if(c&&c.length>1) F.push({type:'Feature',properties:{col,name:niceName(name||''),w},geometry:{type:'LineString',coordinates:c.map(p=>[p[1],p[0]])}}); };
   if(T.trialeras) Object.values(gData.t||{}).forEach(tr=>{ if(tr.kind==='trial') ln(tr.coords,(LEVELS[tr.lv]||LEVELS[2]).color,tr.name,6); });
@@ -5240,7 +5297,7 @@ async function loadWeather(){
   }else{ const ce=map.getCenter(); pts=[{p:[ce.lat,ce.lng]}]; wxWhere='Centro del mapa'; }
   try{
     const u=`https://api.open-meteo.com/v1/forecast?latitude=${pts.map(x=>x.p[0].toFixed(3)).join(',')}&longitude=${pts.map(x=>x.p[1].toFixed(3)).join(',')}`+
-      `&hourly=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,precipitation_probability&wind_speed_unit=kmh&timezone=auto&forecast_days=2`;
+      `&hourly=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,precipitation_probability,precipitation,cloud_cover&wind_speed_unit=kmh&timezone=auto&forecast_days=2`;
     let j=await (await fetch(u)).json(); if(!Array.isArray(j)) j=[j];
     wxData=j; wxPts=pts; renderWeather();
   }catch(e){ $('wx').innerHTML='<div class="where">Tiempo</div><div>No se ha podido cargar el tiempo.</div>'; }
