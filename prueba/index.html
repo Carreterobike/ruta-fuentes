@@ -1419,7 +1419,7 @@ body.map-moving .search input,.leaflet-container.moving .mapgrp,.leaflet-contain
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794947787';   // versión de la app (la pone build.py)
+const BUILD='1794947890';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3142,8 +3142,10 @@ async function loadTilesAround(x0,x1,y0,y1,paint){
   const cx=(x0+x1)/2, cy=(y0+y1)/2; keys.sort((p,q)=>Math.hypot(p[0]-cx,p[1]-cy)-Math.hypot(q[0]-cx,q[1]-cy));   // primero el centro de la pantalla
   const N=paint?6:30;
   for(let i=0;i<keys.length;i+=N){ const sl=keys.slice(i,i+N);   // por tandas: se van viendo mientras cargan
-    const [a,b]=await Promise.all([Promise.all(sl.map(([x,y])=>tilePois(x,y))),Promise.all(sl.map(([x,y])=>ovtTile(x,y)))]);
-    a.forEach(addTilePlaces); b.forEach(addOvtPlaces); if(paint&&!(map._popup&&map._popup.isOpen()&&placeLayer.hasLayer(map._popup._source))) renderPlaces(); }
+    const paintNow=()=>{ if(paint&&!(map._popup&&map._popup.isOpen()&&placeLayer.hasLayer(map._popup._source))) renderPlaces(); };
+    const pb=Promise.all(sl.map(([x,y])=>ovtTile(x,y)));   // Overture (servidor lejano, más lento) en paralelo
+    (await Promise.all(sl.map(([x,y])=>tilePois(x,y)))).forEach(addTilePlaces); paintNow();   // OpenStreetMap: sale primero
+    (await pb).forEach(addOvtPlaces); paintNow(); }
 }
 function placeCat(t){
   if(/^(restaurant|bar|cafe|pub|fast_food|biergarten)$/.test(t.amenity||'')) return 'comer';
