@@ -119,6 +119,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .avatar{width:112px;height:112px;border-radius:50%;margin-top:-56px;background:var(--soft) center/cover no-repeat;border:5px solid var(--card);
   box-shadow:0 2px 10px rgba(0,0,0,.18);display:grid;place-items:center;color:var(--muted);overflow:hidden}
 .avatar svg{width:60px;height:60px}
+#pAvatar,#pPick{width:145px;height:145px;margin-top:-72px}#pAvatar svg,#pPick svg{width:76px;height:76px}
 .avatar.pick{cursor:pointer;position:relative}
 .avatar.pick span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:600;padding:5px 4px 9px}
 .pcard h2{margin:4px 0 0;font-family:var(--display);font-weight:800;font-size:32px;line-height:1;letter-spacing:.3px}
@@ -1402,7 +1403,7 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794942027';   // versión de la app (la pone build.py)
+const BUILD='1794942960';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
