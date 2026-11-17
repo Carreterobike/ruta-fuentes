@@ -371,6 +371,7 @@ export default {
         if (b.test) await pushTo(KV, me.id, { title: 'Ichnos', body: 'Así te llegarán los avisos de tu grupeta.', url: './' });
         return J({ ok: true });
       }
+      if (P === '/push/estado') return raw(await KV.get('pushlast:' + me.id) || '{}', cors);
       if (P === '/push/quitar' && req.method === 'POST') { const b = await body(); const l = JSON.parse(await KV.get('push:' + me.id) || '[]').filter(x => x.endpoint !== b.endpoint); await KV.put('push:' + me.id, JSON.stringify(l)); return J({ ok: true }); }
       // "Algo va mal": el aviso llega al administrador con lo que estaba pasando en la app
       if (P === '/fallo' && request.method === 'POST') {
@@ -686,7 +687,9 @@ async function pushOne(KV, sub, msg) {
 }
 async function pushTo(KV, uid, msg) {
   const l = JSON.parse(await KV.get('push:' + uid) || '[]'); if (!l.length) return; let gone = false;
-  for (const sub of l) { try { const r = await pushOne(KV, sub, msg); if (r.status === 404 || r.status === 410) { sub.gone = true; gone = true; } } catch (e) { } }
+  const log = [];
+  for (const sub of l) { try { const r = await pushOne(KV, sub, msg); log.push(new URL(sub.endpoint).host + ' ' + r.status + (r.status >= 400 && r.text ? ' ' + (await r.text()).slice(0, 120) : '')); if (r.status === 404 || r.status === 410) { sub.gone = true; gone = true; } } catch (e) { log.push('error ' + e.message); } }
+  await KV.put('pushlast:' + uid, JSON.stringify({ t: Date.now(), log }));   // para ver si llegan (diagnóstico)
   if (gone) await KV.put('push:' + uid, JSON.stringify(l.filter(x => !x.gone)));
 }
 async function hkey(env) { return crypto.subtle.importKey('raw', te.encode('ichnos-sesion:' + env.STRAVA_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']); }
