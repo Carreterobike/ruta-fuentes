@@ -1419,7 +1419,7 @@ body.map-moving .search input,.leaflet-container.moving .mapgrp,.leaflet-contain
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794947010';   // versión de la app (la pone build.py)
+const BUILD='1794947787';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3083,7 +3083,7 @@ function tileCat(c,sc){
   if(c==='lodging'||c==='campsite'||/^(camp_site|alpine_hut|wilderness_hut)$/.test(sc)) return 'dormir';
   if(c==='hospital'||sc==='clinic') return 'salud';
   if(c==='pharmacy'||sc==='pharmacy') return 'farmacia';
-  if(c==='bicycle'||sc==='bicycle'||sc==='bicycle_repair_station') return 'taller';
+  if(sc==='bicycle'||sc==='bicycle_repair_station'||(c==='bicycle'&&!/rental|parking|sharing/.test(sc))) return 'taller';
   if(/^(supermarket|convenience)$/.test(sc)) return 'super';
   return null;
 }
@@ -3113,7 +3113,7 @@ async function ovtSource(){
 }
 function ovtCat(H,prim,name){
   const has=k=>H.includes(k), h0=H[0]||'';
-  if(H.some(k=>/(^|_)(bike|bicycle)/.test(k)&&!/motor/.test(k))) return 'taller';
+  if(H.some(k=>/(^|_)(bike|bicycle)/.test(k)&&!/motor/.test(k))){ if(H.some(k=>/parking|rental|sharing|route|trail/.test(k))&&!H.some(k=>/repair|store|shop/.test(k))) return null; return 'taller'; }   // talleres y tiendas; no alquiler ni aparcamientos
   if(h0==='food_and_drink'&&!H.some(k=>/bakery|candy|dessert|ice_cream|juice/.test(k))) return 'comer';
   if(h0==='lodging') return 'dormir';
   if(has('pharmacy')) return 'farmacia';
@@ -3137,11 +3137,13 @@ function addOvtPlaces(pts){ pts.forEach(q=>{ const pr=q.props||{}; if(/closed/.t
   if(same){ same.extra={...extra,...(same.extra||{})}; if(!same.extra.phone) same.extra.phone=ph; return; }
   const id='o'+(pr.id||(q.lat.toFixed(5)+','+q.lon.toFixed(5))); if(pStore.has(id)) return;
   const pl={id,lat:q.lat,lon:q.lon,cat,tags:{},name,extra}; pStore.set(id,pl); gridAdd(pl); }); }
-async function loadTilesAround(x0,x1,y0,y1){
+async function loadTilesAround(x0,x1,y0,y1,paint){
   const keys=[]; for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) keys.push([x,y]);
-  for(let i=0;i<keys.length;i+=30){ const sl=keys.slice(i,i+30);   // todo a la vez (lo guardado sale al momento)
+  const cx=(x0+x1)/2, cy=(y0+y1)/2; keys.sort((p,q)=>Math.hypot(p[0]-cx,p[1]-cy)-Math.hypot(q[0]-cx,q[1]-cy));   // primero el centro de la pantalla
+  const N=paint?6:30;
+  for(let i=0;i<keys.length;i+=N){ const sl=keys.slice(i,i+N);   // por tandas: se van viendo mientras cargan
     const [a,b]=await Promise.all([Promise.all(sl.map(([x,y])=>tilePois(x,y))),Promise.all(sl.map(([x,y])=>ovtTile(x,y)))]);
-    a.forEach(addTilePlaces); b.forEach(addOvtPlaces); }
+    a.forEach(addTilePlaces); b.forEach(addOvtPlaces); if(paint&&!(map._popup&&map._popup.isOpen()&&placeLayer.hasLayer(map._popup._source))) renderPlaces(); }
 }
 function placeCat(t){
   if(/^(restaurant|bar|cafe|pub|fast_food|biergarten)$/.test(t.amenity||'')) return 'comer';
@@ -3182,7 +3184,8 @@ async function loadPlaces(){
   try{
     const b=map.getBounds(); let x0=tX(b.getWest()), x1=tX(b.getEast()), y0=tY(b.getNorth()), y1=tY(b.getSouth());
     while((x1-x0+1)*(y1-y0+1)>30){ if(x1-x0>y1-y0){ x0++; x1--; } else { y0++; y1--; } }
-    await loadTilesAround(x0,x1,y0,y1);
+    renderPlaces();   // lo que ya hay, al momento
+    await loadTilesAround(x0,x1,y0,y1,true);
   }catch(e){ toast('No he podido cargar los sitios ahora.',3500); }
   finally{ pBusy=false; }
   renderPlaces();
@@ -3191,9 +3194,11 @@ async function loadPlaces(){
 const opTxt=o=>o?[o.nota?'★'+o.nota:'',o.precio?String(o.precio).replace('.',',')+' €':''].filter(Boolean).join(' · '):'';
 function renderPlaces(){
   placeLayer.clearLayers(); if(!placesOn.size&&!points.some(p=>p[2]==='b')) return;
-  const b=map.getBounds().pad(0.2); let n=0;
+  const b=map.getBounds().pad(0.2), c=map.getCenter();
   const lunchIds=new Set(points.filter(p=>p[2]==='b').map(p=>p[3]));
-  pStore.forEach(p=>{ if(!(placesOn.has(p.cat)||lunchIds.has(p.id))) return; if(isHidden(p.id)) return; if(!b.contains([p.lat,p.lon])||n>400) return; n++;
+  const vis=[]; pStore.forEach(p=>{ if(!(placesOn.has(p.cat)||lunchIds.has(p.id))) return; if(isHidden(p.id)) return; if(b.contains([p.lat,p.lon])) vis.push(p); });
+  if(vis.length>250){ const k=Math.cos(c.lat*Math.PI/180); vis.sort((p,q)=>((p.lat-c.lat)**2+((p.lon-c.lng)*k)**2)-((q.lat-c.lat)**2+((q.lon-c.lng)*k)**2)); }   // los del centro primero
+  vis.slice(0,250).forEach(p=>{
     const lab=opSum(p.id);
     L.marker([p.lat,p.lon],{pane:'taps',title:p.name,icon:L.divIcon({className:'',html:`<div class="pmk2">${pinSvg(PCAT[p.cat].col,PCAT[p.cat].pin)}${lab?`<em>${lab}</em>`:''}</div>`,iconSize:[32,41],iconAnchor:[16,40],popupAnchor:[0,-34]})})
       .bindPopup(()=>placeEl(p),{minWidth:240,maxWidth:280}).addTo(placeLayer);
