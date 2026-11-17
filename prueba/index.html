@@ -278,7 +278,8 @@ details.help p{margin:6px 0 0}
 .lgbox.min .lg-head b{transform:rotate(-90deg)}
 .lgbox.min{width:auto}
 .lgbox.min .lg-body{display:none}
-.lgbox.min{border-radius:999px}.lgbox.min .lg-head{font-size:0;gap:4px;padding:8px 10px}.lgbox.min .lg-head b{font-size:12px}
+.lgctl{position:relative}.lgctl .lgbox{position:absolute!important;left:auto!important;bottom:auto!important;top:0!important;right:calc(100% + 10px)!important;width:200px}
+.lgctl .lgbox .lg-head{display:none}.lgctl .lgbox.min{display:none}
 .dots{display:flex;gap:3px}.dots i{width:9px;height:9px;border-radius:50%}
 .lg-body{max-height:min(46vh,420px);overflow-y:auto;border-top:1px solid var(--line)}
 .lg-row{width:100%;border:0;background:none;display:flex;align-items:center;gap:8px;padding:7px 11px;text-align:left;font-size:13px}
@@ -1273,7 +1274,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794864192';   // versión de la app (la pone build.py)
+const BUILD='1794938013';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2442,7 +2443,7 @@ function trailAt(latlng,force,flv){
     {sw:'repeating-linear-gradient(90deg,#4a4a4a 0 4px,transparent 4px 7px)',name:'Sin apuntar',sc:'',tip:'Sendero del que nadie ha apuntado la dificultad. Ve con cuidado la primera vez.'}];
   $('lgBody').innerHTML=rows.map((r,i)=>`<button class="lg-row" data-i="${i}" aria-expanded="false"><i class="sw${r.dbl?' dbl':''}" style="background:${r.sw}"></i><span>${r.name}${r.sc?` <small>${r.sc}</small>`:''}</span><b>›</b></button><div class="lg-tip" hidden>${r.tip}</div>`).join('');
   $('lgBody').querySelectorAll('.lg-row').forEach(b=>b.onclick=()=>{ const open=b.getAttribute('aria-expanded')!=='true'; b.setAttribute('aria-expanded',open); b.nextElementSibling.hidden=!open; });
-  if(store.get('ichnos-lgmin',true)) $('lgBox').classList.add('min');
+  $('lgBox').classList.add('min');   // cerrada de serie; se abre con el botón "Dificultad"
   $('lgHead').onclick=()=>{ const m=$('lgBox').classList.toggle('min'); $('lgHead').setAttribute('aria-expanded',!m); store.set('ichnos-lgmin',m); };
 })();
 
@@ -2450,7 +2451,8 @@ function trailAt(latlng,force,flv){
 let hintShown=false;
 map.on('click', e => {
   // al tocar el mapa se recogen las ventanas que lo tapan (el viaje por etapas y el tiempo); se abren tocándolas
-  if(!$('secViaje').hidden) $('secViaje').classList.add('mini'); if($('wx')&&!$('wx').classList.contains('mini')&&$('wxMore')) $('wxMore').click();
+  if(!$('secViaje').hidden) $('secViaje').classList.add('mini');
+  if(!$('lgBox').classList.contains('min')){ $('lgBox').classList.add('min'); const b=$('bLg'); if(b){ b.classList.remove('on'); b.setAttribute('aria-expanded','false'); } } if($('wx')&&!$('wx').classList.contains('mini')&&$('wxMore')) $('wxMore').click();
   if(mtState){ mtClick(e.latlng); return; }
   if(segMode){ segClick(e.latlng); return; }
   if(addingF){ addMyFountainAt(e.latlng); return; }
@@ -5401,6 +5403,11 @@ const WxCtl=L.Control.extend({onAdd(){
   return div;
 }});
 new WxCtl({position:'topright'}).addTo(map);
+const LgCtl=L.Control.extend({onAdd(){ const d=L.DomUtil.create('div','capas-ctl lgctl'); d.innerHTML='<button id="bLg" aria-label="Colores de dificultad" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="3.2" fill="#2e9d3a"/><circle cx="16.5" cy="7.5" r="3.2" fill="#1f6fd1"/><circle cx="7.5" cy="16.5" r="3.2" fill="#d62a1e"/><circle cx="16.5" cy="16.5" r="3.2" fill="#111"/></svg><span>Dificultad</span></button>';
+  L.DomEvent.disableClickPropagation(d); if(L.DomEvent.disableScrollPropagation) L.DomEvent.disableScrollPropagation(d); const lg=$("lgBox"); d.appendChild(lg);
+  d.querySelector('button').onclick=()=>{ const m=$('lgBox').classList.toggle('min'); d.querySelector('button').classList.toggle('on',!m); d.querySelector('button').setAttribute('aria-expanded',!m); };
+  const sync=()=>{ d.style.display=lg.hidden?'none':''; }; new MutationObserver(sync).observe(lg,{attributes:true,attributeFilter:['hidden']}); sync(); return d; }});
+new LgCtl({position:'topright'}).addTo(map);
 (function(){ const tr=document.querySelector('.leaflet-top.leaflet-right'); if(!tr) return; const g=document.createElement('div'); g.className='leaflet-control mapgrp';
   const parts=[tr.querySelector('.leaflet-control-layers'),...tr.querySelectorAll('.capas-ctl')].filter(Boolean); tr.insertBefore(g,tr.firstChild); parts.forEach(p=>g.appendChild(p));
   const wx=$('wx'), sb=document.querySelector('.search'); if(wx&&sb){ sb.appendChild(wx); wx.classList.add('in-search'); } })();
