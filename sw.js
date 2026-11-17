@@ -17,7 +17,7 @@ self.addEventListener('fetch',e=>{
     e.respondWith(caches.open(APP).then(c=>c.match(r).then(m=>{ const n=fetch(r).then(x=>{ if(x.ok) c.put(r,x.clone()); return x; }).catch(()=>m); return m||n; })));
     return; }
   if(url.origin===location.origin&&(r.mode==='navigate'||/\/(index\.html)?$/.test(url.pathname))){   // la app: internet primero; sin cobertura, la guardada
-    e.respondWith(fetch(r).then(x=>{ if(x.ok){ const cp=x.clone(); caches.open(APP).then(c=>c.put(url.pathname.replace(/index\.html$/,''),cp)); } return x; })
+    e.respondWith(fetch(u,{cache:'no-cache',credentials:'same-origin'}).then(x=>{ if(x.ok){ const cp=x.clone(); caches.open(APP).then(c=>c.put(url.pathname.replace(/index\.html$/,''),cp)); } return x; })
       .catch(()=>caches.open(APP).then(c=>c.match(url.pathname.replace(/index\.html$/,'')).then(m=>m||c.match(r)))));
   }
 });
