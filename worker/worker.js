@@ -8,8 +8,10 @@ const SYNC_OK = /^[\w.-]{1,80}$/;
 const PUB_OK = /^(pub|resumen|p-\d{4}-\d{2})$/;
 const ITER = 20000;
 
+let CTX = null;   // para mandar los avisos al móvil sin hacer esperar a quien los provoca
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
+    CTX = ctx || null;
     const url = new URL(req.url);
     const cors = {
       'Access-Control-Allow-Origin': '*',
@@ -28,6 +30,7 @@ export default {
       const body = async () => { try { return await req.json(); } catch (e) { return {}; } };
 
       // ---------- sin cuenta ----------
+      if (P === '/push/key') return J({ key: (await vapid(KV)).pub });
       if (P === '/estado') return J({ v: 2, primero: !(await KV.get('admin')), viejo: !!(await KV.get('key')), icu: !!(env.ICU_ID && env.ICU_SECRET) });
 
       // El primero (David): pasa su conexión antigua a una cuenta de verdad
@@ -327,7 +330,8 @@ export default {
           const C = JSON.parse(await KV.get('gc:' + gid) || '[]');
           if (req.method === 'GET') return J(C);
           if (b.del) { const i = C.findIndex(x => x.id === b.del && (x.u === me.id || gAdmin)); if (i >= 0) C.splice(i, 1); }
-          else { const x = String(b.x || '').trim().slice(0, 1000); if (!x) return J({ error: 'vacío' }, 400); C.push({ id: 'm' + Date.now().toString(36) + rnd(3), u: me.id, t: Date.now(), x }); }
+          else { const x = String(b.x || '').trim().slice(0, 1000); if (!x) return J({ error: 'vacío' }, 400); C.push({ id: 'm' + Date.now().toString(36) + rnd(3), u: me.id, t: Date.now(), x });
+            const who = me.name || 'Alguien'; for (const uid of Object.keys(g.members || {})) if (uid !== me.id) pushLater(KV, uid, { title: (g.name || 'Grupeta') + ' · ' + who, body: x.slice(0, 140), url: './#grupeta', tag: 'chat-' + gid }); }
           const out = C.slice(-200); await KV.put('gc:' + gid, JSON.stringify(out)); return J(out);
         }
         return J({ error: 'no existe' }, 404);
@@ -359,6 +363,15 @@ export default {
         return J(all[rid] || { l: [], c: [] });
       }
       if (P === '/avisos') return raw(await KV.get('nt:' + me.id) || '[]', cors);
+      // avisos en el móvil (web push): la app pide permiso y manda aquí su suscripción
+      if (P === '/push/sub' && req.method === 'POST') {
+        const b = await body(); const sub = b.sub; if (!sub || !/^https:\/\//.test(sub.endpoint || '') || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) return J({ error: 'suscripción' }, 400);
+        const l = JSON.parse(await KV.get('push:' + me.id) || '[]').filter(x => x.endpoint !== sub.endpoint);
+        l.unshift({ endpoint: sub.endpoint, keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth }, t: Date.now() }); await KV.put('push:' + me.id, JSON.stringify(l.slice(0, 6)));
+        if (b.test) await pushTo(KV, me.id, { title: 'Ichnos', body: 'Así te llegarán los avisos de tu grupeta.', url: './' });
+        return J({ ok: true });
+      }
+      if (P === '/push/quitar' && req.method === 'POST') { const b = await body(); const l = JSON.parse(await KV.get('push:' + me.id) || '[]').filter(x => x.endpoint !== b.endpoint); await KV.put('push:' + me.id, JSON.stringify(l)); return J({ ok: true }); }
       // "Algo va mal": el aviso llega al administrador con lo que estaba pasando en la app
       if (P === '/fallo' && request.method === 'POST') {
         const b = await request.json().catch(() => ({}));
@@ -638,7 +651,44 @@ async function usersPut(KV, u) { const l = (await usersList(KV)).filter(x => x.i
 async function idxAdd(KV, k, v) { const l = JSON.parse(await KV.get(k) || '[]'); if (!l.includes(v)) { l.push(v); await KV.put(k, JSON.stringify(l)); } }
 async function idxDel(KV, k, v) { const l = JSON.parse(await KV.get(k) || '[]'); if (l.includes(v)) await KV.put(k, JSON.stringify(l.filter(x => x !== v))); }
 async function getFw(KV, uid) { const f = JSON.parse(await KV.get('fw:' + uid) || 'null') || {}; f.in = f.in || {}; f.out = f.out || {}; return f; }
-async function notify(KV, uid, n) { const l = JSON.parse(await KV.get('nt:' + uid) || '[]'); l.unshift({ ...n, t: Date.now() }); await KV.put('nt:' + uid, JSON.stringify(l.slice(0, 60))); }
+async function notify(KV, uid, n) { const l = JSON.parse(await KV.get('nt:' + uid) || '[]'); l.unshift({ ...n, t: Date.now() }); await KV.put('nt:' + uid, JSON.stringify(l.slice(0, 60)));
+  try { const u = n.u ? JSON.parse(await KV.get('u:' + n.u) || 'null') : null, w = (u && u.name) || 'Alguien', rn = n.n ? ` «${n.n}»` : '';
+    const txt = { seg: `${w} quiere seguirte.`, acep: `${w} ha aceptado que le sigas.`, alta: `${w} se ha unido a Ichnos con tu invitación.`, like: `A ${w} le gusta tu salida${rn}.`,
+      com: `${w} ha comentado en tu salida${rn}: “${n.x || ''}”`, gjoin: `${w} se ha unido a tu grupeta «${n.x || ''}».`, gsal: `${w} propone una salida: ${n.x || ''}.`, gvoy: `${w} se apunta a tu salida «${n.x || ''}».`,
+      prop: `${w} ${n.x || 'te ha mandado un aviso'}.`, bug: `${w} dice que algo va mal: “${n.x || ''}”`, propok: `${w} ha aceptado lo que mandaste.`, propno: `${w} ha visto lo que mandaste.` }[n.k] || 'Tienes un aviso nuevo.';
+    pushLater(KV, uid, { title: 'Ichnos', body: txt.slice(0, 180), url: './#avisos', tag: n.k }); } catch (e) { } }
+// ---------- avisos al móvil (web push, sin servicios de fuera: las llaves las crea el propio puente) ----------
+function pushLater(KV, uid, msg) { const p = pushTo(KV, uid, msg).catch(() => { }); if (CTX && CTX.waitUntil) CTX.waitUntil(p); return p; }
+const ub64 = s => { s = String(s).replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const b = atob(s), o = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) o[i] = b.charCodeAt(i); return o; };
+const cat = (...a) => { const o = new Uint8Array(a.reduce((n, x) => n + x.length, 0)); let i = 0; a.forEach(x => { o.set(x, i); i += x.length; }); return o; };
+async function vapid(KV) {
+  let v = JSON.parse(await KV.get('vapid') || 'null');
+  if (!v) { const k = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    v = { priv: await crypto.subtle.exportKey('jwk', k.privateKey), pub: b64u(await crypto.subtle.exportKey('raw', k.publicKey)) }; await KV.put('vapid', JSON.stringify(v)); }
+  return v; }
+async function hkdf(salt, ikm, info, bits) { const k = await crypto.subtle.importKey('raw', ikm, 'HKDF', false, ['deriveBits']); return new Uint8Array(await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt, info }, k, bits)); }
+async function pushOne(KV, sub, msg) {
+  const v = await vapid(KV), aud = new URL(sub.endpoint).origin;
+  const hdr = b64enc(JSON.stringify({ typ: 'JWT', alg: 'ES256' })), cl = b64enc(JSON.stringify({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'https://carreterobike.github.io/ruta-fuentes/' }));
+  const pk = await crypto.subtle.importKey('jwk', v.priv, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  const jwt = hdr + '.' + cl + '.' + b64u(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, pk, te.encode(hdr + '.' + cl)));
+  // cifrado aes128gcm (RFC 8291)
+  const uaPub = ub64(sub.keys.p256dh), authS = ub64(sub.keys.auth);
+  const eph = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']), asPub = new Uint8Array(await crypto.subtle.exportKey('raw', eph.publicKey));
+  const uaKey = await crypto.subtle.importKey('raw', uaPub, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
+  const ecdh = new Uint8Array(await crypto.subtle.deriveBits({ name: 'ECDH', public: uaKey }, eph.privateKey, 256));
+  const ikm = await hkdf(authS, ecdh, cat(te.encode('WebPush: info\0'), uaPub, asPub), 256), salt = crypto.getRandomValues(new Uint8Array(16));
+  const cek = await hkdf(salt, ikm, te.encode('Content-Encoding: aes128gcm\0'), 128), nonce = await hkdf(salt, ikm, te.encode('Content-Encoding: nonce\0'), 96);
+  const ck = await crypto.subtle.importKey('raw', cek, 'AES-GCM', false, ['encrypt']);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, ck, cat(te.encode(JSON.stringify(msg)), new Uint8Array([2]))));
+  const rs = new Uint8Array([0, 0, 16, 0]), bodyB = cat(salt, rs, new Uint8Array([65]), asPub, ct);
+  return fetch(sub.endpoint, { method: 'POST', headers: { Authorization: `vapid t=${jwt}, k=${v.pub}`, 'Content-Encoding': 'aes128gcm', 'Content-Type': 'application/octet-stream', TTL: '86400', Urgency: 'normal' }, body: bodyB });
+}
+async function pushTo(KV, uid, msg) {
+  const l = JSON.parse(await KV.get('push:' + uid) || '[]'); if (!l.length) return; let gone = false;
+  for (const sub of l) { try { const r = await pushOne(KV, sub, msg); if (r.status === 404 || r.status === 410) { sub.gone = true; gone = true; } } catch (e) { } }
+  if (gone) await KV.put('push:' + uid, JSON.stringify(l.filter(x => !x.gone)));
+}
 async function hkey(env) { return crypto.subtle.importKey('raw', te.encode('ichnos-sesion:' + env.STRAVA_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']); }
 async function session(env, u) {
   const b = b64enc(u.id + '.' + (u.v || 1) + '.' + (Date.now() + 400 * 86400000));
