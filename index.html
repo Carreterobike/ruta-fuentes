@@ -866,6 +866,8 @@ a.wa{flex:1.4;white-space:nowrap;display:flex;align-items:center;justify-content
 .pb-btn.ghost{background:var(--soft);color:var(--ink)}
 details.bk-old{display:flex;flex-direction:column;gap:10px}details.bk-old>summary{cursor:pointer;list-style:revert;margin:6px 0}details.bk-old>.bike{margin-top:10px}
 .aj-t{text-transform:none!important;letter-spacing:.3px!important}
+.leaflet-container.moving .mapgrp,.leaflet-container.moving .fab,.leaflet-container.moving .lgctl .lgbox,body.map-moving .search input,body.map-moving .wx.in-search.mini .wxpill,body.map-moving .fxcard{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body.map-moving .search input,.leaflet-container.moving .mapgrp,.leaflet-container.moving .fab{background:var(--card)!important}
 </style>
 </head>
 <body>
@@ -1417,7 +1419,7 @@ details.bk-old{display:flex;flex-direction:column;gap:10px}details.bk-old>summar
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794946539';   // versión de la app (la pone build.py)
+const BUILD='1794947191';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1829,6 +1831,8 @@ const VECTOR_FILLS=['bg','landcover','landuse','park','water','waterway','buildi
 const LABEL_LAYERS=['road-names','park-labels','peaks','place-small','place-suburb','place-village','place-city'];
 const TRAIL_LAYERS=['trail-halo','trail-track','trail-path','trail-rated','trail-double','trail-names','my-names'];
 const glLayer=L.maplibreGL({style:glStyle}).addTo(map);
+map.on('movestart zoomstart',()=>{ map.getContainer().classList.add('moving'); document.body.classList.add('map-moving'); });
+map.on('moveend zoomend',()=>{ clearTimeout(window._mvT); window._mvT=setTimeout(()=>{ map.getContainer().classList.remove('moving'); document.body.classList.remove('map-moving'); },150); });
 const glMap=glLayer.getMaplibreMap();
 window.glMap=glMap;
 let glReady=false, currentBase='Satélite', namesOn=true;
@@ -1863,6 +1867,12 @@ function onGlLoad(){ if(glReady) return;
   setBase(currentBase); applyTrails();
 }
 glMap.on('load',onGlLoad);
+// si el iPhone se queda sin memoria, el mapa (satélite, trialeras, nombres) puede perderse: se recupera solo
+(function(){ let lostT=null; const cv=()=>glMap.getCanvas&&glMap.getCanvas();
+  const onLost=e=>{ try{ e.preventDefault(); }catch(x){} clearTimeout(lostT); lostT=setTimeout(()=>{ let last=0; try{ last=+sessionStorage.getItem('ichnos-glreload')||0; }catch(x){}
+      if(Date.now()-last>120000){ try{ sessionStorage.setItem('ichnos-glreload',String(Date.now())); }catch(x){} location.reload(); } else toast('El mapa se ha quedado sin memoria. Cierra la app y vuelve a abrirla.',6000); },2500); };
+  const onBack=()=>{ clearTimeout(lostT); try{ glMap.triggerRepaint(); applyTrails&&applyTrails(); }catch(x){} };
+  setTimeout(()=>{ const c=cv(); if(c){ c.addEventListener('webglcontextlost',onLost,false); c.addEventListener('webglcontextrestored',onBack,false); } },0); })();
 if(window.matchMedia('(min-width:761px)').matches) L.control.zoom({position:'bottomright'}).addTo(map);
 const base={'Mapa':L.layerGroup(),'Satélite':L.layerGroup(),'Relieve':L.layerGroup()};
 base['Satélite'].addTo(map); map.getContainer().classList.add('sat');
@@ -1928,7 +1938,7 @@ function fxCard(){ const h=wxData[0].hourly, i=FX.i, v=k=>h[k]?h[k][i]:null, wc=
     <input type="range" id="fxH" min="${FX.i0}" max="${Math.min(h.time.length-1,FX.i0+30)}" step="1" value="${i}" aria-label="Hora">`;
   $('fxH').oninput=e=>{ FX.i=+e.target.value; fxCard(); }; $('fxX').onclick=()=>wxFx();
   FX.k=fxKind(wc); FX.cc=v('cloud_cover')??(FX.k==='sol'?5:60); FX.mm=v('precipitation')||0; FX.wind=v('wind_speed_10m')||0; }
-function fxLoop(){ if(!FX.on) return; const d=$('wxfx'), C=d.querySelector('canvas'), dpr=Math.min(2,window.devicePixelRatio||1), W=d.clientWidth, H=d.clientHeight;
+function fxLoop(){ if(!FX.on) return; if(document.body.classList.contains('map-moving')){ FX.raf=requestAnimationFrame(fxLoop); return; } const d=$('wxfx'), C=d.querySelector('canvas'), dpr=Math.min(2,window.devicePixelRatio||1), W=d.clientWidth, H=d.clientHeight;
   if(C.width!==W*dpr||C.height!==H*dpr){ C.width=W*dpr; C.height=H*dpr; C.style.width=W+'px'; C.style.height=H+'px'; }
   const x=C.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H); const k=FX.k, t=++FX.t;
   const wet=/lluvia|llovizna|tormenta/.test(k), dark=wet||k==='nubes'||k==='nieve';
@@ -3617,8 +3627,8 @@ async function loadViewFountains(){
   if(map.getZoom()<12.5){ renderFountains(); toast('Acerca el mapa para ver las fuentes'); return; }
   const b=map.getBounds().pad(0.1), keys=new Set();
   for(let x=tX(b.getWest());x<=tX(b.getEast());x++) for(let y=tY(b.getNorth());y<=tY(b.getSouth());y++) keys.add(x+'/'+y);
-  if(keys.size>120) return;
-  await loadTileSet(keys); renderFountains();
+  if(keys.size>120){ renderFountains(); return; }
+  renderFountains(); await loadTileSet(keys); renderFountains();
   if(map.getZoom()>=13){
     const bb=map.getBounds().pad(0.4);
     try{ await opArea(bb.getSouth(),bb.getWest(),bb.getNorth(),bb.getEast()); renderFountains(); }catch(e){}
@@ -3691,7 +3701,7 @@ function renderFountains(){
   const nearF = (route && fuentesAsked) ? nearRouteFountains().filter(f=>askedIds.has(f.id)) : [];
   const routeF = nearF.filter(f=>f.d<25||viaIdx(f)>0);    // solo las fuentes por las que pasa la ruta
   const shownIds=new Set(nearF.map(f=>f.id));
-  if(T.fuentes) fStore.forEach(f=>shownIds.add(f.id));
+  if(T.fuentes){ const vb=map.getBounds().pad(0.3); let n=0; for(const f of fStore.values()){ if(n>=600) break; if(vb.contains([f.lat,f.lon])){ shownIds.add(f.id); n++; } } }
   shownIds.forEach(id=>{
     const f=fStore.get(id); if(!f) return; try{ if(isHidden(id)) return; }catch(e){}
     const m=L.marker([f.lat,f.lon],{pane:'taps',title:nameOf(f),icon:L.divIcon({className:'',html:`<div class="tapdrop">${iconFor(f)}</div>`,iconSize:[30,38],iconAnchor:[15,37],popupAnchor:[0,-32]})})
@@ -5653,7 +5663,6 @@ function renderWeather(){
       html:`<div class="wind">${arrow(goes,'#ffffff')}<span class="${rel[0]}">${sp} km/h · ${rel[1]}</span></div>`})}).addTo(windLayer);
   });
 }
-map.on('moveend',()=>{ if(route) return; clearTimeout(wxTimer); wxTimer=setTimeout(loadWeather,700); });
 
 // ================= BUSCADOR =================
 let qTimer=null, qRes=[], foundMk=null;
