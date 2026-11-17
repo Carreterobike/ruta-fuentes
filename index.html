@@ -1,7 +1,16 @@
 <!doctype html>
 <html lang="es">
 <head>
-<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('ichnos-tema')||'"light"')==='dark'?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}</script>
+<script>/* tema: auto (de noche oscuro, al salir el sol claro), o el que elijas en Ajustes */
+function sunTimes(d,la,lo){ const rad=Math.PI/180, n=Math.floor((d-Date.UTC(d.getUTCFullYear(),0,0))/864e5), g=2*Math.PI/365*(n-1);
+  const eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g)), dec=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g);
+  const ha=Math.acos(Math.max(-1,Math.min(1,Math.cos(90.833*rad)/(Math.cos(la*rad)*Math.cos(dec))-Math.tan(la*rad)*Math.tan(dec))))/rad, noon=720-4*lo-eq, day=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());
+  return {up:day+(noon-4*ha)*6e4, down:day+(noon+4*ha)*6e4}; }
+function themeNow(){ let t='auto'; try{ t=JSON.parse(localStorage.getItem('ichnos-tema2')||'"auto"'); }catch(e){}
+  if(t==='dark'||t==='light') return t; let la=41.54, lo=2.21; try{ const p=JSON.parse(localStorage.getItem('ichnos-perfil')||'{}'); if(p&&p.home){ la=p.home.lat; lo=p.home.lon; } }catch(e){}
+  const now=new Date(), s=sunTimes(now,la,lo); return (now<s.up||now>s.down)?'dark':'light'; }
+try{document.documentElement.dataset.theme=themeNow();}catch(e){document.documentElement.dataset.theme='light';}
+setInterval(function(){ try{ var t=themeNow(); if(document.documentElement.dataset.theme!==t){ document.documentElement.dataset.theme=t; if(window.onThemeChange) onThemeChange(); } }catch(e){} },60000);</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Ichnos</title>
@@ -797,6 +806,33 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 @keyframes spIn{from{opacity:0;transform:scale(.9)}}
 @keyframes spBar{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
 @media (prefers-reduced-motion:reduce){.skel:after,.modal:not([hidden]),.modal:not([hidden]) .box,.rideview:not([hidden]),.sheet:not([hidden]),.splash div,.splash i:after{animation:none!important}}
+/* tanda 3: cristal sobre el mapa */
+:root{--glass:rgba(255,255,255,.78);--glass-b:rgba(255,255,255,.55)}
+html[data-theme="dark"]:root{--glass:rgba(23,25,28,.74);--glass-b:rgba(255,255,255,.08)}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .search input,.mapgrp,.fab,.lgctl .lgbox,.wx.in-search.mini .wxpill{background:var(--glass)!important;-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);border:1px solid var(--glass-b)}
+  .mapgrp>.leaflet-control.leaflet-control-layers-expanded{background:var(--glass)!important;-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6)}
+}
+html[data-theme="dark"] .fab svg,html[data-theme="dark"] .mapgrp{color:var(--ink)}
+/* pantallas vacías con dibujo */
+.emptyb{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:18px 10px 8px;color:var(--muted);font-size:14px;line-height:1.4;list-style:none}
+.emptyb svg{width:86px;height:64px}
+.emptyb b{color:var(--ink);font-size:16px}
+.emptyb button{margin-top:4px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:9px 18px}
+/* me gusta que salta */
+@keyframes pop{30%{transform:scale(1.35)}60%{transform:scale(.92)}}
+.pop{animation:pop .45s ease-out}
+li.emptyb{background:none!important;border:0!important;box-shadow:none!important;display:flex!important;grid-template-columns:none!important;margin:0 auto!important;max-width:none!important;cursor:default}
+/* modo noche: lo que venía en blanco fijo */
+html[data-theme="dark"] .leaflet-popup-content-wrapper,html[data-theme="dark"] .leaflet-popup-tip{background:var(--card);color:var(--ink)}
+html[data-theme="dark"] .leaflet-bar a,html[data-theme="dark"] .leaflet-control-layers{background:var(--card);color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{color:var(--muted)}
+html[data-theme="dark"] .tr-estb button,html[data-theme="dark"] .tpop .segbtn,html[data-theme="dark"] .segbtn.del2,html[data-theme="dark"] .wxpill{background:var(--soft);color:var(--ink)}
+html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5a2a2a;color:#ff7b72}
+#confeti{position:fixed;inset:0;z-index:7000;pointer-events:none}
+/* gráficos */
+.chart1 svg path.ln{stroke-linejoin:round;stroke-linecap:round}
+@media (prefers-reduced-motion:reduce){.pop{animation:none}}
 </style>
 </head>
 <body>
@@ -951,6 +987,11 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <!-- ============ AJUSTES (se abre con la rueda) ============ -->
 <main class="page off" id="pgAjustes">
   <header class="phead short"><button class="aj-back" id="ajBack" aria-label="Volver">←</button><b class="aj-t">Ajustes</b></header>
+  <section class="pblock">
+    <div class="pb-h"><h3>Aspecto</h3></div>
+    <p class="svp">En automático, la app se pone oscura cuando se pone el sol y clara cuando sale.</p>
+    <div class="actions" id="temaBtns"><button data-tema="auto">Automático</button><button data-tema="light">Día</button><button data-tema="dark">Noche</button></div>
+  </section>
   <section class="pblock" id="acBox">
     <div class="pb-h"><h3>Tu cuenta</h3></div>
     <p class="svp" id="acInfo"></p>
@@ -1322,7 +1363,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794939089';   // versión de la app (la pone build.py)
+const BUILD='1794939919';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1646,8 +1687,9 @@ $('navPlus').onclick=()=>{ const onMap=!$('pgMapa').classList.contains('off'); s
 let ajFrom='pgPerfil';
 document.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>{ const cur=[...document.querySelectorAll('.page')].find(p=>!p.classList.contains('off')); ajFrom=cur&&cur.id!=='pgAjustes'?cur.id:'pgPerfil'; showPage('pgAjustes'); $('pgAjustes').scrollTop=0; });
 $('ajBack').onclick=()=>showPage(ajFrom);
-function paintTema(){ const t=document.documentElement.dataset.theme; document.querySelectorAll('#temaBtns button').forEach(b=>b.classList.toggle('primary',b.dataset.tema===t)); }
-document.querySelectorAll('#temaBtns button').forEach(b=>b.onclick=()=>{ document.documentElement.dataset.theme=b.dataset.tema; syncRaw.set('ichnos-tema',b.dataset.tema); paintTema(); });
+function paintTema(){ let t='auto'; try{ t=JSON.parse(localStorage.getItem('ichnos-tema2')||'"auto"'); }catch(e){} document.querySelectorAll('#temaBtns button').forEach(b=>b.classList.toggle('primary',b.dataset.tema===t)); }
+document.querySelectorAll('#temaBtns button').forEach(b=>b.onclick=()=>{ try{ localStorage.setItem('ichnos-tema2',JSON.stringify(b.dataset.tema)); }catch(e){} document.documentElement.dataset.theme=themeNow(); paintTema(); });
+paintTema();
 paintTema();
 
 // ================= MAPA =================
@@ -4674,7 +4716,7 @@ function renderRideList(){
   [['B',bici,rideShown,'bici'],['P',pie,rideShownP,'pie']].forEach(([k,list,shown,c])=>{
   const ul=$('rideList'+k); ul.innerHTML='';
   $(c==='bici'?'nBici':'nPie').textContent=list.length?'('+list.length+')':''; $(c==='bici'?'nBiciT':'nPieT').textContent=list.length?'('+list.length+')':'';
-  if(!list.length) ul.innerHTML=`<p class="empty">${c==='bici'?'Sin salidas en bici todavía.':'Sin salidas a pie todavía.'}</p>`;
+  if(!list.length) ul.innerHTML=emptyB('bike',c==='bici'?'Sin salidas en bici todavía':'Sin salidas a pie todavía','Conecta Strava o tu ciclocomputador en Ajustes y llegarán solas.','Ir a Ajustes','ajustes');
   list.slice(0,shown).forEach(r=>{
     const st=rideStats(r), sh=shapeSvg(r.coords,64,64), li=document.createElement('li');
     li.innerHTML=`<svg viewBox="0 0 64 64" class="rthumb"><path d="${sh.d}" fill="none" stroke="#1E2328" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="${sh.d}" fill="none" stroke="#B6E22E" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
@@ -4822,7 +4864,7 @@ function openRide(r){
   let rvList=[], svOpen=false;
   const row=(x,i)=>{ const bb=best(x);
     return `<li data-i="${i}"><span><b>${esc(niceName(x.name)||x.name)}</b><small>${x.dir||''}</small></span><div class="rt"><em class="${bb.pr?'gold':''}">${bb.pr?'<i class="ico ico-trophy"></i>':''}${x.t!=null?fmtT(x.t):''}</em>${bb.sub?`<small>${bb.sub}</small>`:''}</div></li>`; };
-  const segHtml=list=>{ rvList=list.slice().sort((x,y)=>(x.a??1e9)-(y.a??1e9));
+  const segHtml=list=>{ rvList=list.slice().sort((x,y)=>(x.a??1e9)-(y.a??1e9)); if(!fr) setTimeout(()=>maybeConfeti(r),500);
     return rvList.length?`<div class="ch-t">Trialeras y segmentos</div><ul class="routes">${rvList.map(row).join('')}</ul>`:''; };
   const reRender=()=>{ $('rvSegs').innerHTML=segHtml(rvList); };
   // tu mejor tiempo de verdad en cada segmento, preguntado a Strava (se guarda; se vuelve a preguntar tras una salida nueva)
@@ -4900,6 +4942,7 @@ function renderRvNotes(r){
   $('rvLike').setAttribute('aria-label',fr?(liked?'Quitar me gusta':'Me gusta'):'Me gusta de tus amigos');
   $('rvLikers').textContent=soc.l.length?'A '+soc.l.map(uName).join(', ')+(soc.l.length>1?' les gusta':' le gusta'):(fr?'Dale a me gusta':'Todavía no hay me gusta');
 }
+$('rvLike').addEventListener('click',()=>{ const b=$('rvLike'); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); });
 $('rvLike').onclick=async()=>{ const r=rideOpen; if(!r||!r._fr||!me) return; const owner=rideOwner(r), liked=socOf(owner,r.id).l.includes(me.id);
   await socPost(owner,r,{like:!liked}); renderRvNotes(r); };
 $('rvNoteBtn').onclick=async()=>{ const r=rideOpen, t=$('rvNoteTxt').value.trim(); if(!r||!t) return;
@@ -4928,6 +4971,17 @@ async function rideSurface(r,idx){ if(r._surf&&r._surf.n===idx.length) return r.
   const v=idx.map(i=>{ const qx=c[i][1]*kx, qy=c[i][0]*M; let bd=20, s=null; for(const [ax,ay,bx,by,t] of segs){ if(Math.min(ax,bx)-20>qx||Math.max(ax,bx)+20<qx||Math.min(ay,by)-20>qy||Math.max(ay,by)+20<qy) continue;
       const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy; let tt=L2?((qx-ax)*dx+(qy-ay)*dy)/L2:0; tt=Math.max(0,Math.min(1,tt)); const d=Math.hypot(qx-ax-tt*dx,qy-ay-tt*dy); if(d<bd){ bd=d; s=t; } } return s; });
   Object.defineProperty(r,'_surf',{value:{n:idx.length,v},enumerable:false,configurable:true,writable:true}); return v; }
+// confeti cuando abres una salida tuya reciente con alguna mejor marca (una vez por salida)
+function maybeConfeti(r){ if(!r||rideOpen!==r||$('rideView').hidden||Date.now()-(r.date||0)>4*864e5) return;
+  if(!$('rvSegs').querySelector('em.gold')) return; const seen=store.get('ichnos-confeti',[])||[]; if(seen.includes(r.id)) return;
+  seen.push(r.id); store.set('ichnos-confeti',seen.slice(-50)); confeti(); }
+function confeti(){ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return; const cv=document.createElement('canvas'); cv.id='confeti'; document.body.appendChild(cv);
+  const W=cv.width=innerWidth*devicePixelRatio, H=cv.height=innerHeight*devicePixelRatio, g=cv.getContext('2d'), cols=['#B6E22E','#E8B931','#ffffff','#1f6fd1','#d62a1e','#2e9d3a'];
+  const P=Array.from({length:140},()=>({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*W*.018,vy:-Math.random()*H*.018-H*.004,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,w:(6+Math.random()*6)*devicePixelRatio,c:cols[Math.random()*cols.length|0]}));
+  let t0=performance.now(); const step=t=>{ const k=(t-t0)/1000; g.clearRect(0,0,W,H);
+    P.forEach(p=>{ p.vy+=H*.0006; p.x+=p.vx; p.y+=p.vy; p.vx*=.99; p.r+=p.vr; g.save(); g.translate(p.x,p.y); g.rotate(p.r); g.globalAlpha=Math.max(0,1-k/3); g.fillStyle=p.c; g.fillRect(-p.w/2,-p.w/4,p.w,p.w/2); g.restore(); });
+    if(k<3) requestAnimationFrame(step); else cv.remove(); };
+  requestAnimationFrame(step); }
 function chartEl(r,s){
   const W=600,H=110, c=r.coords, cum=r._cum, L0=cum[cum.length-1]||1, n=c.length, step=Math.max(1,Math.floor(n/400));
   const idx=[]; for(let i=0;i<n;i+=step) idx.push(i); if(idx[idx.length-1]!==n-1) idx.push(n-1);
@@ -4935,11 +4989,14 @@ function chartEl(r,s){
   if(vals.length<2) return document.createTextNode('');
   let lo=Math.min(...vals), hi=Math.max(...vals); if(s.k==='Velocidad'){ lo=0; hi=Math.min(hi,90); } if(hi-lo<1) hi=lo+1;
   const X=i=>(cum[i]/L0*W).toFixed(1), Y=v=>(H-4-(Math.min(hi,Math.max(lo,v))-lo)/(hi-lo)*(H-12)).toFixed(1);
-  let d='', started=false; idx.forEach(i=>{ const v=s.v[i]; if(v==null||!isFinite(v)) return; d+=(started?'L':'M')+X(i)+','+Y(v); started=true; });
+  // línea suave: media de los puntos de alrededor (sin tocar mín/media/máx)
+  const sv=idx.map((i,k)=>{ const v=s.v[i]; if(v==null||!isFinite(v)) return null; if(s.surf) return v; let a=0,m=0; for(let j=Math.max(0,k-2);j<=Math.min(idx.length-1,k+2);j++){ const w=s.v[idx[j]]; if(w!=null&&isFinite(w)){ a+=w; m++; } } return a/m; });
+  let d='', started=false; idx.forEach((i,k)=>{ const v=sv[k]; if(v==null) return; d+=(started?'L':'M')+X(i)+','+Y(v); started=true; });
+  const gid='cg'+Math.random().toString(36).slice(2,8);
   const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
   const box=document.createElement('div'); box.className='chart1';
   box.innerHTML=`<div class="ch-t">${s.k} <small>mín ${Math.round(Math.min(...vals))} · media ${Math.round(avg)} · máx ${Math.round(Math.max(...vals))} ${s.u}</small></div>
-    <div class="ch-w"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${d}L${W},${H}L0,${H}Z" fill="${s.col}" opacity=".18"/><path d="${d}" fill="none" stroke="${s.col}" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <div class="ch-w"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.col}" stop-opacity=".42"/><stop offset="1" stop-color="${s.col}" stop-opacity="0"/></linearGradient></defs><path d="${d}L${W},${H}L0,${H}Z" fill="url(#${gid})"/><path class="ln" d="${d}" fill="none" stroke="${s.col}" stroke-width="2.4" vector-effect="non-scaling-stroke"/>
     <line class="cx" x1="-5" x2="-5" y1="0" y2="${H}" stroke="#1E2328" stroke-width="1" vector-effect="non-scaling-stroke"/></svg><div class="tip" hidden></div></div>`;
   const svg=box.querySelector('svg'), tip=box.querySelector('.tip'), cx=box.querySelector('.cx');
   const at=ev=>{ const rc=svg.getBoundingClientRect(), x=Math.max(0,Math.min(1,((ev.touches?ev.touches[0].clientX:ev.clientX)-rc.left)/rc.width)), dd=x*L0;
@@ -5798,6 +5855,10 @@ async function loadFriends(){
   try{ const j=await api('/amigos'); users=j.users||[]; fw={in:j.in||{},out:j.out||{}}; syncRaw.set('ichnos-usuarios',users); syncRaw.set('ichnos-fw',fw); }catch(e){}
   renderFriends();
 }
+const EMPTY_ART={"bike": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 56c18-6 30 2 44-4s22-2 34-6\" stroke=\"var(--line)\" stroke-width=\"3\"/><circle cx=\"22\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"62\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M22 40l12-18h18l10 18M34 22l8 18h20M48 14h8\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"70\" cy=\"10\" r=\"5\" fill=\"var(--accent)\"/></svg>", "people": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"30\" cy=\"22\" r=\"10\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M12 56c2-12 10-18 18-18s16 6 18 18\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"58\" cy=\"24\" r=\"8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M50 40c3-2 6-3 8-3 7 0 13 5 15 15\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"74\" cy=\"12\" r=\"6\" fill=\"var(--accent)\"/><path d=\"M74 9v6M71 12h6\" stroke=\"var(--accent-ink)\" stroke-width=\"2\"/></svg>", "chat": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 14h40a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H26l-10 8v-8h-6a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M60 26h14a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6h-2v6l-8-6h-8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"20\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"30\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"40\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/></svg>", "route": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 50c10-4 6-18 18-20s14 10 24 6 8-18 16-22\" stroke=\"var(--ink)\" stroke-width=\"3\" stroke-dasharray=\"1 7\"/><circle cx=\"14\" cy=\"50\" r=\"6\" fill=\"var(--good)\"/><path d=\"M72 14V2m0 0h10l-3 4 3 4H72\" stroke=\"var(--ink)\" stroke-width=\"2.6\" fill=\"var(--accent)\"/><rect x=\"36\" y=\"44\" width=\"30\" height=\"16\" rx=\"3\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/><path d=\"M36 50h30M44 41v6M58 41v6\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/></svg>", "bell": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M28 26a15 15 0 0 1 30 0c0 16 7 20 7 20H21s7-4 7-20\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M38 54a5 5 0 0 0 10 0\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M16 14l-6-4M70 14l6-4M12 30H4M74 30h8\" stroke=\"var(--accent-strong)\" stroke-width=\"3\"/></svg>"};
+const emptyB=(art,title,txt,btn,act)=>`<li class="emptyb">${EMPTY_ART[art]||''}<b>${title}</b><span>${txt}</span>${btn?`<button type="button" data-empty="${act}">${btn}</button>`:''}</li>`;
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-empty]'); if(!b) return; const a=b.dataset.empty;
+  if(a==='ajustes'){ showPage('pgAjustes'); } else if(a==='amigos'){ showPage('pgPerfil'); $('frFind').click(); } else if(a==='ruta'){ showPage('pgMapa'); $('navPlus').click(); } });
 function renderFriends(){
   $('pAmigos').hidden=!me; if(!me) return;
   const reqs=Object.keys(fw.in).filter(id=>fw.in[id]==='pend');
@@ -5807,7 +5868,7 @@ function renderFriends(){
   ids.sort((a,b)=>uName(a).localeCompare(uName(b),'es'));
   $('frList').innerHTML=ids.length?ids.map(id=>{ const st=fwState(id), back=fw.in[id]==='ok'&&!fw.out[id];
     return `<li data-id="${id}"><div class="av">${initial(uName(id))}</div><span><b>${esc(uName(id))}</b><small>${st}</small></span>${back?`<button data-f="${id}">Seguir también</button>`:''}</li>`; }).join('')
-    :'<p class="svp">Todavía no sigues a nadie. Pulsa <b>＋ Buscar</b> para encontrar a tus amigos.</p>';
+    :emptyB('people','Todavía no sigues a nadie','Busca a tus amigos para ver sus salidas y que vean las tuyas.','Buscar amigos','amigos');
   $('frList').querySelectorAll('li').forEach(li=>li.onclick=e=>{ if(e.target.dataset.f){ e.stopPropagation(); fwAct('seguir',e.target.dataset.f); return; } openFriend(li.dataset.id); });
 }
 async function fwAct(act,id){
@@ -5922,7 +5983,7 @@ function feedCard(x,i){
 const skelCards=n=>Array.from({length:n},()=>`<li class="skcard" aria-hidden="true"><div class="skrow"><div class="skel" style="width:38px;height:38px;border-radius:50%"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div class="skel" style="height:12px;width:45%"></div><div class="skel" style="height:10px;width:30%"></div></div></div><div class="skel" style="height:18px;width:70%"></div><div class="skel" style="aspect-ratio:2/1;width:100%;border-radius:14px"></div></li>`).join('');
 function renderFeed(){
   const ul=$('feedList'); ul.innerHTML='';
-  if(!feedItems.length) ul.innerHTML='<p class="svp">Tus amigos todavía no tienen salidas.</p>';
+  if(!feedItems.length) ul.innerHTML=emptyB('bike','Aún no hay salidas de tus amigos','Cuando salgan con la bici, sus salidas aparecerán aquí.');
   feedItems.slice(0,feedShown).forEach((x,i)=>{ const li=document.createElement('li'); li.className='fcard'; li.innerHTML=feedCard(x,i); li.onclick=()=>openFriendRide(x.uid,x); ul.appendChild(li); });
   $('feedMore').hidden=feedItems.length<=feedShown;
 }
@@ -5938,7 +5999,7 @@ function avText(a){ const w=`<b>${esc(uName(a.u))}</b>`, rn=a.n?` «${esc(a.n)}�
     prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,bug:`<i class="ico ico-alert"></i>${w} dice que algo va mal: “${esc(a.x||'')}”`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
 $('bell').onclick=()=>{
   const seen=store.get('ichnos-avisto',0);
-  $('avList').innerHTML=avisos.length?avisos.map((a,i)=>`<li data-i="${i}" class="${a.t>seen?'new':''}">${avText(a)}<small>${fmtDT(a.t)}</small></li>`).join(''):'<p class="svp">No tienes avisos.</p>';
+  $('avList').innerHTML=avisos.length?avisos.map((a,i)=>`<li data-i="${i}" class="${a.t>seen?'new':''}">${avText(a)}<small>${fmtDT(a.t)}</small></li>`).join(''):emptyB('bell','No tienes avisos','Aquí verás los me gusta, comentarios y salidas de tu grupeta.');
   $('avList').querySelectorAll('li').forEach(li=>li.onclick=()=>{ const a=avisos[+li.dataset.i]; $('avModal').hidden=true;
     if((a.k==='like'||a.k==='com')){ const r=rides.find(x=>x.id===a.r); if(r) openRide(r); }
     else if(a.k==='seg'){ showPage('pgPerfil'); $('pAmigos').scrollIntoView({behavior:'smooth'}); }
@@ -6020,7 +6081,7 @@ async function loadGroupData(){
 const fmtWhen=t=>{ const d=new Date(t); const s=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'short'}); return s[0].toUpperCase()+s.slice(1)+' · '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}); };
 function renderSal(){
   const g=curGroup(), list=Object.values(gSal).filter(x=>x.when>Date.now()-6*3600000).sort((a,b)=>a.when-b.when);
-  $('grSal').innerHTML=list.length?'':'<p class="svp">No hay salidas propuestas. Crea una ruta en el mapa y pulsa <b>Proponer a la grupeta</b>.</p>';
+  $('grSal').innerHTML=list.length?'':emptyB('route','No hay salidas propuestas','Crea una ruta y pulsa <b>Proponer a la grupeta</b>.','Crear una ruta','ruta');
   list.forEach((x,ix)=>{
     const go=Object.keys(x.going||{}), mine=!!(me&&x.going&&x.going[me.id]), r=x.route||{};
     const el=document.createElement('div'); el.className='gcard'+(ix===0?' hero':'');
@@ -6052,7 +6113,7 @@ async function heroWeather(p,when){ try{ const d=new Date(when), day=isoHour(d).
   if($('heroWx')) $('heroWx').textContent=`${ic} ${Math.round(h.temperature_2m[i])}° · viento ${Math.round(h.wind_speed_10m[i])} km/h · lluvia ${h.precipitation_probability[i]??0}%`; }catch(e){} }
 function renderChat(){
   const ul=$('grChat'), atEnd=ul.scrollTop+ul.clientHeight>=ul.scrollHeight-20;
-  ul.innerHTML=gChat.length?gChat.map(c=>`<li class="${isMe(c.u)?'mine':''}"><b>${esc(uName(c.u))}</b>${esc(c.x)}<small>${fmtDT(c.t)}</small></li>`).join(''):'<p class="svp">Todavía no hay mensajes.</p>';
+  ul.innerHTML=gChat.length?gChat.map(c=>`<li class="${isMe(c.u)?'mine':''}"><b>${esc(uName(c.u))}</b>${esc(c.x)}<small>${fmtDT(c.t)}</small></li>`).join(''):emptyB('chat','Todavía no hay mensajes','Escribe el primero: queda, ruta, almuerzo…');
   if(atEnd||!ul.dataset.seen){ ul.scrollTop=ul.scrollHeight; ul.dataset.seen=1; }
 }
 $('grChatF').onsubmit=async e=>{ e.preventDefault(); const x=$('grChatT').value.trim(); if(!x||!gCur) return; $('grChatT').value='';
