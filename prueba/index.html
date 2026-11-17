@@ -794,6 +794,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 @media (max-width:760px){.sheet:not([hidden]){animation:vUp .3s cubic-bezier(.2,.8,.2,1)}}
 /* portada del perfil */
 #pgPerfil .phead{background:transparent var(--cover,none) center/cover no-repeat;position:relative}
+#pgPerfil .phead:not(.cov):before{display:none}
 #pgPerfil .phead:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,0) 45%,rgba(0,0,0,.25));pointer-events:none}
 #pgPerfil .phead>*{position:relative}
 .pyear{display:flex;justify-content:center;gap:22px;width:100%;margin:2px 0 4px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -819,7 +820,7 @@ html[data-theme="dark"] .fab svg,html[data-theme="dark"] .mapgrp{color:var(--ink
 .emptyb{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:18px 10px 8px;color:var(--muted);font-size:14px;line-height:1.4;list-style:none}
 .emptyb svg{width:86px;height:64px}
 .emptyb b{color:var(--ink);font-size:16px}
-.emptyb button{margin-top:4px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:9px 18px}
+.emptyb button{margin-top:4px;border:0!important;border-radius:999px!important;background:var(--accent)!important;color:var(--accent-ink)!important;font-weight:700;padding:9px 18px}
 /* me gusta que salta */
 @keyframes pop{30%{transform:scale(1.35)}60%{transform:scale(.92)}}
 .pop{animation:pop .45s ease-out}
@@ -1401,7 +1402,7 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794941924';   // versión de la app (la pone build.py)
+const BUILD='1794942027';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1638,7 +1639,7 @@ function paintYear(){
 }
 function renderPerfil(){
   paintAvatar($('pAvatar'),perfil.foto);
-  document.querySelector('#pgPerfil .phead').style.setProperty('--cover',perfil.portada?`url("${perfil.portada}")`:'none');
+  document.querySelector('#pgPerfil .phead').style.setProperty('--cover',perfil.portada?`url("${perfil.portada}")`:'none'); document.querySelector('#pgPerfil .phead').classList.toggle('cov',!!perfil.portada);
   paintYear();
   $('pApodo').textContent=perfil.apodo||(me&&me.name)||'Sin apodo';
   $('pCiudad').innerHTML=PIN_SVG+esc(perfil.ciudad||'Sin ciudad');
