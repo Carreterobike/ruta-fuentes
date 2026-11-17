@@ -858,6 +858,14 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
 .ptr svg{width:20px;height:20px;color:var(--accent-strong)}
 .ptr.spin svg{animation:ptrs .8s linear infinite}
 @keyframes ptrs{to{transform:rotate(360deg)}}
+.revn{font-style:normal;background:#e5484d;color:#fff;border-radius:999px;font-size:13px;padding:1px 8px;vertical-align:3px;font-family:var(--body)}.revn:empty{display:none}
+.grinv{display:flex;flex-direction:column;gap:10px;margin:4px 0 12px;padding:12px;border-radius:14px;background:var(--soft)}
+.grinv .pb-btn.ghost{align-self:flex-start;background:var(--card)}
+.grinv-ok .actions{margin-top:8px}
+a.wa{flex:1.4;white-space:nowrap;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#25D366;color:#fff;font-weight:700;font-size:14px;text-decoration:none;padding:10px 6px}
+.pb-btn.ghost{background:var(--soft);color:var(--ink)}
+details.bk-old{display:flex;flex-direction:column;gap:10px}details.bk-old>summary{cursor:pointer;list-style:revert;margin:6px 0}details.bk-old>.bike{margin-top:10px}
+.aj-t{text-transform:none!important;letter-spacing:.3px!important}
 </style>
 </head>
 <body>
@@ -916,16 +924,12 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
     <div id="frReq"></div>
     <ul class="frlist" id="frList"></ul>
   </section>
-  <section class="pblock" id="pInvita" hidden>
-    <div class="pb-h"><h3>Invitar amigos</h3></div>
-    <p class="svp">Crea un código para cada amigo (por ejemplo <b>Jesus-SB</b>) y pásaselo junto con el enlace de la app. Cada código sirve una sola vez.</p>
-    <div class="inv-add"><input id="invCode" placeholder="Ej.: Jesus-SB" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn">Crear</button></div>
-    <label class="grlab" for="invGroup" id="invGroupL" hidden>Al registrarse entra también en la grupeta:</label>
-    <select id="invGroup" class="invsel" hidden></select>
-    <ul class="invlist" id="invList"></ul>
-    <h4 class="propt" id="propT" hidden>Avisos y propuestas de la grupeta</h4>
-    <ul class="invlist" id="propList"></ul>
-    <details class="help"><summary>¿Alguien ha olvidado la contraseña?</summary><p class="svp">Toca su nombre y te doy un código para que se ponga una contraseña nueva.</p><ul class="invlist" id="invUsers"></ul></details>
+  <section class="pblock" id="pStats">
+    <div class="pb-h"><h3>Tus números</h3><select id="stFilter" aria-label="Qué salidas contar"></select></div>
+    <div class="segc" id="stPer"><button data-p="w" class="on">Semana</button><button data-p="m">Mes</button><button data-p="y">Año</button><button data-p="a">Siempre</button></div>
+    <div class="stgrid" id="stGrid"></div>
+    <div class="chart" id="stChart"></div>
+    <div id="stRecsBox"><div class="ch-t">Tus récords</div><ul class="routes recs" id="stRecs"></ul></div>
   </section>
   <section class="pblock" id="pBikes">
     <div class="pb-h"><h3>Mis bicis</h3><button class="pb-btn" id="bikeAdd">＋ Añadir</button></div>
@@ -936,13 +940,6 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
     <div class="bikes" id="shoeList"></div>
   </section>
 
-  <section class="pblock" id="pStats">
-    <div class="pb-h"><h3>Tus números</h3><select id="stFilter" aria-label="Qué salidas contar"></select></div>
-    <div class="segc" id="stPer"><button data-p="w" class="on">Semana</button><button data-p="m">Mes</button><button data-p="y">Año</button><button data-p="a">Siempre</button></div>
-    <div class="stgrid" id="stGrid"></div>
-    <div class="chart" id="stChart"></div>
-    <div id="stRecsBox"><div class="ch-t">Tus récords</div><ul class="routes recs" id="stRecs"></ul></div>
-  </section>
 
 </main>
 
@@ -959,12 +956,23 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
   </section>
   <div id="grOne" hidden>
     <div class="grtabs" id="grTabs"></div>
+    <section class="pblock" id="grRev" hidden>
+      <div class="pb-h"><h3>Para revisar <i class="revn" id="propN"></i></h3></div>
+      <p class="svp">Lo que te mandan los de la grupeta. Solo lo ves tú.</p>
+      <ul class="invlist" id="propList"></ul>
+    </section>
     <section class="pblock">
       <div class="pb-h"><h3>Próximas salidas</h3><button class="pb-btn" id="grPropose">＋ Proponer</button></div>
       <div class="gsal" id="grSal"></div>
     </section>
     <section class="pblock">
       <div class="pb-h"><h3 id="grName"></h3><button class="pb-btn" id="grInvite">Invitar</button></div>
+      <div class="grinv" id="grInv" hidden>
+        <p class="svp" id="grInvTxt">Escribe un nombre para su código (por ejemplo <b>Burri-SB</b>). Al crear su cuenta entra directo en esta grupeta. Cada código sirve una sola vez.</p>
+        <div class="inv-add" id="grInvAdd"><input id="invCode" placeholder="Ej.: Burri-SB" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn">Crear</button></div>
+        <div class="grinv-ok" id="grInvOk" hidden><p class="svp" id="grInvOkT"></p><div class="actions"><a class="wa" id="grInvWa" target="_blank" rel="noopener">Enviar por WhatsApp</a><button id="grInvCopy">Copiar</button></div></div>
+        <button class="pb-btn ghost" id="grInvX">Cerrar</button>
+      </div>
       <div class="grmem" id="grMem"></div>
     </section>
     <section class="pblock">
@@ -1023,6 +1031,11 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
     <details class="help"><summary>Cambiar la contraseña</summary>
       <div class="acpw"><input type="password" id="acOld" placeholder="Contraseña actual" autocomplete="current-password"><input type="password" id="acNew" placeholder="Contraseña nueva" autocomplete="new-password"><input type="password" id="acNew2" placeholder="Repite la nueva" autocomplete="new-password"><button class="btn-main" id="acSave">Cambiar contraseña</button></div>
     </details>
+  </section>
+  <section class="pblock" id="ajAdmin" hidden>
+    <div class="pb-h"><h3>Administrar</h3></div>
+    <details class="help"><summary>¿Alguien ha olvidado la contraseña?</summary><p class="svp">Toca su nombre y te doy un código para que se ponga una contraseña nueva.</p><ul class="invlist" id="invUsers"></ul></details>
+    <details class="help"><summary>Códigos de invitación creados</summary><ul class="invlist" id="invList"></ul></details>
   </section>
   <section class="pblock" id="pushBox" hidden>
     <div class="pb-h"><h3>Avisos en el móvil</h3></div>
@@ -1404,7 +1417,7 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794945531';   // versión de la app (la pone build.py)
+const BUILD='1794946539';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1716,6 +1729,7 @@ function showPage(id){
   document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
   if(id==='pgPerfil') try{ paintYear(); }catch(e){}
   if(id==='pgAjustes'&&window.paintPush) paintPush();
+  if((id==='pgGrupeta'||id==='pgAjustes')&&typeof loadAdmin==='function'&&me&&me.admin) loadAdmin();
   if((id==='pgSalidas'||id==='pgAjustes') && typeof svAuto==='function') svAuto();
   if((id==='pgSalidas'||id==='pgGrupeta') && typeof loadFeed==='function') loadFeed(false);
   if(id==='pgGrupeta' && typeof loadGroupData==='function') loadGroupData();
@@ -4629,7 +4643,7 @@ function renderGear(boxId,list,shoe){
   const box=$(boxId); box.innerHTML='';
   const act=list.filter(b=>!b.retirada), old=list.filter(b=>b.retirada);
   [...act,...(old.length?['__old']:[]),...old].forEach(b=>{
-    if(b==='__old'){ const h=document.createElement('h5'); h.className='bk-old-h'; h.textContent=shoe?'Anteriores zapatillas':'Anteriores bicis'; box.appendChild(h); return; }
+    if(b==='__old'){ const d=document.createElement('details'); d.className='bk-old'; d.innerHTML=`<summary class="bk-old-h">${shoe?'Anteriores zapatillas':'Anteriores bicis'} (${old.length})</summary>`; box.appendChild(d); return; }
     const km=rides.filter(r=>r.bike===b.id&&!r._dup).reduce((s,r)=>s+(r.km||0),0);
     const el=document.createElement('button'); el.className='bike'+(b.retirada?' old':'');
     el.innerHTML=`<div class="bk-ph" ${b.foto?`style="background-image:url('${b.foto}')"`:''}>${b.foto?'':(shoe?SHOE_SVG:BIKE_SVG)}</div>
@@ -4637,7 +4651,7 @@ function renderGear(boxId,list,shoe){
       <span><i class="chip">${BIKE_TIPOS[b.tipo]||''}</i>${b.principal?'<i class="chip main">Principal</i>':''}</span>
       <em>${Math.round(km).toLocaleString('es-ES')} km</em></div>`;
     el.onclick=()=>editBike(b);
-    box.appendChild(el);
+    (b.retirada&&box.querySelector('details.bk-old')||box).appendChild(el);
   });
   if(!list.length) box.innerHTML=shoe?'<p class="empty">Añade tus zapatillas para saber cuántos km llevas con cada par.</p>':'<p class="empty">Añade tus bicis para saber cuántos km llevas con cada una.</p>';
 }
@@ -6051,7 +6065,7 @@ $('bell').onclick=()=>{
   $('avList').querySelectorAll('li').forEach(li=>li.onclick=()=>{ const a=avisos[+li.dataset.i]; $('avModal').hidden=true;
     if((a.k==='like'||a.k==='com')){ const r=rides.find(x=>x.id===a.r); if(r) openRide(r); }
     else if(a.k==='seg'){ showPage('pgPerfil'); $('pAmigos').scrollIntoView({behavior:'smooth'}); }
-    else if(a.k==='prop'){ showPage('pgPerfil'); loadAdmin(); $('pInvita').scrollIntoView({behavior:'smooth'}); }
+    else if(a.k==='prop'){ showPage('pgGrupeta'); loadAdmin().then(()=>{ if(!$('grRev').hidden) $('grRev').scrollIntoView({behavior:'smooth'}); }); }
     else if(a.k==='propok'||a.k==='propno'){ }
     else if(a.k==='bug'){ openBugs(); }
     else if(a.k==='gsal'||a.k==='gvoy'||a.k==='gjoin'){ if(a.g){ gCur=a.g; syncRaw.set('ichnos-gcur',gCur); } showPage('pgGrupeta'); renderGroup(); loadGroupData(); }
@@ -6060,7 +6074,7 @@ $('bell').onclick=()=>{
 };
 $('avClose').onclick=()=>$('avModal').hidden=true;
 // invitar (solo David)
-function paintAdmin(){ if($('pInvita')) $('pInvita').hidden=!(me&&me.admin); }
+function paintAdmin(){ $('ajAdmin').hidden=!(me&&me.admin); if(!(me&&me.admin)) $('grRev').hidden=true; }
 const invMsg=code=>`¡Hola! Te invito a Ichnos 🚴\n1) Abre este enlace en el móvil: ${APP_URL}\n2) Pulsa "Crear cuenta" y pon este código: ${code}\n3) Elige tu usuario y tu contraseña.\nEn el iPhone: en Safari pulsa Compartir → "Añadir a pantalla de inicio" y te queda como una app.\n\nVídeo con todos los pasos (1 minuto y medio): https://carreterobike.github.io/ruta-fuentes/video/ichnos-grupeta.mp4`;
 async function copyTxt(t,ok){ try{ await navigator.clipboard.writeText(t); toast(ok,4500); }catch(e){ await ask('Copia este mensaje',t,'Vale','Cerrar'); } }
 async function loadAdmin(){
@@ -6074,9 +6088,8 @@ async function loadAdmin(){
   $('invList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
     if(b.dataset.x){ if(!await ask(`¿Anular el código ${b.dataset.x}?`,'Ya nadie podrá usarlo.','Sí, anular','No')) return; try{ await api('/admin/anular',{method:'POST',body:{code:b.dataset.x}}); }catch(e){} loadAdmin(); return; }
     copyTxt(b.dataset.t==='clave'?clvMsg(b.dataset.c):invMsg(b.dataset.c),'Mensaje copiado. Pégalo en WhatsApp.'); });
-  try{ const mine=groups; $('invGroup').innerHTML=mine.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')+'<option value="">Ninguna</option>'; $('invGroup').hidden=$('invGroupL').hidden=!mine.length; }catch(e){}
   const props=Object.entries(j.props||{}).sort((a,b)=>b[1].t-a[1].t);
-  $('propT').hidden=!props.length;
+  $('grRev').hidden=!props.length; $('propN').textContent=props.length||'';
   $('propList').innerHTML=props.map(([pid,p])=>`<li><span><b>${esc(uName(p.by))}</b> ${esc(propText(p.op))}<small>${fmtD(p.t)}</small></span>${propLL(p.op)?`<button class="ghost" data-v="${pid}">Ver</button>`:''}<button data-ok="${pid}">${p.op.k==='aviso'?'Quitar':'Aceptar'}</button><button class="ghost" data-no="${pid}">No</button></li>`).join('');
   $('propList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
     const pid=b.dataset.v||b.dataset.ok||b.dataset.no, p=(j.props||{})[pid];
@@ -6097,8 +6110,12 @@ function propText(o){ const n=(o.m&&o.m.name)||o.name||''; const LV=['verde','az
   return ({aviso:`avisa en «${n||'un sitio'}»: ${o.txt||''}`,fuente:`propone añadir la fuente «${n||'sin nombre'}»`,'fuente-':'propone borrar una fuente',sitio:`propone añadir «${n}»`,'sitio-':`propone borrar «${n}»`,oculto:`propone ocultar «${n}»`,color:`propone poner «${n||'una trialera'}» en ${LV[o.lv]||''}`})[o.k]||'hace una propuesta'; }
 function propLL(o){ if(o.m&&isFinite(o.m.lat)&&o.m.lat) return [o.m.lat,o.m.lon]; if(isFinite(o.lat)&&o.lat) return [o.lat,o.lon]; if(o.coords&&o.coords[0]) return [o.coords[0][0],o.coords[0][1]]; return null; }
 const clvMsg=code=>`Para poner una contraseña nueva en Ichnos:\n1) Abre ${APP_URL}\n2) Pulsa "He olvidado la contraseña"\n3) Pon este código: ${code} y tu contraseña nueva.`;
-$('invBtn').onclick=async()=>{ const code=$('invCode').value.trim(); if(!code) return;
-  try{ await api('/admin/invitar',{method:'POST',body:{code,g:$('invGroup').value||null}}); $('invCode').value=''; await loadAdmin(); copyTxt(invMsg(code),`Código ${code} creado. El mensaje con el enlace y el código está copiado: pégalo en WhatsApp.`); }
+// invitar desde la tarjeta de la grupeta: el código ya entra en esta grupeta; se manda directo por WhatsApp
+function invShow(msg,txt){ $('grInvOk').hidden=false; $('grInvAdd').hidden=true; $('grInvTxt').hidden=true; $('grInvOkT').innerHTML=txt; $('grInvWa').href='https://wa.me/?text='+encodeURIComponent(msg); $('grInvCopy').onclick=()=>copyTxt(msg,'Mensaje copiado. Pégalo en WhatsApp.'); }
+function invClose(){ $('grInv').hidden=true; $('grInvOk').hidden=true; $('invCode').value=''; $('grInvite').classList.remove('ghost'); }
+$('grInvX').onclick=invClose;
+$('invBtn').onclick=async()=>{ const code=$('invCode').value.trim(); if(!code){ $('invCode').focus(); return; } const g=curGroup();
+  try{ await api('/admin/invitar',{method:'POST',body:{code,g:g?g.id:null}}); $('invCode').value=''; loadAdmin(); invShow(invMsg(code),`Código <b>${esc(code)}</b> creado${g?` (entra en ${esc(g.name)})`:''}. Mándaselo:`); }
   catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); } };
 // ================= GRUPETAS: grupos con nombre, salidas propuestas y chat =================
 let groups=store.get('ichnos-grupos',[])||[], gCur=store.get('ichnos-gcur',null), gSal={}, gChat=[], gTimer=null;
@@ -6115,7 +6132,7 @@ async function loadGroups(){
 function renderGroup(){
   const g=curGroup(); $('grNone').hidden=!!g||!me; $('grOne').hidden=!g; $('grNoneX').hidden=!g;
   $('grTabs').innerHTML=groups.length>1||g?groups.map(x=>`<button data-g="${x.id}" class="${x.id===gCur?'on':''}">${esc(x.name)}</button>`).join('')+'<button data-g="" aria-label="Crear o unirme a otra grupeta">＋</button>':'';
-  $('grTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!b.dataset.g){ const op=$('grNone').hidden; $('grNone').hidden=!op; b.classList.toggle('on',op); if(op) $('grNone').scrollIntoView({behavior:'smooth'}); return; } gCur=b.dataset.g; syncRaw.set('ichnos-gcur',gCur); renderGroup(); loadGroupData(); });
+  $('grTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!b.dataset.g){ const op=$('grNone').hidden; $('grNone').hidden=!op; b.classList.toggle('on',op); if(op) $('grNone').scrollIntoView({behavior:'smooth'}); return; } gCur=b.dataset.g; syncRaw.set('ichnos-gcur',gCur); invClose(); renderGroup(); loadGroupData(); });
   if(!g) return;
   $('grName').textContent=g.name;
   $('grMem').innerHTML=g.members.map(u=>`<button data-u="${u}"><i>${initial(uName(u))}</i>${esc(uName(u))}${u===g.admin?' ★':''}</button>`).join('');
@@ -6172,7 +6189,10 @@ $('grNewBtn').onclick=async()=>{ const name=$('grNewName').value.trim(); if(!nam
 $('grJoinBtn').onclick=async()=>{ const code=$('grJoinCode').value.trim(); if(!code) return;
   try{ const g=await api('/grupos/unirse',{method:'POST',body:{code}}); $('grJoinCode').value=''; gCur=g.id; syncRaw.set('ichnos-gcur',gCur); await loadGroups(); loadFeed(true); toast(`Ya estás en "${g.name}"`,4000); }catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); } };
 $('grInvite').onclick=()=>{ const g=curGroup(); if(!g) return;
-  copyTxt(`¡Únete a la grupeta "${g.name}" en Ichnos! 🚴\nSi ya tienes Ichnos: pestaña Grupeta → "Unirme con un código" → ${g.code}\nSi todavía no tienes Ichnos, pídele a David un código de invitación.\n${APP_URL}`,`Mensaje con el código ${g.code} copiado. Pégalo en WhatsApp.`); };
+  if(!$('grInv').hidden){ invClose(); return; } $('grInv').hidden=false; $('grInvite').classList.add('ghost'); $('grInvOk').hidden=true;
+  const adm=!!(me&&me.admin); $('grInvAdd').hidden=!adm; $('grInvTxt').hidden=!adm;
+  if(adm){ setTimeout(()=>$('invCode').focus(),50); return; }
+  invShow(`¡Únete a la grupeta "${g.name}" en Ichnos! 🚴\nSi ya tienes Ichnos: pestaña Grupeta → "Unirme con un código" → ${g.code}\nSi todavía no tienes Ichnos, pídele a David un código de invitación.\n${APP_URL}`,`Para alguien que ya tiene Ichnos: entra con el código <b>${esc(g.code)}</b>. Mándaselo:`); };
 // proponer una salida con la ruta que tienes hecha
 $('grPropose').onclick=()=>{ if(route&&points.length>=2) openPropose(); else { toast('Primero crea la ruta en el mapa. Luego pulsa "Proponer a la grupeta".',5000); showPage('pgMapa'); if(!T.crear) setTimeout(()=>setToggle('crear',true),60); } };
 $('gpropBtn').onclick=()=>openPropose();
