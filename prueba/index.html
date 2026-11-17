@@ -847,7 +847,7 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
 .wel .wdots i.on{width:24px;background:#B6E22E}
 .wel .wnext{border:0;border-radius:16px;background:#B6E22E;color:#1E2328;font-weight:800;font-size:17px;padding:16px}
 /* ventana de abajo con 3 alturas */
-@media (max-width:760px){ .sheet.full{max-height:calc(100% - 140px)} .handle{touch-action:none;cursor:grab;padding:12px 0 6px} }
+@media (max-width:760px){ .sheet.closed{overflow:hidden} .sheet.full{max-height:calc(100% - 140px)} .handle{touch-action:none;cursor:grab;padding:12px 0 6px} }
 /* gestos */
 .rv-h{touch-action:pan-x}
 .ptr{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));z-index:3000;transform:translate(-50%,-60px);width:38px;height:38px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;transition:transform .2s;pointer-events:none}
@@ -1395,7 +1395,7 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794940038';   // versión de la app (la pone build.py)
+const BUILD='1794940174';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
