@@ -1020,6 +1020,11 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
       <div class="acpw"><input type="password" id="acOld" placeholder="Contraseña actual" autocomplete="current-password"><input type="password" id="acNew" placeholder="Contraseña nueva" autocomplete="new-password"><input type="password" id="acNew2" placeholder="Repite la nueva" autocomplete="new-password"><button class="btn-main" id="acSave">Cambiar contraseña</button></div>
     </details>
   </section>
+  <section class="pblock" id="pushBox" hidden>
+    <div class="pb-h"><h3>Avisos en el móvil</h3></div>
+    <p class="svp" id="pushInfo">Te llega un aviso aunque tengas la app cerrada: me gusta, comentarios, mensajes del chat y salidas que propone tu grupeta.</p>
+    <div class="actions"><button class="primary" id="pushOn">Activar avisos</button><button id="pushOff" hidden>Quitar avisos</button></div>
+  </section>
   <section class="pblock" id="bugBox">
     <div class="pb-h"><h3>¿Algo va mal?</h3></div>
     <p class="svp">Si ves algo raro (un tiempo que no cuadra, un botón que no va…), cuéntalo aquí. Le llega al administrador con lo que estaba pasando en la app.</p>
@@ -1395,7 +1400,7 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794940174';   // versión de la app (la pone build.py)
+const BUILD='1794940441';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1706,6 +1711,7 @@ function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
   document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
   if(id==='pgPerfil') try{ paintYear(); }catch(e){}
+  if(id==='pgAjustes'&&window.paintPush) paintPush();
   if((id==='pgSalidas'||id==='pgAjustes') && typeof svAuto==='function') svAuto();
   if((id==='pgSalidas'||id==='pgGrupeta') && typeof loadFeed==='function') loadFeed(false);
   if(id==='pgGrupeta' && typeof loadGroupData==='function') loadGroupData();
@@ -6241,6 +6247,31 @@ authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().th
       $('ptr').style.transform='';
       if(fast&&Math.abs(dx)>90&&Math.abs(dy)<50){ const k=ORDER.indexOf(cur()); const nk=dx<0?k+1:k-1; if(nk>=0&&nk<ORDER.length){ const b=document.querySelector(`#bnav button[data-pg="${ORDER[nk]}"]`); if(b) b.click(); else showPage(ORDER[nk]); } } });
   });
+})();
+
+// avisos en el móvil (web push). En el iPhone solo con Ichnos en la pantalla de inicio.
+(function(){
+  const ok='serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+  const ios=/iPhone|iPad/.test(navigator.userAgent), home=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const b64=s=>{ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; const r=atob(s), o=new Uint8Array(r.length); for(let i=0;i<r.length;i++) o[i]=r.charCodeAt(i); return o; };
+  const reg=async()=>{ const r=await navigator.serviceWorker.getRegistration(); return r||null; };
+  async function paint(){ const box=$('pushBox'); box.hidden=!me; if(!me) return;
+    if(!ok){ $('pushInfo').textContent=ios&&!home?'En el iPhone los avisos solo funcionan con Ichnos en la pantalla de inicio: en Safari pulsa Compartir → "Añadir a pantalla de inicio" y ábrela desde ahí.':'Este navegador no puede recibir avisos.'; $('pushOn').hidden=true; $('pushOff').hidden=true; return; }
+    const r=await reg(), sub=r&&await r.pushManager.getSubscription();
+    const den=Notification.permission==='denied';
+    $('pushOn').hidden=!!sub; $('pushOff').hidden=!sub;
+    $('pushInfo').textContent=sub?'Avisos activados en este aparato. Te llegan los me gusta, comentarios, el chat y las salidas de tu grupeta.':den?'Los avisos están bloqueados para Ichnos en los ajustes del móvil. Actívalos allí (Ajustes → Notificaciones → Ichnos) y vuelve a pulsar.':'Te llega un aviso aunque tengas la app cerrada: me gusta, comentarios, mensajes del chat y salidas que propone tu grupeta.'; }
+  $('pushOn').onclick=async()=>{ try{
+      const perm=await Notification.requestPermission(); if(perm!=='granted'){ toast('Sin permiso no te pueden llegar avisos.',4000); paint(); return; }
+      const r=await reg()||await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+      const {key}=await api('/push/key'); const sub=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(key)});
+      await api('/push/sub',{method:'POST',body:{sub:sub.toJSON(),test:true}}); toast('Avisos activados. Te acaba de llegar uno de prueba.',4500);
+    }catch(e){ toast('No se han podido activar los avisos ahora.',4500); } paint(); };
+  $('pushOff').onclick=async()=>{ try{ const r=await reg(), sub=r&&await r.pushManager.getSubscription(); if(sub){ await api('/push/quitar',{method:'POST',body:{endpoint:sub.endpoint}}).catch(()=>{}); await sub.unsubscribe(); } }catch(e){} paint(); };
+  window.paintPush=paint; setTimeout(paint,2500);
+  // al tocar un aviso del móvil: abrir lo que toca
+  const go=()=>{ const h=location.hash; if(h==='#avisos'&&$('bell')){ history.replaceState(null,'',location.pathname+location.search); setTimeout(()=>$('bell').click(),900); } else if(h==='#grupeta'){ history.replaceState(null,'',location.pathname+location.search); showPage('pgGrupeta'); } };
+  window.addEventListener('hashchange',go); setTimeout(go,1800);
 })();
 </script>
 </body>

@@ -21,3 +21,8 @@ self.addEventListener('fetch',e=>{
       .catch(()=>caches.open(APP).then(c=>c.match(url.pathname.replace(/index\.html$/,'')).then(m=>m||c.match(r)))));
   }
 });
+// avisos en el móvil: los manda el puente (likes, comentarios, chat de la grupeta, salidas propuestas…)
+self.addEventListener('push',e=>{ let m={}; try{ m=e.data?e.data.json():{}; }catch(x){ m={body:e.data&&e.data.text()}; }
+  e.waitUntil(self.registration.showNotification(m.title||'Ichnos',{body:m.body||'Tienes un aviso nuevo.',icon:'/ruta-fuentes/icon-192.png',badge:'/ruta-fuentes/icon-192.png',tag:m.tag||undefined,renotify:!!m.tag,data:{url:m.url||'./'}})); });
+self.addEventListener('notificationclick',e=>{ e.notification.close(); const url=new URL((e.notification.data&&e.notification.data.url)||'./',self.registration.scope).href;
+  e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(l=>{ const w=l.find(c=>c.url.startsWith(self.registration.scope)); if(w){ w.focus(); return w.navigate?w.navigate(url).catch(()=>{}):null; } return clients.openWindow(url); })); });
