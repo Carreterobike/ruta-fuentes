@@ -69,7 +69,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bnav .plus{color:#1E2328!important}.bnav .plus.on::after{display:none}
 
 /* perfil */
-#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,.rideview{background-color:#232a30;background-image:var(--topo);background-attachment:local}
+#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,.rideview{background-color:#14181c;background-image:radial-gradient(120% 55% at 92% 0%,rgba(182,226,46,.36),rgba(182,226,46,0) 62%),radial-gradient(95% 50% at 0% 30%,rgba(29,158,117,.30),rgba(29,158,117,0) 66%);background-attachment:scroll;background-repeat:no-repeat}
+#pgPerfil>.phead,#pgGrupeta>.phead,#pgSalidas>.phead,#pgAjustes>.phead{background-color:transparent}
 #pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes{overflow-y:auto;padding:0 0 28px}
 .phead.short{padding-bottom:18px}
 .bk-old-h{margin:10px 0 2px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -792,7 +793,7 @@ html[data-theme="dark"] .gcard .when{color:var(--accent)}
 .rideview:not([hidden]){animation:vUp .32s cubic-bezier(.2,.8,.2,1)}
 @media (max-width:760px){.sheet:not([hidden]){animation:vUp .3s cubic-bezier(.2,.8,.2,1)}}
 /* portada del perfil */
-#pgPerfil .phead{background:var(--brand) var(--cover,none) center/cover no-repeat;position:relative}
+#pgPerfil .phead{background:transparent var(--cover,none) center/cover no-repeat;position:relative}
 #pgPerfil .phead:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,0) 45%,rgba(0,0,0,.25));pointer-events:none}
 #pgPerfil .phead>*{position:relative}
 .pyear{display:flex;justify-content:center;gap:22px;width:100%;margin:2px 0 4px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -1400,7 +1401,7 @@ html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794940441';   // versión de la app (la pone build.py)
+const BUILD='1794941924';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
