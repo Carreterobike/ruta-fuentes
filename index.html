@@ -1473,7 +1473,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795037299';   // versión de la app (la pone build.py)
+const BUILD='1795037903';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -5345,7 +5345,6 @@ $('rvOnMap').onclick=()=>{ const r=rideOpen; if(!r) return; $('rideView').hidden
   L.polyline(privacyTrim(r.coords),{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(privacyTrim(r.coords),{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
   const c=r.coords; L.marker([c[0][0],c[0][1]],{icon:START_ICON,interactive:false}).addTo(rideHi); L.marker([c[c.length-1][0],c[c.length-1][1]],{icon:FLAG_ICON,interactive:false}).addTo(rideHi);
   rideOnMap=r; $('roName').textContent=r.name||'Salida'; $('rideOn').hidden=false; $('roTrial').hidden=!(rideOnMap&&rideOnMap.coords);
-  if(!isFoot(rideTipo(r))&&!T.trialeras) setToggle('trialeras',true);   // ver una salida de bici: con las trialeras
   updateSheet();
   map.fitBounds(L.latLngBounds(r.coords),{padding:[40,40]}); };
 // tocar una trialera o un segmento de la ficha: te lleva a ese sitio del mapa, marcado
