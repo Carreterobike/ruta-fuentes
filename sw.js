@@ -1,6 +1,6 @@
 // Ichnos: funciona sin cobertura. La app se guarda sola; el mapa, solo las zonas que guardas ("Sin cobertura").
 const APP='ichnos-app-v1', TILES='ichnos-tiles';
-const TILE_HOSTS=/server\.arcgisonline\.com|tiles\.openfreemap\.org|elevation-tiles-prod|tile\.opentopomap\.org/;
+const TILE_HOSTS=/server\.arcgisonline\.com|www\.ign\.es\/wmts|tiles\.openfreemap\.org|elevation-tiles-prod|tile\.opentopomap\.org/;
 const LIBS=/cdnjs\.cloudflare\.com|unpkg\.com|cdn\.jsdelivr\.net|fonts\.(googleapis|gstatic)\.com/;
 self.addEventListener('install',e=>self.skipWaiting());
 self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
