@@ -1452,7 +1452,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795032522';   // versión de la app (la pone build.py)
+const BUILD='1795032677';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1863,7 +1863,7 @@ const glStyle={version:8, glyphs:'https://tiles.openfreemap.org/fonts/{fontstack
 const VECTOR_FILLS=['bg','landcover','landuse','park','water','waterway','building','road-casing','road'];
 const LABEL_LAYERS=['road-names','park-labels','peaks','place-small','place-suburb','place-village','place-city'];
 const TRAIL_LAYERS=['trail-halo','trail-track','trail-path','trail-rated','trail-double','trail-names','my-names'];
-const glLayer=L.maplibreGL({style:glStyle}).addTo(map);
+const glLayer=L.maplibreGL({style:glStyle,pixelRatio:Math.min(window.devicePixelRatio||1,2),fadeDuration:0}).addTo(map);   // en el iPhone (pantalla x3) se pinta a x2: igual de nítido y la mitad de trabajo
 map.on('movestart zoomstart',()=>{ map.getContainer().classList.add('moving'); document.body.classList.add('map-moving'); });
 map.on('moveend zoomend',()=>{ clearTimeout(window._mvT); window._mvT=setTimeout(()=>{ map.getContainer().classList.remove('moving'); document.body.classList.remove('map-moving'); },150); });
 const glMap=glLayer.getMaplibreMap();
