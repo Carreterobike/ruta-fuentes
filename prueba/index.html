@@ -1452,7 +1452,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795031544';   // versión de la app (la pone build.py)
+const BUILD='1795032339';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2855,13 +2855,14 @@ function drawArrows(){
 }
 function arrowsOn(c,layer,gap,max){
   if(!c||c.length<2) return;
+  const vb=map.getBounds().pad(0.3);   // solo las flechas que se ven (antes, todas las del recorrido: cientos de marcas y el mapa a tirones)
   let acc=gap*0.5, n=0;
   let prev=map.latLngToLayerPoint([c[0][0],c[0][1]]);
   for(let i=1;i<c.length && n<max;i++){
     const cur=map.latLngToLayerPoint([c[i][0],c[i][1]]), d=prev.distanceTo(cur);
     acc+=d;
     if(acc>=gap && d>0){
-      acc=0; n++;
+      acc=0; if(!vb.contains([c[i][0],c[i][1]])){ prev=cur; continue; } n++;
       const j=Math.min(i+2,c.length-1), a=c[Math.max(0,i-2)];
       L.marker([c[i][0],c[i][1]],{pane:'arrows',interactive:false,keyboard:false,
         icon:L.divIcon({className:'',iconSize:[16,16],iconAnchor:[8,8],html:`<div class="arr" style="transform:rotate(${bearing(a,c[j]).toFixed(0)}deg)">${ARROW_SVG}</div>`})}).addTo(layer);
@@ -2869,7 +2870,7 @@ function arrowsOn(c,layer,gap,max){
     prev=cur;
   }
 }
-map.on('zoomend',drawArrows);
+map.on('moveend',()=>{ clearTimeout(drawArrows._t); drawArrows._t=setTimeout(()=>{ drawArrows(); if(typeof drawTripArrows==='function') drawTripArrows(); },150); });
 
 let fitNext=false;
 async function useRoute(coords, up, label, my){
@@ -4050,7 +4051,7 @@ function numPin(n,col){ return L.divIcon({className:'',html:`<div class="pin num
 // flechas de sentido sobre todas las etapas del viaje
 const tripArrowLayer=L.layerGroup().addTo(map);
 function drawTripArrows(){ tripArrowLayer.clearLayers(); if(!trip) return; trip.stages.forEach((s,i)=>{ if(trip.open!==i) arrowsOn(s.coords,tripArrowLayer,160,300); }); }
-map.on('zoomend',drawTripArrows);
+
 function drawTrip(){
   tripLayer.clearLayers();
   if(!trip) return;
