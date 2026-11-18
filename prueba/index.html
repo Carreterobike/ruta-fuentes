@@ -564,6 +564,26 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .rvmap{width:100%;height:auto;display:block}
 .rvcard{background:var(--card);color:var(--ink);border-radius:16px;padding:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
 .rvcard:empty{display:none}
+/* gráficos estilo COROS / Garmin: siempre oscuros */
+.rvcard.cxd{background:#13171b;color:#e8ecef;--muted:#8b959e}
+.cxd .ch-t{color:#e8ecef}
+.cx-bar{position:sticky;top:0;z-index:3;display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;background:#1e2429;border-radius:12px;padding:8px 10px;margin:-2px 0 2px}
+.cx-bar div{display:flex;flex-direction:column;min-width:0}.cx-bar small{font-size:11.5px;color:#8b959e}.cx-bar b{font-size:15px;white-space:nowrap}
+.cx-bar .hint{grid-column:1/-1;font-size:13px;color:#8b959e;text-align:center}
+.cx-tabs{display:flex;gap:6px}.cx-tabs button{font:inherit;font-size:13px;font-weight:600;padding:6px 14px;border-radius:999px;border:0;background:#1e2429;color:#b9c2ca;cursor:pointer}
+.cx-tabs button.on{background:var(--lime,#B6E22E);color:#1c2400}.cx-tabs button:disabled{opacity:.4;cursor:default}
+.cx-c{display:flex;flex-direction:column;gap:2px}
+.cx-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;font-weight:700}.cx-h small{font-size:12px;font-weight:500;color:#8b959e;text-align:right}
+.cx-w{position:relative;height:var(--h,90px);margin-left:34px;touch-action:pan-y;cursor:crosshair}
+.cx-w svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.cx-y{position:absolute;left:-34px;width:30px;text-align:right;font-size:11px;color:#6f7a84;transform:translateY(-50%)}
+.cx-x{position:relative;height:15px;margin-left:34px;font-size:11px;color:#6f7a84}.cx-x span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.cx-srf{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:3px 0 0 34px}
+.cx-leg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:#8b959e}.cx-leg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.cl-i{padding:9px 0;cursor:pointer}.cl-i+.cl-i{border-top:1px solid #232a30}
+.cl-r{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;flex-wrap:wrap}.cl-r small{color:#8b959e}
+.cl-b{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:6px}.cl-b span{flex:1}
+.cxd .zr .zb{background:#232a30}
 .rvdel{align-items:center;padding:6px}
 .rv-acts{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .rv-acts label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
@@ -1430,8 +1450,9 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <div class="rvcard" id="rvNotes"><div class="rvlike"><button id="rvLike" aria-label="Me gusta"><svg viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M7 10v11H3V10z"/><path d="M7 10l4-8c1.7 0 2.8 1.4 2.4 3L12.8 9H19a2 2 0 0 1 2 2.3l-1.3 7.6A2.5 2.5 0 0 1 17.3 21H7"/></svg><span id="rvLikeN">0</span></button><small id="rvLikers"></small></div>
       <div class="ch-t">Comentarios</div><ul class="notes" id="rvNoteList"></ul>
       <div class="note-add"><textarea id="rvNoteTxt" rows="2" placeholder="¿Qué tal la salida? Bares, fuentes, cómo estaba el camino…"></textarea><button class="btn-main" id="rvNoteBtn">Publicar comentario</button></div></div>
-    <div class="rvcard" id="rvCharts"></div>
-    <div class="rvcard" id="rvZones"></div>
+    <div class="rvcard cxd" id="rvCharts"></div>
+    <div class="rvcard cxd" id="rvClimbs"></div>
+    <div class="rvcard cxd" id="rvZones"></div>
     <div class="rvcard" id="rvSegs"></div>
     <div class="rvcard rvdel"><button class="btn-out" id="rvDel">Borrar esta salida</button></div>
   </div>
@@ -1452,7 +1473,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795035648';   // versión de la app (la pone build.py)
+const BUILD='1795036905';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -5026,7 +5047,7 @@ function openRide(r){
   if(r.hr) series.push({k:'Pulso',u:'ppm',v:r.hr,col:'#e5484d'});
   if(r.cad) series.push({k:'Cadencia',u:'rpm',v:r.cad,col:'#4aa3ec'});
   if(r.pw) series.push({k:'Potencia',u:'W',v:r.pw,col:'#f0a030'});
-  $('rvCharts').innerHTML=''; series.forEach(s=>$('rvCharts').appendChild(chartEl(r,s)));
+  try{ rideCharts(r,st); }catch(e){ console.warn('graficos',e); $('rvCharts').innerHTML=''; $('rvClimbs').innerHTML=''; series.forEach(s=>$('rvCharts').appendChild(chartEl(r,s))); }
   // zonas de pulso
   if(r.hr&&r.times&&!fr){
     const m=hrMax(), zt=[0,0,0,0,0];
@@ -5198,6 +5219,91 @@ function confeti(){ if(matchMedia('(prefers-reduced-motion: reduce)').matches) r
     P.forEach(p=>{ p.vy+=H*.0006; p.x+=p.vx; p.y+=p.vy; p.vx*=.99; p.r+=p.vr; g.save(); g.translate(p.x,p.y); g.rotate(p.r); g.globalAlpha=Math.max(0,1-k/3); g.fillStyle=p.c; g.fillRect(-p.w/2,-p.w/4,p.w,p.w/2); g.restore(); });
     if(k<3) requestAnimationFrame(step); else cv.remove(); };
   requestAnimationFrame(step); }
+// ===== GRÁFICOS ESTILO COROS / GARMIN: una línea común para todos, datos del punto arriba, altitud por pendiente, pulso por zonas, subidas =====
+const SLOPE_COL=s=>s<=-1?'#5f6b75':s<3?'#46c86a':s<6?'#e9d23a':s<9?'#f5a623':s<12?'#ff5a52':'#a3122a';
+const SLOPE_LEG=[['Bajada','#5f6b75'],['0-3 %','#46c86a'],['3-6 %','#e9d23a'],['6-9 %','#f5a623'],['9-12 %','#ff5a52'],['+12 %','#a3122a']];
+function rideClimbs(cum,el,idx){   // subidas: sube ≥30 m, ≥300 m de largo y ≥3 % de media; se corta si baja más de 10 m
+  const out=[]; let a=0, top=0;
+  const close=()=>{ const g=el[top]-el[a], d=cum[idx[top]]-cum[idx[a]]; if(g>=30&&d>=300&&g/d>=0.03) out.push([a,top]); };
+  for(let k=1;k<idx.length;k++){ if(el[k]>el[top]) top=k; if(el[k]<el[a]){ if(top>a) close(); a=k; top=k; continue; } if(el[top]-el[k]>10){ close(); a=k; top=k; } }
+  if(top>a) close(); return out; }
+function rideCharts(r,st){
+  const box=$('rvCharts'), cbx=$('rvClimbs'), c=r.coords, n=c.length, cum=r._cum, L0=cum[n-1]||1, t=r.times, hasT=!!(t&&t.length===n&&t[n-1]>t[0]);
+  const step=Math.max(1,Math.floor(n/500)), idx=[]; for(let i=0;i<n;i+=step) idx.push(i); if(idx[idx.length-1]!==n-1) idx.push(n-1);
+  const N=idx.length, fk=x=>fmtKm(x), hm=hrMax(), zoneOf=h=>{ const p=h/hm; return p<0.6?0:p<0.7?1:p<0.8?2:p<0.9?3:4; };
+  // altura suavizada y pendiente sobre ±60 m
+  let el=null, sl=null;
+  if(r.eles){ const raw=idx.map(i=>r.eles[i]); let last=raw.find(v=>v!=null&&isFinite(v)); const f=raw.map(v=>v!=null&&isFinite(v)?(last=v):last);
+    el=f.map((v,k)=>{ let a=0,m=0; for(let j=Math.max(0,k-3);j<=Math.min(N-1,k+3);j++){ a+=f[j]; m++; } return a/m; });
+    sl=el.map((v,k)=>{ let a=k,b=k; while(a>0&&cum[idx[k]]-cum[idx[a]]<60) a--; while(b<N-1&&cum[idx[b]]-cum[idx[k]]<60) b++; const d=cum[idx[b]]-cum[idx[a]]; return d>0?(el[b]-el[a])/d*100:0; }); }
+  const ser=[];
+  if(el) ser.push({id:'alt',k:'Altitud',u:'m',v:el,h:120});
+  if(st.sp) ser.push({id:'sp',k:'Velocidad',u:'km/h',col:'#4aa8ff',v:idx.map(i=>st.sp[i]),avg:st.vavg,lo:0});
+  if(r.hr) ser.push({id:'hr',k:'Pulso',u:'ppm',col:'#ff5a52',v:idx.map(i=>r.hr[i]||null),avg:st.hr});
+  if(r.cad) ser.push({id:'cad',k:'Cadencia',u:'rpm',col:'#b48cff',v:idx.map(i=>r.cad[i]||null),avg:st.cad,lo:0});
+  if(r.pw) ser.push({id:'pw',k:'Potencia',u:'W',col:'#f5a623',v:idx.map(i=>r.pw[i]),avg:st.pw,lo:0});
+  if(!ser.length){ box.innerHTML=''; cbx.innerHTML=''; return; }
+  ser.forEach(s=>{ if(s.id==='alt') return; s.v=s.v.map((v,k)=>{ if(v==null||!isFinite(v)) return null; let a=0,m=0; for(let j=Math.max(0,k-2);j<=Math.min(N-1,k+2);j++){ const w=s.v[j]; if(w!=null&&isFinite(w)){ a+=w; m++; } } return a/m; }); });
+  let byT=false; const W=1000;
+  const fx=k=>byT?(t[idx[k]]-t[0])/(t[n-1]-t[0]):cum[idx[k]]/L0;
+  const nice=(lo,hi)=>{ const r_=hi-lo, st_=[1,2,5,10,20,25,50,100,200,250,500,1000].find(v=>r_/v<=4)||1000, a=Math.ceil(lo/st_)*st_, o=[]; for(let v=a;v<=hi;v+=st_) o.push(v); return o; };
+  const draw=()=>{
+    let html=`<div class="cx-bar" id="cxBar"><div class="hint">Pasa el dedo o el ratón por un gráfico</div></div>
+      <div class="cx-tabs"><button data-m="d" class="${byT?'':'on'}">Distancia</button><button data-m="t" class="${byT?'on':''}" ${hasT?'':'disabled'}>Tiempo</button></div>`;
+    const xt=byT?nice(0,(t[n-1]-t[0])/60).map(v=>[v/((t[n-1]-t[0])/60),v<60?v+' min':Math.floor(v/60)+' h'+(v%60?' '+v%60:'')]):nice(0,L0/1000).map(v=>[v/(L0/1000),v+' km']);
+    const xl=`<div class="cx-x">${xt.filter(q=>q[0]<=1.001).map(q=>`<span style="left:${(q[0]*100).toFixed(2)}%">${q[1]}</span>`).join('')}</div>`;
+    ser.forEach(s=>{ const vals=s.v.filter(v=>v!=null); if(vals.length<2) return;
+      let lo=s.lo!=null?s.lo:Math.min(...vals), hi=Math.max(...vals); if(s.id==='sp') hi=Math.min(hi,90); if(s.id==='alt'){ const pad=Math.max(10,(hi-lo)*0.08); lo=Math.max(0,lo-pad); hi+=pad; } else hi+= (hi-lo)*0.08; if(hi-lo<1) hi=lo+1;
+      const H=s.h||84, Y=v=>(1-(Math.min(hi,Math.max(lo,v))-lo)/(hi-lo))*100, X=k=>(fx(k)*W).toFixed(1);
+      let g=''; const grid=nice(lo,hi);
+      grid.forEach(v=>{ g+=`<line x1="0" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="#232a30" stroke-width="1" vector-effect="non-scaling-stroke"/>`; });
+      const area=(colOf)=>{ let o='', cur=null, pts=[]; const flush=()=>{ if(pts.length>1&&cur) o+=`<path d="M${pts[0][0]},100L${pts.map(p=>p.join(',')).join('L')}L${pts[pts.length-1][0]},100Z" fill="${cur}"/>`; };
+        for(let k=0;k<N;k++){ const v=s.v[k]; if(v==null){ flush(); pts=[]; cur=null; continue; } const col=colOf(k), p=[X(k),Y(v).toFixed(2)];
+          if(col!==cur){ if(pts.length){ pts.push(p); flush(); pts=[pts[pts.length-1]]; } cur=col; } pts.push(p); } flush(); return o; };
+      const line=(col,w)=>{ let d='', on=false; for(let k=0;k<N;k++){ const v=s.v[k]; if(v==null){ on=false; continue; } d+=(on?'L':'M')+X(k)+','+Y(v).toFixed(2); on=true; } return `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`; };
+      if(s.id==='alt') g+=`<g opacity=".92">${area(k=>SLOPE_COL(sl[k]))}</g>`+line('#e8ecef',1.6);
+      else if(s.id==='hr') g+=`<g opacity=".85">${area(k=>ZONE_COL[zoneOf(s.v[k])])}</g>`;
+      else g+=`<g opacity=".18">${area(()=>s.col)}</g>`+line(s.col,1.8);
+      if(s.avg&&s.id!=='alt') g+=`<line x1="0" x2="${W}" y1="${Y(s.avg)}" y2="${Y(s.avg)}" stroke="${s.id==='hr'?'#ffffff':s.col}" stroke-opacity=".7" stroke-dasharray="5 5" stroke-width="1.2" vector-effect="non-scaling-stroke"/>`;
+      g+=`<line class="cx-cur" x1="-10" x2="-10" y1="0" y2="100" stroke="#fff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>`;
+      const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+      const sub=s.id==='alt'?`mín ${n0(Math.min(...s.v))} · máx ${n0(Math.max(...s.v))} m${st.up!=null?' · +'+n0(st.up)+' m':''}`:`media ${s.id==='sp'?fk(s.avg||avg):Math.round(s.avg||avg)} · máx ${s.id==='sp'?fk(st.vmax||Math.max(...vals)):Math.round(Math.max(...vals))} ${s.u}`;
+      html+=`<div class="cx-c"><div class="cx-h"><span style="color:${s.col||'#e8ecef'}">${s.k}</span><small>${sub}</small></div>
+        <div class="cx-w" data-s="${s.id}" style="--h:${H}px">${grid.map(v=>`<span class="cx-y" style="top:${Y(v)}%">${v}</span>`).join('')}<svg viewBox="0 0 ${W} 100" preserveAspectRatio="none">${g}</svg></div>
+        ${s.id==='alt'?'<div class="cx-srf" id="cxSrf"></div>':''}${xl}
+        ${s.id==='alt'?`<div class="cx-leg">${SLOPE_LEG.map(q=>`<span><i style="background:${q[1]}"></i>${q[0]}</span>`).join('')}<span id="cxSrfL"></span></div>`:''}
+        ${s.id==='hr'?`<div class="cx-leg">${['Z1','Z2','Z3','Z4','Z5'].map((z,i)=>`<span><i style="background:${ZONE_COL[i]}"></i>${z}</span>`).join('')}</div>`:''}</div>`; });
+    box.innerHTML=html;
+    box.querySelectorAll('.cx-tabs button').forEach(b=>b.onclick=()=>{ if(b.disabled) return; byT=b.dataset.m==='t'; draw(); });
+    // barrita de suelo (tierra / asfalto) debajo de la altitud
+    if(el) rideSurface(r,idx).then(sf=>{ const bx=$('cxSrf'); if(!sf||!bx||!bx.isConnected) return; let o='', pu=0, uu=0;
+      for(let k=1;k<N;k++){ const q=sf[k]; if(q==='p') pu++; else if(q==='u') uu++; const w=((fx(k)-fx(k-1))*100).toFixed(3); o+=`<span style="width:${w}%;background:${q==='p'?'#7fae12':q==='u'?'#a8743a':'#3a4248'}"></span>`; }
+      bx.innerHTML=o; if(pu+uu) $('cxSrfL').innerHTML=`<i style="background:#a8743a"></i>tierra ${Math.round(uu/(pu+uu)*100)} % <i style="background:#7fae12;margin-left:8px"></i>asfalto ${Math.round(pu/(pu+uu)*100)} %`; }).catch(()=>{});
+    // el dedo / ratón: una línea para todos y los datos del punto arriba
+    const bar=$('cxBar'), curs=[...box.querySelectorAll('.cx-cur')];
+    const at=(k)=>{ const i=idx[k], x=(fx(k)*W).toFixed(1); curs.forEach(l=>{ l.setAttribute('x1',x); l.setAttribute('x2',x); });
+      const cells=[['Distancia',fk(cum[i]/1000)+' km','#e8ecef']];
+      if(hasT) cells.push(['Tiempo',fmtT(t[i]-t[0]),'#e8ecef']);
+      if(el){ const p=Math.round(sl[k]); cells.push(['Altitud',n0(el[k])+' m <small style="color:'+SLOPE_COL(sl[k])+';font-size:13px">'+(p>0?'+':'')+p+' %</small>','#e8ecef']); }
+      ser.forEach(s=>{ if(s.id==='alt') return; const v=s.v[k]; cells.push([s.k,v==null?'–':(s.id==='sp'?fk(v):Math.round(v))+' '+s.u,s.id==='hr'&&v?ZONE_COL[zoneOf(v)]:s.col]); });
+      bar.innerHTML=cells.map(q=>`<div><small>${q[0]}</small><b style="color:${q[2]}">${q[1]}</b></div>`).join(''); moveRvDot(i); };
+    box.querySelectorAll('.cx-w').forEach(w=>{ const mv=ev=>{ const rc=w.getBoundingClientRect(), fr=Math.max(0,Math.min(1,(ev.clientX-rc.left)/rc.width));
+        let a=0,b=N-1; while(b-a>1){ const m=(a+b)>>1; if(fx(m)<fr) a=m; else b=m; } at(fr-fx(a)<fx(b)-fr?a:b); };
+      w.addEventListener('pointermove',mv); w.addEventListener('pointerdown',mv); });
+  };
+  draw();
+  // subidas (como el ClimbPro del ciclocomputador): dónde, largo, % medio, metros y tu tiempo
+  if(!el){ cbx.innerHTML=''; return; }
+  const cl=rideClimbs(cum,el,idx);
+  if(!cl.length){ cbx.innerHTML=''; return; }
+  cbx.innerHTML=`<div class="ch-t">Subidas <small>· toca una para verla en el mapa</small></div>`+cl.map(([a,b],j)=>{ const ia=idx[a], ib=idx[b], d=cum[ib]-cum[ia], g=el[b]-el[a], pc=g/d*100;
+      const parts=[]; const M=Math.min(40,b-a); for(let q=0;q<M;q++){ const k0=a+Math.floor((b-a)*q/M), k1=a+Math.floor((b-a)*(q+1)/M), dd=cum[idx[k1]]-cum[idx[k0]]; parts.push(SLOPE_COL(dd>0?(el[k1]-el[k0])/dd*100:0)); }
+      let mx=0; for(let k=a+1;k<=b;k++) mx=Math.max(mx,sl[k]);
+      return `<div class="cl-i" data-a="${ia}" data-b="${ib}" data-t="${hasT?t[ib]-t[ia]:''}" data-j="${j+1}"><div class="cl-r"><span><b>Subida ${j+1}</b> <small>· km ${fk(cum[ia]/1000)}</small></span>
+        <span>${fk(d/1000)} km · <b style="color:${SLOPE_COL(pc)}">${Math.round(pc)} %</b> <small>(máx ${Math.round(mx)} %)</small> · +${n0(g)} m${hasT?` · <b>${fmtT(t[ib]-t[ia])}</b>`:''}</span></div>
+        <div class="cl-b">${parts.map(col=>`<span style="background:${col}"></span>`).join('')}</div></div>`; }).join('');
+  cbx.onclick=ev=>{ const it=ev.target.closest('.cl-i'); if(!it) return; segToMap({name:'Subida '+it.dataset.j,a:+it.dataset.a,b:+it.dataset.b,t:it.dataset.t?+it.dataset.t:null}); };
+}
 function chartEl(r,s){
   const W=600,H=110, c=r.coords, cum=r._cum, L0=cum[cum.length-1]||1, n=c.length, step=Math.max(1,Math.floor(n/400));
   const idx=[]; for(let i=0;i<n;i+=step) idx.push(i); if(idx[idx.length-1]!==n-1) idx.push(n-1);
