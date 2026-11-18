@@ -868,6 +868,7 @@ details.bk-old{display:flex;flex-direction:column;gap:10px}details.bk-old>summar
 .aj-t{text-transform:none!important;letter-spacing:.3px!important}
 .leaflet-container.moving .mapgrp,.leaflet-container.moving .fab,.leaflet-container.moving .lgctl .lgbox,body.map-moving .search input,body.map-moving .wx.in-search.mini .wxpill,body.map-moving .fxcard{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 body.map-moving .search input,.leaflet-container.moving .mapgrp,.leaflet-container.moving .fab{background:var(--card)!important}
+.tp-h{margin:8px 0 2px;font-weight:800;font-size:12.5px;color:var(--accent-strong);text-transform:none}
 </style>
 </head>
 <body>
@@ -1419,7 +1420,7 @@ body.map-moving .search input,.leaflet-container.moving .mapgrp,.leaflet-contain
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794947890';   // versión de la app (la pone build.py)
+const BUILD='1794994476';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -4899,9 +4900,10 @@ function openRide(r){
   const twin=fr?null:rides.find(z=>z!==r&&z.sef&&z.sef.length&&Math.abs(z.date-r.date)<180000);
   const svE=sid=>(r.sef||[]).find(x=>x.sid===sid)||(twin&&twin.sef.find(x=>x.sid===sid))||null, svT=sid=>{ const e=svE(sid); return e?e.t:null; };
   const segs=[]; const dzLb=dz=>dz==null||Math.abs(dz)<5?'':dz<0?'↓ Bajada':'↑ Subida';
+  const tp0=fr?undefined:(rideTipo(r)||null), sameTp=e=>tp0===undefined||(e.tp||null)===tp0;   // solo se compara con salidas de la misma disciplina
   const mine=(key,name,line,dz,src='mine',sid=null)=>{ const res=effortsFor(key,line), lb=dirLabels(res,dz), L0=src==='ss'?lenOf(line):0;
     const ok=e=>src!=='ss'||e.dd<=L0*1.2+40;   // un segmento de Strava medido con tu GPS tiene que medir lo mismo
-    ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) { const st=sid?svT(sid):null; segs.push({src,sid,svpr:sid&&svE(sid)?svE(sid).pr:undefined,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:st!=null?st:e.t,all:st!=null?stravaBest(sid).map(x=>x.t):res[k].filter(ok).map(x=>x.t),a:e.i,b:e.j}); } })); };
+    ['f','b'].forEach(k=>res[k].forEach(e=>{ if(e.date===r.date&&e.ride===r.name&&ok(e)) { const st=sid?svT(sid):null; segs.push({src,sid,svpr:sid&&svE(sid)?svE(sid).pr:undefined,name,dir:/Sentido/.test(lb[k])?'':lb[k],t:st!=null?st:e.t,all:st!=null?stravaBest(sid,tp0).map(x=>x.t):res[k].filter(ok).filter(sameTp).map(x=>x.t),a:e.i,b:e.j}); } })); };
   mySegs.forEach(sg=>{ const cc=sg.coords; mine('my:'+sg.id,sg.name,cc,cc[cc.length-1][2]!=null&&cc[0][2]!=null?cc[cc.length-1][2]-cc[0][2]:null); });
   const svHere=new Set([...(r.sef||[]),...((twin&&twin.sef)||[])].map(e=>'st'+e.sid));   // segmento de Strava con color: sale una vez, con el tiempo exacto de Strava
   Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind==='trial'&&tr.coords&&tr.coords.length>1&&!svHere.has(id)) mine('gt:'+id,tr.name||'Trialera sin nombre',tr.coords,segDz(tr.coords),'grp'); });
@@ -4912,7 +4914,7 @@ function openRide(r){
     if(e.o!=null&&r.times&&S0own){ const t0=e.o+((S0own.date||r.date)-r.date)/1000; a=r.times.findIndex(t=>t>=t0); b=r.times.findIndex(t=>t>=t0+e.t); if(a>=0&&b<0) b=r.times.length-1; }
     else if(cc.length>1){ a=nearestIdx(r.coords,cc[0]); b=a>=0?nearestIdx(r.coords,cc[cc.length-1],a+1):-1; }
     nVez[e.sid]=(nVez[e.sid]||0)+1; const vez=nVez[e.sid], veces=S0.filter(x=>x.sid===e.sid).length;
-    segs.push({src:'sv',sid:e.sid,key:e.sid+'#'+vez,svpr:e.pr,name:String(sg.name||'').trim()+(veces>1?` (${vez}.ª vez)`:''),dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:[e.t,...stravaBest(e.sid).filter(z=>!S0own||z.date!==S0own.date).map(x=>x.t)],a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });   // "antes" = tus marcas de otros días
+    segs.push({src:'sv',sid:e.sid,key:e.sid+'#'+vez,svpr:e.pr,name:String(sg.name||'').trim()+(veces>1?` (${vez}.ª vez)`:''),dir:cc.length>1?dzLb(segDz(cc)):'',t:e.t,all:[e.t,...stravaBest(e.sid,tp0).filter(z=>!S0own||z.date!==S0own.date).map(x=>x.t)],a:a>=0&&b>a?a:null,b:a>=0&&b>a?b:null}); });   // "antes" = tus marcas de otros días
   // salidas guardadas antes de saber cuándo empieza cada vuelta: se pregunta a Strava una vez y se vuelve a pintar
   if(!fr&&S0own&&S0.some(e=>e.o==null)&&/^strava-\d+$/.test(S0own.id||'')&&!S0own._oAsk){ S0own._oAsk=1;
     svGet(`activities/${S0own.id.slice(7)}?include_all_efforts=true`).then(async d=>{ if(!d||!d.segment_efforts) return; applyEfforts(S0own,d.segment_efforts); const c=cleanRide(S0own); c.mt=S0own.mt=Date.now(); await ridesTx('readwrite',x=>x.put(c)); syncDirtyRide(S0own.date); if(rideOpen===r) openRide(r); }).catch(()=>{}); }
@@ -4924,7 +4926,9 @@ function openRide(r){
   const segM=[]; segs.forEach(x=>{ if(x.sid&&segM.some(y=>(y.key||y.sid)===(x.key||x.sid))) return;   // el mismo segmento de Strava solo una vez (con su tiempo exacto)
     const o=segM.find(y=>nrm(y.name)===nrm(x.name)); if(o){ if(o.sid||x.sid) { segM.push({...x}); return; } o.t+=x.t; o.all=null; if(x.a!=null){ o.a=o.a==null?x.a:Math.min(o.a,x.a); o.b=o.b==null?x.b:Math.max(o.b,x.b); } } else segM.push({...x}); });
   // tu mejor tiempo: en dorado; si hoy has hecho la mejor marca, la de antes sale en plateado
-  const best=x=>{ const S=x.sid&&ssegs[x.sid]&&ssegs[x.sid].st;
+  const best=x=>{ let S=x.sid&&ssegs[x.sid]&&ssegs[x.sid].st;
+    // la mejor marca que da Strava vale solo si es de esta misma disciplina (Strava junta BTT, gravel, carretera…)
+    if(S&&tp0!==undefined){ const all=stravaBest(x.sid), prR=all.find(z=>z.t===S.pr); if((prR&&(prR.tp||null)!==tp0)||(!prR&&all.some(z=>(z.tp||null)!==tp0))) S=null; }
     if(S&&x.t!=null){ const loc=(x.all||[]).slice().sort((p,q)=>p-q); const i=loc.indexOf(x.t); if(i>=0) loc.splice(i,1);
       if(x.svpr===1||(x.svpr===undefined&&x.t<=S.pr)){ const prev=S.n>1&&loc.length>=S.n-1&&loc[0]>=x.t?loc[0]:null;   // "antes" solo si conocemos todas tus veces
         return {pr:true,sub:`<span class="gold">¡mejor marca!</span>${prev!=null?` <span class="silver">antes ${fmtT(prev)}</span>`:S.n<=1?' <span class="silver">primera vez</span>':''}`}; }
@@ -4966,7 +4970,7 @@ function openRide(r){
       if(best){ gone.add(best); if(!x.name) x.name=String(best.name||"").trim(); x.a=best.a; x.b=best.b; x.t=best.t; x.all=best.all; x.sid=best.sid; x.svpr=best.svpr; } });
     for(let i=segM.length-1;i>=0;i--) if(gone.has(segM[i])) segM.splice(i,1);
     const extra=tr.filter(x=>!segM.some(y=>x.name&&nrm(y.name)===nrm(x.name))).filter(x=>!segM.some(y=>y.src==='grp'&&y.a!=null&&ov(x.a,x.b,y.a,y.b)>=0.6*Math.max(1,x.b-x.a))).map(x=>{ const line=r.coords.slice(x.a,x.b+1).map(p=>[p[0],p[1]]);
-      let all=x.all||null; if(!all) try{ all=effortsFor('rt:'+r.id+':'+x.a,line).f.map(e=>e.t); }catch(e){} if(!all||!all.length) all=x.t!=null?[x.t]:null;
+      let all=x.all||null; if(!all) try{ all=effortsFor('rt:'+r.id+':'+x.a,line).f.filter(sameTp).map(e=>e.t); }catch(e){} if(!all||!all.length) all=x.t!=null?[x.t]:null;
       return {a:x.a,b:x.b,sid:x.sid,svpr:x.svpr,name:x.name||'Trialera sin nombre',dir:[x.lv!=null?LEVELS[x.lv].name:'',x.up!=null?(x.up<-5?'bajada':x.up>5?'subida':''):''].filter(Boolean).join(' · ')||'trialera',t:x.t,all}; });
     $('rvSegs').innerHTML=segHtml([...segM,...extra]); fetchStats(); }).catch(()=>fetchStats());
   renderRvPhotos(r); renderRvNotes(r); loadStravaPhotos(r);
@@ -5187,7 +5191,7 @@ function effortsFor(key,seg,noApi){
         if(ok<smp.length*0.85) continue;
         const t=movT(r,i,j); if(!(t>0)) continue;
         const dz=r.eles&&r.eles[i]!=null&&r.eles[j]!=null?r.eles[j]-r.eles[i]:null;
-        res[dir].push({t,date:r.date,ride:r.name,dz,i,j,dd});
+        res[dir].push({t,date:r.date,ride:r.name,dz,i,j,dd,tp:rideTipo(r)||null});
       }
     }
   });
@@ -5204,13 +5208,14 @@ function dirLabels(res,segDz){
 function timesBlock(res,segDz){
   const lb=dirLabels(res,segDz), d=document.createElement('div'); d.className='tms';
   if(!rides.some(r=>r.times)){ d.innerHTML='<small>Todavía no hay tiempos. Graba tus salidas con Ichnos o trae tus archivos de Strava/Coros en "Rutas realizadas".</small>'; return d; }
-  const one=(k)=>{
+  const groups=byTp(res), many=groups.length>1;
+  const one=(k,res)=>{
     const a=res[k]; if(!a.length) return '';   // si no la has hecho en ese sentido, no se pone nada
     const last=a.reduce((x,y)=>(y.date||0)>(x.date||0)?y:x);
     return `<div class="tm"><b>${lb[k]}</b><span>Mejor <b class="best">${fmtT(a[0].t)}</b> · último ${fmtT(last.t)} · ${a.length} ${a.length===1?'vez':'veces'}</span>
       <details><summary>Ver todos</summary><ol>${a.slice(0,30).map(x=>`<li><b>${fmtT(x.t)}</b> <small>${fmtD(x.date)}</small></li>`).join('')}</ol></details></div>`;
   };
-  const h=one('f')+one('b'); if(!h){ d.hidden=true; return d; }   // nunca la has hecho: nada
+  const h=groups.map(([t,r])=>{ const x=one('f',r)+one('b',r); return x?(many?`<div class="tp-h">${esc(tpLbl(t))}</div>`:'')+x:''; }).join(''); if(!h){ d.hidden=true; return d; }   // nunca la has hecho: nada
   d.innerHTML='<div class="tms-h">Tus tiempos</div>'+h;
   return d;
 }
@@ -5420,13 +5425,19 @@ async function exploreSegs(){
 }
 map.on('moveend',()=>{ if(T.segmentos) setTimeout(exploreSegs,900); });
 // tus tiempos de Strava en un segmento
-function stravaBest(sid){ const l=[]; rides.forEach(r=>(r.sef||[]).forEach(e=>{ if(e.sid===sid) l.push({t:e.t,date:r.date}); })); l.sort((a,b)=>a.t-b.t); return l; }
+function stravaBest(sid,tp){ const l=[]; rides.forEach(r=>{ if(r._dup) return; const t0=rideTipo(r)||null; if(tp!==undefined&&t0!==tp) return; (r.sef||[]).forEach(e=>{ if(e.sid===sid) l.push({t:e.t,date:r.date,tp:t0}); }); }); l.sort((a,b)=>a.t-b.t); return l; }
+// los mejores tiempos, cada uno con su disciplina (BTT con BTT, correr con correr…)
+const tpLbl=t=>((typeof MOD_LBL!=='undefined'&&MOD_LBL[t])||['Sin modalidad'])[0];
+const TP_ORD=['mtb','ebike','gravel','road','trail','run','hike','walk'];
+function byTp(res){ const m=new Map(); ['f','b'].forEach(k=>(res[k]||[]).forEach(e=>{ const t=e.tp||null; if(!m.has(t)) m.set(t,{f:[],b:[]}); m.get(t)[k].push(e); }));
+  return [...m.entries()].sort((a,b)=>{ const ia=TP_ORD.indexOf(a[0]), ib=TP_ORD.indexOf(b[0]); return (ia<0?99:ia)-(ib<0?99:ib); }); }
 const segDz=c=>c[c.length-1][2]!=null&&c[0][2]!=null?c[c.length-1][2]-c[0][2]:null;
 function ssPopup(sg){
   const d=document.createElement('div'); d.className='tpop', c=sg.coords;
   d.innerHTML=`<b>${esc(niceName(sg.name)||sg.name)}</b><br><small>Segmento de Strava · ${fmtKm(sg.km||lenOf(c)/1000)} km${sg.gr!=null?` · ${String(Math.round(sg.gr*10)/10).replace('.',',')} %`:''} · solo lo ves tú</small>`;
   const sb=stravaBest(sg.id);
-  if(sb.length) d.insertAdjacentHTML('beforeend',`<div class="tms"><div class="tms-h">Tus tiempos en Strava</div><div class="tm"><span>Mejor <b class="best">${fmtT(sb[0].t)}</b> · ${sb.length} ${sb.length===1?'vez':'veces'} · último ${fmtD(sb.reduce((x,y)=>y.date>x.date?y:x).date)}</span></div></div>`);
+  if(sb.length){ const gs=byTp({f:sb,b:[]});   // cada disciplina por separado
+    d.insertAdjacentHTML('beforeend',`<div class="tms"><div class="tms-h">Tus tiempos en Strava</div>${gs.map(([t,g])=>{ const l=g.f; return `<div class="tm">${gs.length>1?`<b>${esc(tpLbl(t))}</b>`:''}<span>Mejor <b class="best">${fmtT(l[0].t)}</b> · ${l.length} ${l.length===1?'vez':'veces'} · último ${fmtD(l.reduce((x,y)=>y.date>x.date?y:x).date)}</span></div>`; }).join('')}</div>`); }
   else d.appendChild(timesBlock(effortsFor('ss:'+sg.id,c),segDz(c)));
   d.insertAdjacentHTML('beforeend',`<a class="sv-link" href="https://www.strava.com/segments/${esc(sg.id)}" target="_blank" rel="noopener">Ver en Strava</a>`);
   if(me&&!gData.t['st'+sg.id]){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Ponerle color':'Proponer color';
@@ -5450,7 +5461,10 @@ async function loadFrTimes(){
 function myPubTimes(){   // tus mejores tiempos en las trialeras de la grupeta, sin salidas que vengan de Strava
   const o={};
   Object.entries(gData.t||{}).forEach(([id,tr])=>{ const res=effortsFor('gtp:'+id,tr.coords,true), lb=dirLabels(res,segDz(tr.coords));
-    if(res.f.length||res.b.length) o[id]={f:res.f[0]?res.f[0].t:null,b:res.b[0]?res.b[0].t:null,lf:lb.f,lb:lb.b}; });
+    if(!res.f.length&&!res.b.length) return;
+    const gs=byTp(res), m={}; gs.forEach(([t,g])=>{ m[t||'?']={f:g.f[0]?g.f[0].t:null,b:g.b[0]?g.b[0].t:null}; });
+    const main=gs.slice().sort((a,b)=>(b[1].f.length+b[1].b.length)-(a[1].f.length+a[1].b.length))[0][1];   // para apps antiguas: la disciplina que más usas
+    o[id]={f:main.f[0]?main.f[0].t:null,b:main.b[0]?main.b[0].t:null,lf:lb.f,lb:lb.b,m}; });
   return o;
 }
 // ===== FICHA DE CADA TRIALERA (como Trailforks): estado del camino, tiempos, clasificación y comentarios =====
@@ -5484,12 +5498,15 @@ function gtPopup(id,tr){
   d.appendChild(timesBlock(effortsFor('gt:'+id,c),segDz(c)));
   const cl=document.createElement('div'); cl.className='tms'; cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div><small>Cargando…</small>'; d.appendChild(cl);
   loadFrTimes().then(ft=>{
-    const mine=myPubTimes()[id], rows={f:[],b:[]};
-    const add=(u,t)=>{ if(!t) return; if(t.f) rows.f.push({u,t:t.f}); if(t.b) rows.b.push({u,t:t.b}); };
+    const mine=myPubTimes()[id], G=new Map();   // una clasificación por disciplina: BTT con BTT, correr con correr…
+    const add1=(u,tp,t)=>{ if(!t) return; if(!G.has(tp)) G.set(tp,{f:[],b:[]}); const g=G.get(tp); if(t.f) g.f.push({u,t:t.f}); if(t.b) g.b.push({u,t:t.b}); };
+    const add=(u,t)=>{ if(!t) return; if(t.m) Object.entries(t.m).forEach(([tp,x])=>add1(u,tp==='?'?null:tp,x)); else add1(u,'old',t); };
     add(me.id,mine); Object.entries(ft).forEach(([u,tt])=>add(u,tt[id]));
     const lb=dirLabels(effortsFor('gt:'+id,c),segDz(c));
-    const one=k=>rows[k].length?`<div class="tm"><b>${lb[k]}</b><ol>${rows[k].sort((a,b)=>a.t-b.t).map(x=>`<li><b>${fmtT(x.t)}</b> ${esc(uName(x.u))}</li>`).join('')}</ol></div>`:'';
-    cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div>'+((one('f')+one('b'))||'<small>Todavía nadie tiene tiempo aquí. Cuentan las salidas subidas con archivo o directas del reloj (las de Strava no se pueden enseñar a otros).</small>');
+    const keys=[...G.keys()].sort((a,b)=>{ const ia=TP_ORD.indexOf(a), ib=TP_ORD.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); }), many=keys.length>1;
+    const one=(rows,k)=>rows[k].length?`<div class="tm"><b>${lb[k]}</b><ol>${rows[k].sort((a,b)=>a.t-b.t).map(x=>`<li><b>${fmtT(x.t)}</b> ${esc(uName(x.u))}</li>`).join('')}</ol></div>`:'';
+    const html=keys.map(tp=>{ const g=G.get(tp), x=one(g,'f')+one(g,'b'); return x?(many?`<div class="tp-h">${tp==='old'?'Sin modalidad (app sin actualizar)':esc(tpLbl(tp))}</div>`:'')+x:''; }).join('');
+    cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div>'+(html||'<small>Todavía nadie tiene tiempo aquí. Cuentan las salidas subidas con archivo o directas del ciclocomputador (las de Strava no se pueden enseñar a otros).</small>');
   });
   if(tr.kind==='trial'&&me){ const nb=document.createElement('button'); nb.className='segbtn'; nb.textContent=me.admin?'Cambiar nombre':'Proponer otro nombre';
     nb.onclick=async()=>{ map.closePopup(); const nn=await askName('Cambiar el nombre',tr.name||''); if(!nn||nn===tr.name) return; gPush([{k:'trial',id,name:nn,lv:tr.lv,coords:tr.coords}]); if(me.admin){ tr.name=nn; drawTrailFix(); effCache.clear(); toast(`Nombre cambiado para toda la grupeta: "${nn}"`,3500); } else toast('Propuesta enviada a David.',3500); }; d.appendChild(nb); }
