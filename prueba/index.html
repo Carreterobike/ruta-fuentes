@@ -161,9 +161,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 /* pestañas-interruptor abajo */
 .rideon{position:absolute;z-index:1002;left:12px;right:70px;bottom:66px;display:flex;align-items:center;gap:10px;background:#1E2328;color:#fff;border-radius:16px;padding:8px 8px 8px 8px;box-shadow:var(--shadow);max-width:460px}
 .rocol{position:absolute;z-index:1002;left:12px;bottom:130px;display:flex;flex-direction:column;gap:6px;max-width:calc(100% - 84px)}
-.rocol .rc-b{display:flex;gap:4px;background:#1E2328;border-radius:999px;padding:4px;align-self:flex-start;box-shadow:var(--shadow);flex-wrap:wrap}
+.rocol .rc-b{display:flex;gap:2px;background:#1E2328;border-radius:999px;padding:4px;align-self:flex-start;box-shadow:var(--shadow);flex-wrap:wrap}
 .rocol .rc-b button{border:0;border-radius:999px;background:transparent;color:#cfd6dc;font:inherit;font-size:13px;font-weight:700;padding:7px 12px;cursor:pointer}
 .rocol .rc-b button.on{background:#B6E22E;color:#1E2328}
+@media (max-width:500px){.rocol .rc-b{flex-wrap:nowrap}.rocol .rc-b button{padding:6px 8px;font-size:12px}}
 .rocol .rc-l{display:flex;flex-wrap:wrap;gap:4px 10px;background:#1E2328;color:#cfd6dc;border-radius:10px;padding:6px 10px;font-size:12px;align-self:flex-start;box-shadow:var(--shadow)}
 .rocol .rc-l i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
 .rideon button{border:0;border-radius:12px;background:rgba(255,255,255,.12);color:#fff;font-weight:700;padding:10px 12px;font-size:14px;flex:none}
@@ -1495,7 +1496,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795038832';   // versión de la app (la pone build.py)
+const BUILD='1795038920';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
