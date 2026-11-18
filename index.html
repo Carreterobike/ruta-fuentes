@@ -882,6 +882,19 @@ body.map-moving .search input,.leaflet-container.moving .mapgrp,.leaflet-contain
 .ppop .hor .op{display:inline-block;margin-right:6px;padding:1px 8px;border-radius:999px;font-weight:800;font-size:11.5px}
 .ppop .hor .op.on{background:#e3f4cc;color:#2f5f00}.ppop .hor .op.off{background:#fde4e1;color:#a3271b}
 .ppop .hor .segbtn{margin-top:6px}
+/* X de cerrar más visibles: círculo oscuro con la cruz blanca y gruesa (de noche, al revés) */
+.qbtn.x,#destX,#fxX,.leaflet-container a.leaflet-popup-close-button{width:36px!important;height:36px!important;min-width:36px;padding:0!important;border:0!important;border-radius:50%!important;font-size:0!important;color:transparent!important;background:#1E2328 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") center/20px no-repeat!important;box-shadow:0 2px 6px rgba(0,0,0,.25);flex:none;cursor:pointer}
+.leaflet-container a.leaflet-popup-close-button{width:30px!important;height:30px!important;min-width:30px;top:6px!important;right:6px!important;background-size:17px!important}
+.leaflet-container a.leaflet-popup-close-button span{display:none}
+.leaflet-popup-content{margin-right:40px}
+html[data-theme="dark"] .qbtn.x,html[data-theme="dark"] #destX,html[data-theme="dark"] #fxX,html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{background:#eef0ec url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='%231E2328' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") center/20px no-repeat!important}
+html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{background-size:17px!important}
+.qbtn.x:active,#destX:active,#fxX:active{transform:scale(.92)}
+/* la lupa no tapa el texto */
+#secCapas .capgrid button:has(.lupa){padding-right:36px}
+/* en el móvil, sin desenfoque (en el iPhone hace ir el mapa a tirones); en el ordenador se queda */
+@media (hover:none) and (pointer:coarse){ .search input,.mapgrp,.fab,.lgctl .lgbox,.wx.in-search.mini .wxpill,.mapgrp>.leaflet-control.leaflet-control-layers-expanded,.fxcard{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .search input,.mapgrp,.fab,.lgctl .lgbox{background:var(--card)!important} }
 </style>
 </head>
 <body>
@@ -1439,7 +1452,7 @@ body.map-moving .search input,.leaflet-container.moving .mapgrp,.leaflet-contain
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1794995230';   // versión de la app (la pone build.py)
+const BUILD='1795031659';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -5270,8 +5283,9 @@ function samplesOf(c,step=20){
 // busca en una ruta las veces que pasa cerca de un punto (devuelve el índice más cercano de cada pasada)
 function passes(c,P,R){
   const out=[]; let best=-1, bd=Infinity;
+  const dLa=R/110000, dLo=R/(110000*Math.max(0.2,Math.cos(P[0]*Math.PI/180))), la=P[0], lo=P[1];   // descarte rápido: lo que está más lejos que R en latitud o longitud no hace falta medirlo
   for(let i=0;i<c.length;i++){
-    const d=dist(c[i],P);
+    const q=c[i]; const d=(Math.abs(q[0]-la)>dLa||Math.abs(q[1]-lo)>dLo)?Infinity:dist(q,P);
     if(d<=R){ if(d<bd){bd=d;best=i;} }
     else if(best>=0){ out.push(best); best=-1; bd=Infinity; }
   }
