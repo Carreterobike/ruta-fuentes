@@ -562,7 +562,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .notes li .who{font-weight:800;font-size:13px;display:block;margin-bottom:2px}
 .sv-link{color:#FC4C02;font-weight:800;font-size:14px;text-decoration:underline;align-self:center}
 .rideview{position:fixed;inset:0;z-index:2500;overflow-y:auto;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))}
-.rv-h{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;background:var(--brand);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
+.rv-h{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:12px;background:var(--brand);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
 .rv-h button{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:50%;width:38px;height:38px;font-size:20px}
 .rv-h div{display:flex;flex-direction:column;min-width:0}
 .rv-h b{font-family:var(--display);font-weight:800;font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -574,7 +574,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 /* gráficos estilo COROS / Garmin: siempre oscuros */
 .rvcard.cxd{background:#13171b;color:#e8ecef;--muted:#8b959e}
 .cxd .ch-t{color:#e8ecef}
-.cx-bar{position:sticky;top:0;z-index:3;display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;background:#1e2429;border-radius:12px;padding:8px 10px;margin:-2px 0 2px}
+.cx-bar{position:sticky;top:0;z-index:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;background:#1e2429;border-radius:12px;padding:8px 10px;margin:-2px 0 2px}
 .cx-bar div{display:flex;flex-direction:column;min-width:0}.cx-bar small{font-size:11.5px;color:#8b959e}.cx-bar b{font-size:15px;white-space:nowrap}
 .cx-bar .hint{grid-column:1/-1;font-size:13px;color:#8b959e;text-align:center}
 .cx-tabs{display:flex;gap:6px}.cx-tabs button{font:inherit;font-size:13px;font-weight:600;padding:6px 14px;border-radius:999px;border:0;background:#1e2429;color:#b9c2ca;cursor:pointer}
@@ -1495,7 +1495,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795038732';   // versión de la app (la pone build.py)
+const BUILD='1795038832';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
