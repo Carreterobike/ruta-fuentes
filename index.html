@@ -1452,7 +1452,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795032776';   // versión de la app (la pone build.py)
+const BUILD='1795034452';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2030,7 +2030,7 @@ map.on('overlayremove',e=>{ if(e.layer===hLayer) store.set('ichnos-mapaper',fals
 
 // ---------- estado ----------
 // T = pestañas encendidas. Se pueden tener varias a la vez; se apagan tocándolas otra vez.
-const T={crear:false,fuentes:false,trialeras:store.get('ichnos-trialeras',true)!==false,segmentos:false};   // las trialeras se quedan como las dejaste
+const T={crear:false,fuentes:false,trialeras:false,segmentos:false};   // al abrir la app, las trialeras apagadas (David: se encienden con un toque en Mostrar)
 let mode=(()=>{ try{ const m=JSON.parse(localStorage.getItem('ichnos-modo')||'"mtb"'); return ['road','gravel','mtb','ebike','run','trail','hike','walk'].includes(m)?m:'mtb'; }catch(e){ return 'mtb'; } })();
 let points=[];          // [lat, lon, 'f' si es una fuente añadida]
 let route=null;         // {coords:[[lat,lon,ele]], cum:[m], length, up, idx:[índice de cada punto]}
