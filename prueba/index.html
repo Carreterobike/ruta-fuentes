@@ -1495,7 +1495,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795038403';   // versión de la app (la pone build.py)
+const BUILD='1795038510';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -5286,20 +5286,18 @@ function profOf(cum,idx,eles){ const N=idx.length; if(!eles) return {el:null,sl:
   const el=f.map((v,k)=>{ let a=0,m=0; for(let j=Math.max(0,k-3);j<=Math.min(N-1,k+3);j++){ a+=f[j]; m++; } return a/m; });
   const sl=el.map((v,k)=>{ let a=k,b=k; while(a>0&&cum[idx[k]]-cum[idx[a]]<60) a--; while(b<N-1&&cum[idx[b]]-cum[idx[k]]<60) b++; const d=cum[idx[b]]-cum[idx[a]]; return d>0?(el[b]-el[a])/d*100:0; });
   return {el,sl}; }
-// remontes y cortes del GPS: un salto de más de 300 m entre dos puntos (si sube ≥30 m y va despacio = remonte),
-// o un tramo recto que sube ≥40 m a ≥8 % sin pedalear (cadencia 0) o con el pulso muy bajo (no en e-bike)
-function rideLifts(r,idx,cum,el){ const out=[], c=r.coords, t=r.times, N=idx.length;
-  for(let k=1;k<N;k++){ const i0=idx[k-1], i1=idx[k], d=cum[i1]-cum[i0]; if(d<=300) continue; let big=0; for(let i=i0+1;i<=i1;i++) big=Math.max(big,cum[i]-cum[i-1]); if(big<=300) continue;
-    const dt=t?t[i1]-t[i0]:0, v=dt>0?d/dt*3.6:99; out.push({a:k-1,b:k,kind:el&&el[k]-el[k-1]>=30&&v<20?'lift':'gap'}); }
-  if(el){ const hm=hrMax(), eb=rideTipo(r)==='ebike';
-    for(let a=0;a<N-1;a++){ let b=a; while(b<N-1&&cum[idx[b+1]]-cum[idx[a]]<400) b++; if(b>=N-1) break;
-      const d=cum[idx[b]]-cum[idx[a]], g=el[b]-el[a]; if(g<40||g/d<0.08) continue; if(dist(c[idx[a]],c[idx[b]])/d<0.97) continue;
-      const avg=arr=>{ let s=0,m=0; for(let i=idx[a];i<=idx[b];i++){ const v=arr[i]; if(v!=null&&isFinite(v)){ s+=v; m++; } } return m?s/m:null; };
-      const cad=r.cad?avg(r.cad):null, hr=r.hr?avg(r.hr):null;
-      if(!(cad!=null?cad<5:(hr!=null&&!eb&&hr<hm*0.62))) continue;
-      while(b<N-1&&dist(c[idx[a]],c[idx[b+1]])/(cum[idx[b+1]]-cum[idx[a]])>=0.97&&el[b+1]>el[b]) b++;
-      out.push({a,b,kind:'lift'}); a=b; } }
-  out.sort((x,y)=>x.a-y.a); const m=[]; out.forEach(q=>{ const l=m[m.length-1]; if(l&&q.a<=l.b){ l.b=Math.max(l.b,q.b); if(q.kind==='lift') l.kind='lift'; } else m.push({...q}); }); return m; }
+// remontes y cortes del GPS: (1) un salto de más de 300 m entre dos puntos: si sube ≥30 m y va a menos de 20 km/h = remonte, si no = corte del GPS;
+// (2) subir más rápido de lo que se puede pedaleando: ≥1500 m/h con el pulso bajo (<70 % del máx.) o ≥2500 m/h, o sin pedalear (cadencia 0) a ≥8 %. En e-bike solo (1).
+function rideLifts(r,idx,cum,el){ const out=[], t=r.times, N=idx.length, E=r.eles;
+  for(let k=1;k<N;k++){ const i0=idx[k-1], i1=idx[k]; let big=0, bi=-1; for(let i=i0+1;i<=i1;i++){ const d=cum[i]-cum[i-1]; if(d>big){ big=d; bi=i; } } if(big<=300) continue;
+    const dt=t?t[bi]-t[bi-1]:0, v=dt>0?big/dt*3.6:99, g=E&&E[bi]!=null&&E[bi-1]!=null?E[bi]-E[bi-1]:(el?el[k]-el[k-1]:0); out.push({a:k-1,b:k,kind:g>=30&&v<20?'lift':'gap'}); }
+  if(el&&t&&rideTipo(r)!=='ebike'){ const hm=hrMax(), mark=new Array(N).fill(false);
+    for(let a=0;a<N-1;a++){ let b=a; while(b<N-1&&cum[idx[b]]-cum[idx[a]]<200) b++; const ia=idx[a], ib=idx[b], d=cum[ib]-cum[ia], g=el[b]-el[a], dt=t[ib]-t[ia]; if(d<150||g<12||!(dt>0)) continue;
+      const vam=g/dt*3600; let hs=0,hm_=0,cs=0,cm=0; for(let i=ia;i<=ib;i++){ if(r.hr&&r.hr[i]){ hs+=r.hr[i]; hm_++; } if(r.cad&&r.cad[i]!=null){ cs+=r.cad[i]; cm++; } }
+      const hr=hm_?hs/hm_:null, cad=cm?cs/cm:null;
+      if(vam>=2500||(vam>=1500&&hr!=null&&hr<hm*0.7)||(cad!=null&&cad<5&&g/d>=0.08)) for(let k=a;k<=b;k++) mark[k]=true; }
+    for(let k=0;k<N;k++){ if(!mark[k]) continue; let e=k; while(e<N-1&&mark[e+1]) e++; if(el[e]-el[k]>=40) out.push({a:k,b:e,kind:'lift'}); k=e; } }
+  out.sort((x,y)=>x.a-y.a); const m=[]; out.forEach(q=>{ const l=m[m.length-1]; if(l&&q.a<=l.b+1){ l.b=Math.max(l.b,q.b); if(q.kind==='lift') l.kind='lift'; } else m.push({...q}); }); return m; }
 function rideClimbs(cum,el,idx,lifts){   // subidas: sube ≥30 m, ≥300 m de largo y ≥3 % de media; se corta si baja más de 10 m o en un remonte
   const out=[]; let a=0, top=0; const inL=k=>(lifts||[]).find(q=>k>q.a&&k<=q.b);
   const close=()=>{ const g=el[top]-el[a], d=cum[idx[top]]-cum[idx[a]]; if(g>=30&&d>=300&&g/d>=0.03) out.push([a,top]); };
