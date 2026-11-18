@@ -1452,7 +1452,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795031659';   // versión de la app (la pone build.py)
+const BUILD='1795032776';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1863,7 +1863,7 @@ const glStyle={version:8, glyphs:'https://tiles.openfreemap.org/fonts/{fontstack
 const VECTOR_FILLS=['bg','landcover','landuse','park','water','waterway','building','road-casing','road'];
 const LABEL_LAYERS=['road-names','park-labels','peaks','place-small','place-suburb','place-village','place-city'];
 const TRAIL_LAYERS=['trail-halo','trail-track','trail-path','trail-rated','trail-double','trail-names','my-names'];
-const glLayer=L.maplibreGL({style:glStyle}).addTo(map);
+const glLayer=L.maplibreGL({style:glStyle,pixelRatio:Math.min(window.devicePixelRatio||1,2),fadeDuration:0}).addTo(map);   // en el iPhone (pantalla x3) se pinta a x2: igual de nítido y la mitad de trabajo
 map.on('movestart zoomstart',()=>{ map.getContainer().classList.add('moving'); document.body.classList.add('map-moving'); });
 map.on('moveend zoomend',()=>{ clearTimeout(window._mvT); window._mvT=setTimeout(()=>{ map.getContainer().classList.remove('moving'); document.body.classList.remove('map-moving'); },150); });
 const glMap=glLayer.getMaplibreMap();
@@ -2855,13 +2855,14 @@ function drawArrows(){
 }
 function arrowsOn(c,layer,gap,max){
   if(!c||c.length<2) return;
+  const vb=map.getBounds().pad(0.3);   // solo las flechas que se ven (antes, todas las del recorrido: cientos de marcas y el mapa a tirones)
   let acc=gap*0.5, n=0;
   let prev=map.latLngToLayerPoint([c[0][0],c[0][1]]);
   for(let i=1;i<c.length && n<max;i++){
     const cur=map.latLngToLayerPoint([c[i][0],c[i][1]]), d=prev.distanceTo(cur);
     acc+=d;
     if(acc>=gap && d>0){
-      acc=0; n++;
+      acc=0; if(!vb.contains([c[i][0],c[i][1]])){ prev=cur; continue; } n++;
       const j=Math.min(i+2,c.length-1), a=c[Math.max(0,i-2)];
       L.marker([c[i][0],c[i][1]],{pane:'arrows',interactive:false,keyboard:false,
         icon:L.divIcon({className:'',iconSize:[16,16],iconAnchor:[8,8],html:`<div class="arr" style="transform:rotate(${bearing(a,c[j]).toFixed(0)}deg)">${ARROW_SVG}</div>`})}).addTo(layer);
@@ -2869,7 +2870,7 @@ function arrowsOn(c,layer,gap,max){
     prev=cur;
   }
 }
-map.on('zoomend',drawArrows);
+map.on('moveend',()=>{ clearTimeout(drawArrows._t); drawArrows._t=setTimeout(()=>{ drawArrows(); if(typeof drawTripArrows==='function') drawTripArrows(); },150); });
 
 let fitNext=false;
 async function useRoute(coords, up, label, my){
@@ -4050,7 +4051,7 @@ function numPin(n,col){ return L.divIcon({className:'',html:`<div class="pin num
 // flechas de sentido sobre todas las etapas del viaje
 const tripArrowLayer=L.layerGroup().addTo(map);
 function drawTripArrows(){ tripArrowLayer.clearLayers(); if(!trip) return; trip.stages.forEach((s,i)=>{ if(trip.open!==i) arrowsOn(s.coords,tripArrowLayer,160,300); }); }
-map.on('zoomend',drawTripArrows);
+
 function drawTrip(){
   tripLayer.clearLayers();
   if(!trip) return;
@@ -5991,50 +5992,52 @@ async function loadOsmChains(){ if(map.getZoom()<14) return; const b=map.getBoun
     for(const f of nms){ const ll=f.line.map(q=>[q[1],q[0]]); if(pts.filter(p=>distToLine(p,ll)<15).length>=2){ name=f.name; break; } }
     return {c,L:L0,name}; }).filter(x=>x.L>=150||x.name);
   drawDirs(); }
+// geometría de cada trialera calculada una sola vez (antes se recalculaba entera en cada movimiento del mapa)
+const dirGeo=new Map(), dirCov=new Map();
+function dirG(key,c0){ let g=dirGeo.get(key); if(g) return g;
+  const c=c0.map(q=>[q[0],q[1]]); let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); });
+  const L=lenOf(c), at=[L/3,2*L/3], ar=[]; let acc=0, mid=-1;
+  for(let i=1;i<c.length;i++){ acc+=dist(c[i-1],c[i]); if(mid<0&&acc>=L/2) mid=i; if(ar.length<2&&acc>=at[ar.length]) ar.push(i); }
+  g={c,L,bb:[a,b,n,e],sm:samplesOf(c,40),line:c.map(q=>[q[1],q[0]]),mid,ar,key}; dirGeo.set(key,g); if(dirGeo.size>4000) dirGeo.clear(); return g; }
+function dirCovered(g,d){ const k=g.key+'|'+d.key; let v=dirCov.get(k); if(v==null){ v=g.sm.filter(p=>distToLine(p,d.line)<15).length/Math.max(1,g.sm.length); dirCov.set(k,v); if(dirCov.size>20000) dirCov.clear(); } return v; }
+function dirArrow(c,i){ const p0=map.latLngToLayerPoint(c[i-1]), p1=map.latLngToLayerPoint(c[i]); return Math.atan2(p1.y-p0.y,p1.x-p0.x)*180/Math.PI; }
 function drawDirs(){
   dirLayer.clearLayers(); const shown=T.trialeras&&!(T.crear&&!trailsMode()), on=shown&&map.getZoom()>=14;
   if(glReady) try{ glMap.setLayoutProperty('trail-names','visibility',shown&&map.getZoom()<15?'visible':'none'); }catch(e){}   // con zoom: los nombres los pone Ichnos, siempre visibles
   if(!on){ snapLayer.clearLayers(); return; }
   const B=map.getBounds().pad(0.15), z=map.getZoom(), list=[], seenN=new Set();
-  const bbOf=c=>{ let a=90,b=180,n=-90,e=-180; c.forEach(q=>{ a=Math.min(a,q[0]); n=Math.max(n,q[0]); b=Math.min(b,q[1]); e=Math.max(e,q[1]); }); return [a,b,n,e]; };
   const inView=bb=>!(bb[2]<B.getSouth()||bb[0]>B.getNorth()||bb[3]<B.getWest()||bb[1]>B.getEast());
   // trialeras de la grupeta (en el sentido en que se marcaron)
-  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind!=='trial'||!tr.coords||tr.coords.length<2) return; const c=tr.coords.map(q=>[q[0],q[1]]); if(!inView(bbOf(c))) return;
-    seenN.add(nrm(tr.name)); if(id.startsWith('st')) seenN.add('#'+id.slice(2)); list.push({name:tr.name,c,L:lenOf(c),grp:true}); });
+  Object.entries(gData.t||{}).forEach(([id,tr])=>{ if(tr.kind!=='trial'||!tr.coords||tr.coords.length<2) return; const g=dirG('g:'+id+':'+(tr.t||0)+':'+tr.coords.length,tr.coords); if(!inView(g.bb)) return;
+    seenN.add(nrm(tr.name)); if(id.startsWith('st')) seenN.add('#'+id.slice(2)); list.push({name:tr.name,g,L:g.L,grp:true}); });
   // tus bajadas de Strava (solo las ves tú): las cortas primero
-  Object.values(ssegs).forEach(sg=>{ const c=sg.coords; if(!sg.name||!c||c.length<2||sg.gr==null||sg.gr>-3) return; const L0=sg.km?sg.km*1000:lenOf(c); if(L0>3000) return;
-    if(!sg._bb) Object.defineProperty(sg,'_bb',{value:bbOf(c),enumerable:false,writable:true,configurable:true}); if(!inView(sg._bb)) return;
-    if(seenN.has('#'+sg.id)||seenN.has(nrm(sg.name))) return; list.push({name:sg.name,c:c.map(q=>[q[0],q[1]]),L:L0}); });
+  Object.values(ssegs).forEach(sg=>{ const c=sg.coords; if(!sg.name||!c||c.length<2||sg.gr==null||sg.gr>-3) return; const L0=sg.km?sg.km*1000:null; if(L0!=null&&L0>3000) return;
+    const g=dirG('s:'+sg.id+':'+c.length,c); if((L0||g.L)>3000||!inView(g.bb)) return;
+    if(seenN.has('#'+sg.id)||seenN.has(nrm(sg.name))) return; list.push({name:sg.name,g,L:L0||g.L}); });
   list.sort((a,b)=>(b.grp?1:0)-(a.grp?1:0)||a.L-b.L);
   // la misma bajada en varias versiones: solo la primera (la más corta)
   const drawn=[], boxes=[];
-  list.forEach(x=>{ const sm=samplesOf(x.c,40), cv=sm.filter(p=>drawn.some(d=>distToLine(p,d)<15)).length; if(drawn.length&&cv>=sm.length*0.7) return;
-    drawn.push(x.c.map(q=>[q[1],q[0]]));
-    const P=x.c.map(q=>map.latLngToLayerPoint(q)), at=[x.L/3,2*x.L/3]; let acc=0,k=0,mid=null,mi=0;
-    for(let i=1;i<x.c.length;i++){ acc+=dist(x.c[i-1],x.c[i]); if(!mid&&acc>=x.L/2){ mid=x.c[i]; mi=i; }
-      if(k<2&&acc>=at[k]){ k++; const ang=Math.atan2(P[i].y-P[i-1].y,P[i].x-P[i-1].x)*180/Math.PI;
-        L.marker(x.c[i],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:`<div style="transform:rotate(${ang.toFixed(0)}deg)">${DIR_A}</div>`,iconSize:[22,22],iconAnchor:[11,11]})}).addTo(dirLayer); } }
-    if(z>=15){ L.marker(x.c[0],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:DIR_ST,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(dirLayer);
-      L.marker(x.c[x.c.length-1],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:DIR_FL,iconSize:[28,32],iconAnchor:[5,28]})}).addTo(dirLayer); }
-    // nombre: siempre, salvo que choque con otro ya puesto
-    const nm=niceName(x.name); if(!nm||!mid) return; const pt=map.latLngToContainerPoint(mid), w=nm.length*7.2+6, bx=[pt.x-w/2,pt.y-34,pt.x+w/2,pt.y-18];
+  const putName=(nm,mid)=>{ if(!nm||!mid) return; const pt=map.latLngToContainerPoint(mid), w=nm.length*7.2+6, bx=[pt.x-w/2,pt.y-34,pt.x+w/2,pt.y-18];
     if(boxes.some(o=>!(bx[2]<o[0]||bx[0]>o[2]||bx[3]<o[1]||bx[1]>o[3]))) return; boxes.push(bx);
-    L.marker(mid,{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-nm',html:`<div>${esc(nm)}</div>`,iconSize:[0,0]})}).addTo(dirLayer); });
+    L.marker(mid,{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-nm',html:`<div>${esc(nm)}</div>`,iconSize:[0,0]})}).addTo(dirLayer); };
+  const putArrows=(c,ar)=>ar.forEach(i=>L.marker(c[i],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:`<div style="transform:rotate(${dirArrow(c,i).toFixed(0)}deg)">${DIR_A}</div>`,iconSize:[22,22],iconAnchor:[11,11]})}).addTo(dirLayer));
+  list.forEach(x=>{ const g=x.g; if(drawn.length&&drawn.some(d=>dirCovered(g,d)>=0.7)) return;
+    drawn.push(g); putArrows(g.c,g.ar);
+    if(z>=15){ L.marker(g.c[0],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:DIR_ST,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(dirLayer);
+      L.marker(g.c[g.c.length-1],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:DIR_FL,iconSize:[28,32],iconAnchor:[5,28]})}).addTo(dirLayer); }
+    // nombre: siempre, salvo que choque con otro ya puesto
+    putName(niceName(x.name),g.mid>=0?g.c[g.mid]:null); });
   // trialeras del mapa: flechas hacia donde BAJA la pendiente (altura del terreno), y su nombre
   loadOsmChains().catch(()=>{}); try{ drawSnap(); }catch(e){ console.warn(e); } let wait=null;
-  if(z>=15) osmChains.forEach(x=>{   // las del mapa general (flechas y nombres) un poco más cerca, para que de lejos no haya lío const bb=x._bb||(x._bb=bbOf(x.c)); if(!inView(bb)) return;
-    const sm=samplesOf(x.c,40), has=drawn.length&&sm.filter(p=>drawn.some(d=>distToLine(p,d)<15)).length>=sm.length*0.7;   // ya tiene sus flechas
+  if(z>=15) osmChains.forEach(x=>{   // las del mapa general (flechas y nombres) un poco más cerca, para que de lejos no haya lío
+    const g0=x._g||(x._g=dirG('o:'+x.c.length+':'+x.c[0][0]+','+x.c[0][1]+':'+x.c[x.c.length-1][0],x.c)); if(!inView(g0.bb)) return;
+    const has=drawn.length&&drawn.some(d=>dirCovered(g0,d)>=0.7);   // ya tiene sus flechas
     const h0=elevAt(x.c[0][0],x.c[0][1]), h1=elevAt(x.c[x.c.length-1][0],x.c[x.c.length-1][1]);
     if(!has&&(h0==null||h1==null)){ wait=wait||[]; wait.push(elevTile(...t2xy(x.c[0][0],x.c[0][1])).p,elevTile(...t2xy(x.c[x.c.length-1][0],x.c[x.c.length-1][1])).p); }
     const arrows=!has&&h0!=null&&h1!=null&&Math.abs(h0-h1)>=5;   // casi llano: sin flecha
-    const c=(h0!=null&&h1!=null&&h0<h1)?x.c.slice().reverse():x.c, P=c.map(q=>map.latLngToLayerPoint(q)), at=[x.L/3,2*x.L/3]; let acc=0,k=0,mid=null;
-    if(arrows) drawn.push(c.map(q=>[q[1],q[0]]));
-    for(let i=1;i<c.length;i++){ acc+=dist(c[i-1],c[i]); if(!mid&&acc>=x.L/2) mid=c[i];
-      if(arrows&&k<2&&acc>=at[k]){ k++; const ang=Math.atan2(P[i].y-P[i-1].y,P[i].x-P[i-1].x)*180/Math.PI;
-        L.marker(c[i],{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-ic',html:`<div style="transform:rotate(${ang.toFixed(0)}deg)">${DIR_A}</div>`,iconSize:[22,22],iconAnchor:[11,11]})}).addTo(dirLayer); } }
-    const nm=niceName(x.name); if(!nm||!mid) return; const pt=map.latLngToContainerPoint(mid), w=nm.length*7.2+6, bx=[pt.x-w/2,pt.y-34,pt.x+w/2,pt.y-18];
-    if(boxes.some(o=>!(bx[2]<o[0]||bx[0]>o[2]||bx[3]<o[1]||bx[1]>o[3]))) return; boxes.push(bx);
-    L.marker(mid,{interactive:false,keyboard:false,icon:L.divIcon({className:'dir-nm',html:`<div>${esc(nm)}</div>`,iconSize:[0,0]})}).addTo(dirLayer); });
+    const g=(h0!=null&&h1!=null&&h0<h1)?(x._gr||(x._gr=dirG(g0.key+':r',x.c.slice().reverse()))):g0;
+    if(arrows){ drawn.push(g); putArrows(g.c,g.ar); }
+    putName(niceName(x.name),g.mid>=0?g.c[g.mid]:null); });
   if(wait&&!drawDirs._w){ drawDirs._w=1; Promise.all(wait.filter(Boolean)).then(()=>{ drawDirs._w=0; drawDirs(); }); }
 }
 map.on('zoomend moveend',()=>{ clearTimeout(drawDirs._t); drawDirs._t=setTimeout(drawDirs,120); });
