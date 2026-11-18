@@ -1452,7 +1452,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795035534';   // versión de la app (la pone build.py)
+const BUILD='1795035648';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1820,7 +1820,7 @@ const ES_BOX=[[-9.6,35.85,4.6,43.95],[-18.4,27.4,-13.2,29.6],[-5.45,35.2,-2.85,3
 function inEs(z,x,y){ const n=2**z, w=x/n*360-180, e=(x+1)/n*360-180, la=t=>Math.atan(Math.sinh(Math.PI*(1-2*t/n)))*180/Math.PI, N=la(y), S=la(y+1); return ES_BOX.some(b=>e>b[0]&&w<b[2]&&N>b[1]&&S<b[3]); }
 const satUrl=(z,x,y)=>z>=8&&z<=19&&inEs(z,x,y)?PNOA_T(z,x,y):ESRI_T(Math.min(z,19),x,y);
 async function satTile(z,x,y,signal){
-  if(z>=8&&z<=19&&inEs(z,x,y)){ try{ const r=await fetch(PNOA_T(z,x,y),{signal}); if(r.ok){ const b=await r.arrayBuffer(); if(b.byteLength>2500) return b; } }catch(e){ if(signal&&signal.aborted) throw e; } }   // vacías (mar, Francia, Portugal): un color y <1 KB → Esri
+  if(z>=8&&z<=19&&inEs(z,x,y)){ try{ const r=await fetch(PNOA_T(z,x,y),{signal}); if(r.ok){ const b=await r.arrayBuffer(); if(b.byteLength>5000) return b; } }catch(e){ if(signal&&signal.aborted) throw e; } }   // fuera de España (Francia, Portugal, mar) el IGN da fotos lisas o borrosas de <3,5 KB → Esri (las de España pesan 9-25 KB)
   const r=await fetch(ESRI_T(Math.min(z,19),x,y),{signal}); if(!r.ok) throw new Error('sat '+r.status); return await r.arrayBuffer(); }
 try{ maplibregl.addProtocol('ichsat',(p,ac)=>{ const m=p.url.match(/ichsat:\/\/(\d+)\/(\d+)\/(\d+)/); return satTile(+m[1],+m[2],+m[3],ac&&ac.signal).then(data=>({data})); }); }catch(e){ console.warn('ichsat',e); }
 const glStyle={version:8, glyphs:'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
