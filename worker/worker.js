@@ -570,7 +570,7 @@ function applyOp(G, o, by, admin) {
   const id = String(o.id || '').slice(0, 80), now = Date.now(), L = G.l, F = G.f, T = G.t, C = G.c;
   if (o.k === 'op') {
     const p = L[id] = L[id] || { m: meta(o.m || {}), o: {} };
-    if (o.o) p.o[by] = { nota: +o.o.nota || null, precio: +o.o.precio || null, txt: String(o.o.txt || '').slice(0, 1000), t: +o.o.t || now };
+    if (o.o) { p.o[by] = { nota: +o.o.nota || null, precio: +o.o.precio || null, txt: String(o.o.txt || '').slice(0, 1000), t: +o.o.t || now }; if (o.o.h) { p.o[by].h = String(o.o.h).slice(0, 200); p.o[by].ht = +o.o.ht || now; } }   // h = horario puesto por la grupeta
     else delete p.o[by];
     G._ch.l = 1;
   } else if (o.k === 'oculto') {
