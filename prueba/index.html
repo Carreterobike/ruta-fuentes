@@ -1452,7 +1452,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795034315';   // versión de la app (la pone build.py)
+const BUILD='1795035534';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1813,11 +1813,21 @@ const W=(a,b,c)=>['interpolate',['linear'],['zoom'],12,a,15,b,18,c];
 const ROADW=(k)=>['interpolate',['exponential',1.5],['zoom'],10,['*',k,['match',['get','class'],['motorway','trunk'],2.4,['primary','secondary'],1.8,['tertiary'],1.3,0.8]],
                                                          17,['*',k,['match',['get','class'],['motorway','trunk'],16,['primary','secondary'],13,['tertiary'],11,7]]];
 const LABEL=(color='#1b1b1b')=>({'text-color':color,'text-halo-color':'#ffffff','text-halo-width':1.8});
+// ===== SATÉLITE: en España la foto del IGN (PNOA, hecha desde avión), fuera de España Esri. Teselas de 128 → nítido en pantallas Retina =====
+const ESRI_T=(z,x,y)=>`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+const PNOA_T=(z,x,y)=>`https://www.ign.es/wmts/pnoa-ma?layer=OI.OrthoimageCoverage&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix=${z}&TileCol=${x}&TileRow=${y}`;
+const ES_BOX=[[-9.6,35.85,4.6,43.95],[-18.4,27.4,-13.2,29.6],[-5.45,35.2,-2.85,35.95]];   // península+Baleares, Canarias, Ceuta/Melilla
+function inEs(z,x,y){ const n=2**z, w=x/n*360-180, e=(x+1)/n*360-180, la=t=>Math.atan(Math.sinh(Math.PI*(1-2*t/n)))*180/Math.PI, N=la(y), S=la(y+1); return ES_BOX.some(b=>e>b[0]&&w<b[2]&&N>b[1]&&S<b[3]); }
+const satUrl=(z,x,y)=>z>=8&&z<=19&&inEs(z,x,y)?PNOA_T(z,x,y):ESRI_T(Math.min(z,19),x,y);
+async function satTile(z,x,y,signal){
+  if(z>=8&&z<=19&&inEs(z,x,y)){ try{ const r=await fetch(PNOA_T(z,x,y),{signal}); if(r.ok){ const b=await r.arrayBuffer(); if(b.byteLength>2500) return b; } }catch(e){ if(signal&&signal.aborted) throw e; } }   // vacías (mar, Francia, Portugal): un color y <1 KB → Esri
+  const r=await fetch(ESRI_T(Math.min(z,19),x,y),{signal}); if(!r.ok) throw new Error('sat '+r.status); return await r.arrayBuffer(); }
+try{ maplibregl.addProtocol('ichsat',(p,ac)=>{ const m=p.url.match(/ichsat:\/\/(\d+)\/(\d+)\/(\d+)/); return satTile(+m[1],+m[2],+m[3],ac&&ac.signal).then(data=>({data})); }); }catch(e){ console.warn('ichsat',e); }
 const glStyle={version:8, glyphs:'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
  sources:{
   omt:{type:'vector',url:'https://tiles.openfreemap.org/planet',attribution:'© OpenFreeMap · © OpenMapTiles · © OpenStreetMap'},
-  sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'© Esri'},
-  topo:{type:'raster',tiles:['https://a.tile.opentopomap.org/{z}/{x}/{y}.png','https://b.tile.opentopomap.org/{z}/{x}/{y}.png','https://c.tile.opentopomap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:17,attribution:'© OpenTopoMap'}
+  sat:{type:'raster',tiles:['ichsat://{z}/{x}/{y}'],tileSize:128,maxzoom:19,attribution:'PNOA © IGN · © Esri'},
+  topo:{type:'raster',tiles:['https://a.tile.opentopomap.org/{z}/{x}/{y}.png','https://b.tile.opentopomap.org/{z}/{x}/{y}.png','https://c.tile.opentopomap.org/{z}/{x}/{y}.png'],tileSize:128,maxzoom:17,attribution:'© OpenTopoMap'}
  },
  layers:[
   {id:'bg',type:'background',paint:{'background-color':'#eef0ea'}},
@@ -3683,7 +3693,9 @@ async function saveOffline(coords,name,btn){
   const pts=samplesOf(c,40);
   for(const z of [11,12,13,14,15,16]){ const pad=z>=15?1:0; pts.forEach(p=>{ const [x,y]=tz(p[0],p[1],z); for(let dx=-pad;dx<=pad;dx++) for(let dy=-pad;dy<=pad;dy++) tiles.add(z+'/'+(x+dx)+'/'+(y+dy)); }); }
   const omt=await omtUrl(), urls=[];
-  tiles.forEach(k=>{ const [z,x,y]=k.split('/'); urls.push(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`); if(+z<=14) urls.push(omt.replace('{z}',z).replace('{x}',x).replace('{y}',y)); });
+  tiles.forEach(k=>{ const [z,x,y]=k.split('/'); if(+z<=14) urls.push(omt.replace('{z}',z).replace('{x}',x).replace('{y}',y)); });
+  const satT=new Set(); for(const z of [12,13,14,15,16,17]){ const pad=z>=16?1:0; pts.forEach(p=>{ const [x,y]=tz(p[0],p[1],z); for(let dx=-pad;dx<=pad;dx++) for(let dy=-pad;dy<=pad;dy++) satT.add(z+'/'+(x+dx)+'/'+(y+dy)); }); }
+  satT.forEach(k=>{ const [z,x,y]=k.split('/').map(Number); urls.push(satUrl(z,x,y)); });   // satélite nítido (el mapa lo pide un nivel más cerca)
   ['Noto Sans Regular','Noto Sans Bold','Noto Sans Italic'].forEach(f=>['0-255','256-511','8192-8447'].forEach(r=>urls.push(`https://tiles.openfreemap.org/fonts/${encodeURIComponent(f)}/${r}.pbf`)));
   const cache=await caches.open('ichnos-tiles'); let done=0, bad=0; const total=urls.length, lab=btn?btn.textContent:'';
   const show=()=>{ const t=`Guardando… ${Math.round(done/total*100)} %`; if(btn) btn.textContent=t; };
@@ -4962,17 +4974,21 @@ function groupSegs(list){
 // foto de satélite de la zona con el recorrido encima (ficha de salida y tarjetas de amigos)
 function satRoute(c,W,H,cid,sh,thin){
   sh=sh||shapeSvg(c,W,H,18); if(!sh) return ''; const a=sh.P(c[0]), z=sh.P(c[c.length-1]);
-  let sat=''; try{ const zm=Math.max(10,Math.min(17,Math.round(Math.log2(360*sh.ppd/213)))), N=2**zm;
+  let sat='', ign=false; try{ let zm=Math.max(10,Math.min(17,Math.round(Math.log2(360*sh.ppd/213))));
+    { const N0=2**(zm+1), nw0=sh.inv(0,0), se0=sh.inv(W,H), fx=lon=>Math.floor((lon+180)/360*N0), fy=la=>{ const r_=la*Math.PI/180; return Math.floor((1-Math.log(Math.tan(r_)+1/Math.cos(r_))/Math.PI)/2*N0); };
+      if(zm<18&&(fx(se0[1])-fx(nw0[1])+1)*(fy(se0[0])-fy(nw0[0])+1)<=30) zm++; }   // un nivel más de detalle si no son demasiadas fotos
+    const N=2**zm;
     const tx=lon=>Math.floor((lon+180)/360*N), ty=la=>{ const r_=la*Math.PI/180; return Math.floor((1-Math.log(Math.tan(r_)+1/Math.cos(r_))/Math.PI)/2*N); };
     const tlat=y=>Math.atan(Math.sinh(Math.PI*(1-2*y/N)))*180/Math.PI, tlon=x=>x/N*360-180;
     const nw=sh.inv(0,0), se=sh.inv(W,H), x0=tx(nw[1]), x1=tx(se[1]), y0=ty(nw[0]), y1=ty(se[0]);
     if((x1-x0+1)*(y1-y0+1)<=30) for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++){ const A=sh.P([tlat(y),tlon(x)]), B=sh.P([tlat(y+1),tlon(x+1)]);
-      sat+=`<image href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zm}/${y}/${x}" x="${A[0]}" y="${A[1]}" width="${(B[0]-A[0]+0.6).toFixed(1)}" height="${(B[1]-A[1]+0.6).toFixed(1)}" preserveAspectRatio="none"/>`; }
+      const su=satUrl(zm,x,y); if(/ign\.es/.test(su)) ign=true;
+      sat+=`<image href="${su}" x="${A[0]}" y="${A[1]}" width="${(B[0]-A[0]+0.6).toFixed(1)}" height="${(B[1]-A[1]+0.6).toFixed(1)}" preserveAspectRatio="none"/>`; }
   }catch(e){}
   const w1=thin?7:9, w2=thin?4:5;
   if(thin) sh={...sh,d:c.map((p,i)=>(i&&dist(c[i-1],p)<=300?'L':'M')+sh.P(p).join(',')).join('')};   // sin raya recta donde se esconde la zona de casa
   return `<defs><clipPath id="${cid}"><rect width="${W}" height="${H}" rx="14"/></clipPath></defs><rect width="${W}" height="${H}" rx="14" fill="var(--soft)"/><g clip-path="url(#${cid})">${sat}</g>
-    ${sat?`<text x="${W-8}" y="${H-8}" text-anchor="end" font-size="13" fill="#fff" opacity=".85">© Esri</text>`:''}
+    ${sat?`<text x="${W-8}" y="${H-8}" text-anchor="end" font-size="13" fill="#fff" opacity=".85">${ign?'PNOA © IGN':'© Esri'}</text>`:''}
     <path d="${sh.d}" fill="none" stroke="#1E2328" stroke-width="${w1}" stroke-linejoin="round" stroke-linecap="round"/>
     <path d="${sh.d}" fill="none" stroke="#B6E22E" stroke-width="${w2}" stroke-linejoin="round" stroke-linecap="round"/>
     <circle cx="${a[0]}" cy="${a[1]}" r="9" fill="#1f9d55" stroke="#fff" stroke-width="3"/>
