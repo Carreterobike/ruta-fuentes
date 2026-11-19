@@ -1536,7 +1536,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795118747';   // versión de la app (la pone build.py)
+const BUILD='1795124848';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3320,11 +3320,26 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
   const wk=[]; const now=new Date(r.date); for(let k=3;k>=0;k--){ const a=now-((k+1)*7-1)*864e5-(now%864e5), b=a+7*864e5; let e=0,f=0; rides.filter(x=>x.hr&&x.times&&x.date>=a&&x.date<b).forEach(x=>{ const zz=coachZones(x); if(!zz) return; e+=zz[0]+zz[1]; f+=zz[2]+zz[3]+zz[4]; }); wk.push({a,e,f}); }
   const wmax=Math.max(1,...wk.map(q=>q.e+q.f));
   const why=(txt)=>`<details class="co-why"><summary>¿De dónde sale esto?</summary><p>${txt}</p></details>`;
-  const next=(V[0]==='#f5a623'||V[0]==='#ff5a52'||(carga&&carga[0]==='Alta'))?`Que la próxima sea <b>más suave</b>: al menos 8 de cada 10 minutos en Z1 y Z2${c.lim?' y siempre por debajo de tu límite':''}. En las subidas, mira el pulso más que la velocidad.`:`<b>Sigue así</b>: salidas largas y suaves${c.lim?', por debajo de tu límite':''}. Es lo que más ayuda a coger fondo.`;
+  // «Para la próxima»: consejos concretos con tus subidas y tus números (y con frases distintas según la salida)
+  const seed=[...String(r.id||r.date)].reduce((h,ch)=>(h*31+ch.charCodeAt(0))>>>0,7), pick=arr=>arr[seed%arr.length];
+  const dura=(V[0]==='#f5a623'||V[0]==='#ff5a52'||(carga&&carga[0]==='Alta')), tips=[];
+  if(dura){ tips.push(pick([`Plantéala como un paseo largo más que como un entreno: lo que más te ayuda ahora es sumar horas tranquilas, no apretar.`,
+      `El objetivo de la próxima: volver a casa sin haber pasado de ${th} ppm ni una vez.`,
+      `Menos gas y más kilómetros tranquilos: la forma vuelve antes yendo suave muchas veces que yendo fuerte pocas.`,
+      `Piensa en la próxima como una salida de «hablar»: si con quien vas no podéis charlar tranquilos, vas demasiado fuerte.`]));
+    climbs.filter(x=>x.ov>=60).sort((p,q)=>q.ov-p.ov).slice(0,2).forEach(x=>{ const nm=esc(x.name.replace(/^Subida/,'subida'));
+      tips.push(x.okDay?`En la ${nm}, el ${fd(x.okDay.date)} la subiste a <b>${fmtKm(x.okDay.v)} km/h con ${Math.round(x.okDay.hr)} ppm</b>: ese es tu ritmo para no pasarte.`
+        :pick([`En la ${nm}, sube a un ritmo en el que puedas respirar por la nariz; si el pulso pasa de ${th}, mete un piñón más grande y suelta un poco.`,
+               `En la ${nm}, mejor llegar arriba más tarde que con el pulso por las nubes: si ves más de ${th}, baja el ritmo aunque vayas despacio.`,
+               `En la ${nm}, la velocidad no importa: mira el pulso y que no pase de ${th}.`])); });
+    tips.push(pick([`Pon el pulso en grande en la pantalla del ciclocomputador, para verlo sin pensar.`,`Un truco: en las subidas, mira más el pulso que la velocidad.`,`Si te notas con fuerzas, alarga la salida en vez de apretar: más rato suave suma más que poco rato fuerte.`])); }
+  else { tips.push(pick([`<b>Sigue así.</b> Así es como se recupera el fondo: muchas salidas tranquilas.`,`<b>Muy buena salida para ahora.</b> Repite este tipo de ritmo.`,`<b>Así, perfecto.</b> Constancia y tranquilidad.`]));
+    tips.push(pick([`Si te encuentras bien, la próxima puede ser 15-20 minutos más larga, al mismo ritmo.`,`Puedes ir alargando poco a poco, siempre con el pulso como hoy.`,`Si mañana te notas cansado, descansa: también cuenta.`])); }
+  const next=tips.join(' ');
   const pc=v=>Math.round(v*100);
   // ===== valoración completa: nota de 10 que se explica sola (premia ir suave y controlado, no ir rápido) =====
   const R1=x=>Math.round(x*2)/2, f1=x=>String(x).replace('.',','), rows=[];
-  const pEasy=easy<0.8?-R1(Math.min(3,(0.8-easy)*5.5)):0; rows.push([`Has ido suave el ${pc(easy)} % del tiempo (lo bueno es 80 %)`,pEasy]);
+  const pEasy=easy<0.8?-R1(Math.min(3,(0.8-easy)*5.5)):0; rows.push([`Has ido suave el ${pc(easy)} % del tiempo (lo ideal es casi todo)`,pEasy]);
   const om=over/60, pOver=om>=1?-R1(Math.min(c.lim?4:3,om/(c.lim?8:11))):0; rows.push([c.lim?`${mins(over)} por encima de tu límite`:`${mins(over)} en zona dura`,pOver]);
   const fAvg=better.length?better.reduce((a,q)=>a+q.ch,0)/better.length:null, pForma=fAvg==null?0:fAvg>0.03?0.5:fAvg<-0.03?-0.5:0;
   if(fAvg!=null) rows.push([`Subidas: ${Math.abs(fAvg)<0.03?'igual que':Math.round(Math.abs(fAvg)*100)+' % '+(fAvg>0?'mejor':'peor')+' que'} las últimas veces`,pForma]);
