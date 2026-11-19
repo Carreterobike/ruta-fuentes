@@ -626,6 +626,12 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .co-why{margin-top:6px}.co-why summary{cursor:pointer;color:#8b959e;font-size:12.5px;list-style:none}.co-why summary::before{content:'ⓘ ';}.co-why p{font-size:13px;color:#b9c2ca;line-height:1.55;margin:6px 0 0}
 .co-row{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:7px 0;flex-wrap:wrap}.co-row+.co-row{border-top:1px solid #262e35}.co-row small{color:#8b959e}
 .co-wk{display:grid;grid-template-columns:70px minmax(0,1fr) 64px;gap:8px;align-items:center;font-size:12.5px;margin:6px 0}.co-wk .bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#232a30}
+.co-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.co-g>div{background:#232a30;border-radius:10px;padding:10px;display:flex;flex-direction:column;min-width:0}.co-g small{font-size:12px;color:#8b959e;line-height:1.35}.co-g b{font-size:20px;margin:2px 0}
+.co-cl{padding:10px 0}.co-cl+.co-cl{border-top:1px solid #262e35}.co-cl>small{color:#8b959e;font-size:12.5px}
+.co-cn{display:flex;align-items:center;gap:8px}.co-cn b{font-size:15px}.co-cn input{flex:1;min-width:0;padding:7px 10px;border-radius:10px;border:1px solid #2c343b;background:#0f1215;color:#e8ecef;font:inherit;font-size:16px}
+.co-ren{border:0;background:#232a30;color:#cfd6dc;border-radius:8px;width:30px;height:30px;font-size:15px;cursor:pointer;flex:none}
+.co-cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.co-cmp>div{background:#232a30;border-radius:10px;padding:10px;font-size:13.5px;line-height:1.5}.co-cmp small{display:block;font-size:12px;color:#8b959e}
+.co-p{font-size:14px;line-height:1.55;margin:8px 0 0}
 .co-set summary{cursor:pointer;color:#B6E22E;font-weight:700;font-size:14px}.co-set .g{display:grid;grid-template-columns:1fr 110px;gap:8px 10px;align-items:center;margin-top:10px;font-size:13.5px}.co-set input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #2c343b;background:#0f1215;color:#e8ecef;font:inherit;font-size:16px}
 .co-set small{grid-column:1/-1;color:#8b959e;font-size:12px;margin-top:-4px}
 .rprof{background:#13171b;color:#e8ecef;border-radius:14px;padding:10px 12px;margin-top:8px;display:flex;flex-direction:column;gap:4px;--muted:#8b959e}
@@ -1524,7 +1530,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795106897';   // versión de la app (la pone build.py)
+const BUILD='1795113925';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3232,20 +3238,56 @@ function coachHr(R,a,b){ if(!R.hr||!R.times) return null; let s=0,w=0; for(let i
 function coachAbove(R,a,b,th){ if(!R.hr||!R.times) return 0; let t=0; for(let i=a+1;i<=b;i++){ const h=R.hr[i], dt=Math.min(30,Math.max(0,R.times[i]-R.times[i-1])); if(h&&h>th) t+=dt; } return t; }
 function coachZones(R){ const m=hrMax(), z=[0,0,0,0,0]; if(!R.hr||!R.times) return null; for(let i=1;i<R.coords.length;i++){ const h=R.hr[i]; if(!h) continue; const dt=Math.min(30,Math.max(0,R.times[i]-R.times[i-1])); const p=h/m; z[p<0.6?0:p<0.7?1:p<0.8?2:p<0.9?3:4]+=dt; } return z; }
 const coachTrimp=z=>z?z.reduce((a,t,i)=>a+t/60*(i+1),0):0;   // carga de Edwards: minutos en cada zona × 1…5
+// nombres de las subidas: el tuyo > segmento de Strava que coincide > cima o lugar donde acaba (mapa) > "Subida del km X"
+const climbNames=new Map();
+const climbKey=(c,ia,ib)=>[c[ia][0],c[ia][1],c[ib][0],c[ib][1]].map(v=>v.toFixed(3)).join(',');
+function climbNameSync(r,ia,ib,d){ const c=r.coords, k=climbKey(c,ia,ib), my=(perfil.coach&&perfil.coach.cn)||{};
+  if(my[k]) return {n:my[k],mine:true};
+  let best=null,bs=1e9; Object.values(ssegs).forEach(sg=>{ const s=sg.coords; if(!sg.name||!s||s.length<2) return; const e1=dist(s[0],c[ia]), e2=dist(s[s.length-1],c[ib]); if(e1>250||e2>250) return;
+    let L=0; for(let i=1;i<s.length;i++) L+=dist(s[i-1],s[i]); if(L<d*0.6||L>d*1.4) return; const sc=e1+e2+Math.abs(L-d)*0.3; if(sc<bs){ bs=sc; best=sg.name; } });
+  if(best) return {n:best};
+  const m=climbNames.get(k); return m?{n:m}:null; }
+function mapPts(x,y){ const k='pp:'+x+'/'+y; if(!poiCache.has(k)) poiCache.set(k,(async()=>{ const cc=await tcGet(k); if(cc) return cc;
+    const u=(await omtUrl()).replace('{z}',14).replace('{x}',x).replace('{y}',y); const rs=await fetch(u); if(!rs.ok) throw 0; const buf=await rs.arrayBuffer();
+    const p=[...mvtPoints(buf,'mountain_peak',14,x,y).map(q=>({...q,pk:1})),...mvtPoints(buf,'place',14,x,y)]; tcPut(k,p); return p; })().catch(()=>{ poiCache.delete(k); return []; }));
+  return poiCache.get(k); }
+async function climbNameMap(r,ia,ib){ const c=r.coords, k=climbKey(c,ia,ib); if(climbNames.has(k)) return climbNames.get(k);
+  const top=[c[ib][0],c[ib][1]], n=2**14, tx=Math.floor((top[1]+180)/360*n), la=top[0]*Math.PI/180, ty=Math.floor((1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*n);
+  let pts=[]; for(const [dx,dy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]) pts=pts.concat(await mapPts(tx+dx,ty+dy));
+  const PL=['hamlet','village','suburb','neighbourhood','locality','isolated_dwelling','quarter','town'];
+  const cand=pts.filter(p=>p.props&&p.props.name).map(p=>({nm:p.props.name,d:dist([p.lat,p.lon],top),pk:!!p.pk,cl:p.props.class})).filter(q=>q.pk?q.d<700:(q.d<1200&&PL.includes(q.cl)));
+  cand.sort((a,b)=>(a.pk?a.d:a.d*1.5)-(b.pk?b.d:b.d*1.5)); const nm=cand[0]?'Subida a '+cand[0].nm:null; climbNames.set(k,nm); return nm; }
+// pulso en un momento (el punto más cercano a ese segundo) y recuperación en el primer minuto tras una subida
+function hrAtT(R,t){ const T=R.times; let a=0,b=T.length-1; while(b-a>1){ const m=(a+b)>>1; if(T[m]<t) a=m; else b=m; } const i=Math.abs(T[a]-t)<Math.abs(T[b]-t)?a:b; return Math.abs(T[i]-t)<=15?R.hr[i]:null; }
+function climbRecov(R,ib,hm){ if(!R.hr||!R.times) return null; const t=R.times[ib]; let top=0; for(let i=ib;i>=0&&R.times[i]>=t-20;i--) top=Math.max(top,R.hr[i]||0); if(top<hm*0.7) return null; const h=hrAtT(R,t+60); return h&&top-h>=0?top-h:null; }   // si sigue apretando y no baja, no cuenta
+function rideClimbsOf(R){ const n=R.coords.length, cum=R._cum; if(!R.eles||!cum) return []; const step=Math.max(1,Math.floor(n/500)), idx=[]; for(let i=0;i<n;i+=step) idx.push(i); if(idx[idx.length-1]!==n-1) idx.push(n-1);
+  const P=profOf(cum,idx,R.eles); if(!P.el) return []; return rideClimbs(cum,P.el,idx,rideLifts(R,idx,cum,P.el)).map(([a,b])=>[idx[a],idx[b]]); }
 function coachCard(r,st,fr){ const box=$('rvCoach');
   if(fr||!me||!me.admin||!r.hr||!r.times||r.coords.length<20){ box.hidden=true; box.innerHTML=''; return; }
-  const c=coachCfg(), hm=hrMax(), tp=rideTipo(r), z=coachZones(r), tot=z.reduce((a,b)=>a+b,0)||1, easy=(z[0]+z[1])/tot, hard=z[3]+z[4];
+  const c=coachCfg(), hm=hrMax(), tp=rideTipo(r), z=coachZones(r), tot=z.reduce((a,b)=>a+b,0)||1, easy=(z[0]+z[1])/tot;
   const th=c.lim||Math.round(hm*0.8), thTxt=c.lim?`tu límite (${c.lim} ppm)`:`la zona dura (más de ${th} ppm)`;
-  const n=r.coords.length, over=coachAbove(r,0,n-1,th), cum=r._cum, fk=x=>fmtKm(x), mins=s=>s<90?Math.round(s)+' s':Math.round(s/60)+' min';
+  const n=r.coords.length, over=coachAbove(r,0,n-1,th), cum=r._cum, fk=x=>fmtKm(x), mins=s=>s<90?Math.round(s)+' s':Math.round(s/60)+' min', fd=t=>new Date(t).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:new Date(t).getFullYear()!==new Date().getFullYear()?'numeric':undefined});
   // subidas (las mismas de la ficha)
   const step=Math.max(1,Math.floor(n/500)), idx=[]; for(let i=0;i<n;i+=step) idx.push(i); if(idx[idx.length-1]!==n-1) idx.push(n-1);
   const PF=profOf(cum,idx,r.eles), lifts=PF.el?rideLifts(r,idx,cum,PF.el):[], cl=PF.el?rideClimbs(cum,PF.el,idx,lifts):[];
+  const pending=[];
   const climbs=cl.map(([a,b],j)=>{ const ia=idx[a], ib=idx[b], d=cum[ib]-cum[ia], g=PF.el[b]-PF.el[a], t=movT(r,ia,ib), hr=coachHr(r,ia,ib), ov=coachAbove(r,ia,ib,th), w=coachWatts(d,t,g,tp,(PF.el[a]+PF.el[b])/2);
-    // otras veces en esta misma subida (misma disciplina)
-    let prev=[]; try{ const line=r.coords.slice(ia,ib+1).map(p=>[p[0],p[1]]), key='climb:'+line[0].map(v=>v.toFixed(4)).join(',')+':'+line[line.length-1].map(v=>v.toFixed(4)).join(','); 
+    const nm=climbNameSync(r,ia,ib,d); if(!nm) pending.push([ia,ib]);
+    let prev=[]; try{ const line=r.coords.slice(ia,ib+1).map(p=>[p[0],p[1]]), key='climb:'+line[0].map(v=>v.toFixed(4)).join(',')+':'+line[line.length-1].map(v=>v.toFixed(4)).join(',');
       prev=effortsFor(key,line).f.filter(e=>e.date!==r.date&&(e.tp||null)===(tp||null)).map(e=>{ const R=rides.find(x=>x.date===e.date&&x.name===e.ride); if(!R||!R.hr) return null; const h=coachHr(R,e.i,e.j); if(!h) return null; const dd=R._cum[e.j]-R._cum[e.i];
         return {date:e.date,t:e.t,hr:h,w:coachWatts(dd,e.t,g,tp,(PF.el[a]+PF.el[b])/2),v:dd/e.t*3.6}; }).filter(Boolean).sort((p,q)=>q.date-p.date); }catch(e){}
-    return {j:j+1,ia,ib,d,g,t,hr,ov,w,v:d/t*3.6,prev}; });
+    const v=d/t*3.6, bestDay=prev.length?prev.reduce((p,q)=>q.v/q.hr>p.v/p.hr?q:p):null, okDay=c.lim?prev.filter(p=>p.hr<=c.lim).sort((p,q)=>q.v-p.v)[0]:null;
+    return {j:j+1,ia,ib,d,g,t,hr,ov,w,v,prev,bestDay,okDay,name:nm?nm.n:'Subida del km '+fk(cum[ia]/1000),mine:!!(nm&&nm.mine),key:climbKey(r.coords,ia,ib)}; });
+  if(pending.length) Promise.all(pending.map(([a,b])=>climbNameMap(r,a,b))).then(rs=>{ if(rs.some(Boolean)&&rideOpen===r) coachCard(r,st,fr); }).catch(()=>{});
+  const where=i=>{ const q=climbs.find(x=>i>=x.ia&&i<=x.ib); return q?'en '+q.name.replace(/^Subida/,'la subida'):'en el km '+fk(cum[i]/1000); };
+  // tramos por encima del límite (entra al pasar, sale cuando baja 3 ppm por debajo)
+  const runs=[]; let on=null; for(let i=1;i<n;i++){ const h=r.hr[i]; if(!h) continue; if(!on&&h>th) on={a:i}; else if(on&&h<th-3){ on.b=i; runs.push(on); on=null; } } if(on){ on.b=n-1; runs.push(on); }
+  runs.forEach(q=>q.s=r.times[q.b]-r.times[q.a]); const longest=runs.slice().sort((p,q)=>q.s-p.s)[0];
+  let iMax=0; for(let i=1;i<n;i++) if((r.hr[i]||0)>(r.hr[iMax]||0)) iMax=i;
+  const inClimbs=climbs.reduce((s,x)=>s+x.ov,0), outside=Math.max(0,over-inClimbs);
+  // recuperación: pulsaciones que bajan en el primer minuto tras cada subida (hoy y tus últimas 20 salidas con pulso)
+  const rec=climbs.map(x=>climbRecov(r,x.ib,hm)).filter(v=>v!=null), recT=rec.length?rec.reduce((a,b)=>a+b,0)/rec.length:null;
+  let recP=null; if(recT!=null){ const vals=[]; rides.filter(x=>x!==r&&x.hr&&x.times&&x.eles&&x._cum&&x.date<r.date&&rideTipo(x)===tp).sort((p,q)=>q.date-p.date).slice(0,20).forEach(R=>{ rideClimbsOf(R).forEach(([a,b])=>{ const v=climbRecov(R,b,hm); if(v!=null) vals.push(v); }); }); if(vals.length>=4) recP=vals.reduce((a,b)=>a+b,0)/vals.length; }
   // carga de hoy comparada con tus salidas (últimas 60 con pulso)
   const tr=coachTrimp(z), past=rides.filter(x=>x!==r&&x.hr&&x.times&&x.date<r.date).sort((p,q)=>q.date-p.date).slice(0,60).map(x=>coachTrimp(coachZones(x))).filter(v=>v>0).sort((p,q)=>p-q);
   const pct=past.length>=8?past.filter(v=>v<tr).length/past.length:null, carga=pct==null?null:pct>=0.75?['Alta','#f5a623']:pct>=0.35?['Normal','#cfd6dc']:['Baja','#46c86a'];
@@ -3255,29 +3297,45 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
   // frases
   const L=[]; const worst=climbs.filter(x=>x.ov>=60).sort((p,q)=>q.ov-p.ov)[0];
   L.push(['❤️',over>=60?`Has ido <b>${mins(over)}</b> por encima de ${thTxt}.`:`<b>No has pasado</b> de ${thTxt}.`]);
-  if(worst){ const ok=worst.prev.filter(p=>p.hr<=th-2).sort((p,q)=>q.date-p.date)[0];
-    L.push(['⛰️',`Sobre todo en la <b>subida ${worst.j}</b> (${mins(worst.ov)}).`+(ok?` La última vez que la subiste sin pasarte (${new Date(ok.date).toLocaleDateString('es-ES',{day:'numeric',month:'short'})}) ibas a <b>${fmtKm(ok.v)} km/h</b>; hoy a ${fmtKm(worst.v)}.`:' En esa subida, baja el ritmo hasta que el pulso quede por debajo.')]); }
-  const better=climbs.filter(x=>x.w&&x.hr&&x.prev.length>=2).map(x=>{ const pv=x.prev.slice(0,5).filter(p=>p.w&&p.hr), e0=pv.reduce((a,p)=>a+p.w/p.hr,0)/pv.length, e1=x.w/x.hr; return {x,ch:(e1-e0)/e0}; }).filter(q=>isFinite(q.ch));
-  if(better.length){ const avg=better.reduce((a,q)=>a+q.ch,0)/better.length; L.push(avg>0.03?['📈',`En las subidas que repites has movido <b>${Math.round(avg*100)} % más vatios por pulsación</b> que otras veces: vas cogiendo forma.`]:avg<-0.03?['📉',`En las subidas que repites, hoy te ha costado más que otras veces (<b>${Math.round(-avg*100)} %</b> menos vatios por pulsación). Puede ser cansancio.`]:['➖','En las subidas que repites, has ido <b>igual que otras veces</b> para el mismo pulso.']); }
+  if(worst){ const ok=worst.okDay;
+    L.push(['⛰️',`Sobre todo en la <b>${esc(worst.name.replace(/^Subida/,'subida'))}</b> (${mins(worst.ov)}).`+(ok?` El ${fd(ok.date)} la subiste sin pasarte: <b>${fmtKm(ok.v)} km/h a ${Math.round(ok.hr)} ppm</b>. Hoy, ${fmtKm(worst.v)} km/h a ${Math.round(worst.hr)} ppm.`:' En esa subida, baja el ritmo hasta que el pulso quede por debajo.')]); }
+  const better=climbs.filter(x=>x.hr&&x.prev.length>=2).map(x=>{ const pv=x.prev.slice(0,5), e0=pv.reduce((a,p)=>a+p.v/p.hr,0)/pv.length, e1=x.v/x.hr; return {x,ch:(e1-e0)/e0}; }).filter(q=>isFinite(q.ch));
+  if(better.length){ const avg=better.reduce((a,q)=>a+q.ch,0)/better.length; L.push(avg>0.03?['📈',`En las subidas que repites has ido <b>${Math.round(avg*100)} % más rápido para el mismo pulso</b> que las últimas veces: vas cogiendo forma.`]:avg<-0.03?['📉',`En las subidas que repites, hoy te ha costado más que las últimas veces (<b>${Math.round(-avg*100)} %</b> menos velocidad para el mismo pulso). Puede ser cansancio.`]:['➖','En las subidas que repites has ido <b>igual que las últimas veces</b> para el mismo pulso.']); }
   else L.push(easy>=0.8?['✅',`<b>${Math.round(easy*100)} %</b> del tiempo en zonas suaves (Z1 y Z2).`]:['⚠️',`Solo <b>${Math.round(easy*100)} %</b> del tiempo en zonas suaves (Z1 y Z2). Lo recomendable es 8 de cada 10 minutos.`]);
   // gráfico de pulso con la franja del límite
-  const W=600,H=130, t0=r.times[0], T=r.times[n-1]-t0||1, X=i=>((r.times[i]-t0)/T*W).toFixed(1), lo=Math.max(60,Math.min(...r.hr.filter(Boolean))-5), hi=Math.max(th+15,Math.max(...r.hr.filter(Boolean))+5), Y=h=>(110-(h-lo)/(hi-lo)*100).toFixed(1);
-  let d='',on=false; for(const i of idx){ const h=r.hr[i]; if(!h){ on=false; continue; } d+=(on?'L':'M')+X(i)+','+Y(h); on=true; }
+  const W=600,H=130, t0=r.times[0], T=r.times[n-1]-t0||1, X=i=>((r.times[i]-t0)/T*W).toFixed(1), hrs=r.hr.filter(Boolean), lo=Math.max(60,Math.min(...hrs)-5), hi=Math.max(th+15,Math.max(...hrs)+5), Y=h=>(110-(h-lo)/(hi-lo)*100).toFixed(1);
+  const hs_=i=>{ const w=Math.max(3,step*2); let a=0,m=0; for(let j=Math.max(0,i-w);j<=Math.min(n-1,i+w);j++){ if(r.hr[j]){ a+=r.hr[j]; m++; } } return m?a/m:null; };   // un poco suavizado para que se lea bien
+  let d='',onp=false; for(const i of idx){ const h=hs_(i); if(!h){ onp=false; continue; } d+=(onp?'L':'M')+X(i)+','+Y(h); onp=true; }
   let g=`<rect x="0" y="0" width="${W}" height="${Y(th)}" fill="#ff5a52" opacity=".2"/><line x1="0" x2="${W}" y1="${Y(th)}" y2="${Y(th)}" stroke="#ff5a52" stroke-dasharray="6 5" stroke-width="2"/>`;
-  climbs.forEach(x=>{ g+=`<rect x="${X(x.ia)}" y="0" width="${Math.max(2,X(x.ib)-X(x.ia))}" height="110" fill="#fff" opacity=".045"/><text x="${((+X(x.ia)+ +X(x.ib))/2).toFixed(1)}" y="128" font-size="15" fill="#9aa4ad" text-anchor="middle" font-weight="700">Subida ${x.j}</text>`; });
-  g+=`<path d="${d}" fill="none" stroke="#e8ecef" stroke-width="2" stroke-linejoin="round"/>`;
-  // semanas (últimas 4): tiempo suave y fuerte
-  const wk=[]; const now=new Date(r.date); for(let k=3;k>=0;k--){ const a=now-((k+1)*7-1)*864e5-(now%864e5), b=a+7*864e5; const rs=rides.filter(x=>x.hr&&x.times&&x.date>=a&&x.date<b); let e=0,f=0; rs.forEach(x=>{ const zz=coachZones(x); if(!zz) return; e+=zz[0]+zz[1]; f+=zz[2]+zz[3]+zz[4]; }); wk.push({a,e,f}); }
+  climbs.forEach(x=>{ g+=`<rect x="${X(x.ia)}" y="0" width="${Math.max(2,X(x.ib)-X(x.ia))}" height="110" fill="#fff" opacity=".045"/><text x="${((+X(x.ia)+ +X(x.ib))/2).toFixed(1)}" y="128" font-size="15" fill="#9aa4ad" text-anchor="middle" font-weight="700">${x.j}</text>`; });
+  g+=`<path d="${d}" fill="none" stroke="#e8ecef" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(iMax)}" cy="${Y(r.hr[iMax])}" r="5" fill="#ff5a52" stroke="#13171b" stroke-width="2"/>`;
+  // semanas (últimas 4)
+  const wk=[]; const now=new Date(r.date); for(let k=3;k>=0;k--){ const a=now-((k+1)*7-1)*864e5-(now%864e5), b=a+7*864e5; let e=0,f=0; rides.filter(x=>x.hr&&x.times&&x.date>=a&&x.date<b).forEach(x=>{ const zz=coachZones(x); if(!zz) return; e+=zz[0]+zz[1]; f+=zz[2]+zz[3]+zz[4]; }); wk.push({a,e,f}); }
   const wmax=Math.max(1,...wk.map(q=>q.e+q.f));
   const why=(txt)=>`<details class="co-why"><summary>¿De dónde sale esto?</summary><p>${txt}</p></details>`;
   const next=(V[0]==='#f5a623'||V[0]==='#ff5a52'||(carga&&carga[0]==='Alta'))?`Que la próxima sea <b>más suave</b>: al menos 8 de cada 10 minutos en Z1 y Z2${c.lim?' y siempre por debajo de tu límite':''}. En las subidas, mira el pulso más que la velocidad.`:`<b>Sigue así</b>: salidas largas y suaves${c.lim?', por debajo de tu límite':''}. Es lo que más ayuda a coger fondo.`;
+  const pc=v=>Math.round(v*100);
   box.innerHTML=`<div class="co-h"><div><b>Estudio de tu salida</b><br><small>${fk(cum[n-1]/1000)} km · ${fmtH(movT(r,0,n-1))} en movimiento</small></div><span class="co-lock">🔒 Solo lo ves tú</span></div>
-    <div class="co-v" style="--c:${V[0]}"><div class="ic" style="color:${V[0]}">${V[1]==='✓'?'✓':V[1]==='!'?'⚠':'≈'}</div><b>${V[2]}</b><span>${V[3]}</span>${why(c.lim?'Cuenta el tiempo con el pulso por encima del límite que te ha puesto tu médico: menos de 2 min = muy bien, menos de 10 = bien, menos de 30 = te has pasado, más = te has pasado mucho.':'Sin límite del médico, se mira cuánto tiempo has ido suave (zonas Z1 y Z2). Lo recomendado para coger fondo es que al menos 8 de cada 10 minutos sean suaves (reparto 80/20, Seiler). Pon tu límite en "Tus datos" cuando te lo dé el médico.')}</div>
+    <div class="co-v" style="--c:${V[0]}"><div class="ic" style="color:${V[0]}">${V[1]==='✓'?'✓':V[1]==='!'?'⚠':'≈'}</div><b>${V[2]}</b><span>${V[3]}</span>${why(c.lim?'Cuenta el tiempo con el pulso por encima del límite que te ha puesto tu médico: menos de 2 min = muy bien, menos de 10 = bien, menos de 30 = te has pasado, más = te has pasado mucho.':'Sin límite del médico, se mira cuánto tiempo has ido suave (zonas Z1 y Z2). Lo recomendado para coger fondo es que al menos 8 de cada 10 minutos sean suaves (reparto 80/20, Seiler). Pon tu límite en «Tus datos» cuando te lo dé el médico.')}</div>
     <div>${L.map(q=>`<div class="co-l"><i>${q[0]}</i><span>${q[1]}</span></div>`).join('')}</div>
-    <div class="co-box"><div class="t">Tu pulso durante la salida</div><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">${g}</svg><div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#cfd6dc;margin-top:4px"><span><i style="display:inline-block;width:16px;border-top:2px dashed #ff5a52;vertical-align:middle;margin-right:5px"></i>${c.lim?'Tu límite':'Zona dura'}: ${th} ppm</span><span><i style="display:inline-block;width:16px;border-top:2px solid #e8ecef;vertical-align:middle;margin-right:5px"></i>Tu pulso</span></div>${why(`Tu pulso real del ciclocomputador. La franja roja es ${c.lim?'tu límite puesto por el médico':'la zona dura: más del 80 % de tu pulso máximo ('+hm+' ppm)'}.`)}</div>
-    ${climbs.length?`<div class="co-box"><div class="t">Subidas <small>${c.peso&&COACH_BK[tp]?'vatios calculados (±10 %)':''}</small></div>${climbs.map(x=>`<div class="co-row"><span><b>Subida ${x.j}</b> <small>${fk(x.d/1000)} km · ${Math.round(x.g/x.d*100)} % · +${n0(x.g)} m</small></span><span>${fmtT(x.t)} · ${x.hr?Math.round(x.hr)+' ppm':'–'}${x.w?` · <b>~${Math.round(x.w/5)*5} W</b>`:''}${x.ov>=60?` · <b style="color:#ff5a52">${mins(x.ov)} arriba</b>`:''}</span></div>`).join('')}
+    <div class="co-box"><div class="t">Tu pulso y ${c.lim?'tu límite':'la zona dura'} <small>${th} ppm</small></div>
+      <div class="co-g"><div><small>Tiempo por encima</small><b style="color:${over>=60?'#ff5a52':'#46c86a'}">${mins(over)}</b><small>${pc(over/(r.times[n-1]-r.times[0]||1))} % de la salida</small></div>
+        <div><small>El rato más largo seguido</small><b>${longest&&longest.s>=30?mins(longest.s):'–'}</b><small>${longest&&longest.s>=30?esc(where(longest.a)):'ninguno'}</small></div>
+        <div><small>Pulso más alto</small><b>${r.hr[iMax]} ppm</b><small>${esc(where(iMax))}</small></div>
+        <div><small>Veces que lo has pasado</small><b>${runs.filter(q=>q.s>=30).length}</b><small>de más de 30 s</small></div></div>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;margin-top:10px">${g}</svg>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#cfd6dc;margin-top:4px"><span><i style="display:inline-block;width:16px;border-top:2px dashed #ff5a52;vertical-align:middle;margin-right:5px"></i>${c.lim?'Tu límite':'Zona dura'}: ${th} ppm</span><span><i style="display:inline-block;width:16px;border-top:2px solid #e8ecef;vertical-align:middle;margin-right:5px"></i>Tu pulso</span><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ff5a52;vertical-align:-1px;margin-right:5px"></i>El más alto</span></div>
+      ${climbs.length&&over>=60?`<div style="margin-top:10px">${climbs.filter(x=>x.ov>=30).sort((p,q)=>q.ov-p.ov).map(x=>`<div class="co-row"><span>${x.j} · ${esc(x.name)}</span><b style="color:${x.ov>=300?'#ff5a52':'#f5a623'}">${mins(x.ov)}</b></div>`).join('')}${outside>=30?`<div class="co-row"><span>Fuera de las subidas</span><b>${mins(outside)}</b></div>`:''}</div>`:''}
+      ${recT!=null?`<p style="font-size:14px;line-height:1.55;color:#cfd6dc;margin:10px 0 0"><b>Cómo has recuperado:</b> al acabar las subidas, el pulso te bajó <b>${Math.round(recT)} ppm</b> en el primer minuto.${recP!=null?` Otras veces bajaba ${Math.round(recP)}. ${recT>=recP+3?'Hoy has recuperado <b style="color:#46c86a">mejor</b>.':recT<=recP-3?'Hoy has recuperado <b style="color:#f5a623">peor</b>.':'Hoy, <b>igual que siempre</b>.'}`:''}</p>`:''}
+      ${why(`Tu pulso real del ciclocomputador. La franja roja es ${c.lim?'tu límite puesto por el médico':'la zona dura: más del 80 % de tu pulso máximo ('+hm+' ppm)'}. Un rato «seguido» empieza al pasar la raya y acaba cuando bajas 3 ppm por debajo. La recuperación es lo que baja el pulso en el primer minuto después de la cima, una medida reconocida de forma física: cuanto más baja, mejor. Se compara con tus subidas de las últimas 20 salidas de la misma modalidad.`)}</div>
+    ${climbs.length?`<div class="co-box"><div class="t">Tus subidas de hoy <small>${c.peso&&COACH_BK[tp]?'vatios calculados (±10 %)':''}</small></div>${climbs.map(x=>{ const B=x.bestDay, ch=B?(x.v/x.hr)/(B.v/B.hr)-1:null;
+        return `<div class="co-cl"><div class="co-cn"><b>${x.j} · ${esc(x.name)}</b><button class="co-ren" data-k="${x.key}" data-n="${esc(x.name)}" aria-label="Cambiar el nombre">✎</button></div><small>${fk(x.d/1000)} km · ${Math.round(x.g/x.d*100)} % · +${n0(x.g)} m</small>
+        <div class="co-cmp"><div><small>Hoy</small><b>${fmtKm(x.v)} km/h</b> a <b>${x.hr?Math.round(x.hr):'–'} ppm</b><br>${fmtT(x.t)}${x.w?` · ~${Math.round(x.w/5)*5} W`:''}${x.ov>=60?`<br><span style="color:#ff5a52">${mins(x.ov)} por encima</span>`:''}</div>
+          ${B?`<div><small>${ch!=null&&ch>0.02?'Tu mejor día hasta hoy':'Tu mejor día'} · ${fd(B.date)}</small><b>${fmtKm(B.v)} km/h</b> a <b>${Math.round(B.hr)} ppm</b><br>${fmtT(B.t)}${B.w?` · ~${Math.round(B.w/5)*5} W`:''}</div>`:`<div><small>Tu mejor día</small><span style="color:#8b959e">Es la primera vez que la subes con pulso.</span></div>`}</div>
+        ${B&&x.hr?`<p class="co-p">${Math.abs(ch)<0.02?'Hoy has ido <b>igual que tu mejor día</b>.':ch>0?`Hoy es <b style="color:#46c86a">tu mejor día</b>: un ${Math.round(ch*100)} % mejor que el ${fd(B.date)}.`:`Hoy has ido <b style="color:#f5a623">un ${Math.round(-ch*100)} % peor</b> que tu mejor día${Math.abs(x.v-B.v)/B.v<0.06?`: casi la misma velocidad, pero con ${Math.round(x.hr-B.hr)} pulsaciones más`:''}.`}</p>`:''}
+        ${c.lim&&x.ov>=60?(x.okDay?`<p class="co-p" style="color:#b9c2ca">Para no pasar de tu límite: el ${fd(x.okDay.date)} la subiste a <b style="color:#e8ecef">${fmtKm(x.okDay.v)} km/h con ${Math.round(x.okDay.hr)} ppm</b>.</p>`:'<p class="co-p" style="color:#b9c2ca">Todavía no la has subido nunca por debajo de tu límite: ve más despacio que hoy.</p>'):''}</div>`; }).join('')}
       ${!c.peso&&COACH_BK[tp]?'<p style="font-size:12.5px;color:#8b959e;margin:6px 0 0">Pon tu peso en «Tus datos» para ver los vatios de cada subida.</p>':''}
-      ${why('Vatios calculados con física, como hace Strava sin potenciómetro: tu peso y el de la bici, la pendiente, la velocidad, la rodadura y el aire. En subida el error suele ser de un 5-10 %; en llano, trialeras y bajadas no se calculan porque no serían fiables. «Vatios por pulsación» compara la misma subida otros días: más vatios con el mismo pulso = mejor forma.')}</div>`:''}
+      ${why('Las subidas se reconocen por la altura de tu GPS. El nombre sale de tu segmento de Strava que coincide, o de la cima o el lugar donde acaba (OpenStreetMap); lo puedes cambiar con el lápiz. «Tu mejor día» no es el más rápido, sino el que más rápido fuiste para el pulso que llevabas (velocidad ÷ pulso), comparando solo la misma subida y la misma modalidad. Los vatios se calculan con física (tu peso y el de la bici, pendiente, velocidad, rodadura y aire), como Strava sin potenciómetro.')}</div>`:''}
     ${carga?`<div class="co-box"><div class="t">Carga de la salida <small style="color:${carga[1]};font-size:14px;font-weight:800">${carga[0]}</small></div><div style="font-size:13.5px;color:#cfd6dc">${Math.round(tr)} puntos · más que ${Math.round(pct*100)} de cada 100 de tus salidas.</div>${why('Carga de Edwards: minutos en cada zona de pulso multiplicados por 1, 2, 3, 4 o 5. Se compara con tus últimas 60 salidas con pulso.')}</div>`:''}
     <div class="co-box"><div class="t">Tus últimas 4 semanas <small>suave · fuerte</small></div>${wk.map(q=>`<div class="co-wk"><span>${new Date(q.a).toLocaleDateString('es-ES',{day:'numeric',month:'short'})}</span><span class="bar"><i style="width:${(q.e/wmax*100).toFixed(1)}%;background:#4aa8ff"></i><i style="width:${(q.f/wmax*100).toFixed(1)}%;background:#f5a623"></i></span><span style="text-align:right">${q.e+q.f?Math.round(q.e/(q.e+q.f)*100)+' % suave':'–'}</span></div>`).join('')}
       ${why('Tiempo con pulso en zonas suaves (Z1 y Z2, azul) y fuertes (Z3, Z4 y Z5, naranja) de cada semana, con todas tus actividades con pulso.')}</div>
@@ -3291,9 +3349,14 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
       <span style="color:#8b959e;font-size:12.5px">Pulso máximo: ${hm} ppm</span><span style="font-size:12px;color:#8b959e;text-align:right">(se cambia en Editar perfil)</span>
       </div><button class="btn" id="coSave" style="margin-top:10px;width:100%">Guardar</button></details>`;
   box.hidden=false;
+  const saveCoach=()=>{ store.set('ichnos-perfil',perfil); };
   $('coSave').onclick=()=>{ const nv=id=>{ const v=parseFloat(String($(id).value).replace(',','.')); return isFinite(v)&&v>0?v:null; };
-    perfil.coach={peso:nv('coPeso'),lim:nv('coLim'),bk:{mtb:nv('coBm')||COACH_BK.mtb,road:nv('coBr')||COACH_BK.road,gravel:nv('coBg')||COACH_BK.gravel}};
-    store.set('ichnos-perfil',perfil); toast('Guardado.'); coachCard(r,st,fr); };
+    perfil.coach={...(perfil.coach||{}),peso:nv('coPeso'),lim:nv('coLim'),bk:{mtb:nv('coBm')||COACH_BK.mtb,road:nv('coBr')||COACH_BK.road,gravel:nv('coBg')||COACH_BK.gravel}};
+    saveCoach(); toast('Guardado.'); coachCard(r,st,fr); };
+  box.querySelectorAll('.co-ren').forEach(b=>b.onclick=()=>{ const cn=b.closest('.co-cn'); if(cn.querySelector('input')) return;
+    cn.innerHTML=`<input value="${b.dataset.n}" maxlength="60" aria-label="Nombre de la subida"><button class="btn" style="padding:6px 12px">OK</button>`; const inp=cn.querySelector('input'); inp.focus(); inp.select();
+    const ok=()=>{ const v=inp.value.trim(); perfil.coach={...(perfil.coach||{})}; perfil.coach.cn={...(perfil.coach.cn||{})}; if(v) perfil.coach.cn[b.dataset.k]=v; else delete perfil.coach.cn[b.dataset.k]; saveCoach(); coachCard(r,st,fr); };
+    cn.querySelector('button').onclick=ok; inp.onkeydown=e=>{ if(e.key==='Enter') ok(); if(e.key==='Escape') coachCard(r,st,fr); }; });
 }
 // ===== perfil de la ruta antes de salir: pendiente por colores, subidas y tiempo aproximado =====
 let profMk=null; const profHi=L.layerGroup().addTo(map);
