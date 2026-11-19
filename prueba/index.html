@@ -625,7 +625,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .co-next{border:2px solid #B6E22E}.co-next .t{color:#B6E22E}
 .co-why{margin-top:6px}.co-why summary{cursor:pointer;color:#8b959e;font-size:12.5px;list-style:none}.co-why summary::before{content:'ⓘ ';}.co-why p{font-size:13px;color:#b9c2ca;line-height:1.55;margin:6px 0 0}
 .co-row{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:7px 0;flex-wrap:wrap}.co-row+.co-row{border-top:1px solid #262e35}.co-row small{color:#8b959e}
-.co-wk{display:grid;grid-template-columns:70px minmax(0,1fr) 64px;gap:8px;align-items:center;font-size:12.5px;margin:6px 0}.co-wk .bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#232a30}
+.co-wk{display:grid;grid-template-columns:70px minmax(0,1fr) 64px;gap:8px;align-items:center;font-size:12.5px;margin:6px 0}.co-wk .co-wkb{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#232a30}.co-wkb i{display:block;height:100%}
 .co-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.co-g>div{background:#232a30;border-radius:10px;padding:10px;display:flex;flex-direction:column;min-width:0}.co-g small{font-size:12px;color:#8b959e;line-height:1.35}.co-g b{font-size:20px;margin:2px 0}
 .co-cl{padding:10px 0}.co-cl+.co-cl{border-top:1px solid #262e35}.co-cl>small{color:#8b959e;font-size:12.5px}
 .co-cn{display:flex;align-items:center;gap:8px}.co-cn b{font-size:15px}.co-cn input{flex:1;min-width:0;padding:7px 10px;border-radius:10px;border:1px solid #2c343b;background:#0f1215;color:#e8ecef;font:inherit;font-size:16px}
@@ -1530,7 +1530,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795113901';   // versión de la app (la pone build.py)
+const BUILD='1795115476';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3337,7 +3337,7 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
       ${!c.peso&&COACH_BK[tp]?'<p style="font-size:12.5px;color:#8b959e;margin:6px 0 0">Pon tu peso en «Tus datos» para ver los vatios de cada subida.</p>':''}
       ${why('Las subidas se reconocen por la altura de tu GPS. El nombre sale de tu segmento de Strava que coincide, o de la cima o el lugar donde acaba (OpenStreetMap); lo puedes cambiar con el lápiz. «Tu mejor día» no es el más rápido, sino el que más rápido fuiste para el pulso que llevabas (velocidad ÷ pulso), comparando solo la misma subida y la misma modalidad. Los vatios se calculan con física (tu peso y el de la bici, pendiente, velocidad, rodadura y aire), como Strava sin potenciómetro.')}</div>`:''}
     ${carga?`<div class="co-box"><div class="t">Carga de la salida <small style="color:${carga[1]};font-size:14px;font-weight:800">${carga[0]}</small></div><div style="font-size:13.5px;color:#cfd6dc">${Math.round(tr)} puntos · más que ${Math.round(pct*100)} de cada 100 de tus salidas.</div>${why('Carga de Edwards: minutos en cada zona de pulso multiplicados por 1, 2, 3, 4 o 5. Se compara con tus últimas 60 salidas con pulso.')}</div>`:''}
-    <div class="co-box"><div class="t">Tus últimas 4 semanas <small>suave · fuerte</small></div>${wk.map(q=>`<div class="co-wk"><span>${new Date(q.a).toLocaleDateString('es-ES',{day:'numeric',month:'short'})}</span><span class="bar"><i style="width:${(q.e/wmax*100).toFixed(1)}%;background:#4aa8ff"></i><i style="width:${(q.f/wmax*100).toFixed(1)}%;background:#f5a623"></i></span><span style="text-align:right">${q.e+q.f?Math.round(q.e/(q.e+q.f)*100)+' % suave':'–'}</span></div>`).join('')}
+    <div class="co-box"><div class="t">Tus últimas 4 semanas <small>suave · fuerte</small></div>${wk.map(q=>`<div class="co-wk"><span>${new Date(q.a).toLocaleDateString('es-ES',{day:'numeric',month:'short'})}</span><span class="co-wkb"><i style="width:${(q.e/wmax*100).toFixed(1)}%;background:#4aa8ff"></i><i style="width:${(q.f/wmax*100).toFixed(1)}%;background:#f5a623"></i></span><span style="text-align:right">${q.e+q.f?Math.round(q.e/(q.e+q.f)*100)+' % suave':'–'}</span></div>`).join('')}
       ${why('Tiempo con pulso en zonas suaves (Z1 y Z2, azul) y fuertes (Z3, Z4 y Z5, naranja) de cada semana, con todas tus actividades con pulso.')}</div>
     <div class="co-box co-next"><div class="t">Para la próxima salida</div><div style="font-size:15px;line-height:1.55">${next}</div></div>
     <details class="co-set"><summary>Tus datos para el estudio</summary><div class="g">
