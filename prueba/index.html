@@ -375,6 +375,7 @@ details.help p{margin:6px 0 0}
 .tpick button.sel{border:2px solid #E8B931;background:rgba(232,185,49,.12)}
 .tpick button i{flex:none;width:14px;height:14px;border-radius:50%}.tpick button span{flex:1;font-weight:700}.tpick button small{opacity:.7}
 .tpop .segbtn{background:#fff;color:var(--ink,#1E2328);border:1px solid var(--line,#d9d9d9)}
+.ppop .segbtn{background:#fff;color:var(--ink,#1E2328);border:1px solid var(--line,#d9d9d9)}.ppop .segbtn.sv{background:var(--accent);color:var(--accent-ink);border:0}.ppop .segbtn.del{background:#fff;color:#c62828;border:1px solid #f0c4c4}
 .tpop .segbtn.main{background:var(--accent);color:var(--accent-ink);border:0}
 .tpop .segbtn.del{background:#fff;color:#c62828;border:1px solid #f0c4c4;padding:7px 10px;margin-top:6px}
 
@@ -910,6 +911,7 @@ html[data-theme="dark"] .leaflet-bar a,html[data-theme="dark"] .leaflet-control-
 html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{color:var(--muted)}
 html[data-theme="dark"] .tr-estb button,html[data-theme="dark"] .tpop .segbtn,html[data-theme="dark"] .segbtn.del2,html[data-theme="dark"] .wxpill{background:var(--soft);color:var(--ink)}
 html[data-theme="dark"] .tpop .segbtn.del{background:var(--soft);border-color:#5a2a2a;color:#ff7b72}
+html[data-theme="dark"] .ppop .segbtn{background:var(--soft);color:var(--ink);border-color:transparent}html[data-theme="dark"] .ppop .segbtn.sv{background:var(--accent);color:var(--accent-ink)}html[data-theme="dark"] .ppop .segbtn.del{background:var(--soft);border-color:#5a2a2a;color:#ff7b72}
 #confeti{position:fixed;inset:0;z-index:7000;pointer-events:none}
 /* gráficos */
 .chart1 svg path.ln{stroke-linejoin:round;stroke-linecap:round}
@@ -1533,7 +1535,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795118202';   // versión de la app (la pone build.py)
+const BUILD='1795118450';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3506,7 +3508,7 @@ async function loadTilesAround(x0,x1,y0,y1,paint){
   const cx=(x0+x1)/2, cy=(y0+y1)/2; keys.sort((p,q)=>Math.hypot(p[0]-cx,p[1]-cy)-Math.hypot(q[0]-cx,q[1]-cy));   // primero el centro de la pantalla
   const N=paint?6:30;
   for(let i=0;i<keys.length;i+=N){ const sl=keys.slice(i,i+N);   // por tandas: se van viendo mientras cargan
-    const paintNow=()=>{ if(paint&&!(map._popup&&map._popup.isOpen()&&placeLayer.hasLayer(map._popup._source))) renderPlaces(); };
+    const paintNow=()=>{ const src=map._popup&&map._popup.isOpen()&&map._popup._source; if(paint&&!(src&&placeLayer.hasLayer(src))) renderPlaces(); };   // (un globo abierto sin marca, p. ej. desde el buscador, no rompe la carga)
     const pb=Promise.all(sl.map(([x,y])=>ovtTile(x,y)));   // Overture (servidor lejano, más lento) en paralelo
     (await Promise.all(sl.map(([x,y])=>tilePois(x,y)))).forEach(addTilePlaces); paintNow();   // OpenStreetMap: sale primero
     (await pb).forEach(addOvtPlaces); paintNow(); }
