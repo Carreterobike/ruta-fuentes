@@ -966,6 +966,7 @@ body.map-moving .search input,.leaflet-container.moving .mapgrp,.leaflet-contain
 .leaflet-container a.leaflet-popup-close-button{width:30px!important;height:30px!important;min-width:30px;top:6px!important;right:6px!important;background-size:17px!important}
 .leaflet-container a.leaflet-popup-close-button span{display:none}
 .leaflet-popup-content{margin-right:40px}
+@media (max-width:600px){.leaflet-popup-content{max-height:calc(100dvh - 240px);overflow-y:auto;overscroll-behavior:contain}}
 html[data-theme="dark"] .qbtn.x,html[data-theme="dark"] #destX,html[data-theme="dark"] #fxX,html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{background:#eef0ec url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='%231E2328' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") center/20px no-repeat!important}
 html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{background-size:17px!important}
 .qbtn.x:active,#destX:active,#fxX:active{transform:scale(.92)}
@@ -1535,7 +1536,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795118630';   // versión de la app (la pone build.py)
+const BUILD='1795118747';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3760,7 +3761,7 @@ function hoursEl(p){ const box=document.createElement('div'); box.className='hor
       if(nv==null) return; const h=nv.trim().slice(0,200); if(h&&!parseHours(h)) toast('Guardado. Si lo escribes como en el ejemplo, la app sabrá si está abierto.',5000);
       opin[p.id]={...(opin[p.id]||{}),h,ht:Date.now(),name:p.name,lat:p.lat,lon:p.lon,cat:p.cat}; store.set('ichnos-lugares',opin); const q=opin[p.id];
       gPush([{k:'op',id:p.id,m:{name:p.name,lat:p.lat,lon:p.lon,cat:p.cat},o:{nota:q.nota||null,precio:q.precio||null,txt:q.txt||'',t:q.t||Date.now(),h,ht:q.ht}}]); paint(h,'Lo has puesto tú'); };
-    box.appendChild(b); };
+    box.appendChild(b); setTimeout(()=>{ try{ if(map._popup&&map._popup.isOpen()) map._popup.update(); }catch(e){} },0); };   // el globo crece: que se vuelva a colocar
   // 1) el de la grupeta (el más reciente) 2) el de OpenStreetMap
   const mineO=opin[p.id]&&opin[p.id].h?{...opin[p.id],u:me&&me.id}:null;
   const gr=[...opAll(p.id).filter(x=>x.h),...(mineO?[mineO]:[])].sort((a,b)=>(b.ht||0)-(a.ht||0))[0];
