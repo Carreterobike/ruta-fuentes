@@ -1530,7 +1530,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795113746';   // versión de la app (la pone build.py)
+const BUILD='1795113901';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3304,7 +3304,8 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
   else L.push(easy>=0.8?['✅',`<b>${Math.round(easy*100)} %</b> del tiempo en zonas suaves (Z1 y Z2).`]:['⚠️',`Solo <b>${Math.round(easy*100)} %</b> del tiempo en zonas suaves (Z1 y Z2). Lo recomendable es 8 de cada 10 minutos.`]);
   // gráfico de pulso con la franja del límite
   const W=600,H=130, t0=r.times[0], T=r.times[n-1]-t0||1, X=i=>((r.times[i]-t0)/T*W).toFixed(1), hrs=r.hr.filter(Boolean), lo=Math.max(60,Math.min(...hrs)-5), hi=Math.max(th+15,Math.max(...hrs)+5), Y=h=>(110-(h-lo)/(hi-lo)*100).toFixed(1);
-  let d='',onp=false; for(const i of idx){ const h=r.hr[i]; if(!h){ onp=false; continue; } d+=(onp?'L':'M')+X(i)+','+Y(h); onp=true; }
+  const hs_=i=>{ const w=Math.max(3,step*2); let a=0,m=0; for(let j=Math.max(0,i-w);j<=Math.min(n-1,i+w);j++){ if(r.hr[j]){ a+=r.hr[j]; m++; } } return m?a/m:null; };   // un poco suavizado para que se lea bien
+  let d='',onp=false; for(const i of idx){ const h=hs_(i); if(!h){ onp=false; continue; } d+=(onp?'L':'M')+X(i)+','+Y(h); onp=true; }
   let g=`<rect x="0" y="0" width="${W}" height="${Y(th)}" fill="#ff5a52" opacity=".2"/><line x1="0" x2="${W}" y1="${Y(th)}" y2="${Y(th)}" stroke="#ff5a52" stroke-dasharray="6 5" stroke-width="2"/>`;
   climbs.forEach(x=>{ g+=`<rect x="${X(x.ia)}" y="0" width="${Math.max(2,X(x.ib)-X(x.ia))}" height="110" fill="#fff" opacity=".045"/><text x="${((+X(x.ia)+ +X(x.ib))/2).toFixed(1)}" y="128" font-size="15" fill="#9aa4ad" text-anchor="middle" font-weight="700">${x.j}</text>`; });
   g+=`<path d="${d}" fill="none" stroke="#e8ecef" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(iMax)}" cy="${Y(r.hr[iMax])}" r="5" fill="#ff5a52" stroke="#13171b" stroke-width="2"/>`;
