@@ -1533,7 +1533,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795117046';   // versión de la app (la pone build.py)
+const BUILD='1795118202';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3686,20 +3686,26 @@ $('secCapas').addEventListener('keydown',e=>{ const l=e.target.closest&&e.target
 $('csX').onclick=csClose;
 $('csQ').addEventListener('input',()=>{ clearTimeout(csTimer); csTimer=setTimeout(csSearch,350); });
 async function csSearch(){ const q=$('csQ').value.trim(), k=csCat, sq=++csSeq; if(!k) return; if(q.length<2){ $('csRes').innerHTML=''; return; }
-  const c=map.getCenter(), here=[c.lat,c.lng], n=nrm(q), out=[];
-  // 1) lo que ya está cargado en el mapa (incluye los que añade la grupeta)
-  if(k==='fuentes') fStore.forEach(f=>{ const nm=nameOf(f); if(nm&&nrm(nm).includes(n)) out.push({src:'f',f,name:nm,lat:f.lat,lon:f.lon,town:''}); });
-  else pStore.forEach(p=>{ if(p.cat===k&&p.name&&nrm(p.name).includes(n)&&!isHidden(p.id)) out.push({src:'p',p,name:p.name,lat:p.lat,lon:p.lon,town:(p.extra&&p.extra.addr)||''}); });
-  csPaint(out,here,true);
-  // 2) en toda España (OpenStreetMap)
-  try{ const u=`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=15&lat=${c.lat.toFixed(4)}&lon=${c.lng.toFixed(4)}`+CS_TAGS[k].map(t=>'&osm_tag='+encodeURIComponent(t)).join('');
-    const j=await (await fetch(u)).json(); if(sq!==csSeq) return;
-    (j.features||[]).forEach(f=>{ const pr=f.properties||{}, [lon,lat]=f.geometry.coordinates, name=pr.name||''; if(!name) return;
+  const c=map.getCenter(), here=[c.lat,c.lng], n=nrm(q);
+  // 1) lo que ya está cargado en el mapa (incluye los que añade la grupeta y los de Overture, como BICIAT)
+  const local=()=>{ const o=[]; if(k==='fuentes') fStore.forEach(f=>{ const nm=nameOf(f); if(nm&&nrm(nm).includes(n)) o.push({src:'f',f,name:nm,lat:f.lat,lon:f.lon,town:''}); });
+    else pStore.forEach(p=>{ if(p.cat===k&&p.name&&nrm(p.name).includes(n)&&!isHidden(p.id)) o.push({src:'p',p,name:p.name,lat:p.lat,lon:p.lon,town:(p.extra&&p.extra.addr)||''}); }); return o; };
+  csPaint(local(),here,true);
+  // también se cargan los sitios de alrededor (unos 7 km) aunque no estén encendidos en el mapa
+  const nn=2**14, tx=Math.floor((c.lng+180)/360*nn), la=c.lat*Math.PI/180, ty=Math.floor((1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*nn);
+  const around=k==='fuentes'?Promise.resolve():Promise.race([loadTilesAround(tx-3,tx+3,ty-3,ty+3,false).catch(()=>{}),new Promise(r=>setTimeout(r,9000))]);
+  // 2) en toda España (OpenStreetMap), con más peso a lo cercano
+  let ph=[], fail=false;
+  const photon=(async()=>{ try{ const u=`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=30&location_bias_scale=0.1&zoom=14&lat=${c.lat.toFixed(4)}&lon=${c.lng.toFixed(4)}`+CS_TAGS[k].map(t=>'&osm_tag='+encodeURIComponent(t)).join('');
+    const j=await (await fetch(u)).json(); ph=j.features||[]; }catch(e){ fail=true; } })();
+  const merge=()=>{ const out=local(); ph.forEach(f=>{ const pr=f.properties||{}, [lon,lat]=f.geometry.coordinates, name=pr.name||''; if(!name) return;
       if(out.some(o=>dist([o.lat,o.lon],[lat,lon])<80&&(nrm(o.name).includes(nrm(name))||nrm(name).includes(nrm(o.name))))) return;
       const town=[pr.city||pr.town||pr.village||pr.locality||'',pr.countrycode&&pr.countrycode!=='ES'?(pr.country||''):''].filter(Boolean).join(', ');
-      out.push({src:'n',ph:f,name,lat,lon,town,street:[pr.street,pr.housenumber].filter(Boolean).join(' '),key:pr.osm_key,val:pr.osm_value,oid:(pr.osm_type||'')+(pr.osm_id||'')}); });
-  }catch(e){ if(!out.length) $('csNote').textContent='No se ha podido buscar ahora. Comprueba internet.'; }
-  if(sq===csSeq) csPaint(out,here,false); }
+      out.push({src:'n',ph:f,name,lat,lon,town,street:[pr.street,pr.housenumber].filter(Boolean).join(' '),key:pr.osm_key,val:pr.osm_value,oid:(pr.osm_type||'')+(pr.osm_id||'')}); }); return out; };
+  await photon; if(sq!==csSeq) return; let out=merge(); csPaint(out,here,true);
+  await around; if(sq!==csSeq) return; out=merge();
+  if(fail&&!out.length) $('csNote').textContent='No se ha podido buscar ahora. Comprueba internet.';
+  csPaint(out,here,false); }
 function csPaint(out,here,partial){ out.forEach(o=>o.d=dist(here,[o.lat,o.lon])); out.sort((a,b)=>a.d-b.d); csList=out.slice(0,12);
   $('csRes').innerHTML=csList.length?csList.map((o,i)=>{ const op=o.src==='p'?opSum(o.p.id):''; const km=o.d<1000?Math.round(o.d)+' m':fmtKm(o.d/1000)+' km';
     return `<li data-i="${i}"><b>${esc(o.name)}</b><small>${[o.town,'a '+km,op?op+' grupeta':''].filter(Boolean).map(esc).join(' · ')}</small></li>`; }).join(''):(partial?'':'<li class="none"><small>No sale ninguno con ese nombre.</small></li>');
