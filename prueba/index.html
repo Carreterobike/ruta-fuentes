@@ -1510,7 +1510,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795067850';   // versión de la app (la pone build.py)
+const BUILD='1795067939';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2023,7 +2023,7 @@ const FX={on:false,k:0,raf:0,t:0,clouds:[],rain:[],glass:[],snow:[],flash:0,shad
 // sombras de nubes sobre el monte en los días de sol (se mueven con el viento)
 function shadowSprite(){ const c=document.createElement('canvas'); c.width=840; c.height=600; const x=c.getContext('2d');
   for(let i=0;i<11;i++){ const cx=200+Math.random()*440, cy=180+Math.random()*240, r=110+Math.random()*150; const g=x.createRadialGradient(cx,cy,0,cx,cy,r);
-    g.addColorStop(0,'rgba(8,16,26,.36)'); g.addColorStop(.55,'rgba(8,16,26,.2)'); g.addColorStop(1,'rgba(8,16,26,0)'); x.fillStyle=g; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill(); }
+    g.addColorStop(0,'rgba(8,16,26,.44)'); g.addColorStop(.55,'rgba(8,16,26,.26)'); g.addColorStop(1,'rgba(8,16,26,0)'); x.fillStyle=g; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill(); }
   return c; }
 function fxDir(){ const a=((FX.wdir||0)+180)*Math.PI/180; return [Math.sin(a),-Math.cos(a)]; }   // hacia dónde sopla
 function fxWrap(o,w,h,W,H){ if(o.x>W+w*.1) o.x=-w; else if(o.x<-w*1.1) o.x=W; if(o.y>H+h*.1) o.y=-h; else if(o.y<-h*1.1) o.y=H; }
