@@ -203,6 +203,19 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .fx-top{display:flex;align-items:center;gap:12px}.fx-top>b{font:800 44px/1 var(--display,system-ui)}.fx-top>div{flex:1;min-width:0}.fx-top span{display:block;font-weight:800}.fx-top small{display:block;font-size:12px;opacity:.85}
 .fx-top button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer}
 .fxcard input[type=range]{width:100%;margin-top:8px;accent-color:#B6E22E}
+.wx.in-search:not(.mini){width:min(440px,calc(100vw - 24px))}
+.wdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px}
+.wd,.wh{border:1.5px solid transparent;background:var(--soft);color:var(--ink);border-radius:12px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;font:inherit;min-width:0}
+.wd.on,.wh.on{border-color:var(--lime,#B6E22E);background:var(--card)}
+.wd small,.wh small{font-size:11px;color:var(--muted);line-height:1.25;white-space:nowrap}.wd i,.wh i{font-style:normal;font-size:18px;line-height:1.3}.wd b,.wh b{font-size:14px;font-weight:800}
+.wd small.r,.wh small.r{color:#2f8fdc}
+.whrs{display:flex;gap:4px;overflow-x:auto;padding:6px 0 4px;margin-top:4px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.wh{flex:0 0 54px}
+.wh .wa{display:flex;align-items:center;gap:2px}.wh .wa svg{width:12px;height:12px;fill:currentColor}
+.wch svg{width:100%;height:auto;display:block;margin-top:4px}.wch-l{display:flex;gap:12px;font-size:11.5px;color:var(--muted)}.wch-l i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.fxcard .wd,.fxcard .wh{background:rgba(255,255,255,.12);color:#fff}.fxcard .wd.on,.fxcard .wh.on{background:rgba(255,255,255,.22);border-color:#B6E22E}
+.fxcard .wd small,.fxcard .wh small{color:rgba(255,255,255,.75)}.fxcard .wd small.r,.fxcard .wh small.r{color:#8fd0ff}
+.fxcard .wdays{gap:3px}.fxcard .wd{padding:4px 1px}.fxcard .wd i{font-size:15px}.fxcard .wh{flex-basis:50px}
 #map3d{position:absolute;inset:0;z-index:750;background:#9cc3e6}#map3d[hidden]{display:none}
 #map3d .maplibregl-ctrl-bottom-left{bottom:150px;left:6px}
 .lbar button.capas svg{width:17px;height:17px}
@@ -1496,7 +1509,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795038920';   // versión de la app (la pone build.py)
+const BUILD='1795067679';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2005,7 +2018,14 @@ new D3Ctl({position:'topright'}).addTo(map);
 const FxCtl=L.Control.extend({onAdd(){ const d=L.DomUtil.create('div','capas-ctl'); d.innerHTML='<button id="bwx" aria-label="Ver el tiempo en el mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7z"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/></svg><span>Tiempo</span></button>';
   L.DomEvent.disableClickPropagation(d); d.querySelector('button').onclick=()=>wxFx(); return d; }});
 new FxCtl({position:'topright'}).addTo(map);
-const FX={on:false,k:0,raf:0,t:0,clouds:[],rain:[],glass:[],snow:[],flash:0};
+const FX={on:false,k:0,raf:0,t:0,clouds:[],rain:[],glass:[],snow:[],flash:0,shadows:[],wdir:0};
+// sombras de nubes sobre el monte en los días de sol (se mueven con el viento)
+function shadowSprite(){ const c=document.createElement('canvas'); c.width=840; c.height=600; const x=c.getContext('2d');
+  for(let i=0;i<11;i++){ const cx=200+Math.random()*440, cy=180+Math.random()*240, r=110+Math.random()*150; const g=x.createRadialGradient(cx,cy,0,cx,cy,r);
+    g.addColorStop(0,'rgba(8,16,26,.36)'); g.addColorStop(.55,'rgba(8,16,26,.2)'); g.addColorStop(1,'rgba(8,16,26,0)'); x.fillStyle=g; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill(); }
+  return c; }
+function fxDir(){ const a=((FX.wdir||0)+180)*Math.PI/180; return [Math.sin(a),-Math.cos(a)]; }   // hacia dónde sopla
+function fxWrap(o,w,h,W,H){ if(o.x>W+w*.1) o.x=-w; else if(o.x<-w*1.1) o.x=W; if(o.y>H+h*.1) o.y=-h; else if(o.y<-h*1.1) o.y=H; }
 function fxKind(wc){ return wc<=1?'sol':wc===2?'claros':wc===3?'nubes':wc<=48?'niebla':wc<=57?'llovizna':wc<=67||(wc>=80&&wc<=82)?'lluvia':wc<=77||wc===85||wc===86?'nieve':'tormenta'; }
 function cloudSprite(dark){ const c=document.createElement('canvas'); c.width=360; c.height=200; const x=c.getContext('2d');
   for(let i=0;i<14;i++){ const cx=60+Math.random()*240, cy=80+Math.random()*60-Math.abs(cx-180)*.15, r=40+Math.random()*50; const g=x.createRadialGradient(cx,cy-r*.3,0,cx,cy,r);
@@ -2018,13 +2038,37 @@ function wxFx(){ const btn=$('bwx');
     ['pointerdown','mousedown','touchstart','wheel','click'].forEach(ev=>$('fxCard').addEventListener(ev,e=>e.stopPropagation(),{passive:true})); }
   d.hidden=false; btn.classList.add('on'); FX.on=true;
   const h=wxData[0].hourly, now=isoHour(new Date()); FX.i0=Math.max(0,h.time.indexOf(now)); FX.i=FX.i0;
-  FX.spr=[cloudSprite(0),cloudSprite(1)]; fxCard(); fxLoop(); }
-function fxCard(){ const h=wxData[0].hourly, i=FX.i, v=k=>h[k]?h[k][i]:null, wc=v('weather_code'), dn=dirName(v('wind_direction_10m'));
-  const hh=new Date(h.time[i]).getHours(), lab=i===FX.i0?'Ahora':(new Date(h.time[i]).getDate()!==new Date().getDate()?'Mañana ':'')+hh+':00';
-  $('fxCard').innerHTML=`<div class="fx-top"><b>${Math.round(v('temperature_2m'))}°</b><div><span>${WMO[wc]||''}</span><small>${lab} · ${v('precipitation')?String(v('precipitation')).replace('.',',')+' mm · ':''}lluvia ${v('precipitation_probability')??0}%</small><small>Viento ${Math.round(v('wind_speed_10m'))} km/h del ${dn[0].toLowerCase()} · rachas ${Math.round(v('wind_gusts_10m'))}</small><small class="fx-where">${esc(wxWhere)}</small></div><button id="fxX" aria-label="Quitar el tiempo">✕</button></div>
-    <input type="range" id="fxH" min="${FX.i0}" max="${Math.min(h.time.length-1,FX.i0+30)}" step="1" value="${i}" aria-label="Hora">`;
-  $('fxH').oninput=e=>{ FX.i=+e.target.value; fxCard(); }; $('fxX').onclick=()=>wxFx();
-  FX.k=fxKind(wc); FX.cc=v('cloud_cover')??(FX.k==='sol'?5:60); FX.mm=v('precipitation')||0; FX.wind=v('wind_speed_10m')||0; }
+  wxHour=now; FX.spr=[cloudSprite(0),cloudSprite(1)]; fxCard(); fxLoop(); }
+function fxCard(){ const h=wxData[0].hourly; let i=h.time.indexOf(wxHour); if(i<FX.i0) i=FX.i0; FX.i=i; const v=k=>h[k]?h[k][i]:null, wc=v('weather_code'), dn=dirName(v('wind_direction_10m'));
+  $('fxCard').innerHTML=`<div class="fx-top"><b>${Math.round(v('temperature_2m'))}°</b><div><span>${WMO[wc]||''}</span><small>${wxLabel(h,i,FX.i0)} · ${v('precipitation')?String(v('precipitation')).replace('.',',')+' mm · ':''}lluvia ${v('precipitation_probability')??0}%</small><small>Viento ${Math.round(v('wind_speed_10m'))} km/h del ${dn[0].toLowerCase()} · rachas ${Math.round(v('wind_gusts_10m'))}</small><small class="fx-where">${esc(wxWhere)}</small></div><button id="fxX" aria-label="Quitar el tiempo">✕</button></div>
+    ${wxPanel(h,i,FX.i0,true)}`;
+  wxBind($('fxCard')); $('fxX').onclick=()=>wxFx();
+  FX.k=fxKind(wc); FX.cc=v('cloud_cover')??(FX.k==='sol'?5:60); FX.mm=v('precipitation')||0; FX.wind=v('wind_speed_10m')||0; FX.wdir=v('wind_direction_10m')||0; }
+// ===== tiempo: 7 días y horas una a una (tarjeta del buscador y capa animada) =====
+const WX_DIAS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const wxIc=(wc,hr)=>{ const n=hr!=null&&(hr<7||hr>=20); return wc<=1?(n?'🌙':'☀️'):wc===2?(n?'☁️':'⛅'):wc===3?'☁️':wc<=48?'🌫️':wc<=57?'🌦️':wc<=67||(wc>=80&&wc<=82)?'🌧️':wc<=77||wc===85||wc===86?'❄️':'⛈️'; };
+function wxLabel(h,i,i0){ if(i===i0) return 'Ahora'; const d=h.time[i].slice(0,10), t0=h.time[i0].slice(0,10), hr=+h.time[i].slice(11,13); const dd=(new Date(d+'T12:00')-new Date(t0+'T12:00'))/864e5;
+  return (dd===0?'Hoy':dd===1?'Mañana':WX_DIAS[new Date(d+'T12:00').getDay()]+' '+(+d.slice(8,10)))+' a las '+hr+':00'; }
+function wxDays(h){ const m=new Map(); h.time.forEach((t,i)=>{ const d=t.slice(0,10); if(!m.has(d)) m.set(d,[]); m.get(d).push(i); }); return [...m.entries()].slice(0,7); }
+function wxPanel(h,sel,i0,compact){ const days=wxDays(h), today=h.time[i0].slice(0,10), sd=h.time[sel].slice(0,10), selHr=+h.time[sel].slice(11,13);
+  const dH=days.map(([d,ix])=>{ const vis=d===today?ix.filter(i=>i>=i0):ix; if(!vis.length) return ''; const day=ix.filter(i=>{ const hr=+h.time[i].slice(11,13); return hr>=8&&hr<=20; }), use=day.length?day:ix;
+      const T=ix.map(i=>h.temperature_2m[i]), mx=Math.round(Math.max(...T)), mn=Math.round(Math.min(...T)), pr=Math.max(...use.map(i=>h.precipitation_probability[i]||0)), wm=Math.round(Math.max(...use.map(i=>h.wind_speed_10m[i]||0)));
+      const wet=use.reduce((a,i)=>(h.precipitation_probability[i]||0)>(h.precipitation_probability[a]||0)?i:a,use[0]), noon=ix.find(i=>h.time[i].endsWith('T13:00'))??use[0], wc=(h.precipitation_probability[wet]||0)>=40?h.weather_code[wet]:h.weather_code[noon];
+      const pick=d===today?(vis.find(i=>+h.time[i].slice(11,13)===selHr)??i0):(ix.find(i=>+h.time[i].slice(11,13)===(d===sd?selHr:selHr<7||selHr>20?10:selHr))??ix[0]);
+      const lab=d===today?'Hoy':WX_DIAS[new Date(d+'T12:00').getDay()];
+      return `<button class="wd${d===sd?' on':''}" data-t="${h.time[pick]}"><small>${lab}</small><i>${wxIc(wc)}</i><b>${mx}°</b><small>${mn}°</small>${compact?'':`<small class="r">${pr}%</small><small>${wm} km/h</small>`}</button>`; }).join('');
+  const hrs=(days.find(q=>q[0]===sd)||days[0])[1].filter(i=>i>=i0);
+  const hH=hrs.map(i=>{ const hr=+h.time[i].slice(11,13), ws=Math.round(h.wind_speed_10m[i]), wd=h.wind_direction_10m[i];
+      return `<button class="wh${i===sel?' on':''}" data-t="${h.time[i]}"><small>${i===i0?'Ahora':hr+':00'}</small><i>${wxIc(h.weather_code[i],hr)}</i><b>${Math.round(h.temperature_2m[i])}°</b><small class="r">${h.precipitation_probability[i]??0}%</small><small class="wa"><svg viewBox="0 0 24 24" style="transform:rotate(${(wd+180)%360}deg)"><path d="M12 3l6 16-6-4-6 4z"/></svg>${ws}</small></button>`; }).join('');
+  let ch=''; if(!compact&&hrs.length>1){ const W=400,H=74, T=hrs.map(i=>h.temperature_2m[i]), lo=Math.min(...T)-1, hi=Math.max(...T)+1, X=k=>8+k*(W-16)/(hrs.length-1), Y=t=>52-(t-lo)/(hi-lo)*40;
+    let g=''; hrs.forEach((i,k)=>{ const pp=h.precipitation_probability[i]||0; if(pp) g+=`<rect x="${(X(k)-5).toFixed(1)}" y="${(70-pp*.3).toFixed(1)}" width="10" height="${(pp*.3).toFixed(1)}" rx="2" fill="#4aa8ff" opacity=".5"/>`; });
+    g+=`<path d="M${hrs.map((i,k)=>X(k).toFixed(1)+','+Y(h.temperature_2m[i]).toFixed(1)).join('L')}" fill="none" stroke="#f5a623" stroke-width="2.2" stroke-linejoin="round"/>`;
+    const ks=hrs.indexOf(sel); if(ks>=0) g+=`<line x1="${X(ks)}" x2="${X(ks)}" y1="4" y2="72" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="3 3"/><circle cx="${X(ks)}" cy="${Y(h.temperature_2m[sel])}" r="4" fill="#f5a623" stroke="var(--card)" stroke-width="2"/>`;
+    ch=`<div class="wch"><svg viewBox="0 0 ${W} ${H}">${g}</svg><div class="wch-l"><span><i style="background:#f5a623"></i>Temperatura</span><span><i style="background:#4aa8ff"></i>Lluvia (%)</span></div></div>`; }
+  return `<div class="wdays">${dH}</div><div class="whrs">${hH}</div>${ch}`; }
+function wxPick(iso){ wxHour=iso; renderWeather(); if(FX.on) fxCard(); }
+function wxBind(el){ el.querySelectorAll('[data-t]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); wxPick(b.dataset.t); });
+  const on=el.querySelector('.wh.on'), row=el.querySelector('.whrs'); if(on&&row) row.scrollLeft=on.offsetLeft-row.offsetLeft-row.clientWidth/2+on.offsetWidth/2; }
 function fxLoop(){ if(!FX.on) return; if(document.body.classList.contains('map-moving')){ FX.raf=requestAnimationFrame(fxLoop); return; } const d=$('wxfx'), C=d.querySelector('canvas'), dpr=Math.min(2,window.devicePixelRatio||1), W=d.clientWidth, H=d.clientHeight;
   if(C.width!==W*dpr||C.height!==H*dpr){ C.width=W*dpr; C.height=H*dpr; C.style.width=W+'px'; C.style.height=H+'px'; }
   const x=C.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H); const k=FX.k, t=++FX.t;
@@ -2035,13 +2079,18 @@ function fxLoop(){ if(!FX.on) return; if(document.body.classList.contains('map-m
   else if(k==='niebla'){ tint.addColorStop(0,'rgba(235,238,240,.55)'); tint.addColorStop(1,'rgba(235,238,240,.35)'); }
   else { const a=k==='tormenta'?.55:wet?.42:.28; tint.addColorStop(0,`rgba(55,68,86,${a+.1})`); tint.addColorStop(1,`rgba(40,50,64,${a})`); }
   x.fillStyle=tint; x.fillRect(0,0,W,H);
+  // sol: sombras de nubes sueltas que pasan por el monte, hacia donde sopla el viento
+  if(k==='sol'||k==='claros'){ if(!FX.shSpr) FX.shSpr=[shadowSprite(),shadowSprite(),shadowSprite()]; const [sx_,sy_]=fxDir(), sv=.05+FX.wind/45;
+    while(FX.shadows.length<(k==='sol'?4:3)) FX.shadows.push({x:Math.random()*W,y:Math.random()*H,s:.75+Math.random()*.8,k:FX.shadows.length%3});
+    FX.shadows.forEach(o=>{ o.x+=sx_*sv; o.y+=sy_*sv; fxWrap(o,420*o.s,300*o.s,W,H); x.drawImage(FX.shSpr[o.k],o.x,o.y,420*o.s,300*o.s); }); }
   // sol: resplandor y rayos que giran
   if(k==='sol'||k==='claros'){ const sx=W*.82, sy=H*.12; const g=x.createRadialGradient(sx,sy,0,sx,sy,Math.max(W,H)*.6); g.addColorStop(0,'rgba(255,248,215,.85)'); g.addColorStop(.08,'rgba(255,226,150,.55)'); g.addColorStop(.35,'rgba(255,210,120,.12)'); g.addColorStop(1,'rgba(255,210,120,0)'); x.fillStyle=g; x.fillRect(0,0,W,H);
     x.save(); x.translate(sx,sy); x.rotate(t*.0015); for(let i=0;i<14;i++){ x.rotate(Math.PI/7); const rg=x.createLinearGradient(0,0,Math.max(W,H),0); rg.addColorStop(0,'rgba(255,240,190,.18)'); rg.addColorStop(1,'rgba(255,240,190,0)'); x.fillStyle=rg; x.beginPath(); x.moveTo(0,0); x.lineTo(Math.max(W,H),-28); x.lineTo(Math.max(W,H),28); x.fill(); } x.restore();
     [[.62,.32,26,.18],[.48,.47,14,.22],[.36,.6,40,.1]].forEach(([fx,fy,r,a])=>{ const px=sx+(W*.5-sx)*fx*2, py=sy+(H*.5-sy)*fy*2; const lg=x.createRadialGradient(px,py,0,px,py,r); lg.addColorStop(0,`rgba(255,250,220,${a})`); lg.addColorStop(1,'rgba(255,250,220,0)'); x.fillStyle=lg; x.beginPath(); x.arc(px,py,r,0,7); x.fill(); }); }
   // nubes que pasan (más cuantas más nubes haya)
   const nC=k==='sol'?0:Math.round(2+FX.cc/14); while(FX.clouds.length<nC) FX.clouds.push({x:Math.random()*W*1.4-W*.2,y:Math.random()*H*.75,s:.6+Math.random()*1.1,v:.15+Math.random()*.35}); FX.clouds.length=nC;
-  const drift=.4+FX.wind/25; FX.clouds.forEach(c=>{ c.x+=c.v*drift; if(c.x>W+200) { c.x=-380*c.s; c.y=Math.random()*H*.75; } x.globalAlpha=k==='niebla'?.5:.7; x.drawImage(FX.spr[dark?1:0],c.x,c.y,360*c.s,200*c.s); }); x.globalAlpha=1;
+  // las nubes van hacia donde sopla el viento (con calma casi quietas, con viento fuerte pasan rápido)
+  const [ux,uy]=fxDir(), drift=.12+FX.wind/11; FX.clouds.forEach(c=>{ c.x+=ux*c.v*drift; c.y+=uy*c.v*drift; fxWrap(c,360*c.s,200*c.s,W,H); x.globalAlpha=k==='niebla'?.5:.7; x.drawImage(FX.spr[dark?1:0],c.x,c.y,360*c.s,200*c.s); }); x.globalAlpha=1;
   // lluvia en diagonal
   if(wet){ const n=Math.min(500,Math.round((k==='llovizna'?90:180)+FX.mm*60)); while(FX.rain.length<n) FX.rain.push({x:Math.random()*W*1.3,y:Math.random()*H,v:12+Math.random()*10,l:16+Math.random()*24}); FX.rain.length=n;
     x.strokeStyle='rgba(225,236,250,.75)'; x.lineWidth=1.6; x.lineCap='round'; x.beginPath(); FX.rain.forEach(r=>{ r.y+=r.v; r.x-=r.v*(.18+FX.wind/120); if(r.y>H){ r.y=-20; r.x=Math.random()*W*1.3; } x.moveTo(r.x,r.y); x.lineTo(r.x+r.l*(.18+FX.wind/120),r.y-r.l); }); x.stroke();
@@ -6019,21 +6068,20 @@ async function loadWeather(){
       const n=pr.city||pr.town||pr.village||pr.locality||pr.district||pr.county||pr.name; if(!n) return; wxWhere='Tiempo en '+n+(pr.countrycode&&pr.countrycode!=='ES'?' ('+({FR:'Francia',AD:'Andorra',PT:'Portugal',IT:'Italia',CH:'Suiza',DE:'Alemania',GB:'Reino Unido',BE:'Bélgica',NL:'Países Bajos',AT:'Austria',MA:'Marruecos'}[pr.countrycode]||pr.country||pr.countrycode)+')':''); renderWeather(); if(FX.on) fxCard(); }).catch(()=>{}); }
   try{
     const u=`https://api.open-meteo.com/v1/forecast?latitude=${pts.map(x=>x.p[0].toFixed(3)).join(',')}&longitude=${pts.map(x=>x.p[1].toFixed(3)).join(',')}`+
-      `&hourly=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,precipitation_probability,precipitation,cloud_cover&wind_speed_unit=kmh&timezone=auto&forecast_days=2`;
+      `&hourly=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,precipitation_probability,precipitation,cloud_cover&wind_speed_unit=kmh&timezone=auto&forecast_days=7`;
     let j=await (await fetch(u)).json(); if(!Array.isArray(j)) j=[j];
     wxData=j; wxPts=pts; renderWeather();
-    if(FX.on){ const h=j[0].hourly, now=isoHour(new Date()); FX.i0=Math.max(0,h.time.indexOf(now)); FX.i=FX.i0; fxCard(); }
+    if(FX.on){ const h=j[0].hourly, now=isoHour(new Date()); FX.i0=Math.max(0,h.time.indexOf(now)); fxCard(); }
   }catch(e){ $('wx').innerHTML='<div class="where">Tiempo</div><div>No se ha podido cargar el tiempo.</div>'; }
 }
 function renderWeather(){
   if(!wxData||!wxData[0].hourly) return;
-  const h=wxData[0].hourly; let i=h.time.indexOf(wxHour); if(i<0) i=0;
+  const h=wxData[0].hourly, i0=Math.max(0,h.time.indexOf(isoHour(new Date()))); let i=h.time.indexOf(wxHour); if(i<i0){ i=i0; wxHour=h.time[i0]; }
   const v=k=>h[k][i], dn=dirName(v('wind_direction_10m'));
-  const opts=hourOptions().map(([val,lab])=>`<option value="${val}"${val===wxHour?' selected':''}>${lab}</option>`).join('');
   if($('wx').classList.contains('mini')){ const wc=v('weather_code'), ic=wc<=1?'☀️':wc<=2?'⛅':wc<=3?'☁️':wc<=48?'🌫️':wc<=67||(wc>=80&&wc<=82)?'🌧️':wc<=77||wc===85||wc===86?'❄️':'⛈️';
     $('wx').innerHTML=`<button class="wxpill" id="wxMore" aria-label="Ver el tiempo">${ic} ${Math.round(v('temperature_2m'))}°</button>`; $('wxMore').onclick=()=>{ $('wx').classList.toggle('mini'); renderWeather(); }; windLayer.clearLayers(); return; }
   $('wx').innerHTML=`<div class="where"><span>${wxWhere}</span><button class="more" id="wxMore">${$('wx').classList.contains('mini')?'Ver más':'Ver menos'}</button></div>
-    <div class="top2"><span class="temp">${Math.round(v('temperature_2m'))}°</span><span class="desc">${WMO[v('weather_code')]||''}<br>Lluvia ${v('precipitation_probability')??0}%</span></div>
+    <div class="top2"><span class="temp">${Math.round(v('temperature_2m'))}°</span><span class="desc"><b>${wxLabel(h,i,i0)}</b><br>${WMO[v('weather_code')]||''}<br>Lluvia ${v('precipitation_probability')??0}%</span></div>
     <div class="grid">
       <div><b>${Math.round(v('apparent_temperature'))}°</b><small>Sensación térmica</small></div>
       <div><b>${Math.round(v('wind_speed_10m'))} km/h</b><small>Viento</small></div>
@@ -6041,8 +6089,8 @@ function renderWeather(){
       <div><b>${dn[0]}</b><small>Viene del</small></div>
     </div>
     <div class="dir">${arrow(v('wind_direction_10m')+180,'#1677c9')}<span>Viento de ${dn[0].toLowerCase()} (${dn[1]}). La flecha indica hacia dónde sopla.</span></div>
-    <select id="wxHour" aria-label="Hora">${opts}</select>`;
-  $('wxHour').onchange=e=>{wxHour=e.target.value;renderWeather();};
+    ${wxPanel(h,i,i0,false)}`;
+  wxBind($('wx'));
   $('wxMore').onclick=()=>{ $('wx').classList.toggle('mini'); renderWeather(); };
   windLayer.clearLayers();
   if(route) wxPts.forEach((pt,k)=>{
