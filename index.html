@@ -632,6 +632,9 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .co-ren{border:0;background:#232a30;color:#cfd6dc;border-radius:8px;width:30px;height:30px;font-size:15px;cursor:pointer;flex:none}
 .co-cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.co-cmp>div{background:#232a30;border-radius:10px;padding:10px;font-size:13.5px;line-height:1.5}.co-cmp small{display:block;font-size:12px;color:#8b959e}
 .co-p{font-size:14px;line-height:1.55;margin:8px 0 0}
+.vl-k{background:#1a2025;border-radius:14px;padding:16px}.vl-top{display:flex;align-items:center;gap:16px;margin-bottom:12px}.vl-top>div{display:flex;flex-direction:column;gap:2px}.vl-t{font-size:19px}.vl-top span{font-size:14.5px;font-weight:700}
+.vl-k p{font-size:15px;line-height:1.6;margin:0 0 10px;color:#d6dce1}.vl-h{font-size:13.5px;font-weight:800;margin:12px 0 4px}
+.vl-why{margin-top:12px}.vl-why summary{cursor:pointer;color:#B6E22E;font-size:14px;font-weight:700;list-style:none}
 .co-set summary{cursor:pointer;color:#B6E22E;font-weight:700;font-size:14px}.co-set .g{display:grid;grid-template-columns:1fr 110px;gap:8px 10px;align-items:center;margin-top:10px;font-size:13.5px}.co-set input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #2c343b;background:#0f1215;color:#e8ecef;font:inherit;font-size:16px}
 .co-set small{grid-column:1/-1;color:#8b959e;font-size:12px;margin-top:-4px}
 .rprof{background:#13171b;color:#e8ecef;border-radius:14px;padding:10px 12px;margin-top:8px;display:flex;flex-direction:column;gap:4px;--muted:#8b959e}
@@ -1530,7 +1533,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795115501';   // versión de la app (la pone build.py)
+const BUILD='1795117163';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3315,9 +3318,45 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
   const why=(txt)=>`<details class="co-why"><summary>¿De dónde sale esto?</summary><p>${txt}</p></details>`;
   const next=(V[0]==='#f5a623'||V[0]==='#ff5a52'||(carga&&carga[0]==='Alta'))?`Que la próxima sea <b>más suave</b>: al menos 8 de cada 10 minutos en Z1 y Z2${c.lim?' y siempre por debajo de tu límite':''}. En las subidas, mira el pulso más que la velocidad.`:`<b>Sigue así</b>: salidas largas y suaves${c.lim?', por debajo de tu límite':''}. Es lo que más ayuda a coger fondo.`;
   const pc=v=>Math.round(v*100);
+  // ===== valoración completa: nota de 10 que se explica sola (premia ir suave y controlado, no ir rápido) =====
+  const R1=x=>Math.round(x*2)/2, f1=x=>String(x).replace('.',','), rows=[];
+  const pEasy=easy<0.8?-R1(Math.min(3,(0.8-easy)*5.5)):0; rows.push([`Has ido suave el ${pc(easy)} % del tiempo (lo bueno es 80 %)`,pEasy]);
+  const om=over/60, pOver=om>=1?-R1(Math.min(c.lim?4:3,om/(c.lim?8:11))):0; rows.push([c.lim?`${mins(over)} por encima de tu límite`:`${mins(over)} en zona dura`,pOver]);
+  const fAvg=better.length?better.reduce((a,q)=>a+q.ch,0)/better.length:null, pForma=fAvg==null?0:fAvg>0.03?0.5:fAvg<-0.03?-0.5:0;
+  if(fAvg!=null) rows.push([`Subidas: ${Math.abs(fAvg)<0.03?'igual que':Math.round(Math.abs(fAvg)*100)+' % '+(fAvg>0?'mejor':'peor')+' que'} las últimas veces`,pForma]);
+  const pRec=recT!=null&&recP!=null?(recT>=recP+3?0.5:recT<=recP-3?-0.5:0):0; if(recT!=null&&recP!=null) rows.push([`Recuperación ${pRec>0?'mejor que':pRec<0?'peor que':'igual que'} siempre`,pRec]);
+  const nota=Math.max(1,Math.min(10,10+rows.reduce((a,q)=>a+q[1],0))), nCol=nota>=8.5?'#46c86a':nota>=7?'#B6E22E':nota>=5?'#f5a623':'#ff5a52';
+  const intenso=pEasy+pOver<=-2;
+  const frase=nota>=8.5?'Muy bien: suave y controlada':nota>=7?(intenso?'Bien, aunque algo intensa':'Bien hecha'):nota>=5?'Bien hecha, pero demasiado intensa para ahora':'Demasiado dura para tu recuperación';
+  const zTxt=c.lim?'por encima de tu límite':'en zona dura', nCl=climbs.length;
+  let res=`Salida de ${fk(cum[n-1]/1000)} km y ${fmtH(movT(r,0,n-1))} en movimiento${nCl?`, con ${nCl===1?'una subida':nCl+' subidas'}`:''}. `;
+  res+= easy>=0.8&&om<1?'Has ido <b>suave casi todo el rato</b>, como te conviene ahora.':intenso?`Ha sido <b>más dura de lo que te conviene ahora</b>: solo el ${pc(easy)} % del tiempo has ido suave y has pasado <b>${mins(over)} ${zTxt}</b>${worst?`, sobre todo en la ${esc(worst.name.replace(/^Subida/,'subida'))}`:''}.`:`Has ido suave el ${pc(easy)} % del tiempo${om>=1?` y has pasado ${mins(over)} ${zTxt}`:''}.`;
+  const good=[], bad=[];
+  const top=climbs.filter(x=>x.bestDay&&x.hr&&(x.v/x.hr)/(x.bestDay.v/x.bestDay.hr)>1.02);
+  if(top.length) good.push(`Has hecho <b>${top.map(x=>esc(x.name.replace(/^Subida/,'la subida'))).join(' y ')}</b> mejor que nunca para el pulso que llevabas.`);
+  if(fAvg!=null&&fAvg>0.03) good.push(`Vas cogiendo forma: un ${Math.round(fAvg*100)} % más rápido con el mismo pulso que las últimas veces.`);
+  if(pRec>=0&&recT!=null&&recP!=null) good.push(`Después de las subidas has recuperado ${pRec>0?'mejor':'igual'} que siempre.`);
+  if(easy>=0.8) good.push(`Has ido suave el ${pc(easy)} % del tiempo.`);
+  if(om<1) good.push(`No has pasado de ${thTxt}.`);
+  const wB=climbs.filter(x=>x.bestDay&&x.hr&&(x.v/x.hr)/(x.bestDay.v/x.bestDay.hr)<0.98).sort((p,q)=>q.ov-p.ov)[0];
+  if(wB){ const sameV=Math.abs(wB.v-wB.bestDay.v)/wB.bestDay.v<0.06, dh=Math.round(wB.hr-wB.bestDay.hr);
+    bad.push(`En la ${esc(wB.name.replace(/^Subida/,'subida'))} ${sameV&&dh>0?`has ido casi igual de rápido que tu mejor día, pero con <b>${dh} pulsaciones más</b>`:`has ido un ${Math.round((1-(wB.v/wB.hr)/(wB.bestDay.v/wB.bestDay.hr))*100)} % peor que tu mejor día`}.${worst&&worst===wB?' Ahí es donde más te has pasado.':''}`); }
+  else if(worst) bad.push(`En la ${esc(worst.name.replace(/^Subida/,'subida'))} es donde más te has pasado (${mins(worst.ov)}).`);
+  if(easy<0.8&&!wB&&!worst) bad.push(`Más rato suave: hoy solo el ${pc(easy)} % del tiempo.`);
+  if(pRec<0) bad.push('Has recuperado peor que otras veces después de las subidas: puede ser cansancio.');
+  if(fAvg!=null&&fAvg<-0.03) bad.push(`En las subidas que repites te ha costado más que las últimas veces (un ${Math.round(-fAvg*100)} %).`);
+  if(!good.length) good.push('Has completado la salida. Con más salidas con pulso podré compararte mejor.');
+  if(!bad.length) bad.push('Nada importante. Sigue así.');
+  const CIRC=226.2, valHtml=`<div class="vl-k"><div class="vl-top"><svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true"><circle cx="43" cy="43" r="36" fill="none" stroke="#262e35" stroke-width="9"/><circle cx="43" cy="43" r="36" fill="none" stroke="${nCol}" stroke-width="9" stroke-linecap="round" transform="rotate(-90 43 43)" stroke-dasharray="${(CIRC*nota/10).toFixed(1)} ${CIRC}"/><text x="43" y="50" text-anchor="middle" font-size="26" font-weight="800" fill="#e8ecef" class="vl-n">${f1(nota)}</text><text x="43" y="66" text-anchor="middle" font-size="11" fill="#8b959e">de 10</text></svg>
+      <div><b class="vl-t">Valoración de la salida</b><span style="color:${nCol}">${frase}</span></div></div>
+    <p>${res}</p>
+    <div class="vl-h" style="color:#46c86a">✓ Lo bueno</div><p>${good.join(' ')}</p>
+    <div class="vl-h" style="color:#f5a623">⚠ Lo que mejorar</div><p>${bad.join(' ')}</p>
+    <div class="vl-h" style="color:#B6E22E">➜ Para la próxima</div><p style="margin:0">${next}</p>
+    <details class="vl-why"><summary>¿De dónde sale el ${f1(nota)}?</summary><div class="co-row"><span>Empiezas con</span><b>10</b></div>${rows.map(q=>`<div class="co-row"><span>${q[0]}</span><b style="color:${q[1]<0?'#ff5a52':q[1]>0?'#46c86a':'#cfd6dc'}">${q[1]>0?'+':q[1]<0?'−':''}${f1(Math.abs(q[1]))}</b></div>`).join('')}<div class="co-row"><span><b>Nota</b></span><b>${f1(nota)}</b></div>
+      <p style="font-size:12.5px;color:#8b959e;margin:8px 0 0">La nota premia ir suave y por debajo de ${c.lim?'tu límite':'la zona dura'}, no ir rápido: un día lento y controlado puede sacar un 9 o un 10. Ir suave: 80 % del tiempo en Z1-Z2 (reparto 80/20). ${c.lim?'Límite: el que te ha dado tu médico.':'Zona dura: más del 80 % de tu pulso máximo.'} Subidas y recuperación: comparadas contigo mismo en las mismas subidas y en tus últimas salidas.</p></details></div>`;
   box.innerHTML=`<div class="co-h"><div><b>Estudio de tu salida</b><br><small>${fk(cum[n-1]/1000)} km · ${fmtH(movT(r,0,n-1))} en movimiento</small></div><span class="co-lock">🔒 Solo lo ves tú</span></div>
-    <div class="co-v" style="--c:${V[0]}"><div class="ic" style="color:${V[0]}">${V[1]==='✓'?'✓':V[1]==='!'?'⚠':'≈'}</div><b>${V[2]}</b><span>${V[3]}</span>${why(c.lim?'Cuenta el tiempo con el pulso por encima del límite que te ha puesto tu médico: menos de 2 min = muy bien, menos de 10 = bien, menos de 30 = te has pasado, más = te has pasado mucho.':'Sin límite del médico, se mira cuánto tiempo has ido suave (zonas Z1 y Z2). Lo recomendado para coger fondo es que al menos 8 de cada 10 minutos sean suaves (reparto 80/20, Seiler). Pon tu límite en «Tus datos» cuando te lo dé el médico.')}</div>
-    <div>${L.map(q=>`<div class="co-l"><i>${q[0]}</i><span>${q[1]}</span></div>`).join('')}</div>
+    ${valHtml}
     <div class="co-box"><div class="t">Tu pulso y ${c.lim?'tu límite':'la zona dura'} <small>${th} ppm</small></div>
       <div class="co-g"><div><small>Tiempo por encima</small><b style="color:${over>=60?'#ff5a52':'#46c86a'}">${mins(over)}</b><small>${pc(over/(r.times[n-1]-r.times[0]||1))} % de la salida</small></div>
         <div><small>El rato más largo seguido</small><b>${longest&&longest.s>=30?mins(longest.s):'–'}</b><small>${longest&&longest.s>=30?esc(where(longest.a)):'ninguno'}</small></div>
