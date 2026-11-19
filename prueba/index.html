@@ -1536,7 +1536,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795124848';   // versión de la app (la pone build.py)
+const BUILD='1795124937';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3322,7 +3322,7 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
   const why=(txt)=>`<details class="co-why"><summary>¿De dónde sale esto?</summary><p>${txt}</p></details>`;
   // «Para la próxima»: consejos concretos con tus subidas y tus números (y con frases distintas según la salida)
   const seed=[...String(r.id||r.date)].reduce((h,ch)=>(h*31+ch.charCodeAt(0))>>>0,7), pick=arr=>arr[seed%arr.length];
-  const dura=(V[0]==='#f5a623'||V[0]==='#ff5a52'||(carga&&carga[0]==='Alta')), tips=[];
+  const dura=(V[0]==='#f5a623'||V[0]==='#ff5a52'), tips=[];
   if(dura){ tips.push(pick([`Plantéala como un paseo largo más que como un entreno: lo que más te ayuda ahora es sumar horas tranquilas, no apretar.`,
       `El objetivo de la próxima: volver a casa sin haber pasado de ${th} ppm ni una vez.`,
       `Menos gas y más kilómetros tranquilos: la forma vuelve antes yendo suave muchas veces que yendo fuerte pocas.`,
@@ -3334,7 +3334,7 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
                `En la ${nm}, la velocidad no importa: mira el pulso y que no pase de ${th}.`])); });
     tips.push(pick([`Pon el pulso en grande en la pantalla del ciclocomputador, para verlo sin pensar.`,`Un truco: en las subidas, mira más el pulso que la velocidad.`,`Si te notas con fuerzas, alarga la salida en vez de apretar: más rato suave suma más que poco rato fuerte.`])); }
   else { tips.push(pick([`<b>Sigue así.</b> Así es como se recupera el fondo: muchas salidas tranquilas.`,`<b>Muy buena salida para ahora.</b> Repite este tipo de ritmo.`,`<b>Así, perfecto.</b> Constancia y tranquilidad.`]));
-    tips.push(pick([`Si te encuentras bien, la próxima puede ser 15-20 minutos más larga, al mismo ritmo.`,`Puedes ir alargando poco a poco, siempre con el pulso como hoy.`,`Si mañana te notas cansado, descansa: también cuenta.`])); }
+    tips.push(carga&&carga[0]==='Alta'?'Eso sí, ha sido de las salidas con más carga para ti: si mañana notas las piernas, descansa, que también cuenta.':pick([`Si te encuentras bien, la próxima puede ser 15-20 minutos más larga, al mismo ritmo.`,`Puedes ir alargando poco a poco, siempre con el pulso como hoy.`,`Si mañana te notas cansado, descansa: también cuenta.`])); }
   const next=tips.join(' ');
   const pc=v=>Math.round(v*100);
   // ===== valoración completa: nota de 10 que se explica sola (premia ir suave y controlado, no ir rápido) =====
