@@ -1029,7 +1029,13 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
   </form>
 
   <section class="pblock" id="pAmigos" hidden>
-    <div class="pb-h"><h3>Amigos</h3><button class="pb-btn" id="frFind">＋ Buscar</button></div>
+    <div class="pb-h"><h3>Amigos</h3><span style="display:flex;gap:6px"><button class="pb-btn" id="frInvite" hidden>Invitar</button><button class="pb-btn" id="frFind">＋ Buscar</button></span></div>
+    <div class="grinv" id="frInv" hidden>
+      <p class="svp" id="frInvTxt">Para invitar a alguien que <b>no es de ninguna grupeta</b>. Escribe un nombre para su código (por ejemplo <b>Jordi</b>). Al crear su cuenta, os seguís los dos y veis vuestras salidas. Cada código sirve una sola vez.</p>
+      <div class="inv-add" id="frInvAdd"><input id="invCode2" placeholder="Ej.: Jordi" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn2">Crear</button></div>
+      <div class="grinv-ok" id="frInvOk" hidden><p class="svp" id="frInvOkT"></p><div class="actions"><a class="wa" id="frInvWa" target="_blank" rel="noopener">Enviar por WhatsApp</a><button id="frInvCopy">Copiar</button></div></div>
+      <button class="pb-btn ghost" id="frInvX">Cerrar</button>
+    </div>
     <div id="frReq"></div>
     <ul class="frlist" id="frList"></ul>
   </section>
@@ -1536,7 +1542,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795153498';   // versión de la app (la pone build.py)
+const BUILD='1795153812';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -6741,7 +6747,7 @@ $('bell').onclick=()=>{
 };
 $('avClose').onclick=()=>$('avModal').hidden=true;
 // invitar (solo David)
-function paintAdmin(){ $('ajAdmin').hidden=!(me&&me.admin); if(!(me&&me.admin)) $('grRev').hidden=true; }
+function paintAdmin(){ $('ajAdmin').hidden=!(me&&me.admin); $('frInvite').hidden=!(me&&me.admin); if(!(me&&me.admin)) $('grRev').hidden=true; }
 const invMsg=code=>`¡Hola! Te invito a Ichnos 🚴\n1) Abre este enlace en el móvil: ${APP_URL}\n2) Pulsa "Crear cuenta" y pon este código: ${code}\n3) Elige tu usuario y tu contraseña.\nEn el iPhone: en Safari pulsa Compartir → "Añadir a pantalla de inicio" y te queda como una app.\n\nVídeo con todos los pasos (1 minuto y medio): https://carreterobike.github.io/ruta-fuentes/video/ichnos-grupeta.mp4`;
 async function copyTxt(t,ok){ try{ await navigator.clipboard.writeText(t); toast(ok,4500); }catch(e){ await ask('Copia este mensaje',t,'Vale','Cerrar'); } }
 async function loadAdmin(){
@@ -6781,6 +6787,15 @@ const clvMsg=code=>`Para poner una contraseña nueva en Ichnos:\n1) Abre ${APP_U
 function invShow(msg,txt){ $('grInvOk').hidden=false; $('grInvAdd').hidden=true; $('grInvTxt').hidden=true; $('grInvOkT').innerHTML=txt; $('grInvWa').href='https://wa.me/?text='+encodeURIComponent(msg); $('grInvCopy').onclick=()=>copyTxt(msg,'Mensaje copiado. Pégalo en WhatsApp.'); }
 function invClose(){ $('grInv').hidden=true; $('grInvOk').hidden=true; $('invCode').value=''; $('grInvite').classList.remove('ghost'); }
 $('grInvX').onclick=invClose;
+// invitar a alguien sin grupeta (desde Perfil → Amigos, solo el administrador)
+function frInvClose(){ $('frInv').hidden=true; $('frInvOk').hidden=true; $('frInvAdd').hidden=false; $('frInvTxt').hidden=false; $('invCode2').value=''; $('frInvite').classList.remove('ghost'); }
+$('frInvite').onclick=()=>{ if(!$('frInv').hidden){ frInvClose(); return; } $('frInv').hidden=false; $('frInvite').classList.add('ghost'); $('invCode2').focus(); };
+$('frInvX').onclick=frInvClose;
+$('invBtn2').onclick=async()=>{ const code=$('invCode2').value.trim(); if(!code){ $('invCode2').focus(); return; }
+  try{ await api('/admin/invitar',{method:'POST',body:{code,g:null}}); loadAdmin(); const msg=invMsg(code);
+    $('frInvOk').hidden=false; $('frInvAdd').hidden=true; $('frInvTxt').hidden=true; $('frInvOkT').innerHTML=`Código <b>${esc(code)}</b> creado (sin grupeta). Mándaselo:`;
+    $('frInvWa').href='https://wa.me/?text='+encodeURIComponent(msg); $('frInvCopy').onclick=()=>copyTxt(msg,'Mensaje copiado. Pégalo en WhatsApp.'); }
+  catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); } };
 $('invBtn').onclick=async()=>{ const code=$('invCode').value.trim(); if(!code){ $('invCode').focus(); return; } const g=curGroup();
   try{ await api('/admin/invitar',{method:'POST',body:{code,g:g?g.id:null}}); $('invCode').value=''; loadAdmin(); invShow(invMsg(code),`Código <b>${esc(code)}</b> creado${g?` (entra en ${esc(g.name)})`:''}. Mándaselo:`); }
   catch(e){ toast(e.status?e.message:'No hay conexión ahora.',5000); } };
