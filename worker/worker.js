@@ -212,7 +212,7 @@ export default {
       }
       if (P.startsWith('/icu/api/')) {
         const path = P.slice(9);
-        if (!/^(athlete\/0\/activities|activity\/[\w-]+(\/file)?)$/.test(path)) return J({ error: 'ruta' }, 404);
+        if (!/^(athlete\/0\/activities|athlete\/0\/events|activity\/[\w-]+(\/file)?)$/.test(path)) return J({ error: 'ruta' }, 404);
         const c = JSON.parse(await KV.get('icu:' + me.id) || 'null');
         if (!c) return J({ error: 'sin conectar' }, 409);
         const s = await fetch('https://intervals.icu/api/v1/' + path + url.search, { headers: { Authorization: c.b ? 'Bearer ' + c.b : 'Basic ' + btoa('API_KEY:' + c.k) } });
