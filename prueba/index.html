@@ -1542,7 +1542,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795153812';   // versión de la app (la pone build.py)
+const BUILD='1795154656';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -6748,7 +6748,7 @@ $('bell').onclick=()=>{
 $('avClose').onclick=()=>$('avModal').hidden=true;
 // invitar (solo David)
 function paintAdmin(){ $('ajAdmin').hidden=!(me&&me.admin); $('frInvite').hidden=!(me&&me.admin); if(!(me&&me.admin)) $('grRev').hidden=true; }
-const invMsg=code=>`¡Hola! Te invito a Ichnos 🚴\n1) Abre este enlace en el móvil: ${APP_URL}\n2) Pulsa "Crear cuenta" y pon este código: ${code}\n3) Elige tu usuario y tu contraseña.\nEn el iPhone: en Safari pulsa Compartir → "Añadir a pantalla de inicio" y te queda como una app.\n\nVídeo con todos los pasos (1 minuto y medio): https://carreterobike.github.io/ruta-fuentes/video/ichnos-grupeta.mp4`;
+const invMsg=code=>`¡Hola! Te invito a Ichnos, la app de bici 🚴\n\n1) Abre este enlace en el móvil: ${APP_URL}\n   · iPhone: en Safari pulsa Compartir (el cuadrado con la flecha) → «Añadir a pantalla de inicio» → Añadir.\n   · Android: en Chrome, los tres puntos → «Añadir a pantalla de inicio».\n   Te queda un icono como una app. Ábrela siempre desde ahí.\n2) Pulsa «Crear cuenta» y pon este código: ${code}\n3) Elige tu usuario y tu contraseña.\n4) En Ajustes (la rueda) → Intervals.icu sigue los 4 pasos: crear cuenta gratis, conectar tu Garmin o COROS, copiar la clave y pegarla. Así nos vemos las salidas. Son 5 minutos y solo se hace una vez.\n5) En Ajustes → «Conectar con Strava» → Autorizar. Para tus tiempos en los segmentos (esos solo los ves tú).\n6) En Ajustes → «Activar avisos».\n\nVídeo con todos los pasos (minuto y medio): https://carreterobike.github.io/ruta-fuentes/video/ichnos-empezar.mp4`;
 async function copyTxt(t,ok){ try{ await navigator.clipboard.writeText(t); toast(ok,4500); }catch(e){ await ask('Copia este mensaje',t,'Vale','Cerrar'); } }
 async function loadAdmin(){
   if(!me||!me.admin) return; let j;
