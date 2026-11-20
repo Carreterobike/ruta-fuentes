@@ -43,7 +43,7 @@ jobs:
           tag = "v1"
           new_sqlite_classes = ["GStore"]
           [triggers]
-          crons = ["*/10 * * * *"]
+          crons = ["*/2 * * * *"]
           TOML
           sed -i 's/^ *//' worker/wrangler.toml
           cat worker/wrangler.toml

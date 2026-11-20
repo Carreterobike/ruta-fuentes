@@ -519,7 +519,7 @@ export default {
       return json({ error: 'Algo ha fallado: ' + (e.message || e) }, 500, cors);
     }
   },
-  // cada 10 minutos: dar de alta el aviso de Strava (una vez) y mirar si hay salidas nuevas en Intervals.icu
+  // cada 2 minutos: dar de alta el aviso de Strava (una vez) y mirar si hay salidas nuevas en Intervals.icu
   async scheduled(ev, env, ctx) { CTX = ctx || null; if (!env.KV) return;
     const run = (async () => { try { await ensureHook(env, env.KV); } catch (e) { } try { await stravaRetry(env, env.KV); } catch (e) { } try { await pollIcu(env, env.KV); } catch (e) { } })();
     if (ctx && ctx.waitUntil) ctx.waitUntil(run); else await run; },
@@ -604,6 +604,9 @@ async function icuImport(KV, c, uid, a) {
     bike: await wBike(KV, uid, tipo, null), km: th.km, upRaw: th.upRaw, upDev: a.total_elevation_gain != null ? Math.round(a.total_elevation_gain) : null,
     movDev: a.moving_time != null ? Math.round(a.moving_time) : null, elDev: a.elapsed_time != null ? Math.round(a.elapsed_time) : null, kmDev: a.distance != null ? Math.round(a.distance) : null, srv: 1 };
   return (await wStore(KV, uid, ride, 'i' + a.id)) ? ride : null; }
+// un solo aviso por salida aunque llegue por Strava y por Intervals (misma hora de salida ±3 min)
+async function ownOnce(KV, uid, st) { if (!st) return true; const k = 'pown:' + uid, l = JSON.parse(await KV.get(k) || '[]');
+  if (l.some(x => Math.abs(x - st) < 180000)) return false; l.unshift(st); await KV.put(k, JSON.stringify(l.slice(0, 40)), { expirationTtl: 30 * 86400 }); return true; }
 const upTxt = (a, km) => `Tu salida${a.name ? ' «' + a.name + '»' : ''} se ha subido sola a Ichnos${km ? ' · ' + km : ''}${a.total_elevation_gain ? ' · +' + Math.round(a.total_elevation_gain) + ' m' : ''}. Tócala para verla.`;
 // Strava: se sube la salida y luego se avisa al dueño (las normas de Strava no dejan enseñar sus datos a otros)
 async function onStravaEvent(env, KV, ev) {
@@ -615,11 +618,12 @@ async function onStravaEvent(env, KV, ev) {
 }
 async function stravaDo(env, KV, uid, id, tries) {
   let res = null; try { res = await stravaImport(env, KV, uid, id); } catch (e) { }
-  if (!res) {   // Strava a veces tarda en tener la salida lista: se vuelve a probar cada 10 minutos (hasta 6 veces)
-    if (tries < 6) { const q = JSON.parse(await KV.get('sretry') || '[]').filter(x => x.id !== id); q.push({ uid, id, n: tries + 1 }); await KV.put('sretry', JSON.stringify(q.slice(-50))); }
+  if (!res) {   // Strava a veces tarda en tener la salida lista: se vuelve a probar cada 2 minutos (hasta 20 veces)
+    if (tries < 20) { const q = JSON.parse(await KV.get('sretry') || '[]').filter(x => x.id !== id); q.push({ uid, id, n: tries + 1 }); await KV.put('sretry', JSON.stringify(q.slice(-50))); }
     return; }
   await KV.put('pn:s:' + id, '1', { expirationTtl: 30 * 86400 });
   if (res.skip || !(await pPrefs(KV, uid)).own) return;
+  if (!(await ownOnce(KV, uid, Date.parse(res.a.start_date || '')))) return;
   await pushTo(KV, uid, { title: 'Ichnos', body: upTxt(res.a, res.a.distance ? kmTxt(res.a.distance) + ' km' : ''), url: './#salidas', tag: 's' + id });
 }
 async function stravaRetry(env, KV) {
@@ -659,7 +663,7 @@ async function pollIcu(env, KV) {
       for (const gid of JSON.parse(await KV.get('ug:' + u.id) || '[]')) { const g = JSON.parse(await KV.get('gr:' + gid) || 'null'); if (g) Object.keys(g.members || {}).forEach(x => to.add(x)); }
       to.delete(u.id);
       for (const x of to) if ((await pPrefs(KV, x)).fr) await pushTo(KV, x, { title: 'Ichnos', body: `${who} ha salido ${tipoTxt(a.type)}${km ? ': ' + km : ''}${up ? ' · +' + up + ' m' : ''}${a.name ? ' · «' + a.name + '»' : ''}.`, url: './#grupeta', tag: 'a' + a.id });
-      if (ride && !(await KV.get('tok:' + u.id)) && (await pPrefs(KV, u.id)).own) await pushTo(KV, u.id, { title: 'Ichnos', body: upTxt(a, km), url: './#salidas', tag: 'i' + a.id });
+      if (ride && (await pPrefs(KV, u.id)).own && (await ownOnce(KV, u.id, st))) await pushTo(KV, u.id, { title: 'Ichnos', body: upTxt(a, km), url: './#salidas', tag: 'i' + a.id });
     }
   }
 }
