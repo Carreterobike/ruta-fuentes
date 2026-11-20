@@ -424,6 +424,8 @@ details.help p{margin:6px 0 0}
 .warnc{color:#c62828}
 
 
+.grn{display:flex;align-items:center;gap:6px}.grren{border:0;background:transparent;color:var(--muted);font-size:18px;padding:2px 6px;cursor:pointer}
+.gr-x{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.gr-x .danger{color:#c92a2a;border-color:#e3a3a3}
 /* entreno */
 .en-nav{display:flex;gap:6px}.en-nav button{width:34px;height:34px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font-size:20px;font-weight:700;line-height:1}
 .en-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}.en-sum div{background:var(--soft);border-radius:12px;padding:8px 4px}.en-sum b{display:block;font-size:17px}.en-sum small{color:var(--muted);font-size:11.5px}.en-sum .lime{color:#6f8f00}
@@ -1061,17 +1063,6 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <button type="button" class="btn-ghost" id="pCancel">Cancelar</button>
   </form>
 
-  <section class="pblock" id="pAmigos" hidden>
-    <div class="pb-h"><h3>Amigos</h3><span style="display:flex;gap:6px"><button class="pb-btn" id="frInvite" hidden>Invitar</button><button class="pb-btn" id="frFind">＋ Buscar</button></span></div>
-    <div class="grinv" id="frInv" hidden>
-      <p class="svp" id="frInvTxt">Para invitar a alguien que <b>no es de ninguna grupeta</b>. Escribe un nombre para su código (por ejemplo <b>Jordi</b>). Al crear su cuenta, os seguís los dos y veis vuestras salidas. Cada código sirve una sola vez.</p>
-      <div class="inv-add" id="frInvAdd"><input id="invCode2" placeholder="Ej.: Jordi" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn2">Crear</button></div>
-      <div class="grinv-ok" id="frInvOk" hidden><p class="svp" id="frInvOkT"></p><div class="actions"><a class="wa" id="frInvWa" target="_blank" rel="noopener">Enviar por WhatsApp</a><button id="frInvCopy">Copiar</button></div></div>
-      <button class="pb-btn ghost" id="frInvX">Cerrar</button>
-    </div>
-    <div id="frReq"></div>
-    <ul class="frlist" id="frList"></ul>
-  </section>
   <section class="pblock" id="pStats">
     <div class="pb-h"><h3>Tus números</h3><select id="stFilter" aria-label="Qué salidas contar"></select></div>
     <div class="segc" id="stPer"><button data-p="w" class="on">Semana</button><button data-p="m">Mes</button><button data-p="y">Año</button><button data-p="a">Siempre</button></div>
@@ -1094,6 +1085,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <!-- ============ PÁGINA 2: SALIDAS ============ -->
 <main class="page off" id="pgGrupeta">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
+  <div class="grtabs" id="grTabs"></div>
   <section class="pblock" id="grNone">
     <div class="pb-h"><h3>Tu grupeta</h3><button class="pb-btn ghost" id="grNoneX" hidden>Cancelar</button></div>
     <p class="svp">Crea tu grupeta o únete con el código que te pasen. Dentro os veis todos las salidas sin tener que seguiros uno a uno, proponéis salidas y habláis.</p>
@@ -1103,7 +1095,6 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <div class="inv-add"><input id="grJoinCode" placeholder="Código de la grupeta" autocapitalize="characters" autocorrect="off" spellcheck="false"><button class="btn-main" id="grJoinBtn">Unirme</button></div>
   </section>
   <div id="grOne" hidden>
-    <div class="grtabs" id="grTabs"></div>
     <section class="pblock" id="grRev" hidden>
       <div class="pb-h"><h3>Para revisar <i class="revn" id="propN"></i></h3></div>
       <p class="svp">Lo que te mandan los de la grupeta. Solo lo ves tú.</p>
@@ -1114,7 +1105,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
       <div class="gsal" id="grSal"></div>
     </section>
     <section class="pblock">
-      <div class="pb-h"><h3 id="grName"></h3><button class="pb-btn" id="grInvite">Invitar</button></div>
+      <div class="pb-h"><h3 class="grn"><span id="grName"></span><button class="grren" id="grRen" hidden aria-label="Cambiar el nombre de la grupeta">✎</button></h3><button class="pb-btn" id="grInvite">Invitar</button></div>
       <div class="grinv" id="grInv" hidden>
         <p class="svp" id="grInvTxt">Escribe un nombre para su código (por ejemplo <b>Burri-SB</b>). Al crear su cuenta entra directo en esta grupeta. Cada código sirve una sola vez.</p>
         <div class="inv-add" id="grInvAdd"><input id="invCode" placeholder="Ej.: Burri-SB" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn">Crear</button></div>
@@ -1122,12 +1113,26 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
         <button class="pb-btn ghost" id="grInvX">Cerrar</button>
       </div>
       <div class="grmem" id="grMem"></div>
+      <div class="gr-x"><button class="btn-ghost" id="grLeave">Salir de la grupeta</button><button class="btn-ghost danger" id="grDel" hidden>Borrar la grupeta</button></div>
     </section>
     <section class="pblock">
       <div class="pb-h"><h3>Chat de la grupeta</h3></div>
       <ul class="chat" id="grChat"></ul>
       <form class="inv-add" id="grChatF"><input id="grChatT" placeholder="Escribe a la grupeta…" maxlength="1000" autocomplete="off"><button class="btn-main">Enviar</button></form>
     </section>
+  </div>
+  <div id="grFriends" hidden>
+  <section class="pblock" id="pAmigos" hidden>
+    <div class="pb-h"><h3>Amigos</h3><span style="display:flex;gap:6px"><button class="pb-btn" id="frInvite" hidden>Invitar</button><button class="pb-btn" id="frFind">＋ Buscar</button></span></div>
+    <div class="grinv" id="frInv" hidden>
+      <p class="svp" id="frInvTxt">Para invitar a alguien que <b>no es de ninguna grupeta</b>. Escribe un nombre para su código (por ejemplo <b>Jordi</b>). Al crear su cuenta, os seguís los dos y veis vuestras salidas. Cada código sirve una sola vez.</p>
+      <div class="inv-add" id="frInvAdd"><input id="invCode2" placeholder="Ej.: Jordi" maxlength="30" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn-main" id="invBtn2">Crear</button></div>
+      <div class="grinv-ok" id="frInvOk" hidden><p class="svp" id="frInvOkT"></p><div class="actions"><a class="wa" id="frInvWa" target="_blank" rel="noopener">Enviar por WhatsApp</a><button id="frInvCopy">Copiar</button></div></div>
+      <button class="pb-btn ghost" id="frInvX">Cerrar</button>
+    </div>
+    <div id="frReq"></div>
+    <ul class="frlist" id="frList"></ul>
+  </section>
   </div>
   <div id="grFeedSlot"></div>
   <section class="pblock" id="grEmpty" hidden>
@@ -1458,7 +1463,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
   <button data-pg="pgMapa" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Mapa</span></button>
   <button data-pg="pgSalidas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>Salidas</span></button>
   <button class="plus m-only" id="navPlus" aria-label="Crear ruta"><i><svg class="pl-a" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><svg class="pl-b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span class="pl-t">Terminar</span></button>
-  <button data-pg="pgGrupeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 14.4c.6-.3 1.3-.4 2-.4 2.8 0 4 2 4 5"/></svg><span>Grupeta</span></button>
+  <button data-pg="pgGrupeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 14.4c.6-.3 1.3-.4 2-.4 2.8 0 4 2 4 5"/></svg><span>Social</span></button>
   <button data-pg="pgEntreno" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg><span>Entreno</span></button>
   <button data-pg="pgPerfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Perfil</span></button>
 </nav>
@@ -1611,7 +1616,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795208100';   // versión de la app (la pone build.py)
+const BUILD='1795213477';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -6676,7 +6681,7 @@ async function loadFriends(){
 const EMPTY_ART={"bike": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 56c18-6 30 2 44-4s22-2 34-6\" stroke=\"var(--line)\" stroke-width=\"3\"/><circle cx=\"22\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"62\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M22 40l12-18h18l10 18M34 22l8 18h20M48 14h8\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"70\" cy=\"10\" r=\"5\" fill=\"var(--accent)\"/></svg>", "people": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"30\" cy=\"22\" r=\"10\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M12 56c2-12 10-18 18-18s16 6 18 18\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"58\" cy=\"24\" r=\"8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M50 40c3-2 6-3 8-3 7 0 13 5 15 15\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"74\" cy=\"12\" r=\"6\" fill=\"var(--accent)\"/><path d=\"M74 9v6M71 12h6\" stroke=\"var(--accent-ink)\" stroke-width=\"2\"/></svg>", "chat": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 14h40a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H26l-10 8v-8h-6a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M60 26h14a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6h-2v6l-8-6h-8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"20\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"30\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"40\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/></svg>", "route": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 50c10-4 6-18 18-20s14 10 24 6 8-18 16-22\" stroke=\"var(--ink)\" stroke-width=\"3\" stroke-dasharray=\"1 7\"/><circle cx=\"14\" cy=\"50\" r=\"6\" fill=\"var(--good)\"/><path d=\"M72 14V2m0 0h10l-3 4 3 4H72\" stroke=\"var(--ink)\" stroke-width=\"2.6\" fill=\"var(--accent)\"/><rect x=\"36\" y=\"44\" width=\"30\" height=\"16\" rx=\"3\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/><path d=\"M36 50h30M44 41v6M58 41v6\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/></svg>", "bell": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M28 26a15 15 0 0 1 30 0c0 16 7 20 7 20H21s7-4 7-20\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M38 54a5 5 0 0 0 10 0\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M16 14l-6-4M70 14l6-4M12 30H4M74 30h8\" stroke=\"var(--accent-strong)\" stroke-width=\"3\"/></svg>"};
 const emptyB=(art,title,txt,btn,act)=>`<li class="emptyb">${EMPTY_ART[art]||''}<b>${title}</b><span>${txt}</span>${btn?`<button type="button" data-empty="${act}">${btn}</button>`:''}</li>`;
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-empty]'); if(!b) return; const a=b.dataset.empty;
-  if(a==='ajustes'){ showPage('pgAjustes'); } else if(a==='amigos'){ showPage('pgPerfil'); $('frFind').click(); } else if(a==='ruta'){ showPage('pgMapa'); $('navPlus').click(); } });
+  if(a==='ajustes'){ showPage('pgAjustes'); } else if(a==='amigos'){ gMode='a'; store.set('ichnos-gmode','a'); showPage('pgGrupeta'); renderGroup(); $('frFind').click(); } else if(a==='ruta'){ showPage('pgMapa'); $('navPlus').click(); } });
 // amigos favoritos (solo el administrador): te avisa cuando salen y el aviso abre su salida
 const STAR_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
 let favs=new Set();
@@ -6786,7 +6791,7 @@ let feedItems=[], feedShown=10, feedT=0;
 async function loadFeed(force){
   if(!me){ $('pFeed').hidden=true; return; }
   const ids=[...new Set([...Object.keys(fw.out).filter(id=>fw.out[id]==='ok'),...groupMates()])];
-  $('pFeed').hidden=!ids.length; $('grEmpty').hidden=!!ids.length||!!groups.length; if(!ids.length) return;
+  $('pFeed').hidden=!ids.length; $('grEmpty').hidden=!!ids.length||gMode!=='a'; if(!ids.length) return;
   if(!force&&Date.now()-feedT<120000){ renderFeed(); return; } feedT=Date.now();
   if(!feedItems.length) $('feedList').innerHTML=skelCards(2);
   const all=[];
@@ -6820,14 +6825,14 @@ function paintBell(){ $('bell').hidden=!me; const seen=store.get('ichnos-avisto'
 function avText(a){ const w=`<b>${esc(uName(a.u))}</b>`, rn=a.n?` «${esc(a.n)}»`:'';
   return {seg:`${w} quiere seguirte.`,acep:`${w} ha aceptado que le sigas. Ya ves sus salidas.`,alta:`${w} se ha unido a Ichnos con tu invitación.`,
     like:`A ${w} le gusta tu salida${rn}.`,com:`${w} ha comentado en tu salida${rn}: “${esc(a.x||'')}”`,
-    gjoin:`${w} se ha unido a tu grupeta «${esc(a.x||'')}».`,gsal:`${w} propone una salida en «${esc(a.n||'tu grupeta')}»: ${esc(a.x||'')}.`,gvoy:`${w} se apunta a tu salida «${esc(a.x||'')}».`,
+    gjoin:`${w} se ha unido a tu grupeta «${esc(a.x||'')}».`,gdel:`${w} ha borrado la grupeta «${esc(a.x||'')}».`,gsal:`${w} propone una salida en «${esc(a.n||'tu grupeta')}»: ${esc(a.x||'')}.`,gvoy:`${w} se apunta a tu salida «${esc(a.x||'')}».`,
     prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,bug:`<i class="ico ico-alert"></i>${w} dice que algo va mal: “${esc(a.x||'')}”`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
 $('bell').onclick=()=>{
   const seen=store.get('ichnos-avisto',0);
   $('avList').innerHTML=avisos.length?avisos.map((a,i)=>`<li data-i="${i}" class="${a.t>seen?'new':''}">${avText(a)}<small>${fmtDT(a.t)}</small></li>`).join(''):emptyB('bell','No tienes avisos','Aquí verás los me gusta, comentarios y salidas de tu grupeta.');
   $('avList').querySelectorAll('li').forEach(li=>li.onclick=()=>{ const a=avisos[+li.dataset.i]; $('avModal').hidden=true;
     if((a.k==='like'||a.k==='com')){ const r=rides.find(x=>x.id===a.r); if(r) openRide(r); }
-    else if(a.k==='seg'){ showPage('pgPerfil'); $('pAmigos').scrollIntoView({behavior:'smooth'}); }
+    else if(a.k==='seg'){ gMode='a'; store.set('ichnos-gmode','a'); showPage('pgGrupeta'); renderGroup(); }
     else if(a.k==='prop'){ showPage('pgGrupeta'); loadAdmin().then(()=>{ if(!$('grRev').hidden) $('grRev').scrollIntoView({behavior:'smooth'}); }); }
     else if(a.k==='propok'||a.k==='propno'){ }
     else if(a.k==='bug'){ openBugs(); }
@@ -6901,15 +6906,27 @@ async function loadGroups(){
   renderGroup(); if(gCur) loadGroupData();
   if(typeof route!=='undefined') $('gpropBtn').hidden=!(route&&groups.length);
 }
+let gMode=store.get('ichnos-gmode','g');   // g = una grupeta · a = amigos
 function renderGroup(){
-  const g=curGroup(); $('grNone').hidden=!!g||!me; $('grOne').hidden=!g; $('grNoneX').hidden=!g;
-  $('grTabs').innerHTML=groups.length>1||g?groups.map(x=>`<button data-g="${x.id}" class="${x.id===gCur?'on':''}">${esc(x.name)}</button>`).join('')+'<button data-g="" aria-label="Crear o unirme a otra grupeta">＋</button>':'';
-  $('grTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!b.dataset.g){ const op=$('grNone').hidden; $('grNone').hidden=!op; b.classList.toggle('on',op); if(op) $('grNone').scrollIntoView({behavior:'smooth'}); return; } gCur=b.dataset.g; syncRaw.set('ichnos-gcur',gCur); invClose(); renderGroup(); loadGroupData(); });
+  const g=curGroup(), am=gMode==='a';
+  $('grFriends').hidden=!am||!me; $('grOne').hidden=am||!g; $('grNone').hidden=am||!!g||!me; $('grNoneX').hidden=!g;
+  $('grTabs').innerHTML=me?groups.map(x=>`<button data-g="${x.id}" class="${!am&&x.id===gCur?'on':''}">${esc(x.name)}</button>`).join('')+`<button data-g="__a" class="${am?'on':''}">Amigos</button><button data-g="" aria-label="Crear o unirme a otra grupeta">＋</button>`:'';
+  $('grTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.g==='__a'){ gMode='a'; store.set('ichnos-gmode','a'); renderGroup(); try{ loadFriends(); }catch(e){} return; }
+    if(!b.dataset.g){ if(gMode==='a'){ gMode='g'; store.set('ichnos-gmode','g'); renderGroup(); $('grNone').hidden=false; $('grNone').scrollIntoView({behavior:'smooth'}); return; } const op=$('grNone').hidden; $('grNone').hidden=!op; b.classList.toggle('on',op); if(op) $('grNone').scrollIntoView({behavior:'smooth'}); return; } gCur=b.dataset.g; gMode='g'; store.set('ichnos-gmode','g'); syncRaw.set('ichnos-gcur',gCur); invClose(); renderGroup(); loadGroupData(); });
   if(!g) return;
-  $('grName').textContent=g.name;
+  $('grName').textContent=g.name; const lead=!!(me&&g.admin===me.id); $('grRen').hidden=!lead; $('grDel').hidden=!lead;
   $('grMem').innerHTML=g.members.map(u=>`<button data-u="${u}"><i>${initial(uName(u))}</i>${esc(uName(u))}${u===g.admin?' ★':''}</button>`).join('');
   $('grMem').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!isMe(b.dataset.u)) openFriend(b.dataset.u); });
 }
+$('grRen').onclick=async()=>{ const g=curGroup(); if(!g) return;
+  const nm=await askName('',g.name,{title:'Nombre de la grupeta',hint:'Lo verán todos los de la grupeta.',placeholder:'Ej.: Serralada Bikers',button:'Guardar',list:[]});
+  if(!nm||nm===g.name) return; try{ await api(`/grupos/${g.id}/nombre`,{method:'POST',body:{name:nm}}); await loadGroups(); toast('Nombre cambiado.'); }catch(e){ toast(e.message||'No se ha podido cambiar ahora.',4000); } };
+$('grLeave').onclick=async()=>{ const g=curGroup(); if(!g) return; const lead=g.admin===me.id, others=g.members.length>1;
+  if(!confirm(`¿Salir de «${g.name}»?${lead&&others?' La llevará otro de la grupeta.':''}${!others?' Eres el único: la grupeta se quedará vacía.':''} Para volver necesitarás su código.`)) return;
+  try{ await api(`/grupos/${g.id}/salir`,{method:'POST',body:{}}); gCur=null; syncRaw.set('ichnos-gcur',null); await loadGroups(); toast(`Has salido de «${g.name}».`); }catch(e){ toast(e.message||'No se ha podido ahora.',4000); } };
+$('grDel').onclick=async()=>{ const g=curGroup(); if(!g) return;
+  if(!confirm(`¿Borrar «${g.name}» para todos? Se borran sus salidas propuestas y el chat. No se puede recuperar.`)) return;
+  try{ await api(`/grupos/${g.id}/borrar`,{method:'POST',body:{}}); gCur=null; syncRaw.set('ichnos-gcur',null); await loadGroups(); toast(`Grupeta «${g.name}» borrada.`); }catch(e){ toast(e.message||'No se ha podido ahora.',4000); } };
 $('grNoneX').onclick=()=>{ $('grNone').hidden=true; $('grNewName').value=''; $('grJoinCode').value=''; const p=$('grTabs').querySelector('button[data-g=""]'); if(p) p.classList.remove('on'); $('pgGrupeta').scrollTo({top:0,behavior:'smooth'}); };
 async function loadGroupData(){
   const gid=gCur; if(!gid) return;
