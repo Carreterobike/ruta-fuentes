@@ -1547,7 +1547,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795165720';   // versión de la app (la pone build.py)
+const BUILD='1795174095';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1707,7 +1707,8 @@ async function syncNow(manual){
     for(const b of Object.keys(idx).filter(n=>/^r-/.test(n))){
       if(idx[b]<=(m.seen[b]||0)) continue;
       const o=await syncReq('/'+b); m.seen[b]=idx[b];
-      ((o&&o.v)||[]).forEach(r=>{ if(dels.has(r.id)) return; const l=rides.find(x=>x.id===r.id); if(!l||(r.mt||0)>(l.mt||0)) put.push(r); });
+      const extra=!/^r-\d{4}-\d{2}$/.test(b);   // salida que el puente ha subido sola (r-AAAA-MM-…): se mete en su mes
+      ((o&&o.v)||[]).forEach(r=>{ if(dels.has(r.id)) return; const l=rides.find(x=>x.id===r.id); if(!l||(r.mt||0)>(l.mt||0)){ put.push(r); if(extra){ const mb=rideBucket(r.date); if(!m.dirty.includes(mb)) m.dirty.push(mb); } } });
     }
     if(put.length){ await ridesTx('readwrite',st=>put.forEach(r=>st.put(r))); gotRides=true; }
     if(gotRides) await loadRides();
@@ -6992,7 +6993,7 @@ authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().th
   window.paintPush=paint; setTimeout(paint,2500);
   // al tocar un aviso del móvil: abrir lo que toca
   const go=()=>{ const h=location.hash; if(h==='#avisos'&&$('bell')){ history.replaceState(null,'',location.pathname+location.search); setTimeout(()=>$('bell').click(),900); } else if(h==='#grupeta'){ history.replaceState(null,'',location.pathname+location.search); showPage('pgGrupeta'); }
-    else if(h==='#salidas'){ history.replaceState(null,'',location.pathname+location.search); showPage('pgSalidas'); setTimeout(()=>{ try{ stravaSync(); }catch(e){} try{ icuSync(); }catch(e){} },1200); } };
+    else if(h==='#salidas'){ history.replaceState(null,'',location.pathname+location.search); showPage('pgSalidas'); setTimeout(async()=>{ try{ await syncNow(); }catch(e){} try{ stravaSync(); }catch(e){} try{ icuSync(); }catch(e){} },600); } };
   window.addEventListener('hashchange',go); setTimeout(go,1800);
 })();
 </script>
