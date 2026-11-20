@@ -1611,7 +1611,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795207598';   // versión de la app (la pone build.py)
+const BUILD='1795207714';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7142,7 +7142,8 @@ const enSegH=(id,items,cur,cls='')=>`<div class="en-seg ${cls}" id="${id}">${ite
 function enSuggest(sp,ds,T,ob){ const k=enDk(sp,ds), my=enMyLv(k);
   let l=EN_WK.filter(w=>w.sp===sp&&(sp!=='b'||w.ds===ds)&&w.ob===ob&&w.lv<=my); if(!l.length) l=EN_WK.filter(w=>w.sp===sp&&(sp!=='b'||w.ds===ds)&&w.ob===ob&&w.lv<=my+1);
   return l.map(w=>{ const base=enMins(w); let mm=0, dur=base;
-      if(w.sp!=='f'){ const st=enFlat(w,0), big=st.filter(s=>!s.rep).sort((a,b)=>b.m-a.m)[0]; if(big&&big.m>=25&&(w.ob==='fondo'||w.it==='s')){ const d=enMins(w,T); if(Math.abs(d-T)<=5){ mm=T; dur=d; } } }
+      if(w.sp!=='f'){ const st=enFlat(w,0), big=st.filter(s=>!s.rep).sort((a,b)=>b.m-a.m)[0]; if(big&&big.m>=25&&(w.ob==='fondo'||w.it==='s')&&!(['b1','m1'].includes(w.id)&&T>base*1.4)){   // la recuperación no se alarga a horas
+ const d=enMins(w,T); if(Math.abs(d-T)<=5){ mm=T; dur=d; } } }
       return {w,mm,dur,sc:Math.abs(dur-T)/T*100+(my-w.lv)*8+(w.it==='f'?15:0)}; })
     .sort((a,b)=>a.sc-b.sc).slice(0,3); }
 function enPaintQuick(){ const q=enQ, ob=EN_OB[q.sp];
