@@ -568,6 +568,7 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .avatar.sm{width:72px;height:72px;margin:0;border-width:3px;flex:none}
 .frview-mapbtn{}
 #frMapBtn{width:100%}
+.fav-st{border:0;background:transparent!important;color:var(--muted)!important;padding:6px!important;width:40px;height:40px;display:grid;place-items:center;flex:none;cursor:pointer}.fav-st svg{width:24px;height:24px}.fav-st.on{color:#B6E22E!important}.fav-st.on svg{fill:#B6E22E}
 .rvcard.frtop{flex-direction:row;align-items:center}.frtop>div:nth-child(2){flex:1;display:flex;flex-direction:column;min-width:0}.frtop b{font-size:19px}.frtop small{color:var(--muted)}
 .frstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.frstats b{display:block;font-size:20px;font-family:var(--display);font-weight:800}.frstats small{color:var(--muted);font-size:12px}
 .feed li{grid-template-columns:38px 1fr auto}
@@ -1159,6 +1160,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <div class="actions"><button class="primary" id="pushOn">Activar avisos</button><button id="pushTest" hidden>Mandar uno de prueba</button><button id="pushOff" hidden>Quitar avisos</button></div>
     <div class="pp-l" id="pushPrefs" hidden>
       <label class="chk"><input type="checkbox" id="ppOwn"> Cuando llegue una salida mía</label>
+      <label class="chk" id="ppFavL" hidden><input type="checkbox" id="ppFav"> Cuando salga un amigo favorito (te lleva a su salida)</label>
       <label class="chk"><input type="checkbox" id="ppFr"> Cuando salgan mis amigos o mi grupeta</label>
     </div>
   </section>
@@ -1472,7 +1474,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <div class="rideview" id="frView" hidden role="dialog" aria-modal="true" aria-labelledby="frName">
   <header class="rv-h"><button id="frBack" aria-label="Volver">←</button><div><b id="frName"></b><small id="frSub"></small></div></header>
   <div class="rv-body">
-    <div class="rvcard frtop"><div class="avatar sm" id="frAv"></div><div><b id="frApodo"></b><small id="frCity"></small></div><button class="btn" id="frFollow"></button></div>
+    <div class="rvcard frtop"><div class="avatar sm" id="frAv"></div><div><b id="frApodo"></b><small id="frCity"></small></div><button class="fav-st" id="frFav" hidden aria-label="Favorito"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button><button class="btn" id="frFollow"></button></div>
     <div class="rvcard" id="frStats"></div>
     <button class="btn-main" id="frMapBtn" hidden>Ver su mapa</button>
     <div class="rvcard" id="frBikes"></div>
@@ -1547,7 +1549,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795183244';   // versión de la app (la pone build.py)
+const BUILD='1795183794';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -6594,12 +6596,19 @@ function fwState(id){ const o=fw.out[id], i=fw.in[id];
 async function loadFriends(){
   if(!me) return;
   try{ const j=await api('/amigos'); users=j.users||[]; fw={in:j.in||{},out:j.out||{}}; syncRaw.set('ichnos-usuarios',users); syncRaw.set('ichnos-fw',fw); }catch(e){}
-  renderFriends();
+  renderFriends(); if(me.admin&&!favLoad.done){ favLoad.done=1; favLoad(); }
 }
 const EMPTY_ART={"bike": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 56c18-6 30 2 44-4s22-2 34-6\" stroke=\"var(--line)\" stroke-width=\"3\"/><circle cx=\"22\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"62\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M22 40l12-18h18l10 18M34 22l8 18h20M48 14h8\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"70\" cy=\"10\" r=\"5\" fill=\"var(--accent)\"/></svg>", "people": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"30\" cy=\"22\" r=\"10\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M12 56c2-12 10-18 18-18s16 6 18 18\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"58\" cy=\"24\" r=\"8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M50 40c3-2 6-3 8-3 7 0 13 5 15 15\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"74\" cy=\"12\" r=\"6\" fill=\"var(--accent)\"/><path d=\"M74 9v6M71 12h6\" stroke=\"var(--accent-ink)\" stroke-width=\"2\"/></svg>", "chat": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 14h40a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H26l-10 8v-8h-6a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M60 26h14a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6h-2v6l-8-6h-8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"20\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"30\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"40\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/></svg>", "route": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 50c10-4 6-18 18-20s14 10 24 6 8-18 16-22\" stroke=\"var(--ink)\" stroke-width=\"3\" stroke-dasharray=\"1 7\"/><circle cx=\"14\" cy=\"50\" r=\"6\" fill=\"var(--good)\"/><path d=\"M72 14V2m0 0h10l-3 4 3 4H72\" stroke=\"var(--ink)\" stroke-width=\"2.6\" fill=\"var(--accent)\"/><rect x=\"36\" y=\"44\" width=\"30\" height=\"16\" rx=\"3\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/><path d=\"M36 50h30M44 41v6M58 41v6\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/></svg>", "bell": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M28 26a15 15 0 0 1 30 0c0 16 7 20 7 20H21s7-4 7-20\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M38 54a5 5 0 0 0 10 0\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M16 14l-6-4M70 14l6-4M12 30H4M74 30h8\" stroke=\"var(--accent-strong)\" stroke-width=\"3\"/></svg>"};
 const emptyB=(art,title,txt,btn,act)=>`<li class="emptyb">${EMPTY_ART[art]||''}<b>${title}</b><span>${txt}</span>${btn?`<button type="button" data-empty="${act}">${btn}</button>`:''}</li>`;
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-empty]'); if(!b) return; const a=b.dataset.empty;
   if(a==='ajustes'){ showPage('pgAjustes'); } else if(a==='amigos'){ showPage('pgPerfil'); $('frFind').click(); } else if(a==='ruta'){ showPage('pgMapa'); $('navPlus').click(); } });
+// amigos favoritos (solo el administrador): te avisa cuando salen y el aviso abre su salida
+const STAR_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
+let favs=new Set();
+async function favLoad(){ if(!me||!me.admin) return; try{ const p=await api('/push/prefs'); favs=new Set(p.fav||[]); renderFriends(); paintFav(); }catch(e){} }
+function paintFav(){ const b=$('frFav'); if(!b) return; b.hidden=!(me&&me.admin&&frCur); if(b.hidden) return; const on=favs.has(frCur); b.classList.toggle('on',on); b.setAttribute('aria-label',on?'Quitar de favoritos':'Marcar como favorito'); }
+async function favSet(id,on){ try{ const p=await api('/fav',{method:'POST',body:{uid:id,on}}); favs=new Set(p.fav||[]); renderFriends(); paintFav();
+    toast(on?`${uName(id)} es favorito: te avisará cuando salga.`:`${uName(id)} ya no es favorito.`,3500); }catch(e){ toast('No hay conexión ahora.',4000); } }
 function renderFriends(){
   $('pAmigos').hidden=!me; if(!me) return;
   const reqs=Object.keys(fw.in).filter(id=>fw.in[id]==='pend');
@@ -6608,9 +6617,9 @@ function renderFriends(){
   const ids=[...new Set([...Object.keys(fw.out),...Object.keys(fw.in).filter(id=>fw.in[id]==='ok')])].filter(id=>users.some(u=>u.id===id));
   ids.sort((a,b)=>uName(a).localeCompare(uName(b),'es'));
   $('frList').innerHTML=ids.length?ids.map(id=>{ const st=fwState(id), back=fw.in[id]==='ok'&&!fw.out[id];
-    return `<li data-id="${id}"><div class="av">${initial(uName(id))}</div><span><b>${esc(uName(id))}</b><small>${st}</small></span>${back?`<button data-f="${id}">Seguir también</button>`:''}</li>`; }).join('')
+    return `<li data-id="${id}"><div class="av">${initial(uName(id))}</div><span><b>${esc(uName(id))}</b><small>${st}</small></span>${back?`<button data-f="${id}">Seguir también</button>`:''}${me.admin?`<button class="fav-st${favs.has(id)?' on':''}" data-s="${id}" aria-label="Favorito">${STAR_SVG}</button>`:''}</li>`; }).join('')
     :emptyB('people','Todavía no sigues a nadie','Busca a tus amigos para ver sus salidas y que vean las tuyas.','Buscar amigos','amigos');
-  $('frList').querySelectorAll('li').forEach(li=>li.onclick=e=>{ if(e.target.dataset.f){ e.stopPropagation(); fwAct('seguir',e.target.dataset.f); return; } openFriend(li.dataset.id); });
+  $('frList').querySelectorAll('li').forEach(li=>li.onclick=e=>{ const sb=e.target.closest('[data-s]'); if(sb){ e.stopPropagation(); favSet(sb.dataset.s,!favs.has(sb.dataset.s)); return; } if(e.target.dataset.f){ e.stopPropagation(); fwAct('seguir',e.target.dataset.f); return; } openFriend(li.dataset.id); });
 }
 async function fwAct(act,id){
   if(act==='dejar'&&!await ask(`¿Dejar de seguir a ${uName(id)}?`,'Ya no verás sus salidas. Puedes volver a pedirlo cuando quieras.','Sí, dejar de seguir','No')) return false;
@@ -6654,7 +6663,7 @@ function paintFollowBtn(id){ const o=fw.out[id], b=$('frFollow');
 async function openFriend(id){
   frCur=id; frShown=20; $('frView').hidden=false; $('frView').scrollTop=0;
   $('frName').textContent=uName(id); $('frSub').textContent=fwState(id); $('frApodo').textContent=uName(id); $('frCity').textContent='';
-  paintAvatar($('frAv'),null); paintFollowBtn(id);
+  paintAvatar($('frAv'),null); paintFollowBtn(id); paintFav(); $('frFav').onclick=()=>favSet(id,!favs.has(id));
   $('frStats').innerHTML=''; $('frBikes').innerHTML=''; $('frRides').innerHTML=''; $('frMore').hidden=true; $('frMapBtn').hidden=true;
   if(!canView(id)){ $('frEmpty').hidden=false; $('frEmpty').textContent=fw.out[id]==='pend'?'Cuando acepte tu solicitud verás su perfil y sus salidas.':'Pulsa "Seguir". Cuando acepte, verás su perfil y sus salidas.'; return; }
   $('frEmpty').hidden=true; $('frRides').innerHTML=skelCards(2);
@@ -6981,7 +6990,7 @@ authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().th
     const den=Notification.permission==='denied';
     $('pushOn').hidden=!!sub; $('pushOff').hidden=!sub; $('pushTest').hidden=!sub; $('pushPrefs').hidden=!sub;
     if(sub&&!paint.sent){ paint.sent=1; api('/push/sub',{method:'POST',body:{sub:sub.toJSON(),d:devName()}}).catch(()=>{ paint.sent=0; }); }   // que el puente tenga siempre este aparato apuntado
-    if(sub) api('/push/prefs').then(p=>{ $('ppOwn').checked=p.own!==false; $('ppFr').checked=p.fr!==false; }).catch(()=>{ $('ppOwn').checked=true; $('ppFr').checked=true; });
+    if(sub) api('/push/prefs').then(p=>{ $('ppOwn').checked=p.own!==false; $('ppFr').checked=p.fr!==false; $('ppFav').checked=p.fv!==false; $('ppFavL').hidden=!(me&&me.admin); }).catch(()=>{ $('ppOwn').checked=true; $('ppFr').checked=true; });
     $('pushInfo').textContent=sub?'Avisos activados en este aparato. Te llegan los me gusta, comentarios, el chat, las salidas que propone tu grupeta y, si quieres, cuando sale alguien:':den?'Los avisos están bloqueados para Ichnos en los ajustes del móvil. Actívalos allí (Ajustes → Notificaciones → Ichnos) y vuelve a pulsar.':'Te llega un aviso aunque tengas la app cerrada: me gusta, comentarios, mensajes del chat y salidas que propone tu grupeta.'; }
   $('pushOn').onclick=async()=>{ try{
       const perm=await Notification.requestPermission(); if(perm!=='granted'){ toast('Sin permiso no te pueden llegar avisos.',4000); paint(); return; }
@@ -6992,11 +7001,12 @@ authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().th
   $('pushTest').onclick=async()=>{ try{ const r=await reg(), sub=r&&await r.pushManager.getSubscription(); if(!sub){ paint(); return; }
       await api('/push/sub',{method:'POST',body:{sub:sub.toJSON(),test:true,d:devName()}}); toast('Enviado. Te tiene que llegar ahora un aviso de prueba.',4500); }catch(e){ toast('No hay conexión ahora.',4000); } };
   $('pushOff').onclick=async()=>{ try{ const r=await reg(), sub=r&&await r.pushManager.getSubscription(); if(sub){ await api('/push/quitar',{method:'POST',body:{endpoint:sub.endpoint}}).catch(()=>{}); await sub.unsubscribe(); } }catch(e){} paint(); };
-  const savePP=()=>api('/push/prefs',{method:'POST',body:{own:$('ppOwn').checked,fr:$('ppFr').checked}}).then(()=>toast('Guardado.')).catch(()=>toast('No hay conexión ahora.',4000));
-  $('ppOwn').onchange=savePP; $('ppFr').onchange=savePP;
+  const savePP=()=>api('/push/prefs',{method:'POST',body:{own:$('ppOwn').checked,fr:$('ppFr').checked,fv:$('ppFav').checked}}).then(()=>toast('Guardado.')).catch(()=>toast('No hay conexión ahora.',4000));
+  $('ppOwn').onchange=savePP; $('ppFr').onchange=savePP; $('ppFav').onchange=savePP;
   window.paintPush=paint; setTimeout(paint,2500);
   // al tocar un aviso del móvil: abrir lo que toca
   const go=()=>{ const h=location.hash; if(h==='#avisos'&&$('bell')){ history.replaceState(null,'',location.pathname+location.search); setTimeout(()=>$('bell').click(),900); } else if(h==='#grupeta'){ history.replaceState(null,'',location.pathname+location.search); showPage('pgGrupeta'); }
+    else if(/^#ver=/.test(h)){ const m=/^#ver=([\w-]+)\/([^/]+)\/(\d+)/.exec(h); history.replaceState(null,'',location.pathname+location.search); if(m){ showPage('pgSalidas'); openFriendRide(m[1],{id:decodeURIComponent(m[2]),d:+m[3]}); } }
     else if(h==='#salidas'){ history.replaceState(null,'',location.pathname+location.search); showPage('pgSalidas'); setTimeout(async()=>{ try{ await syncNow(); }catch(e){} try{ stravaSync(); }catch(e){} try{ icuSync(); }catch(e){} },600); } };
   window.addEventListener('hashchange',go); setTimeout(go,1800);
 })();
