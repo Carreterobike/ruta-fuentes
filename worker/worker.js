@@ -379,7 +379,13 @@ export default {
         return J({ ok: true });
       }
       if (P === '/push/estado') return J({ ...JSON.parse(await KV.get('pushlast:' + me.id) || '{}'), devs: JSON.parse(await KV.get('push:' + me.id) || '[]').map(x => ({ d: x.d || '?', t: x.t, h: new URL(x.endpoint).host })) });
-      if (P === '/push/prefs') { if (req.method === 'POST') { const b = await body(); const pp = { own: b.own !== false, fr: b.fr !== false }; await KV.put('pp:' + me.id, JSON.stringify(pp)); return J(pp); } return J(await pPrefs(KV, me.id)); }
+      if (P === '/push/prefs') { if (req.method === 'POST') { const b = await body(); const pp = { ...(await pPrefs(KV, me.id)), own: b.own !== false, fr: b.fr !== false, fv: b.fv !== false }; await KV.put('pp:' + me.id, JSON.stringify(pp)); return J(pp); } return J(await pPrefs(KV, me.id)); }
+      // amigos favoritos (de momento solo el administrador): aviso cuando salen y te lleva a su salida
+      if (P === '/fav' && req.method === 'POST') {
+        if ((await KV.get('admin')) !== me.id) return J({ error: 'solo el administrador' }, 403);
+        const b = await body(), uid = String(b.uid || ''); if (!uid || uid === me.id) return J({ error: 'amigo' }, 400);
+        const pp = await pPrefs(KV, me.id); pp.fav = (pp.fav || []).filter(x => x !== uid); if (b.on) pp.fav.push(uid);
+        await KV.put('pp:' + me.id, JSON.stringify(pp)); return J(pp); }
       if (P === '/push/quitar' && req.method === 'POST') { const b = await body(); const l = JSON.parse(await KV.get('push:' + me.id) || '[]').filter(x => x.endpoint !== b.endpoint); await KV.put('push:' + me.id, JSON.stringify(l)); return J({ ok: true }); }
       // "Algo va mal": el aviso llega al administrador con lo que estaba pasando en la app
       if (P === '/fallo' && request.method === 'POST') {
@@ -527,7 +533,7 @@ export default {
 
 // ---------- avisos de salidas nuevas ----------
 const HOOK_URL = 'https://ichnos-strava.dcarreterov86.workers.dev/strava/hook';
-async function pPrefs(KV, uid) { return Object.assign({ own: true, fr: true }, JSON.parse(await KV.get('pp:' + uid) || '{}')); }
+async function pPrefs(KV, uid) { return Object.assign({ own: true, fr: true, fv: true, fav: [] }, JSON.parse(await KV.get('pp:' + uid) || '{}')); }
 const kmTxt = m => (m / 1000).toFixed(1).replace('.', ',');
 function tipoTxt(t) { t = String(t || ''); return /Ride/i.test(t) ? 'en bici' : /Run/i.test(t) ? 'a correr' : /Hike/i.test(t) ? 'de ruta a pie' : /Walk/i.test(t) ? 'a caminar' : 'a hacer deporte'; }
 async function stravaTok(env, KV, uid) { let tok = JSON.parse(await KV.get('tok:' + uid) || 'null'); if (!tok) return null;
@@ -607,6 +613,16 @@ async function icuImport(KV, c, uid, a) {
 // un solo aviso por salida aunque llegue por Strava y por Intervals (misma hora de salida ±3 min)
 async function ownOnce(KV, uid, st) { if (!st) return true; const k = 'pown:' + uid, l = JSON.parse(await KV.get(k) || '[]');
   if (l.some(x => Math.abs(x - st) < 180000)) return false; l.unshift(st); await KV.put(k, JSON.stringify(l.slice(0, 40)), { expirationTtl: 30 * 86400 }); return true; }
+async function wPublish(KV, uid, ride) {   // lo que ven los amigos: sin la zona de casa (igual que publicRide de la app)
+  let pf = {}, bk = ''; try { pf = (JSON.parse(await KV.get('s:' + uid + ':ichnos-perfil') || 'null') || {}).v || {}; } catch (e) { }
+  try { const bs = (JSON.parse(await KV.get('s:' + uid + ':ichnos-bicis') || 'null') || {}).v || []; const b = bs.find(x => x.id === ride.bike); if (b) bk = b.mote || `${b.marca || ''} ${b.modelo || ''}`.trim() || 'Bici'; } catch (e) { }
+  const o = { id: ride.id, name: ride.name, date: ride.date, source: ride.source, tipo: ride.tipo, km: ride.km, bk };
+  const rad = +pf.priv || 0, h = pf.home && pf.homeExact ? [pf.home.lat, pf.home.lon] : null, keep = (ride.coords || []).map(p => !(rad && h && wDist(p, h) <= rad));
+  ['coords', 'times', 'eles', 'hr', 'cad', 'pw'].forEach(k => { if (Array.isArray(ride[k])) o[k] = ride[k].filter((_, i) => keep[i]); });
+  if (!o.coords || o.coords.length < 2) return null;
+  const k = 'p:' + uid + ':p-' + wMonth(ride.date); let l = []; try { l = JSON.parse(await KV.get(k) || '[]') || []; } catch (e) { }
+  if (!Array.isArray(l)) l = []; l = l.filter(x => x && x.id !== o.id); l.push(o); await KV.put(k, JSON.stringify(l));
+  return o; }
 const upTxt = (a, km) => `Tu salida${a.name ? ' «' + a.name + '»' : ''} se ha subido sola a Ichnos${km ? ' · ' + km : ''}${a.total_elevation_gain ? ' · +' + Math.round(a.total_elevation_gain) + ' m' : ''}. Tócala para verla.`;
 // Strava: se sube la salida y luego se avisa al dueño (las normas de Strava no dejan enseñar sus datos a otros)
 async function onStravaEvent(env, KV, ev) {
@@ -662,7 +678,10 @@ async function pollIcu(env, KV) {
       const f = await getFw(KV, u.id), to = new Set(Object.keys(f.in).filter(x => f.in[x] === 'ok'));
       for (const gid of JSON.parse(await KV.get('ug:' + u.id) || '[]')) { const g = JSON.parse(await KV.get('gr:' + gid) || 'null'); if (g) Object.keys(g.members || {}).forEach(x => to.add(x)); }
       to.delete(u.id);
-      for (const x of to) if ((await pPrefs(KV, x)).fr) await pushTo(KV, x, { title: 'Ichnos', body: `${who} ha salido ${tipoTxt(a.type)}${km ? ': ' + km : ''}${up ? ' · +' + up + ' m' : ''}${a.name ? ' · «' + a.name + '»' : ''}.`, url: './#grupeta', tag: 'a' + a.id });
+      let pub = null; if (ride) { try { pub = await wPublish(KV, u.id, ride); } catch (e) { } }
+      for (const x of to) { const px = await pPrefs(KV, x);
+        if (pub && px.fv && (px.fav || []).includes(u.id)) { await pushTo(KV, x, { title: 'Ichnos', body: `${who} ha salido ${tipoTxt(a.type)}${km ? ': ' + km : ''}${up ? ' · +' + up + ' m' : ''}${a.name ? ' · «' + a.name + '»' : ''}. Toca para ver su ruta.`, url: './#ver=' + u.id + '/' + encodeURIComponent(pub.id) + '/' + pub.date, tag: 'a' + a.id }); continue; }
+        if (px.fr) await pushTo(KV, x, { title: 'Ichnos', body: `${who} ha salido ${tipoTxt(a.type)}${km ? ': ' + km : ''}${up ? ' · +' + up + ' m' : ''}${a.name ? ' · «' + a.name + '»' : ''}.`, url: './#grupeta', tag: 'a' + a.id }); }
       if (ride && (await pPrefs(KV, u.id)).own && (await ownOnce(KV, u.id, st))) await pushTo(KV, u.id, { title: 'Ichnos', body: upTxt(a, km), url: './#salidas', tag: 'i' + a.id });
     }
   }
