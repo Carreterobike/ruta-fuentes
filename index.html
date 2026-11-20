@@ -1613,7 +1613,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795207116';   // versión de la app (la pone build.py)
+const BUILD='1795207315';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7207,9 +7207,12 @@ function enPlanOpen(id){ const p=EN_PL.find(x=>x.id===id); if(!p) return;
     enSt.pl={id:p.id,d0:enKey(d0)}; enSave(); $('enView').hidden=true; enWk=1; enPaint(); toast(`Plan «${p.n}» en tu semana. Empieza el lunes.`,4500); }; }
 
 // ¿hecho? bici y correr: si ese día hay una salida del mismo deporte; fuerza: marcado a mano
-const EN_RIDE={b:['road','gravel','mtb','ebike'],c:['run','trail']};
-function enRideFor(x){ const w=enById(x.w); if(!w||w.sp==='f') return null; const d0=enDate(x.d).getTime(), d1=d0+864e5;
-  return rides.find(r=>r.date>=d0&&r.date<d1&&EN_RIDE[w.sp].includes(rideTipo(r))&&!r._dup)||null; }
+const EN_RIDE={b:['road','gravel','mtb','ebike'],c:['run','trail'],m:['mtb','ebike'],r:['road','gravel']};
+// la salida de ese día que corresponde al entreno: misma disciplina (BTT con BTT, carretera con carretera), la más larga,
+// y no cuenta si es un trayecto corto (p. ej. ir al trabajo): menos de 20 min y menos del 40 % de lo previsto
+function enRideFor(x){ const w=enById(x.w); if(!w||w.sp==='f') return null; const d0=enDate(x.d).getTime(), d1=d0+864e5, tp=EN_RIDE[w.sp==='b'?(w.ds||'b'):w.sp];
+  const l=rides.filter(r=>r.date>=d0&&r.date<d1&&tp.includes(rideTipo(r))&&!r._dup).map(r=>({r,mv:(rideStats(r).moving||0)/60})).sort((a,b)=>b.mv-a.mv);
+  const plan=enMins(w,x.m); return l.length&&(l[0].mv>=20||l[0].mv>=plan*0.4)?l[0].r:null; }
 const enDone=x=>x.ok||!!enRideFor(x);
 // ¿cuánto lo has cumplido? minutos previstos en cada zona de pulso frente a los que has hecho de verdad
 function enComply(x,r){ const w=enById(x.w); if(!w||w.sp==='f'||!r) return null; const z=coachZones(r); if(!z) return null;
@@ -7283,7 +7286,7 @@ function enOpen(id,mins=0,item=null){ const w=enById(id); if(!w) return; const l
 function enComplyHtml(x,r){ const c=enComply(x,r), mv=(rideStats(r).moving||0)/60;
   if(!c) return `<p>Hecho con «${esc(r.name)}»: ${enFmt(mv)}. Sin pulso, no puedo ver si lo has cumplido.</p>`;
   const col=c.pct>=80?'#6f8f00':c.pct>=55?'#b07a00':'#c92a2a', mx=Math.max(...c.pz,...c.z,1);
-  const msg=c.pct>=80?'Muy bien: has hecho lo que tocaba.':c.above>300?'Has ido más fuerte de lo previsto: la próxima, afloja en las subidas.':c.done<c.plan*0.75?'Te has quedado corto de tiempo: no pasa nada, la próxima un poco más.':'Bastante bien, aunque no siempre en la zona que tocaba.';
+  const msg=c.pct>=80?'Muy bien: has hecho lo que tocaba.':c.done<c.plan*0.5?'Te has quedado corto de tiempo: no pasa nada, la próxima un poco más.':c.above>300?'Has ido más fuerte de lo previsto: la próxima, afloja en las subidas.':c.done<c.plan*0.75?'Te has quedado corto de tiempo: no pasa nada, la próxima un poco más.':'Bastante bien, aunque no siempre en la zona que tocaba.';
   return `<p>Hecho con «${esc(r.name)}»</p><div class="en-cmp"><b style="color:${col}">${c.pct} %</b><small>cumplido</small></div>
     <p class="en-mut">Tiempo: ${enFmt(c.done/60)} de ${enFmt(c.plan/60)}${c.above>60?` · por encima de lo previsto: ${enFmt(c.above/60)}`:''}</p>
     <div class="en-zc">${[0,1,2,3,4].map(i=>`<div><span>Z${i+1}</span><i class="pl" style="width:${c.pz[i]/mx*100}%"></i><i class="dn" style="width:${c.z[i]/mx*100}%;background:${EN_ZC[i]}"></i><small>${Math.round(c.z[i]/60)}/${Math.round(c.pz[i]/60)}'</small></div>`).join('')}</div>
