@@ -1613,7 +1613,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795206921';   // versión de la app (la pone build.py)
+const BUILD='1795207116';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7227,7 +7227,7 @@ function enPaintWeek(){ const m0=enMonday(enWk), DN=['Lun','Mar','Mié','Jue','V
     rs.forEach(r=>{ done+=(rideStats(r).moving||0)/60; const z=coachZones(r); if(z){ const t=z.reduce((a,b)=>a+b,0); tot+=t; easy+=z[0]+z[1]; } });
     html+=`<div class="en-day${k===today?' today':''}"><div class="en-dh"><b>${DN[i]}</b><small>${d.getDate()}</small></div><div class="en-di">`;
     its.forEach(x=>{ const w=enById(x.w); if(!w) return; const mm=enMins(w,x.m), r=enRideFor(x), ok=x.ok||!!r; n++; plan+=mm; if(ok){ nDone++; if(!r) done+=mm; }
-      html+=`<div class="en-it${ok?' ok':''}" data-k="${x.k}"><i class="ti ${EN_SP[w.sp].ic}" aria-hidden="true"></i><span><b>${esc(w.n)}</b><small>${w.sp==='f'?'Fuerza':enFmt(mm)}${r?(()=>{ const c=enComply(x,r); return ` · hecho: ${enFmt((rideStats(r).moving||0)/60)}${c?` · <b class="en-pc">${c.pct} %</b>`:''}`; })():x.ok&&w.sp!=='f'?' · hecho':''}${x.ev?' · en el ciclocomputador':''}</small></span>${ok?'<i class="ti ti-circle-check en-ok" aria-hidden="true"></i>':''}</div>`; });
+      html+=`<div class="en-it${ok?' ok':''}" data-k="${x.k}"><i class="ti ${EN_SP[w.sp].ic}" aria-hidden="true"></i><span><b>${esc(w.n)}</b><small>${w.sp==='f'?'Fuerza':enFmt(mm)}${r?(()=>{ const c=enComply(x,r); return ` · hecho: ${enFmt((rideStats(r).moving||0)/60)}${c?` · <b class="en-pc">${c.pct} %</b>`:''}`; })():x.ok&&w.sp!=='f'?' · hecho':''}${x.ev?(x.dv==='reloj'?' · en el reloj':' · en el ciclocomputador'):''}</small></span>${ok?'<i class="ti ti-circle-check en-ok" aria-hidden="true"></i>':''}</div>`; });
     if(!its.length) html+=rs.length?`<small class="en-mut">${rs.map(r=>esc(r.name)).join(', ')}</small>`:'<small class="en-mut">—</small>';
     html+=`</div><button class="en-add" data-d="${k}" aria-label="Añadir entreno">＋</button></div>`; }
   $('enWeek').innerHTML=html;
@@ -7263,19 +7263,20 @@ function enOpen(id,mins=0,item=null){ const w=enById(id); if(!w) return; const l
   if(item){ const r=enRideFor(item);
     body+=`<div class="rvcard"><b>${enDate(item.d).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</b>
       ${r?enComplyHtml(item,r):''}
-      <div class="en-btns">${w.sp==='f'?`<button class="btn-main" id="enOk">${item.ok?'Desmarcar':'Hecho'}</button>`:`${r?'':`<button class="btn-main" id="enDev">${item.ev?'Volver a mandar':'Al ciclocomputador'}</button><button class="btn-ghost" id="enOk">${item.ok?'Desmarcar':'Marcar como hecho (sin GPS)'}</button>`}`}
+      <div class="en-btns">${w.sp==='f'?`<button class="btn-main" id="enOk">${item.ok?'Desmarcar':'Hecho'}</button>`:`${r?'':`<button class="btn-main" data-dev="ciclo">${item.ev&&item.dv!=='reloj'?'Volver a mandar al ciclocomputador':'Al ciclocomputador'}</button><button class="btn-main" data-dev="reloj">${item.ev&&item.dv==='reloj'?'Volver a mandar al reloj':'Al reloj'}</button><button class="btn-ghost" id="enOk">${item.ok?'Desmarcar':'Marcar como hecho (sin GPS)'}</button>`}`}
       <button class="btn-ghost" id="enDel">Quitar de mi semana</button></div></div>`; }
   else { const days=[]; for(let i=0;i<14;i++){ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i); days.push(d); }
     body+=`<div class="rvcard"><b>A mi semana</b><select id="enDay">${days.map(d=>{ const k=enKey(d); return `<option value="${k}"${k===enPick?' selected':''}>${d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'short'})}</option>`; }).join('')}</select>
-      <div class="en-btns"><button class="btn-main" id="enAdd">A mi semana</button>${w.sp!=='f'?'<button class="btn-ghost" id="enAddDev">A mi semana y al ciclocomputador</button>':''}</div></div>`; }
+      <div class="en-btns"><button class="btn-main" id="enAdd">A mi semana</button>${w.sp!=='f'?'<button class="btn-ghost" data-add="ciclo">A mi semana y al ciclocomputador</button><button class="btn-ghost" data-add="reloj">A mi semana y al reloj</button>':''}</div></div>`; }
   $('enVB').innerHTML=body;
   const add=async(dev)=>{ if(w.it==='f'&&!confirm('Es un entreno fuerte. ¿Tienes el OK del médico?')) return;
-    const x={k:'e'+Date.now().toString(36),d:$('enDay').value,w:w.id,m:mins||0}; enSt.it.push(x); enSave(); enPick=null;
-    if(dev) await enSend(x); $('enView').hidden=true; enWk=Math.floor((enDate(x.d)-enMonday(0))/(7*864e5)); enPaint(); if(!dev) toast('Añadido a tu semana.'); };
+    const d=$('enDay').value; if(dev&&!enSure(w,d,dev)) return;
+    const x={k:'e'+Date.now().toString(36),d,w:w.id,m:mins||0}; enSt.it.push(x); enSave(); enPick=null;
+    if(dev) await enSend(x,dev); $('enView').hidden=true; enWk=Math.floor((enDate(x.d)-enMonday(0))/(7*864e5)); enPaint(); if(!dev) toast('Añadido a tu semana.'); };
   if($('enAdd')) $('enAdd').onclick=()=>add(false);
-  if($('enAddDev')) $('enAddDev').onclick=()=>add(true);
+  $('enVB').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(b.dataset.add));
   if($('enOk')) $('enOk').onclick=()=>{ item.ok=!item.ok; enSave(); $('enView').hidden=true; enPaint(); if(item.ok) toast('¡Hecho! 💪'); };
-  if($('enDev')) $('enDev').onclick=async()=>{ await enSend(item); enOpen(id,mins,item); enPaint(); };
+  $('enVB').querySelectorAll('[data-dev]').forEach(b=>b.onclick=async()=>{ const dev=b.dataset.dev; if(!enSure(w,item.d,dev)) return; await enSend(item,dev); enOpen(id,mins,item); enPaint(); });
   if($('enDel')) $('enDel').onclick=async()=>{ if(item.ev) try{ await api('/icu/evento/'+item.ev,{method:'DELETE'}); }catch(e){}
     enSt.it=enSt.it.filter(y=>y.k!==item.k); enSave(); $('enView').hidden=true; enPaint(); toast('Quitado.'); };
 }
@@ -7293,11 +7294,14 @@ function enIcuText(w,mins){ const out=[]; const zt=z=>`${EN_ZP[z-1][0]}-${EN_ZP[
   const flat=enFlat(w,mins); let i=0;
   (w.st||[]).forEach(s=>{ if(s.x){ out.push('',`${s.x}x`); s.s.forEach(t=>out.push(step(t))); out.push(''); i+=s.x*s.s.length; } else { const f=flat[i++]; out.push(step([f.m,f.z,f.n,f.r])); } });
   return w.why+'\n\n'+out.join('\n').replace(/\n{3,}/g,'\n\n').trim(); }
-async function enSend(x){ const w=enById(x.w); if(!w) return;
-  toast('Mandando al ciclocomputador…',8000);
+const EN_DEV={ciclo:'al ciclocomputador',reloj:'al reloj'};
+function enSure(w,d,dev){ const dia=enDate(d).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  return confirm(`¿Seguro que quieres mandar «${w.n}» ${EN_DEV[dev]} para el ${dia}?`); }
+async function enSend(x,dev='ciclo'){ const w=enById(x.w); if(!w) return;
+  toast(`Mandando ${EN_DEV[dev]}…`,8000);
   try{ if(x.ev) try{ await api('/icu/evento/'+x.ev,{method:'DELETE'}); }catch(e){}
     const r=await api('/icu/evento',{method:'POST',body:{date:x.d,type:w.sp==='c'?'Run':w.sp==='b'?(w.ds==='m'?'MountainBikeRide':'Ride'):'WeightTraining',name:'Ichnos · '+w.n,description:enIcuText(w,x.m),mins:enMins(w,x.m)}});
-    x.ev=r.id; enSave(); toast('Mandado. Sincroniza el COROS desde su app y lo verás en el ciclocomputador.',6000); }
+    x.ev=r.id; x.dv=dev; enSave(); toast(`Mandado. Abre la app de COROS para sincronizar y lo verás ${EN_DEV[dev]}.`,6000); }
   catch(e){ toast(e.status===409?'Primero conecta Intervals.icu en Ajustes.':'No se ha podido mandar ahora. Prueba en un momento.',5000); } }
 
 // ---------- montaje ----------
