@@ -307,7 +307,7 @@ export default {
         if (!g.members[me.id]) { g.members[me.id] = Date.now(); await KV.put('gr:' + g.id, JSON.stringify(g)); await ugAdd(KV, me.id, g.id); if (g.admin !== me.id) await notify(KV, g.admin, { k: 'gjoin', u: me.id, x: g.name }); }
         return J({ ...g, members: Object.keys(g.members) });
       }
-      m = /^\/grupos\/([\w-]+)\/(salir|quitar|nombre|salidas|chat)(?:\/([\w-]+))?$/.exec(P);
+      m = /^\/grupos\/([\w-]+)\/(salir|quitar|nombre|salidas|chat|borrar)(?:\/([\w-]+))?$/.exec(P);
       if (m) {
         const [, gid, act, sub] = m; const g = JSON.parse(await KV.get('gr:' + gid) || 'null');
         if (!g || !g.members[me.id]) return J({ error: 'No estás en esa grupeta.' }, 403);
@@ -322,6 +322,12 @@ export default {
           if (!gAdmin) return J({ error: 'Solo quien lleva la grupeta puede quitar gente.' }, 403);
           const uid = String(b.uid || ''); if (uid && uid !== me.id) { delete g.members[uid]; await KV.put('gr:' + gid, JSON.stringify(g)); await ugDel(KV, uid, gid); }
           return J({ ...g, members: Object.keys(g.members) });
+        }
+        if (act === 'borrar' && req.method === 'POST') {   // solo quien la lleva: se borra para todos (salidas propuestas y chat incluidos)
+          if (!gAdmin) return J({ error: 'Solo quien lleva la grupeta puede borrarla.' }, 403);
+          for (const uid of Object.keys(g.members)) { await ugDel(KV, uid, gid); if (uid !== me.id) await notify(KV, uid, { k: 'gdel', u: me.id, x: g.name }); }
+          await KV.delete('gr:' + gid); if (g.code) await KV.delete('gcode:' + String(g.code).toLowerCase()); await KV.delete('gs:' + gid); await KV.delete('gc:' + gid);
+          return J({ ok: true });
         }
         if (act === 'nombre' && req.method === 'POST') {
           if (!gAdmin) return J({ error: 'Solo quien lleva la grupeta puede cambiar el nombre.' }, 403);
