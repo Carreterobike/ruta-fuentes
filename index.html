@@ -448,6 +448,8 @@ details.help p{margin:6px 0 0}
 .en-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}.en-steps li{display:flex;gap:9px;align-items:flex-start}.en-steps li>i{width:10px;height:30px;border-radius:3px;flex:none}.en-steps span{display:flex;flex-direction:column}.en-steps small{color:var(--muted)}.en-steps em{color:#c92a2a;font-style:normal;font-weight:700}
 .en-ex{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}.en-ex li{display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--line,rgba(0,0,0,.07));padding-bottom:9px}.en-ex small{color:#6f8f00;font-weight:700}
 .en-wl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}.en-wl li{display:flex;align-items:center;gap:8px;background:var(--soft);border-radius:10px;padding:7px 9px;cursor:pointer}.en-wl li span:nth-child(3){flex:1}.en-wl small{color:var(--muted)}.en-dn{font-weight:800;width:16px}
+.en-cmp{display:flex;align-items:baseline;gap:8px}.en-cmp b{font-size:34px;line-height:1}.en-cmp small{color:var(--muted)}.en-pc{color:#6f8f00}
+.en-zc{display:flex;flex-direction:column;gap:5px}.en-zc div{display:grid;grid-template-columns:26px 1fr 54px;align-items:center;column-gap:8px;position:relative}.en-zc span{font-weight:800;font-size:12px;grid-row:1/3}.en-zc i{display:block;height:7px;border-radius:4px;grid-column:2}.en-zc i.pl{background:rgba(127,127,127,.35)}.en-zc small{grid-column:3;grid-row:1/3;color:var(--muted);font-size:12px;text-align:right}
 .en-btns{display:flex;flex-direction:column;gap:8px}#enDay{font-size:16px;padding:10px;border-radius:10px;border:1px solid var(--line,#ccc);background:var(--card);color:var(--ink)}
 /* segmentos y tiempos */
 .tms{margin:8px 0 2px;border-top:1px solid var(--line);padding-top:7px;display:flex;flex-direction:column;gap:6px}
@@ -1610,7 +1612,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795205920';   // versión de la app (la pone build.py)
+const BUILD='1795206345';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7204,6 +7206,14 @@ const EN_RIDE={b:['road','gravel','mtb','ebike'],c:['run','trail']};
 function enRideFor(x){ const w=enById(x.w); if(!w||w.sp==='f') return null; const d0=enDate(x.d).getTime(), d1=d0+864e5;
   return rides.find(r=>r.date>=d0&&r.date<d1&&EN_RIDE[w.sp].includes(rideTipo(r))&&!r._dup)||null; }
 const enDone=x=>x.ok||!!enRideFor(x);
+// ¿cuánto lo has cumplido? minutos previstos en cada zona de pulso frente a los que has hecho de verdad
+function enComply(x,r){ const w=enById(x.w); if(!w||w.sp==='f'||!r) return null; const z=coachZones(r); if(!z) return null;
+  const pz=[0,0,0,0,0]; enFlat(w,x.m).forEach(s=>pz[s.z-1]+=s.m*60);
+  const plan=pz.reduce((a,b)=>a+b,0), done=z.reduce((a,b)=>a+b,0), top=pz.reduce((m,v,i)=>v?i:m,0);
+  let ok=0; for(let i=0;i<5;i++) ok+=Math.min(pz[i],z[i]);
+  const above=z.slice(top+1).reduce((a,b)=>a+b,0);
+  const pct=Math.round(Math.min(1,ok/plan)*100);
+  return {pct,plan,done,pz,z,above,top}; }
 function enPaintWeek(){ const m0=enMonday(enWk), DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'], today=enKey(new Date());
   $('enWkT').textContent=enWk===0?'Esta semana':enWk===1?'La semana que viene':enWk===-1?'La semana pasada':`Semana del ${m0.toLocaleDateString('es-ES',{day:'numeric',month:'short'})}`;
   let plan=0, done=0, nDone=0, n=0, easy=0, tot=0; let html='';
@@ -7212,7 +7222,7 @@ function enPaintWeek(){ const m0=enMonday(enWk), DN=['Lun','Mar','Mié','Jue','V
     rs.forEach(r=>{ done+=(rideStats(r).moving||0)/60; const z=coachZones(r); if(z){ const t=z.reduce((a,b)=>a+b,0); tot+=t; easy+=z[0]+z[1]; } });
     html+=`<div class="en-day${k===today?' today':''}"><div class="en-dh"><b>${DN[i]}</b><small>${d.getDate()}</small></div><div class="en-di">`;
     its.forEach(x=>{ const w=enById(x.w); if(!w) return; const mm=enMins(w,x.m), r=enRideFor(x), ok=x.ok||!!r; n++; plan+=mm; if(ok){ nDone++; if(!r) done+=mm; }
-      html+=`<div class="en-it${ok?' ok':''}" data-k="${x.k}"><i class="ti ${EN_SP[w.sp].ic}" aria-hidden="true"></i><span><b>${esc(w.n)}</b><small>${w.sp==='f'?'Fuerza':enFmt(mm)}${r?` · hecho: ${enFmt((rideStats(r).moving||0)/60)}`:''}${x.ev?' · en el ciclocomputador':''}</small></span>${ok?'<i class="ti ti-circle-check en-ok" aria-hidden="true"></i>':''}</div>`; });
+      html+=`<div class="en-it${ok?' ok':''}" data-k="${x.k}"><i class="ti ${EN_SP[w.sp].ic}" aria-hidden="true"></i><span><b>${esc(w.n)}</b><small>${w.sp==='f'?'Fuerza':enFmt(mm)}${r?(()=>{ const c=enComply(x,r); return ` · hecho: ${enFmt((rideStats(r).moving||0)/60)}${c?` · <b class="en-pc">${c.pct} %</b>`:''}`; })():x.ok&&w.sp!=='f'?' · hecho':''}${x.ev?' · en el ciclocomputador':''}</small></span>${ok?'<i class="ti ti-circle-check en-ok" aria-hidden="true"></i>':''}</div>`; });
     if(!its.length) html+=rs.length?`<small class="en-mut">${rs.map(r=>esc(r.name)).join(', ')}</small>`:'<small class="en-mut">—</small>';
     html+=`</div><button class="en-add" data-d="${k}" aria-label="Añadir entreno">＋</button></div>`; }
   $('enWeek').innerHTML=html;
@@ -7247,8 +7257,8 @@ function enOpen(id,mins=0,item=null){ const w=enById(id); if(!w) return; const l
   const icu=!!(me&&me.icu)||!!store.get('ichnos-icu-on',false);
   if(item){ const r=enRideFor(item);
     body+=`<div class="rvcard"><b>${enDate(item.d).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</b>
-      ${r?`<p>Hecho con «${esc(r.name)}»: ${enFmt((rideStats(r).moving||0)/60)}.</p>`:''}
-      <div class="en-btns">${w.sp==='f'?`<button class="btn-main" id="enOk">${item.ok?'Desmarcar':'Hecho'}</button>`:`<button class="btn-main" id="enDev">${item.ev?'Volver a mandar':'Al ciclocomputador'}</button>`}
+      ${r?enComplyHtml(item,r):''}
+      <div class="en-btns">${w.sp==='f'?`<button class="btn-main" id="enOk">${item.ok?'Desmarcar':'Hecho'}</button>`:`${r?'':`<button class="btn-main" id="enDev">${item.ev?'Volver a mandar':'Al ciclocomputador'}</button><button class="btn-ghost" id="enOk">${item.ok?'Desmarcar':'Marcar como hecho (sin GPS)'}</button>`}`}
       <button class="btn-ghost" id="enDel">Quitar de mi semana</button></div></div>`; }
   else { const days=[]; for(let i=0;i<14;i++){ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i); days.push(d); }
     body+=`<div class="rvcard"><b>A mi semana</b><select id="enDay">${days.map(d=>{ const k=enKey(d); return `<option value="${k}"${k===enPick?' selected':''}>${d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'short'})}</option>`; }).join('')}</select>
@@ -7264,6 +7274,14 @@ function enOpen(id,mins=0,item=null){ const w=enById(id); if(!w) return; const l
   if($('enDel')) $('enDel').onclick=async()=>{ if(item.ev) try{ await api('/icu/evento/'+item.ev,{method:'DELETE'}); }catch(e){}
     enSt.it=enSt.it.filter(y=>y.k!==item.k); enSave(); $('enView').hidden=true; enPaint(); toast('Quitado.'); };
 }
+function enComplyHtml(x,r){ const c=enComply(x,r), mv=(rideStats(r).moving||0)/60;
+  if(!c) return `<p>Hecho con «${esc(r.name)}»: ${enFmt(mv)}. Sin pulso, no puedo ver si lo has cumplido.</p>`;
+  const col=c.pct>=80?'#6f8f00':c.pct>=55?'#b07a00':'#c92a2a', mx=Math.max(...c.pz,...c.z,1);
+  const msg=c.pct>=80?'Muy bien: has hecho lo que tocaba.':c.above>300?'Has ido más fuerte de lo previsto: la próxima, afloja en las subidas.':c.done<c.plan*0.75?'Te has quedado corto de tiempo: no pasa nada, la próxima un poco más.':'Bastante bien, aunque no siempre en la zona que tocaba.';
+  return `<p>Hecho con «${esc(r.name)}»</p><div class="en-cmp"><b style="color:${col}">${c.pct} %</b><small>cumplido</small></div>
+    <p class="en-mut">Tiempo: ${enFmt(c.done/60)} de ${enFmt(c.plan/60)}${c.above>60?` · por encima de lo previsto: ${enFmt(c.above/60)}`:''}</p>
+    <div class="en-zc">${[0,1,2,3,4].map(i=>`<div><span>Z${i+1}</span><i class="pl" style="width:${c.pz[i]/mx*100}%"></i><i class="dn" style="width:${c.z[i]/mx*100}%;background:${EN_ZC[i]}"></i><small>${Math.round(c.z[i]/60)}/${Math.round(c.pz[i]/60)}'</small></div>`).join('')}</div>
+    <small class="en-mut">Raya gris: lo previsto · color: lo que hiciste (minutos hechos/previstos en cada zona).</small><p><b>${msg}</b></p>`; }
 // el entreno, escrito como lo entiende Intervals.icu (que lo pasa al COROS)
 function enIcuText(w,mins){ const out=[]; const zt=z=>`${EN_ZP[z-1][0]}-${EN_ZP[z-1][1]}% HR`;
   const step=s=>{ const d=s[0]<1?Math.round(s[0]*60)+'s':(s[0]%1?Math.floor(s[0])+'m'+Math.round(s[0]%1*60)+'s':s[0]+'m'); return `- ${s[2]?s[2]+' ':''}${d} ${zt(s[1])}${s[3]?' '+s[3]+'rpm':''}`; };
