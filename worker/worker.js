@@ -521,7 +521,7 @@ export default {
   },
   // cada 10 minutos: dar de alta el aviso de Strava (una vez) y mirar si hay salidas nuevas en Intervals.icu
   async scheduled(ev, env, ctx) { CTX = ctx || null; if (!env.KV) return;
-    const run = (async () => { try { await ensureHook(env, env.KV); } catch (e) { } try { await pollIcu(env, env.KV); } catch (e) { } })();
+    const run = (async () => { try { await ensureHook(env, env.KV); } catch (e) { } try { await stravaRetry(env, env.KV); } catch (e) { } try { await pollIcu(env, env.KV); } catch (e) { } })();
     if (ctx && ctx.waitUntil) ctx.waitUntil(run); else await run; },
 };
 
@@ -535,16 +535,96 @@ async function stravaTok(env, KV, uid) { let tok = JSON.parse(await KV.get('tok:
       body: JSON.stringify({ client_id: env.STRAVA_ID, client_secret: env.STRAVA_SECRET, grant_type: 'refresh_token', refresh_token: tok.r }) });
     const t = await r.json().catch(() => ({})); if (!r.ok || !t.access_token) return null; tok = { ...tok, a: t.access_token, r: t.refresh_token, e: t.expires_at }; await KV.put('tok:' + uid, JSON.stringify(tok)); }
   return tok; }
-// Strava: el aviso es solo para el dueño de la salida (las normas de Strava no dejan enseñar sus datos a otros)
+// ---------- la salida se sube sola a Ichnos (sin abrir la app) ----------
+// Se guarda en un paquete propio "r-AAAA-MM-…": la app lo junta con lo demás la próxima vez que se abre.
+const W_RAD = Math.PI / 180;
+function wDist(a, b) { const dLa = (b[0] - a[0]) * W_RAD, dLo = (b[1] - a[1]) * W_RAD, x = Math.sin(dLa / 2) ** 2 + Math.cos(a[0] * W_RAD) * Math.cos(b[0] * W_RAD) * Math.sin(dLo / 2) ** 2; return 2 * 6371000 * Math.asin(Math.sqrt(x)); }
+function wGain(es, th = 2) { if (!es || !es.length) return null; let up = 0, base = null, n = 0;
+  for (const e of es) { if (e == null || !isFinite(e)) continue; n++; if (base == null) { base = e; continue; } if (e > base + th) { up += e - base; base = e; } else if (e < base - th) base = e; }
+  return n > es.length * 0.5 ? Math.round(up) : null; }
+function wThin(c, ts, es, ex = {}) {   // igual que en la app: un punto cada 10 m, con hora, altura, pulso, cadencia y vatios
+  const out = [], tt = [], ee = [], hr = [], cad = [], pw = []; let t0 = null;
+  if (ts) for (const t of ts) { if (t != null && isFinite(t)) { t0 = t; break; } }
+  const num = (a, i) => a && a[i] != null && isFinite(a[i]) ? Math.round(a[i]) : null;
+  c.forEach((p, i) => { if (!p || p[0] == null || p[1] == null) return; if (!out.length || wDist(out[out.length - 1], p) >= 10) {
+    out.push([+(+p[0]).toFixed(5), +(+p[1]).toFixed(5)]);
+    tt.push(t0 != null && ts[i] != null && isFinite(ts[i]) ? Math.round((ts[i] - t0) / 1000) : null);
+    ee.push(num(es, i)); hr.push(num(ex.hr, i)); cad.push(num(ex.cad, i)); pw.push(num(ex.pw, i)); } });
+  const has = a => a.filter(x => x != null).length > out.length * 0.6;
+  let m = 0; for (let i = 1; i < out.length; i++) m += wDist(out[i - 1], out[i]);
+  return { coords: out, times: has(tt) ? tt : null, eles: has(ee) ? ee : null, hr: has(hr) ? hr : null, cad: has(cad) ? cad : null, pw: has(pw) ? pw : null, upRaw: wGain(es), km: m / 1000 };
+}
+const wNrm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+function wTipo(type) { const t = wNrm(type).replace(/[_\s]+/g, ' ');
+  if (!t || /virtual/.test(t)) return null; if (/trail|carrera (por|de) montana|montana.*carrera/.test(t)) return 'trail';
+  if (/^run|\brun\b|carrera|correr|running/.test(t)) return 'run'; if (/hike|senderismo|excursion|trekking|alpinismo/.test(t)) return 'hike';
+  if (/walk|caminata|paseo|andar/.test(t)) return 'walk'; if (/e-?mountain|e-?mtb|montana electr|electrica de montana|e ?bike|e-bike|electr/.test(t)) return 'ebike';
+  if (/mountain|montana|mtb|btt/.test(t)) return 'mtb'; if (/gravel/.test(t)) return 'gravel'; if (/\bride\b|ride$|bici|cicl|velo|handcycle|bike/.test(t)) return 'road'; return null; }
+async function wBike(KV, uid, tipo, gear) {   // la bici: la que se llama como en Strava, o la principal de ese tipo
+  let bikes = []; try { const o = JSON.parse(await KV.get('s:' + uid + ':ichnos-bicis') || 'null'); bikes = (o && o.v) || []; } catch (e) { }
+  if (!Array.isArray(bikes)) return null; const g = wNrm(gear);
+  let b = g && (bikes.find(b => (b.alias || []).some(a => wNrm(a) === g)) || bikes.find(b => b.mote && g.includes(wNrm(b.mote))) || bikes.find(b => b.modelo && g.includes(wNrm(b.modelo))) || bikes.find(b => b.marca && g.includes(wNrm(b.marca))));
+  if (!b && tipo) b = bikes.find(b => b.tipo === tipo && b.principal && !b.retirada) || bikes.find(b => b.tipo === tipo && !b.retirada);
+  return b ? b.id : null; }
+function wMonth(t) { const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit' }).formatToParts(new Date(t));
+  return p.find(x => x.type === 'year').value + '-' + p.find(x => x.type === 'month').value; }
+async function wStore(KV, uid, ride, tag) {
+  try { const d = JSON.parse(await KV.get('s:' + uid + ':rdel') || 'null'); if (d && (d.v || []).includes(ride.id)) return false; } catch (e) { }
+  const t = Date.now(); ride.mt = t;
+  await KV.put('s:' + uid + ':r-' + wMonth(ride.date) + '-' + tag, JSON.stringify({ t, v: [ride] }), { metadata: { t }, expirationTtl: 400 * 86400 });
+  return true; }
+async function stravaImport(env, KV, uid, id) {   // → la actividad, o null si aún no se puede
+  const tok = await stravaTok(env, KV, uid); if (!tok) return null;
+  const H = { headers: { Authorization: 'Bearer ' + tok.a } };
+  const r = await fetch('https://www.strava.com/api/v3/activities/' + id, H); if (!r.ok) return null;
+  const a = await r.json(), tipo = wTipo(a.sport_type || a.type);
+  if (!tipo || !a.map || !a.map.summary_polyline) return { a, skip: true };   // sin GPS (rodillo, gimnasio…): no hay nada que subir
+  const s = await fetch(`https://www.strava.com/api/v3/activities/${id}/streams?keys=latlng,time,altitude,heartrate,cadence,watts&key_by_type=true`, H);
+  if (!s.ok) return null; const st = await s.json(), g = k => st && st[k] && st[k].data, ll = g('latlng');
+  if (!ll || ll.length < 2) return { a, skip: true };
+  const t0 = Date.parse(a.start_date), tm = g('time'), ts = ll.map((_, i) => tm && tm[i] != null ? t0 + tm[i] * 1000 : null);
+  const th = wThin(ll, ts, g('altitude'), { hr: g('heartrate'), cad: g('cadence'), pw: g('watts') });
+  if (th.coords.length < 2) return { a, skip: true };
+  const ride = { id: 'strava-' + id, name: a.name || 'Salida', date: t0, source: 'Strava', api: 1, tipo, coords: th.coords, times: th.times, eles: th.eles, hr: th.hr, cad: th.cad, pw: th.pw,
+    bike: await wBike(KV, uid, tipo, a.gear && a.gear.name), km: th.km, upRaw: th.upRaw, upDev: a.total_elevation_gain != null ? Math.round(a.total_elevation_gain) : null,
+    movDev: a.moving_time != null ? Math.round(a.moving_time) : null, elDev: a.elapsed_time != null ? Math.round(a.elapsed_time) : null, kmDev: a.distance != null ? Math.round(a.distance) : null, srv: 1 };
+  await wStore(KV, uid, ride, 's' + id);
+  return { a, ride }; }
+async function icuImport(KV, c, uid, a) {
+  const tipo = wTipo(a.type), t0 = Date.parse(a.start_date || a.start_date_local || ''); if (!tipo || !t0) return null;
+  const r = await fetch(`https://intervals.icu/api/v1/activity/${encodeURIComponent(a.id)}/streams.json?types=latlng,time,altitude,fixed_altitude,heartrate,cadence,watts`, { headers: { Authorization: c.b ? 'Bearer ' + c.b : 'Basic ' + btoa('API_KEY:' + c.k) } });
+  if (!r.ok) return null; const l = await r.json(); if (!Array.isArray(l)) return null;
+  const g = k => { const x = l.find(z => z && z.type === k); return x || null; }, L = g('latlng'); if (!L || !Array.isArray(L.data)) return null;
+  const ll = Array.isArray(L.data2) ? L.data.map((la, i) => [la, L.data2[i]]) : L.data;   // Intervals da la latitud y la longitud por separado
+  const d = k => { const x = g(k); return x && Array.isArray(x.data) ? x.data : null; };
+  const tm = d('time'), ts = ll.map((_, i) => tm && tm[i] != null ? t0 + tm[i] * 1000 : null);
+  const th = wThin(ll, ts, d('fixed_altitude') || d('altitude'), { hr: d('heartrate'), cad: d('cadence'), pw: d('watts') });
+  if (th.coords.length < 2) return null;
+  const ride = { id: 'icu-' + a.id, icu: String(a.id), name: a.name || 'Salida', date: t0, tipo, coords: th.coords, times: th.times, eles: th.eles, hr: th.hr, cad: th.cad, pw: th.pw,
+    bike: await wBike(KV, uid, tipo, null), km: th.km, upRaw: th.upRaw, upDev: a.total_elevation_gain != null ? Math.round(a.total_elevation_gain) : null,
+    movDev: a.moving_time != null ? Math.round(a.moving_time) : null, elDev: a.elapsed_time != null ? Math.round(a.elapsed_time) : null, kmDev: a.distance != null ? Math.round(a.distance) : null, srv: 1 };
+  return (await wStore(KV, uid, ride, 'i' + a.id)) ? ride : null; }
+const upTxt = (a, km) => `Tu salida${a.name ? ' «' + a.name + '»' : ''} se ha subido sola a Ichnos${km ? ' · ' + km : ''}${a.total_elevation_gain ? ' · +' + Math.round(a.total_elevation_gain) + ' m' : ''}. Tócala para verla.`;
+// Strava: se sube la salida y luego se avisa al dueño (las normas de Strava no dejan enseñar sus datos a otros)
 async function onStravaEvent(env, KV, ev) {
   if (!ev || ev.object_type !== 'activity' || ev.aspect_type !== 'create') return;
   const hook = JSON.parse(await KV.get('sthook') || 'null'); if (hook && ev.subscription_id && String(ev.subscription_id) !== String(hook.id)) return;
-  const id = String(ev.object_id); if (await KV.get('pn:s:' + id)) return; await KV.put('pn:s:' + id, '1', { expirationTtl: 30 * 86400 });
-  const uid = await KV.get('ath:' + ev.owner_id); if (!uid) return; if (!(await pPrefs(KV, uid)).own) return;
-  let a = null; const tok = await stravaTok(env, KV, uid);
-  if (tok) { const r = await fetch('https://www.strava.com/api/v3/activities/' + id, { headers: { Authorization: 'Bearer ' + tok.a } }); if (r.ok) a = await r.json(); }
-  const up = a && a.total_elevation_gain ? Math.round(a.total_elevation_gain) : 0;
-  await pushTo(KV, uid, { title: 'Ichnos', body: `Tu salida${a && a.name ? ' «' + a.name + '»' : ''} ya está en Ichnos${a && a.distance ? ' · ' + kmTxt(a.distance) + ' km' : ''}${up ? ' · +' + up + ' m' : ''}. Tócala para verla.`, url: './#salidas', tag: 's' + id });
+  const id = String(ev.object_id); if (await KV.get('pn:s:' + id)) return;
+  const uid = await KV.get('ath:' + ev.owner_id); if (!uid) return;
+  await stravaDo(env, KV, uid, id, 0);
+}
+async function stravaDo(env, KV, uid, id, tries) {
+  let res = null; try { res = await stravaImport(env, KV, uid, id); } catch (e) { }
+  if (!res) {   // Strava a veces tarda en tener la salida lista: se vuelve a probar cada 10 minutos (hasta 6 veces)
+    if (tries < 6) { const q = JSON.parse(await KV.get('sretry') || '[]').filter(x => x.id !== id); q.push({ uid, id, n: tries + 1 }); await KV.put('sretry', JSON.stringify(q.slice(-50))); }
+    return; }
+  await KV.put('pn:s:' + id, '1', { expirationTtl: 30 * 86400 });
+  if (res.skip || !(await pPrefs(KV, uid)).own) return;
+  await pushTo(KV, uid, { title: 'Ichnos', body: upTxt(res.a, res.a.distance ? kmTxt(res.a.distance) + ' km' : ''), url: './#salidas', tag: 's' + id });
+}
+async function stravaRetry(env, KV) {
+  const q = JSON.parse(await KV.get('sretry') || '[]'); if (!q.length) return; await KV.put('sretry', '[]');
+  for (const x of q) if (!(await KV.get('pn:s:' + x.id))) await stravaDo(env, KV, x.uid, x.id, x.n);
 }
 async function ensureHook(env, KV) {
   if (await KV.get('sthook')) return;
@@ -571,13 +651,15 @@ async function pollIcu(env, KV) {
     for (const a of nw) {
       if (String(a.source || '').toUpperCase() === 'STRAVA') continue;
       const st = Date.parse(a.start_date || a.start_date_local || ''); if (st && Date.now() - st > 36 * 3600e3) continue;
-      if (await KV.get('pn:i:' + a.id)) continue; await KV.put('pn:i:' + a.id, '1', { expirationTtl: 30 * 86400 });
+      if (await KV.get('pn:i:' + a.id)) continue;
+      let ride = null; try { ride = await icuImport(KV, c, u.id, a); } catch (e) { }   // primero se sube, luego se avisa
+      await KV.put('pn:i:' + a.id, '1', { expirationTtl: 30 * 86400 });
       const up = a.total_elevation_gain ? Math.round(a.total_elevation_gain) : 0, km = a.distance ? kmTxt(a.distance) + ' km' : '', who = u.name || 'Alguien';
       const f = await getFw(KV, u.id), to = new Set(Object.keys(f.in).filter(x => f.in[x] === 'ok'));
       for (const gid of JSON.parse(await KV.get('ug:' + u.id) || '[]')) { const g = JSON.parse(await KV.get('gr:' + gid) || 'null'); if (g) Object.keys(g.members || {}).forEach(x => to.add(x)); }
       to.delete(u.id);
       for (const x of to) if ((await pPrefs(KV, x)).fr) await pushTo(KV, x, { title: 'Ichnos', body: `${who} ha salido ${tipoTxt(a.type)}${km ? ': ' + km : ''}${up ? ' · +' + up + ' m' : ''}${a.name ? ' · «' + a.name + '»' : ''}.`, url: './#grupeta', tag: 'a' + a.id });
-      if (!(await KV.get('tok:' + u.id)) && (await pPrefs(KV, u.id)).own) await pushTo(KV, u.id, { title: 'Ichnos', body: `Tu salida${a.name ? ' «' + a.name + '»' : ''} ya está en Ichnos${km ? ' · ' + km : ''}${up ? ' · +' + up + ' m' : ''}. Tócala para verla.`, url: './#salidas', tag: 'i' + a.id });
+      if (ride && !(await KV.get('tok:' + u.id)) && (await pPrefs(KV, u.id)).own) await pushTo(KV, u.id, { title: 'Ichnos', body: upTxt(a, km), url: './#salidas', tag: 'i' + a.id });
     }
   }
 }
