@@ -192,6 +192,24 @@ export default {
         return J({ ok: true, name: a.name || '' });
       }
       if (P === '/icu/quitar' && req.method === 'POST') { await KV.delete('icu:' + me.id); return J({ ok: true }); }
+      // entrenos de Ichnos al calendario de Intervals.icu (que los pasa al COROS/Garmin)
+      if (P === '/icu/evento' && req.method === 'POST') {
+        const c = JSON.parse(await KV.get('icu:' + me.id) || 'null'); if (!c) return J({ error: 'sin conectar' }, 409);
+        const b = await body(); if (!/^\d{4}-\d{2}-\d{2}$/.test(String(b.date || ''))) return J({ error: 'fecha' }, 400);
+        const ev = { category: 'WORKOUT', start_date_local: b.date + 'T00:00:00', type: ['Ride', 'MountainBikeRide', 'Run', 'WeightTraining'].includes(b.type) ? b.type : 'Ride',
+          name: String(b.name || 'Ichnos').slice(0, 80), description: String(b.description || '').slice(0, 4000), moving_time: Math.round((+b.mins || 0) * 60) || undefined };
+        const r = await fetch('https://intervals.icu/api/v1/athlete/0/events', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: c.b ? 'Bearer ' + c.b : 'Basic ' + btoa('API_KEY:' + c.k) }, body: JSON.stringify(ev) });
+        const t = await r.json().catch(() => ({}));
+        if (r.status === 401 || r.status === 403) return J({ error: 'renovar' }, 409);
+        if (!r.ok) return J({ error: (t && (t.error || t.message)) || 'intervals ' + r.status }, 502);
+        return J({ id: t.id });
+      }
+      const mEv = /^\/icu\/evento\/(\d+)$/.exec(P);
+      if (mEv && req.method === 'DELETE') {
+        const c = JSON.parse(await KV.get('icu:' + me.id) || 'null'); if (!c) return J({ error: 'sin conectar' }, 409);
+        const r = await fetch('https://intervals.icu/api/v1/athlete/0/events/' + m[1], { method: 'DELETE', headers: { Authorization: c.b ? 'Bearer ' + c.b : 'Basic ' + btoa('API_KEY:' + c.k) } });
+        return J({ ok: r.ok });
+      }
       if (P.startsWith('/icu/api/')) {
         const path = P.slice(9);
         if (!/^(athlete\/0\/activities|activity\/[\w-]+(\/file)?)$/.test(path)) return J({ error: 'ruta' }, 404);
