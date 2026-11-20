@@ -1611,7 +1611,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795207714';   // versión de la app (la pone build.py)
+const BUILD='1795208100';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7151,14 +7151,15 @@ function enPaintQuick(){ const q=enQ, ob=EN_OB[q.sp];
   const k=enDk(q.sp,q.ds);
   $('enQuick').innerHTML=`<small class="en-mut">Con qué</small>${enSegH('enQSp',[['b|m','BTT'],['b|r','Carretera'],['c|','Correr'],['f|','Fuerza']],q.sp+'|'+(q.sp==='b'?q.ds:''),'sm')}
     <small class="en-mut">Cuánto tiempo tienes</small>${enSegH('enQT',[[30,"30'"],[45,"45'"],[60,'1 h'],[90,'1 h 30'],[120,'2 h'],[180,'3 h +']],q.t,'sm')}
+    <small class="en-mut">Tu nivel en ${esc(enDsName(q.sp,q.ds))}</small>${enSegH('enQLvs',[[1,'1 · empezar'],[2,'2 · base'],[3,'3 · medio'],[4,'4 · avanzado']],enMyLv(k),'sm')}
     <small class="en-mut">Qué quieres</small>${enSegH('enQOb',ob.map(o=>[o[0],o[1]]),q.ob,'sm')}
     <ul class="en-list">${enSuggest(q.sp,q.ds,q.t,q.ob).map(x=>{ const o=enObOf(x.w); return `<li class="en-card" data-w="${x.w.id}" data-m="${x.mm}" style="border-left:5px solid ${o[2]}"><div class="en-ch"><b>${esc(x.w.n)}</b>${enTag(x.w.it)}</div><small>${x.w.sp==='f'?'Fuerza':enFmt(x.dur)} · nivel ${x.w.lv}</small></li>`; }).join('')||'<small class="en-mut">No hay entrenos así a tu nivel. Prueba con otro tiempo u objetivo.</small>'}</ul>
-    <small class="en-mut">Tu nivel en ${esc(enDsName(q.sp,q.ds))}: <b>${enMyLv(k)}</b> · <a href="#" id="enQLv">cambiar</a></small>`;
+    <small class="en-mut">${['','Nivel 1: para empezar o volver después de un parón o una enfermedad. Todo suave.','Nivel 2: ya sales a menudo y aguantas 1 h 30 – 2 h suave. Algo de ritmo.','Nivel 3: entrenas varias veces por semana y aguantas 3 h. Bloques a ritmo y algo fuerte.','Nivel 4: avanzado, con años de entreno. Series duras.'][enMyLv(k)]}</small>`;
   $('enQSp').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const [sp,ds]=b.dataset.v.split('|'); q.sp=sp; if(ds) q.ds=ds; enPaintQuick(); });
   $('enQT').querySelectorAll('button').forEach(b=>b.onclick=()=>{ q.t=+b.dataset.v; enPaintQuick(); });
   $('enQOb').querySelectorAll('button').forEach(b=>b.onclick=()=>{ q.ob=b.dataset.v; enPaintQuick(); });
   $('enQuick').querySelectorAll('[data-w]').forEach(li=>li.onclick=()=>enOpen(li.dataset.w,+li.dataset.m||0));
-  $('enQLv').onclick=e=>{ e.preventDefault(); enLvAsk(k); }; }
+  $('enQLvs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const v=+b.dataset.v; if(v>=3&&enMyLv(k)<3&&!confirm('Los niveles 3 y 4 tienen entrenos fuertes. ¿Tienes el OK del médico?')) return; enSt.lv={...(enSt.lv||{}),[k]:v}; enSave(); enPaintQuick(); enPaintLib(); }); }
 function enLvAsk(k){ const n=prompt(`Tu nivel en ${k==='m'?'BTT':k==='r'?'carretera':k==='c'?'correr':'fuerza'} (1 a 4):\n1 empezar o volver · 2 base · 3 medio · 4 avanzado`,enMyLv(k)); const v=parseInt(n,10);
   if(v>=1&&v<=4){ enSt.lv={...(enSt.lv||{}),[k]:v}; enSave(); enPaint(); } }
 function enPaintLib(){ const f=enF, k=enDk(f.sp,f.ds);
@@ -7166,12 +7167,12 @@ function enPaintLib(){ const f=enF, k=enDk(f.sp,f.ds);
     +(f.sp==='b'?enSegH('enDs',[['m','BTT'],['r','Carretera']],f.ds,'sub'):'')
     +enSegH('enOb',[['','Todo']].concat(EN_OB[f.sp].map(o=>[o[0],o[1]])),f.ob,'sm')
     +enSegH('enLv',[[0,'Todos'],[1,'Nivel 1'],[2,'2'],[3,'3'],[4,'4']],f.lv,'sm')
-    +`<small class="en-mut">Tu nivel en ${esc(enDsName(f.sp,f.ds))}: <b>${enMyLv(k)}</b> · <a href="#" id="enLvC">cambiar</a></small>`;
+    +`<small class="en-mut">Tu nivel en ${esc(enDsName(f.sp,f.ds))}: <b>${enMyLv(k)}</b> (se cambia en «¿Qué hago hoy?»)</small>`;
   $('enSp').querySelectorAll('button').forEach(b=>b.onclick=()=>{ f.sp=b.dataset.v; f.ob=''; enPaintLib(); enPaintPlans(); });
   if($('enDs')) $('enDs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ f.ds=b.dataset.v; enPaintLib(); enPaintPlans(); });
   $('enOb').querySelectorAll('button').forEach(b=>b.onclick=()=>{ f.ob=b.dataset.v; enPaintLib(); });
   $('enLv').querySelectorAll('button').forEach(b=>b.onclick=()=>{ f.lv=+b.dataset.v; enPaintLib(); });
-  $('enLvC').onclick=e=>{ e.preventDefault(); enLvAsk(k); };
+
   $('enLibT').textContent='Entrenos de '+enDsName(f.sp,f.ds);
   const l=EN_WK.filter(w=>w.sp===f.sp&&(f.sp!=='b'||w.ds===f.ds)&&(!f.ob||w.ob===f.ob)&&(!f.lv||w.lv===f.lv));
   let html=''; [1,2,3,4].forEach(lv=>{ const g=l.filter(w=>w.lv===lv); if(g.length) html+=`<div class="en-lvh">${EN_LVT[lv]}</div><ul class="en-list">${g.map(enCard).join('')}</ul>`; });
