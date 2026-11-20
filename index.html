@@ -1547,7 +1547,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795183127';   // versión de la app (la pone build.py)
+const BUILD='1795183244';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -4911,7 +4911,7 @@ function paintStrava(msg){
   const on=svOn(); $('svOff').hidden=on; $('svOn').hidden=!on;
   $('svChip').textContent=on?'Conectado':'Sin conectar'; $('svChip').classList.toggle('on',on);
   $('svGo').disabled=!me;
-  if(on){ $('svInfo').textContent=msg||`Las salidas nuevas llegan solas al abrir Ichnos. Última vez: ${svAgo(sv.last)}.`+(sv.histDone?'':' Tus salidas antiguas se van trayendo poco a poco.'); }
+  if(on){ $('svInfo').textContent=msg||`Las salidas nuevas se suben solas, aunque no abras Ichnos. Última vez: ${svAgo(sv.last)}.`+(sv.histDone?'':' Tus salidas antiguas se van trayendo poco a poco.'); }
   $('syInfo').textContent=me?`Tus bicis, salidas, fotos, comentarios, fuentes y rutas se guardan en tu cuenta y salen iguales en todos tus aparatos. Última copia: ${syncAgo()}.`:'Entra con tu cuenta para tener tus cosas en todos tus aparatos.'; $('syNow').disabled=!me;
   $('svNow').disabled=svBusy; $('svNow').textContent=svBusy?'Trayendo…':'Traer salidas nuevas';
   paintAccount();
