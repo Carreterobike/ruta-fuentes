@@ -1536,7 +1536,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795124937';   // versión de la app (la pone build.py)
+const BUILD='1795153498';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3283,7 +3283,7 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
     let prev=[]; try{ const line=r.coords.slice(ia,ib+1).map(p=>[p[0],p[1]]), key='climb:'+line[0].map(v=>v.toFixed(4)).join(',')+':'+line[line.length-1].map(v=>v.toFixed(4)).join(',');
       prev=effortsFor(key,line).f.filter(e=>e.date!==r.date&&(e.tp||null)===(tp||null)).map(e=>{ const R=rides.find(x=>x.date===e.date&&x.name===e.ride); if(!R||!R.hr) return null; const h=coachHr(R,e.i,e.j); if(!h) return null; const dd=R._cum[e.j]-R._cum[e.i];
         return {date:e.date,t:e.t,hr:h,w:coachWatts(dd,e.t,g,tp,(PF.el[a]+PF.el[b])/2),v:dd/e.t*3.6}; }).filter(Boolean).sort((p,q)=>q.date-p.date); }catch(e){}
-    const v=d/t*3.6, bestDay=prev.length?prev.reduce((p,q)=>q.v/q.hr>p.v/p.hr?q:p):null, okDay=c.lim?prev.filter(p=>p.hr<=c.lim).sort((p,q)=>q.v-p.v)[0]:null;
+    const v=d/t*3.6, bestDay=prev.length?prev.reduce((p,q)=>q.v/q.hr>p.v/p.hr?q:p):null, okDay=prev.filter(p=>p.hr<=th).sort((p,q)=>q.v-p.v)[0]||null;   // el día más rápido sin pasar del límite (o de la zona dura)
     return {j:j+1,ia,ib,d,g,t,hr,ov,w,v,prev,bestDay,okDay,name:nm?nm.n:'Subida del km '+fk(cum[ia]/1000),mine:!!(nm&&nm.mine),key:climbKey(r.coords,ia,ib)}; });
   if(pending.length) Promise.all(pending.map(([a,b])=>climbNameMap(r,a,b))).then(rs=>{ if(rs.some(Boolean)&&rideOpen===r) coachCard(r,st,fr); }).catch(()=>{});
   const where=i=>{ const q=climbs.find(x=>i>=x.ia&&i<=x.ib); return q?'en '+q.name.replace(/^Subida/,'la subida'):'en el km '+fk(cum[i]/1000); };
@@ -3327,9 +3327,9 @@ function coachCard(r,st,fr){ const box=$('rvCoach');
       `El objetivo de la próxima: volver a casa sin haber pasado de ${th} ppm ni una vez.`,
       `Menos gas y más kilómetros tranquilos: la forma vuelve antes yendo suave muchas veces que yendo fuerte pocas.`,
       `Piensa en la próxima como una salida de «hablar»: si con quien vas no podéis charlar tranquilos, vas demasiado fuerte.`]));
-    climbs.filter(x=>x.ov>=60).sort((p,q)=>q.ov-p.ov).slice(0,2).forEach(x=>{ const nm=esc(x.name.replace(/^Subida/,'subida'));
+    climbs.filter(x=>x.ov>=60).sort((p,q)=>q.ov-p.ov).slice(0,2).forEach((x,ix)=>{ const nm=esc(x.name.replace(/^Subida/,'subida')), pk2=arr=>arr[(seed+ix)%arr.length];
       tips.push(x.okDay?`En la ${nm}, el ${fd(x.okDay.date)} la subiste a <b>${fmtKm(x.okDay.v)} km/h con ${Math.round(x.okDay.hr)} ppm</b>: ese es tu ritmo para no pasarte.`
-        :pick([`En la ${nm}, sube a un ritmo en el que puedas respirar por la nariz; si el pulso pasa de ${th}, mete un piñón más grande y suelta un poco.`,
+        :pk2([`En la ${nm}, sube a un ritmo en el que puedas respirar por la nariz; si el pulso pasa de ${th}, pon una marcha más suave y suelta un poco.`,
                `En la ${nm}, mejor llegar arriba más tarde que con el pulso por las nubes: si ves más de ${th}, baja el ritmo aunque vayas despacio.`,
                `En la ${nm}, la velocidad no importa: mira el pulso y que no pase de ${th}.`])); });
     tips.push(pick([`Pon el pulso en grande en la pantalla del ciclocomputador, para verlo sin pensar.`,`Un truco: en las subidas, mira más el pulso que la velocidad.`,`Si te notas con fuerzas, alarga la salida en vez de apretar: más rato suave suma más que poco rato fuerte.`])); }
