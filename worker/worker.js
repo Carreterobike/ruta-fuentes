@@ -31,6 +31,13 @@ export default {
 
       // ---------- sin cuenta ----------
       if (P === '/push/key') return J({ key: (await vapid(KV)).pub });
+      // Strava avisa aquí al momento cuando alguien conectado sube una salida
+      if (P === '/strava/hook') {
+        if (req.method === 'GET') { const vt = await KV.get('sthookvt');
+          if (url.searchParams.get('hub.mode') === 'subscribe' && vt && url.searchParams.get('hub.verify_token') === vt) return J({ 'hub.challenge': url.searchParams.get('hub.challenge') });
+          return J({ error: 'no' }, 403); }
+        if (req.method === 'POST') { const ev = await body(); const p = onStravaEvent(env, KV, ev).catch(() => { }); if (CTX && CTX.waitUntil) CTX.waitUntil(p); return J({ ok: true }); }
+      }
       if (P === '/estado') return J({ v: 2, primero: !(await KV.get('admin')), viejo: !!(await KV.get('key')), icu: !!(env.ICU_ID && env.ICU_SECRET) });
 
       // El primero (David): pasa su conexión antigua a una cuenta de verdad
@@ -372,6 +379,7 @@ export default {
         return J({ ok: true });
       }
       if (P === '/push/estado') return raw(await KV.get('pushlast:' + me.id) || '{}', cors);
+      if (P === '/push/prefs') { if (req.method === 'POST') { const b = await body(); const pp = { own: b.own !== false, fr: b.fr !== false }; await KV.put('pp:' + me.id, JSON.stringify(pp)); return J(pp); } return J(await pPrefs(KV, me.id)); }
       if (P === '/push/quitar' && req.method === 'POST') { const b = await body(); const l = JSON.parse(await KV.get('push:' + me.id) || '[]').filter(x => x.endpoint !== b.endpoint); await KV.put('push:' + me.id, JSON.stringify(l)); return J({ ok: true }); }
       // "Algo va mal": el aviso llega al administrador con lo que estaba pasando en la app
       if (P === '/fallo' && request.method === 'POST') {
@@ -453,6 +461,7 @@ export default {
       // Solo David: invitaciones y contraseñas olvidadas
       if (P.startsWith('/admin')) {
         if (!isAdmin) return J({ error: 'solo el administrador' }, 403);
+        if (P === '/admin/hook') return J({ hook: JSON.parse(await KV.get('sthook') || 'null'), last: JSON.parse(await KV.get('sthooklast') || 'null') });
         if (P === '/admin' && req.method === 'GET') {
           const codes = JSON.parse(await KV.get('invs') || '[]');
           const invs = [];
@@ -510,7 +519,68 @@ export default {
       return json({ error: 'Algo ha fallado: ' + (e.message || e) }, 500, cors);
     }
   },
+  // cada 10 minutos: dar de alta el aviso de Strava (una vez) y mirar si hay salidas nuevas en Intervals.icu
+  async scheduled(ev, env, ctx) { CTX = ctx || null; if (!env.KV) return;
+    const run = (async () => { try { await ensureHook(env, env.KV); } catch (e) { } try { await pollIcu(env, env.KV); } catch (e) { } })();
+    if (ctx && ctx.waitUntil) ctx.waitUntil(run); else await run; },
 };
+
+// ---------- avisos de salidas nuevas ----------
+const HOOK_URL = 'https://ichnos-strava.dcarreterov86.workers.dev/strava/hook';
+async function pPrefs(KV, uid) { return Object.assign({ own: true, fr: true }, JSON.parse(await KV.get('pp:' + uid) || '{}')); }
+const kmTxt = m => (m / 1000).toFixed(1).replace('.', ',');
+function tipoTxt(t) { t = String(t || ''); return /Ride/i.test(t) ? 'en bici' : /Run/i.test(t) ? 'a correr' : /Hike/i.test(t) ? 'de ruta a pie' : /Walk/i.test(t) ? 'a caminar' : 'a hacer deporte'; }
+async function stravaTok(env, KV, uid) { let tok = JSON.parse(await KV.get('tok:' + uid) || 'null'); if (!tok) return null;
+  if (tok.e < Date.now() / 1000 + 120) { const r = await fetch('https://www.strava.com/oauth/token', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: env.STRAVA_ID, client_secret: env.STRAVA_SECRET, grant_type: 'refresh_token', refresh_token: tok.r }) });
+    const t = await r.json().catch(() => ({})); if (!r.ok || !t.access_token) return null; tok = { ...tok, a: t.access_token, r: t.refresh_token, e: t.expires_at }; await KV.put('tok:' + uid, JSON.stringify(tok)); }
+  return tok; }
+// Strava: el aviso es solo para el dueño de la salida (las normas de Strava no dejan enseñar sus datos a otros)
+async function onStravaEvent(env, KV, ev) {
+  if (!ev || ev.object_type !== 'activity' || ev.aspect_type !== 'create') return;
+  const hook = JSON.parse(await KV.get('sthook') || 'null'); if (hook && ev.subscription_id && String(ev.subscription_id) !== String(hook.id)) return;
+  const id = String(ev.object_id); if (await KV.get('pn:s:' + id)) return; await KV.put('pn:s:' + id, '1', { expirationTtl: 30 * 86400 });
+  const uid = await KV.get('ath:' + ev.owner_id); if (!uid) return; if (!(await pPrefs(KV, uid)).own) return;
+  let a = null; const tok = await stravaTok(env, KV, uid);
+  if (tok) { const r = await fetch('https://www.strava.com/api/v3/activities/' + id, { headers: { Authorization: 'Bearer ' + tok.a } }); if (r.ok) a = await r.json(); }
+  const up = a && a.total_elevation_gain ? Math.round(a.total_elevation_gain) : 0;
+  await pushTo(KV, uid, { title: 'Ichnos', body: `Tu salida${a && a.name ? ' «' + a.name + '»' : ''} ya está en Ichnos${a && a.distance ? ' · ' + kmTxt(a.distance) + ' km' : ''}${up ? ' · +' + up + ' m' : ''}. Tócala para verla.`, url: './#salidas', tag: 's' + id });
+}
+async function ensureHook(env, KV) {
+  if (await KV.get('sthook')) return;
+  let vt = await KV.get('sthookvt'); if (!vt) { vt = rnd(20); await KV.put('sthookvt', vt); }
+  const r = await fetch('https://www.strava.com/api/v3/push_subscriptions', { method: 'POST', body: new URLSearchParams({ client_id: env.STRAVA_ID, client_secret: env.STRAVA_SECRET, callback_url: HOOK_URL, verify_token: vt }) });
+  const t = await r.json().catch(() => ({}));
+  if (r.ok && t.id) { await KV.put('sthook', JSON.stringify({ id: t.id, t: Date.now() })); return; }
+  const g = await fetch(`https://www.strava.com/api/v3/push_subscriptions?client_id=${encodeURIComponent(env.STRAVA_ID)}&client_secret=${encodeURIComponent(env.STRAVA_SECRET)}`);
+  const l = await g.json().catch(() => []), sb = Array.isArray(l) && l[0];
+  if (sb && sb.callback_url === HOOK_URL) await KV.put('sthook', JSON.stringify({ id: sb.id, t: Date.now() }));
+  else await KV.put('sthooklast', JSON.stringify({ t: Date.now(), status: r.status, r: t, l }), { expirationTtl: 7 * 86400 });
+}
+// Intervals.icu: salidas que vienen directas del GPS → aviso a sus amigos y a su grupeta (y a él si no tiene Strava)
+async function pollIcu(env, KV) {
+  const users = await usersList(KV), oldest = new Date(Date.now() - 2 * 864e5).toISOString().slice(0, 10), newest = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+  for (const u of users) {
+    const c = JSON.parse(await KV.get('icu:' + u.id) || 'null'); if (!c) continue;
+    let l = []; try { const r = await fetch(`https://intervals.icu/api/v1/athlete/0/activities?oldest=${oldest}&newest=${newest}`, { headers: { Authorization: c.b ? 'Bearer ' + c.b : 'Basic ' + btoa('API_KEY:' + c.k) } }); if (!r.ok) continue; l = await r.json(); } catch (e) { continue; }
+    if (!Array.isArray(l)) continue;
+    const sk = 'icuseen:' + u.id, seen = JSON.parse(await KV.get(sk) || 'null'), ids = l.map(a => String(a.id));
+    if (!seen) { await KV.put(sk, JSON.stringify(ids)); continue; }   // la primera vez solo se apunta lo que ya había (sin avisar de lo viejo)
+    const nw = l.filter(a => !seen.includes(String(a.id))); if (!nw.length) continue;
+    await KV.put(sk, JSON.stringify([...new Set([...ids, ...seen])].slice(0, 300)));
+    for (const a of nw) {
+      if (String(a.source || '').toUpperCase() === 'STRAVA') continue;
+      const st = Date.parse(a.start_date || a.start_date_local || ''); if (st && Date.now() - st > 36 * 3600e3) continue;
+      if (await KV.get('pn:i:' + a.id)) continue; await KV.put('pn:i:' + a.id, '1', { expirationTtl: 30 * 86400 });
+      const up = a.total_elevation_gain ? Math.round(a.total_elevation_gain) : 0, km = a.distance ? kmTxt(a.distance) + ' km' : '', who = u.name || 'Alguien';
+      const f = await getFw(KV, u.id), to = new Set(Object.keys(f.in).filter(x => f.in[x] === 'ok'));
+      for (const gid of JSON.parse(await KV.get('ug:' + u.id) || '[]')) { const g = JSON.parse(await KV.get('gr:' + gid) || 'null'); if (g) Object.keys(g.members || {}).forEach(x => to.add(x)); }
+      to.delete(u.id);
+      for (const x of to) if ((await pPrefs(KV, x)).fr) await pushTo(KV, x, { title: 'Ichnos', body: `${who} ha salido ${tipoTxt(a.type)}${km ? ': ' + km : ''}${up ? ' · +' + up + ' m' : ''}${a.name ? ' · «' + a.name + '»' : ''}.`, url: './#grupeta', tag: 'a' + a.id });
+      if (!(await KV.get('tok:' + u.id)) && (await pPrefs(KV, u.id)).own) await pushTo(KV, u.id, { title: 'Ichnos', body: `Tu salida${a.name ? ' «' + a.name + '»' : ''} ya está en Ichnos${km ? ' · ' + km : ''}${up ? ' · +' + up + ' m' : ''}. Tócala para verla.`, url: './#salidas', tag: 'i' + a.id });
+    }
+  }
+}
 
 
 // ---------- grupetas ----------

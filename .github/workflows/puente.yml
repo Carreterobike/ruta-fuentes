@@ -42,6 +42,8 @@ jobs:
           [[migrations]]
           tag = "v1"
           new_sqlite_classes = ["GStore"]
+          [triggers]
+          crons = ["*/10 * * * *"]
           TOML
           sed -i 's/^ *//' worker/wrangler.toml
           cat worker/wrangler.toml
