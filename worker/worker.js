@@ -207,7 +207,7 @@ export default {
       const mEv = /^\/icu\/evento\/(\d+)$/.exec(P);
       if (mEv && req.method === 'DELETE') {
         const c = JSON.parse(await KV.get('icu:' + me.id) || 'null'); if (!c) return J({ error: 'sin conectar' }, 409);
-        const r = await fetch('https://intervals.icu/api/v1/athlete/0/events/' + m[1], { method: 'DELETE', headers: { Authorization: c.b ? 'Bearer ' + c.b : 'Basic ' + btoa('API_KEY:' + c.k) } });
+        const r = await fetch('https://intervals.icu/api/v1/athlete/0/events/' + mEv[1], { method: 'DELETE', headers: { Authorization: c.b ? 'Bearer ' + c.b : 'Basic ' + btoa('API_KEY:' + c.k) } });
         return J({ ok: r.ok });
       }
       if (P.startsWith('/icu/api/')) {
