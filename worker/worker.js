@@ -368,6 +368,38 @@ export default {
         return J({ error: 'no existe' }, 404);
       }
 
+      // ----- Mensajes privados (chat individual): solo si os seguís los dos o estáis en la misma grupeta
+      if (P === '/dm' && req.method === 'GET') {
+        const ix = JSON.parse(await KV.get('dml:' + me.id) || '{}'), out = [];
+        for (const u of Object.keys(ix)) { const d = JSON.parse(await KV.get(dmKey(me.id, u)) || 'null'); if (!d) continue;
+          const cut = Math.max((d.del || {})[me.id] || 0, (d.rd || {})[me.id] || 0), vis = d.m.filter(x => x.t > ((d.del || {})[me.id] || 0)); if (!vis.length) continue;
+          const last = vis[vis.length - 1]; out.push({ u, t: last.t, last: { u: last.u, x: last.x || (last.r ? 'Ruta: ' + last.r.title : ''), t: last.t }, unread: vis.filter(x => x.u !== me.id && x.t > cut).length }); }
+        out.sort((a, b) => b.t - a.t); return J(out);
+      }
+      m = /^\/dm\/([\w-]+)(\/borrar)?$/.exec(P);
+      if (m) {
+        const other = m[1]; if (other === me.id || !(await KV.get('u:' + other))) return J({ error: 'no existe' }, 404);
+        const fa = await getFw(KV, me.id), ok = (fa.in[other] === 'ok' && fa.out[other] === 'ok') || await mates(KV, me.id, other);
+        if (!ok) return J({ error: 'Para escribirle tenéis que seguiros los dos o estar en la misma grupeta.' }, 403);
+        const k = dmKey(me.id, other), d = JSON.parse(await KV.get(k) || 'null') || { m: [], rd: {}, del: {} };
+        const view = () => ({ m: d.m.filter(x => x.t > (d.del[me.id] || 0)), seen: d.rd[other] || 0 });
+        if (req.method === 'GET') { d.rd[me.id] = Date.now(); await KV.put(k, JSON.stringify(d)); return J(view()); }
+        const b = await body();
+        if (m[2]) { d.del[me.id] = Date.now(); await KV.put(k, JSON.stringify(d)); return J(view()); }   // borrar la conversación solo para mí
+        if (b.del) { d.m = d.m.filter(x => !(x.id === b.del && x.u === me.id)); await KV.put(k, JSON.stringify(d)); return J(view()); }
+        if (b.resp) { const x = d.m.find(y => y.id === b.resp && y.r); if (x && x.u !== me.id) { x.r.go = b.go === true ? true : b.go === false ? false : null; await KV.put(k, JSON.stringify(d));
+            const pf = await pPrefs(KV, other); if (pf.dm !== false && x.r.go != null) await pushTo(KV, other, { title: me.name, body: `${x.r.go ? 'Se apunta' : 'No puede ir'} a «${x.r.title}»`, url: './#dm=' + me.id, tag: 'dm' + me.id }); }
+          return J(view()); }
+        const msg = { id: 'm' + Date.now().toString(36) + rnd(3), u: me.id, t: Date.now() };
+        if (b.r) { const r = b.r; const title = String(r.title || '').trim().slice(0, 100); if (!title || !+r.when) return J({ error: 'Pon el día, la hora y un título.' }, 400);
+          msg.r = { title, when: +r.when, notes: String(r.notes || '').slice(0, 1000), coords: line(r.coords).slice(0, 400).map(p => [p[0], p[1]]), km: +r.km || null, up: +r.up || null, mode: String(r.mode || '').slice(0, 10), link: String(r.link || '').slice(0, 4000), go: null }; }
+        else { const x = String(b.x || '').trim().slice(0, 1000); if (!x) return J({ error: 'vacío' }, 400); msg.x = x; }
+        d.m.push(msg); d.m = d.m.slice(-300); d.rd[me.id] = Date.now(); await KV.put(k, JSON.stringify(d));
+        for (const [a, c] of [[me.id, other], [other, me.id]]) { const ix = JSON.parse(await KV.get('dml:' + a) || '{}'); ix[c] = msg.t; await KV.put('dml:' + a, JSON.stringify(ix)); }
+        const pf = await pPrefs(KV, other); if (pf.dm !== false) await pushTo(KV, other, { title: me.name, body: msg.r ? `Te propone una ruta: «${msg.r.title}»` : msg.x.slice(0, 140), url: './#dm=' + me.id, tag: 'dm' + me.id });
+        return J(view());
+      }
+
       // Me gusta y comentarios
       m = /^\/soc\/([\w-]+)$/.exec(P);
       if (m && req.method === 'GET') {
@@ -403,7 +435,7 @@ export default {
         return J({ ok: true });
       }
       if (P === '/push/estado') return J({ ...JSON.parse(await KV.get('pushlast:' + me.id) || '{}'), devs: JSON.parse(await KV.get('push:' + me.id) || '[]').map(x => ({ d: x.d || '?', t: x.t, h: new URL(x.endpoint).host })) });
-      if (P === '/push/prefs') { if (req.method === 'POST') { const b = await body(); const pp = { ...(await pPrefs(KV, me.id)), own: b.own !== false, fr: b.fr !== false, fv: b.fv !== false }; await KV.put('pp:' + me.id, JSON.stringify(pp)); return J(pp); } return J(await pPrefs(KV, me.id)); }
+      if (P === '/push/prefs') { if (req.method === 'POST') { const b = await body(); const pp = { ...(await pPrefs(KV, me.id)), own: b.own !== false, fr: b.fr !== false, fv: b.fv !== false, dm: b.dm !== false }; await KV.put('pp:' + me.id, JSON.stringify(pp)); return J(pp); } return J(await pPrefs(KV, me.id)); }
       // amigos favoritos (de momento solo el administrador): aviso cuando salen y te lleva a su salida
       if (P === '/fav' && req.method === 'POST') {
         if ((await KV.get('admin')) !== me.id) return J({ error: 'solo el administrador' }, 403);
@@ -557,7 +589,7 @@ export default {
 
 // ---------- avisos de salidas nuevas ----------
 const HOOK_URL = 'https://ichnos-strava.dcarreterov86.workers.dev/strava/hook';
-async function pPrefs(KV, uid) { return Object.assign({ own: true, fr: true, fv: true, fav: [] }, JSON.parse(await KV.get('pp:' + uid) || '{}')); }
+async function pPrefs(KV, uid) { return Object.assign({ own: true, fr: true, fv: true, dm: true, fav: [] }, JSON.parse(await KV.get('pp:' + uid) || '{}')); }
 const kmTxt = m => (m / 1000).toFixed(1).replace('.', ',');
 function tipoTxt(t) { t = String(t || ''); return /Ride/i.test(t) ? 'en bici' : /Run/i.test(t) ? 'a correr' : /Hike/i.test(t) ? 'de ruta a pie' : /Walk/i.test(t) ? 'a caminar' : 'a hacer deporte'; }
 async function stravaTok(env, KV, uid) { let tok = JSON.parse(await KV.get('tok:' + uid) || 'null'); if (!tok) return null;
@@ -713,6 +745,7 @@ async function pollIcu(env, KV) {
 
 
 // ---------- grupetas ----------
+const dmKey = (a, b) => 'dm:' + [a, b].sort().join('|');
 async function ugAdd(KV, uid, gid) { const l = JSON.parse(await KV.get('ug:' + uid) || '[]'); if (!l.includes(gid)) { l.push(gid); await KV.put('ug:' + uid, JSON.stringify(l)); } }
 async function ugDel(KV, uid, gid) { const l = JSON.parse(await KV.get('ug:' + uid) || '[]'); if (l.includes(gid)) await KV.put('ug:' + uid, JSON.stringify(l.filter(x => x !== gid))); }
 async function mates(KV, a, b) {   // ¿están los dos en alguna grupeta?
