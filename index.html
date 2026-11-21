@@ -432,7 +432,7 @@ details.help p{margin:6px 0 0}
 .dm-n{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#e5484d;color:#fff;font:700 11px/18px var(--body);font-style:normal;text-align:center;padding:0 4px}
 #dmRecentL li{position:relative}#dmRecentL .dm-n{position:static;margin-left:auto}#dmRecentL small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw;display:block}
 #bnav button{position:relative}.dm-nb{position:absolute;top:2px;left:calc(50% + 6px);min-width:17px;height:17px;border-radius:9px;background:#e5484d;color:#fff;font:700 10.5px/17px var(--body);font-style:normal;text-align:center;padding:0 4px}
-.dmview{display:flex;flex-direction:column}.dmview .rv-h{display:flex;align-items:center;gap:10px}.dmview .rv-h .av{width:34px;height:34px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800}.dmview .rv-h>div:nth-child(3){flex:1}
+.dmview{display:flex;flex-direction:column}.dmview .rv-h{display:flex;align-items:center;gap:10px}.dm-hint{text-transform:none!important;text-align:center;max-width:80%}.dmview .rv-h .av{width:34px;height:34px;border-radius:50%;background:#2a3238;color:#B6E22E;display:grid;place-items:center;font-weight:800}.dmview .rv-h>div:nth-child(3){flex:1}
 .dm-more{border:0;background:transparent;color:inherit;font-size:22px;padding:4px 10px}
 .dm-list{list-style:none;margin:0;padding:12px 14px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
 .dm-day{align-self:center;color:var(--muted);font-size:12px;margin:8px 0 2px;text-transform:capitalize}.dm-seen{align-self:flex-end;color:var(--muted);font-size:11.5px}
@@ -1643,7 +1643,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795275502';   // versión de la app (la pone build.py)
+const BUILD='1795275616';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7392,7 +7392,7 @@ function dmClose(){ $('dmView').hidden=true; dmWith=null; clearInterval(dmTimer)
 const dmDay=t=>{ const d=new Date(t), n=new Date(); const k=x=>x.toDateString(); if(k(d)===k(n)) return 'Hoy'; const y=new Date(n); y.setDate(n.getDate()-1); if(k(d)===k(y)) return 'Ayer'; return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}); };
 const dmHour=t=>new Date(t).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 function dmRender(scroll){ const l=$('dmList'), m=(dmData&&dmData.m)||[]; let day='', html='';
-  if(!m.length) html=`<li class="dm-day">Escribe el primer mensaje a ${esc(uName(dmWith))} o propónle una ruta.</li>`;
+  if(!m.length) html=`<li class="dm-day dm-hint">Escribe el primer mensaje a ${esc(uName(dmWith))} o propónle una ruta.</li>`;
   m.forEach(x=>{ const dd=dmDay(x.t); if(dd!==day){ day=dd; html+=`<li class="dm-day">${esc(dd)}</li>`; } const mine=x.u===me.id;
     if(x.r){ const r=x.r, st=r.go===true?'<b class="dm-ok">Va</b>':r.go===false?'<b class="dm-no">No puede</b>':'<span class="en-mut">Sin contestar</span>';
       html+=`<li class="dm-m ${mine?'dm-mine':'dm-his'} dm-r" data-id="${x.id}"><div class="dm-rt">${mine?'Propones':'Te propone'} una ruta</div>
