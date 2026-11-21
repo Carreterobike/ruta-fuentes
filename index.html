@@ -426,6 +426,23 @@ details.help p{margin:6px 0 0}
 
 .grn{display:flex;align-items:center;gap:6px}.grren{border:0;background:transparent;color:var(--muted);font-size:18px;padding:2px 6px;cursor:pointer}
 .gr-x{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.gr-x .danger{color:#c92a2a;border-color:#e3a3a3}
+
+/* mensajes privados */
+.dm-b{border:0;background:var(--soft)!important;color:var(--ink)!important;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;position:relative;flex:none;padding:0!important;font-size:18px}
+.dm-n{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#e5484d;color:#fff;font:700 11px/18px var(--body);font-style:normal;text-align:center;padding:0 4px}
+#dmRecentL li{position:relative}#dmRecentL .dm-n{position:static;margin-left:auto}#dmRecentL small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw;display:block}
+#bnav button{position:relative}.dm-nb{position:absolute;top:2px;left:calc(50% + 6px);min-width:17px;height:17px;border-radius:9px;background:#e5484d;color:#fff;font:700 10.5px/17px var(--body);font-style:normal;text-align:center;padding:0 4px}
+.dmview{display:flex;flex-direction:column}.dmview .rv-h{display:flex;align-items:center;gap:10px}.dmview .rv-h .av{width:34px;height:34px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800}.dmview .rv-h>div:nth-child(3){flex:1}
+.dm-more{border:0;background:transparent;color:inherit;font-size:22px;padding:4px 10px}
+.dm-list{list-style:none;margin:0;padding:12px 14px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.dm-day{align-self:center;color:var(--muted);font-size:12px;margin:8px 0 2px;text-transform:capitalize}.dm-seen{align-self:flex-end;color:var(--muted);font-size:11.5px}
+.dm-m{max-width:82%;padding:8px 11px;border-radius:16px;display:flex;flex-direction:column;gap:2px;cursor:default;word-wrap:break-word}
+.dm-m.dm-mine{align-self:flex-end;background:#B6E22E;color:#14181c;border-bottom-right-radius:5px;cursor:pointer}.dm-m.dm-his{align-self:flex-start;background:var(--card);color:var(--ink);border-bottom-left-radius:5px}
+.dm-h{font-size:10.5px;opacity:.65;align-self:flex-end}.dm-del{margin-top:4px;border:0;border-radius:999px;background:#c92a2a;color:#fff;font-weight:700;padding:5px 12px;align-self:flex-end}
+.dm-r{min-width:68%}.dm-rt{font-size:12px;font-weight:800;opacity:.8}.dm-r b{font-size:15px}.dm-r p{margin:2px 0}.dm-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.dm-acts button{border:0;border-radius:999px;padding:6px 11px;font-weight:700;background:rgba(0,0,0,.12);color:inherit}.dm-m.dm-his .dm-acts button{background:var(--soft)}.dm-acts button.on{background:#14181c;color:#B6E22E}.dm-ok{color:#2f6f00}.dm-no{color:#c92a2a}
+.dm-form{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}.dm-form input{flex:1;min-width:0;font-size:16px;padding:10px 12px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.dm-form .btn-main{width:auto;flex:none;padding:0 18px;margin:0}.dm-route{width:42px;height:42px;display:grid;place-items:center;flex:none;border:0;border-radius:50%;background:var(--soft);color:var(--ink);font-size:20px}
 /* entreno */
 .en-nav{display:flex;gap:6px}.en-nav button{width:34px;height:34px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font-size:20px;font-weight:700;line-height:1}
 .en-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}.en-sum div{background:var(--soft);border-radius:12px;padding:8px 4px}.en-sum b{display:block;font-size:17px}.en-sum small{color:var(--muted);font-size:11.5px}.en-sum .lime{color:#6f8f00}
@@ -1122,6 +1139,10 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     </section>
   </div>
   <div id="grFriends" hidden>
+  <section class="pblock" id="dmRecent" hidden>
+    <div class="pb-h"><h3>Mensajes</h3></div>
+    <ul class="frlist" id="dmRecentL"></ul>
+  </section>
   <section class="pblock" id="pAmigos" hidden>
     <div class="pb-h"><h3>Amigos</h3><span style="display:flex;gap:6px"><button class="pb-btn" id="frInvite" hidden>Invitar</button><button class="pb-btn" id="frFind">＋ Buscar</button></span></div>
     <div class="grinv" id="frInv" hidden>
@@ -1223,6 +1244,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <div class="pp-l" id="pushPrefs" hidden>
       <label class="chk"><input type="checkbox" id="ppOwn"> Cuando llegue una salida mía</label>
       <label class="chk" id="ppFavL" hidden><input type="checkbox" id="ppFav"> Cuando salga un amigo favorito (te lleva a su salida)</label>
+      <label class="chk"><input type="checkbox" id="ppDm"> Cuando me escriba alguien</label>
       <label class="chk"><input type="checkbox" id="ppFr"> Cuando salgan mis amigos o mi grupeta</label>
     </div>
   </section>
@@ -1382,7 +1404,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
           <button id="tripBtn" hidden>Hacer por etapas</button>
           <button id="tripBack" hidden>← Volver al viaje</button>
           <button id="almBtn" hidden><i class="ico ico-fork"></i>Almuerzo</button>
-          <button id="gpropBtn" hidden>Proponer a la grupeta</button>
+          <button id="gpropBtn" hidden>Proponer salida</button>
         </div>
       </section>
       <section class="sec" id="secAlm" hidden>
@@ -1534,6 +1556,11 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <button type="button" class="btn-out" id="bkDel" hidden>Borrar bici</button></div>
   </form>
 </div>
+<div class="rideview dmview" id="dmView" hidden role="dialog" aria-modal="true" aria-labelledby="dmName">
+  <header class="rv-h"><button id="dmBack" aria-label="Volver">←</button><div class="av" id="dmAv"></div><div><b id="dmName"></b></div><button class="dm-more" id="dmMore" aria-label="Borrar la conversación">⋯</button></header>
+  <ul class="dm-list" id="dmList"></ul>
+  <form class="dm-form" id="dmForm"><button type="button" class="dm-route" id="dmRoute" aria-label="Proponer una ruta"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8 18h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7"/></svg></button><input id="dmText" placeholder="Escribe un mensaje…" maxlength="1000" autocomplete="off"><button class="btn-main">Enviar</button></form>
+</div>
 <div class="rideview" id="enView" hidden role="dialog" aria-modal="true" aria-labelledby="enVT">
   <header class="rv-h"><button id="enBack" aria-label="Volver">←</button><div><b id="enVT"></b><small id="enVS"></small></div></header>
   <div class="rv-body" id="enVB"></div>
@@ -1541,7 +1568,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <div class="rideview" id="frView" hidden role="dialog" aria-modal="true" aria-labelledby="frName">
   <header class="rv-h"><button id="frBack" aria-label="Volver">←</button><div><b id="frName"></b><small id="frSub"></small></div></header>
   <div class="rv-body">
-    <div class="rvcard frtop"><div class="avatar sm" id="frAv"></div><div><b id="frApodo"></b><small id="frCity"></small></div><button class="fav-st" id="frFav" hidden aria-label="Favorito"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button><button class="btn" id="frFollow"></button></div>
+    <div class="rvcard frtop"><div class="avatar sm" id="frAv"></div><div><b id="frApodo"></b><small id="frCity"></small></div><button class="pb-btn" id="frMsg" hidden>Mensaje</button><button class="fav-st" id="frFav" hidden aria-label="Favorito"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button><button class="btn" id="frFollow"></button></div>
     <div class="rvcard" id="frStats"></div>
     <button class="btn-main" id="frMapBtn" hidden>Ver su mapa</button>
     <div class="rvcard" id="frBikes"></div>
@@ -1552,9 +1579,9 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
   <div class="box lbox"><h4 id="usTitle">Buscar amigos</h4><input class="ninput" id="usQ" placeholder="Escribe un nombre" autocomplete="off"><ul class="frlist" id="usList"></ul><button class="btn-ghost" id="usClose">Cerrar</button></div>
 </div>
 <div class="modal" id="gpModal" hidden role="dialog" aria-modal="true" aria-labelledby="gpT">
-  <form class="box lbox gpform" id="gpForm"><h4 id="gpT">Proponer salida a la grupeta</h4>
+  <form class="box lbox gpform" id="gpForm"><h4 id="gpT">Proponer salida</h4>
     <p class="svp" id="gpRoute"></p>
-    <label>Grupeta <select id="gpGroup"></select></label>
+    <label>Para <select id="gpGroup"></select></label>
     <label>Título <input id="gpTitle" maxlength="100" required></label>
     <div class="gp2"><label>Día <input type="date" id="gpDay" required></label><label>Hora <input type="time" id="gpHour" value="08:00" required></label></div>
     <label>Notas (sitio de quedada, almuerzo…) <textarea id="gpNotes" rows="2" maxlength="1000"></textarea></label>
@@ -1616,7 +1643,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795213477';   // versión de la app (la pone build.py)
+const BUILD='1795275502';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2296,7 +2323,7 @@ function updateSheet(){
   $('secSeg').hidden=!T.segmentos;
   $('secCapas').hidden=!capasOpen;
   $('almBtn').hidden=true;   // el almuerzo se pide arriba, en "Añadir a tu ruta"
-  try{ $('gpropBtn').hidden=!(route && points.length>=2 && !trip && groups.length); }catch(e){}
+  try{ $('gpropBtn').hidden=!(route && points.length>=2 && !trip && (groups.length||dmPeople().length)); }catch(e){}
   $('secAlm').hidden=!(almOpen && route) || crearClosed || wz.on;
   $('secWiz').hidden=!wz.on||crearClosed;
   $('secHechas').hidden=!rec;
@@ -6697,9 +6724,9 @@ function renderFriends(){
   const ids=[...new Set([...Object.keys(fw.out),...Object.keys(fw.in).filter(id=>fw.in[id]==='ok')])].filter(id=>users.some(u=>u.id===id));
   ids.sort((a,b)=>uName(a).localeCompare(uName(b),'es'));
   $('frList').innerHTML=ids.length?ids.map(id=>{ const st=fwState(id), back=fw.in[id]==='ok'&&!fw.out[id];
-    return `<li data-id="${id}"><div class="av">${initial(uName(id))}</div><span><b>${esc(uName(id))}</b><small>${st}</small></span>${back?`<button data-f="${id}">Seguir también</button>`:''}${me.admin?`<button class="fav-st${favs.has(id)?' on':''}" data-s="${id}" aria-label="Favorito">${STAR_SVG}</button>`:''}</li>`; }).join('')
+    return `<li data-id="${id}"><div class="av">${initial(uName(id))}</div><span><b>${esc(uName(id))}</b><small>${st}</small></span>${back?`<button data-f="${id}">Seguir también</button>`:''}${typeof dmCan==='function'&&dmCan(id)?`<button class="dm-b" data-dm="${id}" aria-label="Mensaje a ${esc(uName(id))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>${dmUnread(id)?`<i class="dm-n">${dmUnread(id)}</i>`:''}</button>`:''}${me.admin?`<button class="fav-st${favs.has(id)?' on':''}" data-s="${id}" aria-label="Favorito">${STAR_SVG}</button>`:''}</li>`; }).join('')
     :emptyB('people','Todavía no sigues a nadie','Busca a tus amigos para ver sus salidas y que vean las tuyas.','Buscar amigos','amigos');
-  $('frList').querySelectorAll('li').forEach(li=>li.onclick=e=>{ const sb=e.target.closest('[data-s]'); if(sb){ e.stopPropagation(); favSet(sb.dataset.s,!favs.has(sb.dataset.s)); return; } if(e.target.dataset.f){ e.stopPropagation(); fwAct('seguir',e.target.dataset.f); return; } openFriend(li.dataset.id); });
+  $('frList').querySelectorAll('li').forEach(li=>li.onclick=e=>{ const db=e.target.closest('[data-dm]'); if(db){ e.stopPropagation(); dmOpen(db.dataset.dm); return; } const sb=e.target.closest('[data-s]'); if(sb){ e.stopPropagation(); favSet(sb.dataset.s,!favs.has(sb.dataset.s)); return; } if(e.target.dataset.f){ e.stopPropagation(); fwAct('seguir',e.target.dataset.f); return; } openFriend(li.dataset.id); });
 }
 async function fwAct(act,id){
   if(act==='dejar'&&!await ask(`¿Dejar de seguir a ${uName(id)}?`,'Ya no verás sus salidas. Puedes volver a pedirlo cuando quieras.','Sí, dejar de seguir','No')) return false;
@@ -6743,7 +6770,7 @@ function paintFollowBtn(id){ const o=fw.out[id], b=$('frFollow');
 async function openFriend(id){
   frCur=id; frShown=20; $('frView').hidden=false; $('frView').scrollTop=0;
   $('frName').textContent=uName(id); $('frSub').textContent=fwState(id); $('frApodo').textContent=uName(id); $('frCity').textContent='';
-  paintAvatar($('frAv'),null); paintFollowBtn(id); paintFav(); $('frFav').onclick=()=>favSet(id,!favs.has(id));
+  paintAvatar($('frAv'),null); paintFollowBtn(id); paintFav(); $('frFav').onclick=()=>favSet(id,!favs.has(id)); $('frMsg').hidden=!dmCan(id); $('frMsg').onclick=()=>dmOpen(id);
   $('frStats').innerHTML=''; $('frBikes').innerHTML=''; $('frRides').innerHTML=''; $('frMore').hidden=true; $('frMapBtn').hidden=true;
   if(!canView(id)){ $('frEmpty').hidden=false; $('frEmpty').textContent=fw.out[id]==='pend'?'Cuando acepte tu solicitud verás su perfil y sus salidas.':'Pulsa "Seguir". Cuando acepte, verás su perfil y sus salidas.'; return; }
   $('frEmpty').hidden=true; $('frRides').innerHTML=skelCards(2);
@@ -6904,7 +6931,7 @@ async function loadGroups(){
   try{ const j=await api('/grupos'); groups=j.groups||[]; if(j.users) users=j.users; syncRaw.set('ichnos-grupos',groups); }catch(e){}
   if(!curGroup()){ gCur=groups[0]?groups[0].id:null; syncRaw.set('ichnos-gcur',gCur); }
   renderGroup(); if(gCur) loadGroupData();
-  if(typeof route!=='undefined') $('gpropBtn').hidden=!(route&&groups.length);
+  if(typeof route!=='undefined') $('gpropBtn').hidden=!(route&&(groups.length||dmPeople().length));
 }
 let gMode=store.get('ichnos-gmode','g');   // g = una grupeta · a = amigos
 function renderGroup(){
@@ -6985,9 +7012,12 @@ $('grInvite').onclick=()=>{ const g=curGroup(); if(!g) return;
 // proponer una salida con la ruta que tienes hecha
 $('grPropose').onclick=()=>{ if(route&&points.length>=2) openPropose(); else { toast('Primero crea la ruta en el mapa. Luego pulsa "Proponer a la grupeta".',5000); showPage('pgMapa'); if(!T.crear) setTimeout(()=>setToggle('crear',true),60); } };
 $('gpropBtn').onclick=()=>openPropose();
-function openPropose(){
-  if(!groups.length){ toast('Primero crea o únete a una grupeta (pestaña Grupeta).',5000); return; }
-  $('gpGroup').innerHTML=groups.map(g=>`<option value="${g.id}" ${g.id===gCur?'selected':''}>${esc(g.name)}</option>`).join(''); $('gpGroup').parentNode.hidden=groups.length<2;
+function openPropose(pre){
+  const ppl=dmPeople(); if(!groups.length&&!ppl.length){ toast('Primero únete a una grupeta o sigue a un amigo (pestaña Social).',5000); return; }
+  pre=pre||(dmPendTo?'u:'+dmPendTo:'g:'+gCur); dmPendTo=null;
+  $('gpGroup').innerHTML=(groups.length?`<optgroup label="Grupetas">${groups.map(g=>`<option value="g:${g.id}" ${'g:'+g.id===pre?'selected':''}>${esc(g.name)}</option>`).join('')}</optgroup>`:'')
+    +(ppl.length?`<optgroup label="Amigos">${ppl.map(u=>`<option value="u:${u}" ${'u:'+u===pre?'selected':''}>${esc(uName(u))}</option>`).join('')}</optgroup>`:'');
+  $('gpGroup').parentNode.hidden=false;
   $('gpRoute').textContent=`Ruta de ${fmtKm(route.length/1000)} km${route.up!=null?' · +'+Math.round(route.up)+' m':''} en ${MODES[mode].label}`;
   const d=new Date(); d.setDate(d.getDate()+((7-d.getDay())%7||7)); $('gpDay').value=d.toISOString().slice(0,10);
   $('gpTitle').value=''; $('gpNotes').value=''; $('gpModal').hidden=false; setTimeout(()=>$('gpTitle').focus(),50);
@@ -6997,7 +7027,10 @@ $('gpForm').onsubmit=async e=>{ e.preventDefault();
   const when=new Date($('gpDay').value+'T'+($('gpHour').value||'08:00')).getTime(); if(!when){ toast('Pon el día y la hora.'); return; }
   const c=[]; let last=null; route.coords.forEach(p=>{ if(!last||dist(last,p)>=40){ c.push([+p[0].toFixed(5),+p[1].toFixed(5)]); last=p; } });
   const step=Math.ceil(c.length/400)||1, cc=c.filter((_,i)=>i%step===0);
-  const gid=$('gpGroup').value||gCur;
+  const dest=$('gpGroup').value||('g:'+gCur), gid=dest.slice(2);
+  if(dest[0]==='u'){ try{ await api('/dm/'+gid,{method:'POST',body:{r:{when,title:$('gpTitle').value.trim(),notes:$('gpNotes').value.trim(),coords:cc,km:route.length/1000,up:route.up,mode,link:shareLink(routeShareObj())}}});
+      $('gpModal').hidden=true; toast(`Ruta propuesta a ${uName(gid)}. Le llega un aviso.`,4500); gMode='a'; store.set('ichnos-gmode','a'); showPage('pgGrupeta'); renderGroup(); dmOpen(gid); }
+    catch(err){ toast(err.status?err.message:'No hay conexión ahora.',5000); } return; }
   try{ gSal=await api(`/grupos/${gid}/salidas`,{method:'POST',body:{when,title:$('gpTitle').value.trim(),notes:$('gpNotes').value.trim(),route:{coords:cc,km:route.length/1000,up:route.up,mode,link:shareLink(routeShareObj())}}});
     $('gpModal').hidden=true; gCur=gid; syncRaw.set('ichnos-gcur',gCur); toast('Salida propuesta. Les llega un aviso a todos.',4500); showPage('pgGrupeta'); renderGroup(); renderSal(); }
   catch(err){ toast(err.status?err.message:'No hay conexión ahora.',5000); } };
@@ -7082,7 +7115,7 @@ authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().th
     const den=Notification.permission==='denied';
     $('pushOn').hidden=!!sub; $('pushOff').hidden=!sub; $('pushTest').hidden=!sub; $('pushPrefs').hidden=!sub;
     if(sub&&!paint.sent){ paint.sent=1; api('/push/sub',{method:'POST',body:{sub:sub.toJSON(),d:devName()}}).catch(()=>{ paint.sent=0; }); }   // que el puente tenga siempre este aparato apuntado
-    if(sub) api('/push/prefs').then(p=>{ $('ppOwn').checked=p.own!==false; $('ppFr').checked=p.fr!==false; $('ppFav').checked=p.fv!==false; $('ppFavL').hidden=!(me&&me.admin); }).catch(()=>{ $('ppOwn').checked=true; $('ppFr').checked=true; });
+    if(sub) api('/push/prefs').then(p=>{ $('ppOwn').checked=p.own!==false; $('ppFr').checked=p.fr!==false; $('ppFav').checked=p.fv!==false; $('ppDm').checked=p.dm!==false; $('ppFavL').hidden=!(me&&me.admin); }).catch(()=>{ $('ppOwn').checked=true; $('ppFr').checked=true; });
     $('pushInfo').textContent=sub?'Avisos activados en este aparato. Te llegan los me gusta, comentarios, el chat, las salidas que propone tu grupeta y, si quieres, cuando sale alguien:':den?'Los avisos están bloqueados para Ichnos en los ajustes del móvil. Actívalos allí (Ajustes → Notificaciones → Ichnos) y vuelve a pulsar.':'Te llega un aviso aunque tengas la app cerrada: me gusta, comentarios, mensajes del chat y salidas que propone tu grupeta.'; }
   $('pushOn').onclick=async()=>{ try{
       const perm=await Notification.requestPermission(); if(perm!=='granted'){ toast('Sin permiso no te pueden llegar avisos.',4000); paint(); return; }
@@ -7093,11 +7126,12 @@ authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().th
   $('pushTest').onclick=async()=>{ try{ const r=await reg(), sub=r&&await r.pushManager.getSubscription(); if(!sub){ paint(); return; }
       await api('/push/sub',{method:'POST',body:{sub:sub.toJSON(),test:true,d:devName()}}); toast('Enviado. Te tiene que llegar ahora un aviso de prueba.',4500); }catch(e){ toast('No hay conexión ahora.',4000); } };
   $('pushOff').onclick=async()=>{ try{ const r=await reg(), sub=r&&await r.pushManager.getSubscription(); if(sub){ await api('/push/quitar',{method:'POST',body:{endpoint:sub.endpoint}}).catch(()=>{}); await sub.unsubscribe(); } }catch(e){} paint(); };
-  const savePP=()=>api('/push/prefs',{method:'POST',body:{own:$('ppOwn').checked,fr:$('ppFr').checked,fv:$('ppFav').checked}}).then(()=>toast('Guardado.')).catch(()=>toast('No hay conexión ahora.',4000));
-  $('ppOwn').onchange=savePP; $('ppFr').onchange=savePP; $('ppFav').onchange=savePP;
+  const savePP=()=>api('/push/prefs',{method:'POST',body:{own:$('ppOwn').checked,fr:$('ppFr').checked,fv:$('ppFav').checked,dm:$('ppDm').checked}}).then(()=>toast('Guardado.')).catch(()=>toast('No hay conexión ahora.',4000));
+  $('ppOwn').onchange=savePP; $('ppFr').onchange=savePP; $('ppFav').onchange=savePP; $('ppDm').onchange=savePP;
   window.paintPush=paint; setTimeout(paint,2500);
   // al tocar un aviso del móvil: abrir lo que toca
   const go=()=>{ const h=location.hash; if(h==='#avisos'&&$('bell')){ history.replaceState(null,'',location.pathname+location.search); setTimeout(()=>$('bell').click(),900); } else if(h==='#grupeta'){ history.replaceState(null,'',location.pathname+location.search); showPage('pgGrupeta'); }
+    else if(/^#dm=/.test(h)){ const u=h.slice(4).replace(/[^\w-]/g,''); history.replaceState(null,'',location.pathname+location.search); gMode='a'; store.set('ichnos-gmode','a'); showPage('pgGrupeta'); renderGroup(); setTimeout(()=>dmOpen(u),300); }
     else if(/^#ver=/.test(h)){ const m=/^#ver=([\w-]+)\/([^/]+)\/(\d+)/.exec(h); history.replaceState(null,'',location.pathname+location.search); if(m){ showPage('pgSalidas'); openFriendRide(m[1],{id:decodeURIComponent(m[2]),d:+m[3]}); } }
     else if(h==='#salidas'){ history.replaceState(null,'',location.pathname+location.search); showPage('pgSalidas'); setTimeout(async()=>{ try{ await syncNow(); }catch(e){} try{ stravaSync(); }catch(e){} try{ icuSync(); }catch(e){} },600); } };
   window.addEventListener('hashchange',go); setTimeout(go,1800);
@@ -7331,6 +7365,67 @@ async function enSend(x,dev='ciclo'){ const w=enById(x.w); if(!w) return;
   $('enBack').onclick=()=>{ $('enView').hidden=true; };
 })();
 function enShowTab(){ const b=document.querySelector('#bnav [data-pg="pgEntreno"]'); if(b) b.hidden=!(me&&me.admin); }
+
+</script>
+<script>
+// ================= MENSAJES PRIVADOS (chat individual) y proponer ruta a un amigo =================
+let dmIx=[], dmWith=null, dmData=null, dmTimer=null, dmDelSel=null;
+const dmMutual=id=>!!(fw&&fw.in&&fw.out&&fw.in[id]==='ok'&&fw.out[id]==='ok');
+const dmMate=id=>(groups||[]).some(g=>g.members&&g.members.includes(id)&&me&&g.members.includes(me.id));
+const dmCan=id=>!!me&&id!==me.id&&(dmMutual(id)||dmMate(id));
+function dmPeople(){ const s=new Set(); Object.keys((fw&&fw.in)||{}).forEach(u=>{ if(dmMutual(u)) s.add(u); }); (groups||[]).forEach(g=>(g.members||[]).forEach(u=>{ if(me&&u!==me.id) s.add(u); })); return [...s]; }
+const dmUnread=id=>{ const x=dmIx.find(y=>y.u===id); return x?x.unread:0; };
+async function dmLoad(){ if(!me) return; try{ dmIx=await api('/dm')||[]; }catch(e){ return; } dmPaintBadges(); }
+function dmPaintBadges(){ const n=dmIx.reduce((a,x)=>a+(x.unread||0),0);
+  const b=document.querySelector('#bnav [data-pg="pgGrupeta"]'); if(b){ let i=b.querySelector('.dm-nb'); if(!i){ i=document.createElement('i'); i.className='dm-nb'; b.appendChild(i); } i.textContent=n>9?'9+':n; i.hidden=!n; }
+  try{ renderFriends(); }catch(e){} dmPaintRecent(); }
+function dmPaintRecent(){ const box=$('dmRecent'); if(!box) return; const l=dmIx.slice(0,6);
+  box.hidden=!l.length; $('dmRecentL').innerHTML=l.map(x=>`<li data-dm="${x.u}"><div class="av">${initial(uName(x.u))}</div><span><b>${esc(uName(x.u))}</b><small>${x.last.u===me.id?'Tú: ':''}${esc(x.last.x||'')}</small></span>${x.unread?`<i class="dm-n">${x.unread}</i>`:''}</li>`).join('');
+  $('dmRecentL').querySelectorAll('[data-dm]').forEach(li=>li.onclick=()=>dmOpen(li.dataset.dm)); }
+async function dmOpen(uid){ if(!dmCan(uid)){ toast('Para escribirle tenéis que seguiros los dos o estar en la misma grupeta.',5000); return; }
+  dmWith=uid; dmData=null; dmDelSel=null; $('dmView').hidden=false; $('dmName').textContent=uName(uid); $('dmAv').textContent=initial(uName(uid)); $('dmList').innerHTML='<li class="dm-day">Cargando…</li>';
+  await dmFetch(true); clearInterval(dmTimer); dmTimer=setInterval(()=>{ if(!$('dmView').hidden&&!document.hidden) dmFetch(false); },6000); }
+async function dmFetch(scroll){ const uid=dmWith; if(!uid) return; let d; try{ d=await api('/dm/'+uid); }catch(e){ if(scroll) $('dmList').innerHTML=`<li class="dm-day">${esc(e.message||'No hay conexión ahora.')}</li>`; return; }
+  if(uid!==dmWith) return; const changed=!dmData||JSON.stringify(d)!==JSON.stringify(dmData); dmData=d; if(changed) dmRender(scroll||true);
+  const x=dmIx.find(y=>y.u===uid); if(x&&x.unread){ x.unread=0; dmPaintBadges(); } }
+function dmClose(){ $('dmView').hidden=true; dmWith=null; clearInterval(dmTimer); dmLoad(); }
+const dmDay=t=>{ const d=new Date(t), n=new Date(); const k=x=>x.toDateString(); if(k(d)===k(n)) return 'Hoy'; const y=new Date(n); y.setDate(n.getDate()-1); if(k(d)===k(y)) return 'Ayer'; return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}); };
+const dmHour=t=>new Date(t).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+function dmRender(scroll){ const l=$('dmList'), m=(dmData&&dmData.m)||[]; let day='', html='';
+  if(!m.length) html=`<li class="dm-day">Escribe el primer mensaje a ${esc(uName(dmWith))} o propónle una ruta.</li>`;
+  m.forEach(x=>{ const dd=dmDay(x.t); if(dd!==day){ day=dd; html+=`<li class="dm-day">${esc(dd)}</li>`; } const mine=x.u===me.id;
+    if(x.r){ const r=x.r, st=r.go===true?'<b class="dm-ok">Va</b>':r.go===false?'<b class="dm-no">No puede</b>':'<span class="en-mut">Sin contestar</span>';
+      html+=`<li class="dm-m ${mine?'dm-mine':'dm-his'} dm-r" data-id="${x.id}"><div class="dm-rt">${mine?'Propones':'Te propone'} una ruta</div>
+        <b>${esc(r.title)}</b><small>${esc(fmtWhen(r.when))}${r.km?' · '+fmtKm(r.km)+' km':''}${r.up?' · +'+Math.round(r.up)+' m':''}${r.mode&&MODES[r.mode]?' · '+MODES[r.mode].label:''}</small>
+        ${r.notes?`<p>${esc(r.notes)}</p>`:''}<div class="dm-acts">${r.coords&&r.coords.length>1?'<button data-a="map">Ver ruta</button>':''}${r.link?'<button data-a="open">Llevar esta ruta</button>':''}
+        ${mine?st:`<button data-a="go" class="${r.go===true?'on':''}">Me apunto</button><button data-a="no" class="${r.go===false?'on':''}">No puedo</button>`}</div>
+        <small class="dm-h">${dmHour(x.t)}</small>${mine&&dmDelSel===x.id?'<button class="dm-del" data-a="del">Borrar</button>':''}</li>`; }
+    else html+=`<li class="dm-m ${mine?'dm-mine':'dm-his'}" data-id="${x.id}"><span>${esc(x.x)}</span><small class="dm-h">${dmHour(x.t)}</small>${mine&&dmDelSel===x.id?'<button class="dm-del" data-a="del">Borrar</button>':''}</li>`; });
+  const lastM=m[m.length-1]; if(lastM&&lastM.u===me.id&&dmData.seen>=lastM.t) html+='<li class="dm-seen">Visto</li>';
+  l.innerHTML=html;
+  l.querySelectorAll('.dm-m').forEach(li=>li.onclick=async e=>{ const id=li.dataset.id, x=m.find(y=>y.id===id); if(!x) return; const a=e.target.closest('button')&&e.target.closest('button').dataset.a;
+    if(a==='del'){ e.stopPropagation(); if(!confirm('¿Borrar este mensaje? Se borra también para '+uName(dmWith)+'.')) return; try{ dmData=await api('/dm/'+dmWith,{method:'POST',body:{del:id}}); dmDelSel=null; dmRender(false); }catch(err){ toast('No hay conexión ahora.',4000); } return; }
+    if(x.r&&a==='map'){ const r=x.r, ll=r.coords.map(p=>[p[0],p[1]]); dmClose(); showPage('pgMapa'); rideHi.clearLayers(); hiSel=null;
+      L.polyline(ll,{color:'#1E2328',weight:8,interactive:false}).addTo(rideHi); L.polyline(ll,{color:'#B6E22E',weight:4.5,interactive:false}).addTo(rideHi);
+      rideOnMap={_gsal:true}; $('roName').textContent=r.title; $('rideOn').hidden=false; $('roTrial').hidden=true; $('roCol').hidden=true; try{ map.fitBounds(L.latLngBounds(ll),{padding:[40,40]}); }catch(err){} return; }
+    if(x.r&&a==='open'){ location.href=x.r.link; setTimeout(()=>location.reload(),50); return; }
+    if(x.r&&(a==='go'||a==='no')){ const go=a==='go'?(x.r.go===true?null:true):(x.r.go===false?null:false); try{ dmData=await api('/dm/'+dmWith,{method:'POST',body:{resp:id,go}}); dmRender(false); }catch(err){ toast('No hay conexión ahora.',4000); } return; }
+    if(x.u===me.id){ dmDelSel=dmDelSel===id?null:id; dmRender(false); } });
+  if(scroll) l.scrollTop=l.scrollHeight; }
+// montaje
+(function dmInit(){ if(!$('dmView')) return;
+  $('dmBack').onclick=dmClose;
+  $('dmMore').onclick=async()=>{ if(!dmWith) return; if(!confirm(`¿Borrar la conversación con ${uName(dmWith)}? Se borra solo para ti; ${uName(dmWith)} la seguirá viendo.`)) return;
+    try{ dmData=await api('/dm/'+dmWith+'/borrar',{method:'POST',body:{}}); dmRender(true); toast('Conversación borrada.'); }catch(e){ toast('No hay conexión ahora.',4000); } };
+  $('dmForm').onsubmit=async e=>{ e.preventDefault(); const t=$('dmText').value.trim(); if(!t||!dmWith) return; $('dmText').value='';
+    try{ dmData=await api('/dm/'+dmWith,{method:'POST',body:{x:t}}); dmRender(true); }catch(err){ $('dmText').value=t; toast(err.status?err.message:'No hay conexión ahora.',4000); } };
+  $('dmRoute').onclick=()=>{ const uid=dmWith; if(typeof route!=='undefined'&&route&&points.length>=2){ openPropose('u:'+uid); return; }
+    dmPendTo=uid; dmClose(); toast(`Crea o abre la ruta en el mapa y pulsa «Proponer salida»: irá a ${uName(uid)}.`,6000); showPage('pgMapa'); if(!T.crear) setTimeout(()=>setToggle('crear',true),60); };
+  setInterval(()=>{ if(!document.hidden) dmLoad(); },60000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) dmLoad(); });
+  setTimeout(dmLoad,2500);
+})();
+let dmPendTo=null;
 
 </script>
 </body>
