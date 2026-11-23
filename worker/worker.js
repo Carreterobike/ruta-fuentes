@@ -177,6 +177,8 @@ export default {
         return J({ error: 'sesion' }, 401);
       }
       const isAdmin = (await KV.get('admin')) === me.id;
+      const DS = env.GSTORE ? async (o) => (await env.GSTORE.get(env.GSTORE.idFromName('g')).fetch('https://g/', { method: 'POST', body: JSON.stringify(o) })).json() : null;
+      { const bld = +(req.headers.get('X-Ichnos-Build') || 0); if (bld && Math.random() < 0.1) ctx.waitUntil(KV.put('bld:' + me.id, JSON.stringify({ b: bld, t: Date.now() }), { expirationTtl: 90 * 86400 })); }
       const canSee = async (uid) => uid === me.id || (await getFw(KV, uid)).in[me.id] === 'ok' || await mates(KV, me.id, uid);
 
       if (P === '/yo' && req.method === 'GET') return J({ ...pubUser(me), admin: isAdmin, strava: !!me.strava, icu: !!(await KV.get('icu:' + me.id)) });
@@ -358,6 +360,14 @@ export default {
           return J(S);
         }
         if (act === 'chat') {
+          if (DS) {
+            if (req.method === 'GET') return J(await DS({ act: 'gc', gid, op: 'get' }));
+            if (b.del) return J(await DS({ act: 'gc', gid, op: 'del', id: b.del, by: me.id, admin: gAdmin }));
+            const x = String(b.x || '').trim().slice(0, 1000); if (!x) return J({ error: 'vacío' }, 400);
+            const out = await DS({ act: 'gc', gid, op: 'post', msg: { id: 'm' + Date.now().toString(36) + rnd(3), u: me.id, t: Date.now(), x } });
+            const who = me.name || 'Alguien'; for (const uid of Object.keys(g.members || {})) if (uid !== me.id) pushLater(KV, uid, { title: (g.name || 'Grupeta') + ' · ' + who, body: x.slice(0, 140), url: './#grupeta', tag: 'chat-' + gid });
+            return J(out);
+          }
           const C = JSON.parse(await KV.get('gc:' + gid) || '[]');
           if (req.method === 'GET') return J(C);
           if (b.del) { const i = C.findIndex(x => x.id === b.del && (x.u === me.id || gAdmin)); if (i >= 0) C.splice(i, 1); }
@@ -369,6 +379,7 @@ export default {
       }
 
       // ----- Mensajes privados (chat individual): solo si os seguís los dos o estáis en la misma grupeta
+      if (DS && P === '/dm' && req.method === 'GET') return J(await DS({ act: 'dmlist', me: me.id }));
       if (P === '/dm' && req.method === 'GET') {
         const ix = JSON.parse(await KV.get('dml:' + me.id) || '{}'), out = [];
         for (const u of Object.keys(ix)) { const d = JSON.parse(await KV.get(dmKey(me.id, u)) || 'null'); if (!d) continue;
@@ -381,6 +392,23 @@ export default {
         const other = m[1]; if (other === me.id || !(await KV.get('u:' + other))) return J({ error: 'no existe' }, 404);
         const fa = await getFw(KV, me.id), ok = (fa.in[other] === 'ok' && fa.out[other] === 'ok') || await mates(KV, me.id, other);
         if (!ok) return J({ error: 'Para escribirle tenéis que seguiros los dos o estar en la misma grupeta.' }, 403);
+        if (DS) {
+          const k = dmKey(me.id, other), call = (op, extra) => DS({ act: 'dm', k, me: me.id, other, op, ...(extra || {}) });
+          if (req.method === 'GET') return J(await call('read'));
+          const b = await body();
+          if (m[2]) return J(await call('clear'));
+          if (b.del) return J(await call('del', { id: b.del }));
+          if (b.resp) { const r = await call('resp', { id: b.resp, go: b.go === true ? true : b.go === false ? false : null });
+            const pf = await pPrefs(KV, other); if (r.x && pf.dm !== false && r.x.go != null) await pushTo(KV, other, { title: me.name, body: `${r.x.go ? 'Se apunta' : 'No puede ir'} a «${r.x.title}»`, url: './#dm=' + me.id, tag: 'dm' + me.id });
+            return J(r.v); }
+          const msg = { id: 'm' + Date.now().toString(36) + rnd(3), u: me.id, t: Date.now() };
+          if (b.r) { const r = b.r; const title = String(r.title || '').trim().slice(0, 100); if (!title || !+r.when) return J({ error: 'Pon el día, la hora y un título.' }, 400);
+            msg.r = { title, when: +r.when, notes: String(r.notes || '').slice(0, 1000), coords: line(r.coords).slice(0, 400).map(p => [p[0], p[1]]), km: +r.km || null, up: +r.up || null, mode: String(r.mode || '').slice(0, 10), link: String(r.link || '').slice(0, 4000), go: null }; }
+          else { const x = String(b.x || '').trim().slice(0, 1000); if (!x) return J({ error: 'vacío' }, 400); msg.x = x; }
+          const v = await call('post', { msg });
+          const pf = await pPrefs(KV, other); if (pf.dm !== false) await pushTo(KV, other, { title: me.name, body: msg.r ? `Te propone una ruta: «${msg.r.title}»` : msg.x.slice(0, 140), url: './#dm=' + me.id, tag: 'dm' + me.id });
+          return J(v);
+        }
         const k = dmKey(me.id, other), d = JSON.parse(await KV.get(k) || 'null') || { m: [], rd: {}, del: {} };
         const view = () => ({ m: d.m.filter(x => x.t > (d.del[me.id] || 0)), seen: d.rd[other] || 0 });
         if (req.method === 'GET') { d.rd[me.id] = Date.now(); await KV.put(k, JSON.stringify(d)); return J(view()); }
@@ -462,9 +490,10 @@ export default {
 
       // Mapa compartido: opiniones de sitios, sitios añadidos u ocultados y fuentes
       // Lo compartido de la grupeta vive en un "Durable Object": atiende los cambios de uno en uno (no se pisan aunque guardéis a la vez)
-      const GS = env.GSTORE ? async (o) => (await env.GSTORE.get(env.GSTORE.idFromName('g')).fetch('https://g/', { method: 'POST', body: JSON.stringify(o) })).json() : null;
+      const GS2 = env.GSTORE ? async (o) => (await env.GSTORE.get(env.GSTORE.idFromName('g')).fetch('https://g/', { method: 'POST', body: JSON.stringify(o) })).json() : null;
       if (P === '/g' && req.method === 'POST' && +(req.headers.get('X-Ichnos-Build') || 0) < MIN_BUILD)
         return J({ error: 'Tu Ichnos es una versión vieja: ciérrala del todo y ábrela otra vez para actualizarla.', viejo: 1 }, 426);
+      const GS = GS2;
       if (GS && P === '/g' && req.method === 'GET') return J(await GS({ act: 'get' }));
       if (GS && P === '/g' && req.method === 'POST') {
         const b = await body(), ops = Array.isArray(b.ops) ? b.ops.slice(0, 500) : [];
@@ -542,7 +571,7 @@ export default {
           const icu = JSON.parse(await KV.get('icu:' + uid) || 'null'), subs = JSON.parse(await KV.get('push:' + uid) || '[]');
           let acts = null; if (icu) { try { const r = await fetch('https://intervals.icu/api/v1/athlete/0/activities?oldest=' + new Date(Date.now() - 21 * 864e5).toISOString().slice(0, 10) + '&newest=' + new Date(Date.now() + 864e5).toISOString().slice(0, 10), { headers: { Authorization: icu.b ? 'Bearer ' + icu.b : 'Basic ' + btoa('API_KEY:' + icu.k) } });
             acts = r.ok ? (await r.json()).map(a => ({ d: String(a.start_date_local || '').slice(0, 10), src: a.source || '', type: a.type || '' })) : 'error ' + r.status; } catch (e) { acts = 'error'; } }
-          return J({ name: u.name, strava: !!(await KV.get('tok:' + uid)), icu: icu ? (icu.b ? 'oauth' : 'clave') : null, acts, push: subs.map(x => ({ d: x.d || '?', h: new URL(x.endpoint).host, t: x.t })), pushlast: JSON.parse(await KV.get('pushlast:' + uid) || 'null'), prefs: await pPrefs(KV, uid), dm: JSON.parse(await KV.get('dml:' + uid) || '{}'), sync: (await KV.list({ prefix: 's:' + uid + ':', limit: 1000 })).keys.length });
+          return J({ name: u.name, build: JSON.parse(await KV.get('bld:' + uid) || 'null'), strava: !!(await KV.get('tok:' + uid)), icu: icu ? (icu.b ? 'oauth' : 'clave') : null, acts, push: subs.map(x => ({ d: x.d || '?', h: new URL(x.endpoint).host, t: x.t })), pushlast: JSON.parse(await KV.get('pushlast:' + uid) || 'null'), prefs: await pPrefs(KV, uid), dm: JSON.parse(await KV.get('dml:' + uid) || '{}'), sync: (await KV.list({ prefix: 's:' + uid + ':', limit: 1000 })).keys.length });
         }
         if (P === '/admin/propuestas' && req.method === 'POST') {
           const PR = JSON.parse(await KV.get('g:p') || '{}'), pr = PR[b.pid];
@@ -778,6 +807,33 @@ export class GStore {
     const b = await req.json(), out = o => new Response(JSON.stringify(o), { headers: { 'Content-Type': 'application/json' } });
     if (b.act === 'get') { const G = await this.load(); return out({ l: G.l, f: G.f, t: G.t, c: G.c }); }
     if (b.act === 'props') return out((await this.s.get('g:p')) || {});
+    if (b.act === 'dm' || b.act === 'dmlist') {
+      const KV = this.env.KV;
+      const getD = async k => { let d = await this.s.get(k); if (!d) { d = JSON.parse(await KV.get(k) || 'null') || { m: [], rd: {}, del: {} }; d.rd = d.rd || {}; d.del = d.del || {}; await this.s.put(k, d); } return d; };
+      const getIx = async u => { let ix = await this.s.get('dml:' + u); if (!ix) { ix = JSON.parse(await KV.get('dml:' + u) || '{}'); await this.s.put('dml:' + u, ix); } return ix; };
+      if (b.act === 'dmlist') {
+        const ix = await getIx(b.me), res = [];
+        for (const u of Object.keys(ix)) { const d = await getD('dm:' + [b.me, u].sort().join('|'));
+          const cut = Math.max(d.del[b.me] || 0, d.rd[b.me] || 0), vis = d.m.filter(x => x.t > (d.del[b.me] || 0)); if (!vis.length) continue;
+          const last = vis[vis.length - 1]; res.push({ u, t: last.t, last: { u: last.u, x: last.x || (last.r ? 'Ruta: ' + last.r.title : ''), t: last.t }, unread: vis.filter(x => x.u !== b.me && x.t > cut).length }); }
+        res.sort((a, c) => c.t - a.t); return out(res);
+      }
+      const d = await getD(b.k), view = () => ({ m: d.m.filter(x => x.t > (d.del[b.me] || 0)), seen: d.rd[b.other] || 0 });
+      if (b.op === 'read') { d.rd[b.me] = Date.now(); await this.s.put(b.k, d); return out(view()); }
+      if (b.op === 'clear') { d.del[b.me] = Date.now(); await this.s.put(b.k, d); return out(view()); }
+      if (b.op === 'del') { d.m = d.m.filter(x => !(x.id === b.id && x.u === b.me)); await this.s.put(b.k, d); return out(view()); }
+      if (b.op === 'resp') { const x = d.m.find(y => y.id === b.id && y.r); if (x && x.u !== b.me) { x.r.go = b.go; await this.s.put(b.k, d); return out({ v: view(), x: x.r }); } return out({ v: view() }); }
+      if (b.op === 'post') { d.m.push(b.msg); d.m = d.m.slice(-300); d.rd[b.me] = Date.now(); await this.s.put(b.k, d);
+        for (const [a, c] of [[b.me, b.other], [b.other, b.me]]) { const ix = await getIx(a); ix[c] = b.msg.t; await this.s.put('dml:' + a, ix); }
+        return out(view()); }
+      return out({ error: 'op' });
+    }
+    if (b.act === 'gc') {
+      const k = 'gc:' + b.gid; let C = await this.s.get(k); if (!C) { C = JSON.parse(await this.env.KV.get(k) || '[]'); await this.s.put(k, C); }
+      if (b.op === 'post') { C.push(b.msg); C = C.slice(-200); await this.s.put(k, C); }
+      if (b.op === 'del') { const i = C.findIndex(x => x.id === b.id && (x.u === b.by || b.admin)); if (i >= 0) { C.splice(i, 1); await this.s.put(k, C); } }
+      return out(C);
+    }
     if (b.act === 'post') {
       const G = await this.load(), PR = (await this.s.get('g:p')) || {}; let np = 0, x = ''; const now = Date.now();
       for (const o of b.ops || []) {
