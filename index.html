@@ -1643,7 +1643,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795412326';   // versión de la app (la pone build.py)
+const BUILD='1795412528';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7382,7 +7382,7 @@ function dmPaintBadges(){ const n=dmIx.reduce((a,x)=>a+(x.unread||0),0);
 function dmPaintRecent(){ const box=$('dmRecent'); if(!box) return; const l=dmIx.slice(0,6);
   box.hidden=!l.length; $('dmRecentL').innerHTML=l.map(x=>`<li data-dm="${x.u}"><div class="av">${initial(uName(x.u))}</div><span><b>${esc(uName(x.u))}</b><small>${x.last.u===me.id?'Tú: ':''}${esc(x.last.x||'')}</small></span>${x.unread?`<i class="dm-n">${x.unread}</i>`:''}</li>`).join('');
   $('dmRecentL').querySelectorAll('[data-dm]').forEach(li=>li.onclick=()=>dmOpen(li.dataset.dm)); }
-async function dmOpen(uid){ if(!dmCan(uid)){ toast('Para escribirle tenéis que seguiros los dos o estar en la misma grupeta.',5000); return; }
+async function dmOpen(uid){ if(!uid) return; if(!dmCan(uid)){ try{ await loadFriends(); }catch(e){} }   // al abrir desde un aviso, los amigos aún no están cargados: el puente decide si se puede
   dmWith=uid; dmData=null; dmDelSel=null; $('dmView').hidden=false; $('dmName').textContent=uName(uid); $('dmAv').textContent=initial(uName(uid)); $('dmList').innerHTML='<li class="dm-day">Cargando…</li>';
   await dmFetch(true); clearInterval(dmTimer); dmTimer=setInterval(()=>{ if(!$('dmView').hidden&&!document.hidden) dmFetch(false); },6000); }
 async function dmFetch(scroll){ const uid=dmWith; if(!uid) return; let d; try{ d=await api('/dm/'+uid); }catch(e){ if(scroll) $('dmList').innerHTML=`<li class="dm-day">${esc(e.message||'No hay conexión ahora.')}</li>`; return; }
