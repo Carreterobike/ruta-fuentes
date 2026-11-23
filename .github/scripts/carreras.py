@@ -164,6 +164,108 @@ def find_track(web):
     return None
 
 
+# ---------- running y trail: calendarios de la Federació Catalana d'Atletisme (PDF) ----------
+FCA = 'https://fcatletisme.cat'
+MESOS = {'GENER': 1, 'FEBRER': 2, 'MARÇ': 3, 'MARC': 3, 'ABRIL': 4, 'MAIG': 5, 'JUNY': 6, 'JULIOL': 7, 'AGOST': 8, 'SETEMBRE': 9, 'OCTUBRE': 10, 'NOVEMBRE': 11, 'DESEMBRE': 12}
+FUERA_PIE = re.compile(r"espanya|españa|europa|europe|m[oó]n\b|world|international|internactional|kids|promoci|sub ?1[468]|sub ?20|susp[eè]s|suspesa|anul|ajornat", re.I)
+CAT_BOX = (40.45, 43.0, 0.1, 3.4)
+
+
+def fca_pdfs(hoy):
+    """Los PDF más nuevos de cada año (este y el siguiente) de trail y de ruta."""
+    out = []
+    for q, ds in (('calendari-trail', 'trail'), ('calendari-ruta', 'correr')):
+        try:
+            l = json.loads(get(f'{FCA}/wp-json/wp/v2/media?search={q}&per_page=30&orderby=date&order=desc', polite=False))
+        except Exception as e:
+            print('fca', q, e); continue
+        for y in (hoy.year, hoy.year + 1):
+            for x in l:
+                u = x.get('source_url', '')
+                if u.lower().endswith('.pdf') and str(y) in u.rsplit('/', 1)[-1] and 'nota' not in u.lower():
+                    out.append((ds, y, u)); break
+    return out
+
+
+def pdf_text(u):
+    import subprocess, tempfile
+    with tempfile.NamedTemporaryFile(suffix='.pdf') as f:
+        f.write(get(u, binary=True, polite=False)); f.flush()
+        return subprocess.run(['pdftotext', '-layout', f.name, '-'], capture_output=True, text=True).stdout
+
+
+def km_de(nombre, esp):
+    n = nombre.lower(); ds = []
+    if re.search(r'\bmarat[oó]\b', n) and not re.search(r'mitja|mini|quart', n): ds.append(42)
+    if re.search(r'mitja', n): ds.append(21)
+    if re.search(r'\bmilla\b', n): ds.append(1.6)
+    for a, b in re.findall(r'(\d+(?:[.,]\d+)?)\s*(?:\s-\s|-|\si\s|\sy\s|,\s)\s*(\d+(?:[.,]\d+)?)\s*k', n): ds += [float(a.replace(',', '.')), float(b.replace(',', '.'))]
+    for a in re.findall(r'(\d+(?:[.,]\d+)?)\s*km', n): ds.append(float(a.replace(',', '.')))
+    for a in re.findall(r'\b(\d+)k\b', n): ds.append(float(a))
+    ds = sorted(set(d for d in ds if 0.5 < d < 400))
+    return ds
+
+
+def nivel_pie(ds_, dists, esp):
+    e = esp.lower(); mx = max(dists) if dists else None
+    if 'ultra' in e: return 4
+    if 'vertical' in e: return 3
+    if ds_ == 'correr':
+        if not mx: return 2
+        return 1 if mx <= 10 else 2 if mx <= 21.1 else 3 if mx <= 42.2 else 4
+    if not mx: return 2
+    return 1 if mx <= 12 else 2 if mx <= 25 else 3 if mx <= 45 else 4
+
+
+def parse_fca(txt, ds_, year, url):
+    out, mes, yy, last = [], None, year, None
+    for ln in txt.splitlines():
+        m = re.match(r'\s*(GENER|FEBRER|MAR[ÇC]|ABRIL|MAIG|JUNY|JULIOL|AGOST|SETEMBRE|OCTUBRE|NOVEMBRE|DESEMBRE)\s+(\d{4})', ln)
+        if m: mes, yy = MESOS[m.group(1).replace('C', 'Ç') if m.group(1) == 'MARC' else m.group(1)], int(m.group(2)); continue
+        m = re.match(r'\s*(\d{1,2})(?:\s*-\s*\d{1,2})?\s+(\S.*)$', ln)
+        if mes and m:
+            parts = [p.strip() for p in re.split(r'\s{2,}', m.group(2).strip()) if p.strip()]
+            if len(parts) < 2: continue
+            nombre, lugar = parts[0], parts[-1]
+            esp = parts[1] if len(parts) > 2 else ''
+            try: d = datetime.date(yy, mes, int(m.group(1)))
+            except ValueError: continue
+            last = {'d': d.isoformat() + 'T09:00:00+01:00', 'n': nombre, 'pob': lugar, 'prov': '', 'ds': ds_, 'esp': esp, 'url': url, 'camp': []}
+            out.append(last); continue
+        t = ln.strip()
+        if last and t and re.match(r'(Campionat|Copa)', t) and not re.search(r'\s{2,}', t): last['camp'].append(t)
+    return out
+
+
+def carreras_pie(hoy, geo):
+    items = []
+    for ds_, y, u in fca_pdfs(hoy):
+        try: txt = pdf_text(u)
+        except Exception as e: print('pdf', u, e); continue
+        rows = parse_fca(txt, ds_, y, u); print('FCA', ds_, y, len(rows), u, flush=True)
+        for c in rows:
+            if FUERA_PIE.search(c['n'] + ' ' + c['esp'] + ' ' + ' '.join(c['camp'])) or FUERA_PIE.search(c['pob']): continue
+            if re.search(r'\((?:[A-Z]{3})\)|\bpolonia|sud-?[àa]frica|la rioja|murcia|palma|cantabria|m[aá]laga|m[eé]rida', c['pob'], re.I): continue
+            k = c['pob'].lower()
+            if k not in geo: geo[k] = geocode(c['pob'], '')
+            g = geo[k]
+            if not g or not (CAT_BOX[0] < g[0] < CAT_BOX[1] and CAT_BOX[2] < g[1] < CAT_BOX[3]): continue
+            c['lat'], c['lon'], c['aprox'] = g[0], g[1], 1
+            c['camp'] += [x.strip() for x in re.findall(r'\((Campionat[^)]*)\)', c['n'])]
+            dists = km_de(c['n'], c['esp'])
+            c['n'] = re.sub(r'\s*\((?:TRS|CMT|CCP|RFEA|FCA|Campionat[^)]*)\)', '', c['n']).strip(' -')
+            if dists: c['km'] = round(max(dists)) if max(dists) >= 3 else max(dists)
+            if len(dists) > 1: c['dists'] = [round(x, 1) if x < 3 else round(x) for x in dists]
+            c['lv'] = nivel_pie(ds_, dists, c['esp'])
+            c['comp'] = False
+            esp = c.pop('esp')
+            c['mod'] = ('Trail' + (' · ' + esp if esp and esp.lower() not in ('trail running',) else '')) if ds_ == 'trail' else ('Carrera en asfalto' + (' · ' + esp if esp and 'homolog' not in esp.lower() else ''))
+            c['src'] = 'fca'
+            c['id'] = 'fca-' + re.sub(r'[^a-z0-9]+', '-', (c['d'][:10] + '-' + c['n']).lower()).strip('-')[:80]
+            items.append(c)
+    return items
+
+
 def main():
     os.makedirs(OUT + '/tracks', exist_ok=True)
     est_path = OUT + '/_estado.json'
@@ -251,6 +353,10 @@ def main():
         else:
             junt[k] = c
     items = list(junt.values())
+    try:
+        pie = carreras_pie(hoy, geo); items += pie; print('a pie', len(pie), flush=True)
+    except Exception as e:
+        print('a pie: error', e)
     items.sort(key=lambda c: c['d'])
     json.dump({'upd': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%MZ'), 'src': 'Federació Catalana de Ciclisme (ciclisme.cat)', 'items': items},
               open(OUT + '/carreras.json', 'w'), ensure_ascii=False, separators=(',', ':'))

@@ -15,6 +15,7 @@ jobs:
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
+      - run: sudo apt-get install -y -qq poppler-utils >/dev/null
       - run: python3 .github/scripts/carreras.py
       - run: |
           git config user.name "ichnos-bot"
