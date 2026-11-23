@@ -229,6 +229,8 @@ def main():
             c['tr'] = tid
             print('recorrido', c['n'], len(tr['p']), flush=True)
     for c in items:
+        # menos de 9 km no es una marcha: es lo que mide una vuelta del circuito (resistencias, XCO, criteriums)
+        if c.get('km') and c['km'] < 9: c['kmc'] = c.pop('km')
         c['lv'] = nivel(c)
         c['id'] = re.sub(r'[^a-z0-9-]', '', c['url'].split('/')[-1].lower())[:80]
         c['comp'] = not c.pop('oci', False)
