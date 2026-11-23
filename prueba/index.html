@@ -1719,7 +1719,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795462396';   // versión de la app (la pone build.py)
+const BUILD='1795464824';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7629,7 +7629,7 @@ const CR_LV=[null,
   {t:'Competición',c:'#c92a2a',d:'Carrera federada (normalmente con licencia) o prueba muy dura.'}];
 const CR_DS={btt:{t:'BTT',c:'#2f9e44'},carretera:{t:'Carretera',c:'#1c7ed6'},gravel:{t:'Gravel',c:'#a0753a'}};
 const CR_MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let crData=null, crBusy=null, crOpenId=null, crF={ds:'',lv:0,dist:0,old:false,...store.get('ichnos-crf',{})};
+let crData=null, crBusy=null, crOpenId=null, crShowId=null, crF={ds:'',lv:0,dist:0,old:false,...store.get('ichnos-crf',{})};
 const crLayer=L.layerGroup(), crTrackLayer=L.layerGroup(), crMk={};
 async function crLoad(force){
   if(crData&&!force) return crData; if(crBusy) return crBusy;
@@ -7639,8 +7639,8 @@ const crDay=c=>new Date(c.d);
 const crToday=()=>{ const t=new Date(); t.setHours(0,0,0,0); return t; };
 const crHomeKm=c=>(perfil&&perfil.home&&c.lat!=null)?dist([perfil.home.lat,perfil.home.lon],[c.lat,c.lon])/1000:null;
 function crFiltered(forMap){ if(!crData) return []; const t0=crToday();
-  return crData.items.filter(c=>(!crF.ds||c.ds===crF.ds)&&(!crF.lv||c.lv===crF.lv)&&(forMap||crF.old||crDay(c)>=t0)&&(forMap?crDay(c)>=t0:true)
-    &&(!crF.dist||(crHomeKm(c)!=null&&crHomeKm(c)<=crF.dist))); }
+  return crData.items.filter(c=>(forMap&&c.id===crShowId)||((!crF.ds||c.ds===crF.ds)&&(!crF.lv||c.lv===crF.lv)&&(crF.old||crDay(c)>=t0)
+    &&(!crF.dist||(crHomeKm(c)!=null&&crHomeKm(c)<=crF.dist)))); }
 function crTags(c){ const ds=CR_DS[c.ds]||{t:c.ds,c:'#666'}, lv=CR_LV[c.lv]||CR_LV[2];
   return `<span class="cr-tags"><i style="background:${ds.c}">${ds.t}</i><i style="background:${lv.c}">${c.lv} · ${lv.t}</i>${c.tr?'<i class="cr-tr">Recorrido</i>':''}</span>`; }
 function crSave(){ store.set('ichnos-crf',crF); }
@@ -7666,7 +7666,7 @@ async function crRender(){
     const hk=crHomeKm(c), past=d<t0;
     h+=`<div class="cr-row${past?' cr-past':''}${crOpenId===c.id?' open':''}" data-id="${esc(c.id)}"><button class="cr-it">
       <div class="cr-d"><b>${d.getDate()}</b><small>${d.toLocaleDateString('es-ES',{weekday:'short'}).replace('.','')}</small></div>
-      <div class="cr-m"><b>${esc(c.n)}</b><small>${esc(c.pob)}${c.km?' · '+c.km+' km':''}${hk!=null?' · a '+Math.round(hk)+' km de casa':''}</small>${crTags(c)}</div></button>
+      <div class="cr-m"><b>${esc(c.n)}</b><small>${esc(c.pob)}${c.km?' · '+c.km+' km':c.kmc?' · vuelta de '+c.kmc+' km':''}${hk!=null?' · a '+Math.round(hk)+' km de casa':''}</small>${crTags(c)}</div></button>
       ${crOpenId===c.id?crDetail(c):''}</div>`; });
   L0.innerHTML=h;
   L0.querySelectorAll('.cr-row').forEach(r=>{ const c=crData.items.find(x=>x.id===r.dataset.id);
@@ -7680,7 +7680,7 @@ function crDetail(c){ const d=crDay(c), lv=CR_LV[c.lv]||CR_LV[2];
   return `<div class="cr-det">
     <p><b>Cuándo:</b> ${fecha}${c.h&&c.h!=='00:00'?', salida a las '+c.h:''}</p>
     <p><b>Dónde sale:</b> ${c.dir?esc(c.dir.charAt(0)+c.dir.slice(1).toLowerCase())+', ':''}${esc(c.pob)} (${esc(c.prov)})</p>
-    ${c.km?`<p><b>Distancia:</b> ${c.km} km${c.tipus?' · '+esc(c.tipus.toLowerCase()):''}</p>`:''}
+    ${c.km?`<p><b>Distancia:</b> ${c.km} km${c.tipus?' · '+esc(c.tipus.toLowerCase()):''}</p>`:c.kmc?`<p><b>Circuito:</b> vueltas de ${c.kmc} km</p>`:''}
     <p><b>Tipo:</b> ${tipo}${c.mod?' · '+esc(c.mod):''}</p>
     ${c.camp&&c.camp.length?`<p><b>Puntúa para:</b> ${c.camp.map(esc).join(', ')}</p>`:''}
     <p class="cr-lvx" style="border-color:${lv.c}"><b style="color:${lv.c}">Nivel ${c.lv} · ${lv.t}.</b> ${lv.d}</p>
@@ -7705,7 +7705,7 @@ async function crTrack(c,fit){ crTrackLayer.clearLayers(); crTrackLayer._id=null
   try{ const j=await (await fetch(CR_URL+'tracks/'+c.tr+'.json')).json(); const ds=CR_DS[c.ds]||{c:'#666'};
     const ll=j.p.map(p=>[p[0],p[1]]); L.polyline(ll,{color:'#fff',weight:8,opacity:.8,interactive:false}).addTo(crTrackLayer); L.polyline(ll,{color:ds.c,weight:5,interactive:false}).addTo(crTrackLayer); crTrackLayer._id=c.id;
     if(fit) map.fitBounds(L.latLngBounds(ll),{padding:[50,50]}); return true; }catch(e){ toast('No se ha podido cargar el recorrido ahora.',4000); return false; } }
-async function crShowOnMap(c){ showPage('pgMapa'); if(!T.carreras) await setToggle('carreras',true); else crPaintMap();
+async function crShowOnMap(c){ crShowId=c.id; showPage('pgMapa'); if(!T.carreras) await setToggle('carreras',true); else crPaintMap();
   const ok=c.tr&&await crTrack(c,true); if(!ok&&c.lat!=null) map.setView([c.lat,c.lon],12);
   setTimeout(()=>{ if(crMk[c.id]) crMk[c.id].openPopup(); },350); }
 document.addEventListener('click',async e=>{ const b=e.target.closest('[data-cr]'); if(!b||!crData) return; const c=crData.items.find(x=>x.id===b.dataset.id); if(!c) return;
