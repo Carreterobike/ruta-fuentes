@@ -1174,7 +1174,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
       <p><b>Tus amigos y tu grupeta ven:</b></p>
       <ul>
         <li>Tu nombre, tu foto, tu pueblo y tus bicis.</li>
-        <li>Las salidas que llegan de tu ciclocomputador por <b>Intervals.icu</b> o que subes con archivo: recorrido, km, tiempo, desnivel, fotos, notas, me gusta y comentarios. <b>Sin la zona de alrededor de tu casa</b> (la distancia la eliges en Editar perfil).</li>
+        <li>Las salidas que llegan de tu ciclocomputador por <b>Intervals.icu</b> o que subes con archivo: recorrido, km, tiempo, desnivel, gráficos (altura, velocidad y pulso de esa salida si lo llevas), fotos, notas, me gusta y comentarios. <b>Sin la zona de alrededor de tu casa</b> (la distancia la eliges en Editar perfil).</li>
         <li>«Ver su mapa»: por dónde has pasado, también sin la zona de casa.</li>
         <li>Tus tiempos en las trialeras de la grupeta (clasificación).</li>
         <li>En la grupeta: las salidas que propones, quién se apunta y el chat de la grupeta.</li>
@@ -1182,7 +1182,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
       <p><b>Nadie más ve:</b></p>
       <ul>
         <li>Las salidas que solo están en <b>Strava</b> ni tus segmentos de Strava (norma de Strava: solo para ti).</li>
-        <li>Tu pulso, tu peso, tu estudio de salidas y tus entrenos.</li>
+        <li>Tu peso, tus datos de salud, tu estudio de salidas y tus entrenos.</li>
         <li>Tus mensajes privados: solo los ve la persona a la que escribes.</li>
       </ul>
       <p><b>Lo ve todo el mundo en Ichnos:</b> las fuentes, los bares y sitios con sus opiniones, y las trialeras con su color (el mapa lo hacemos entre todos).</p>
@@ -1670,7 +1670,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795412975';   // versión de la app (la pone build.py)
+const BUILD='1795413078';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
