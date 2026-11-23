@@ -1681,7 +1681,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795413649';   // versión de la app (la pone build.py)
+const BUILD='1795413822';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -4591,7 +4591,10 @@ async function planTrip(){
 async function stageKm(i,km){ if(!trip||trip.state==='calc') return; closeStage(false);
   const keep=trip.stages.slice(0,i), from=trip.from, S=i?keep[i-1].b:trip.from;
   trip.from=S; planVia=i?keep[i-1].viaLeft||[]:(trip.via||[]); trip.kmFirst=km; trip.sel=null;
-  await planTripSeq(); trip.stages=keep.concat(trip.stages); trip.from=from; drawTrip(); saveTrip(); renderTrip(); selStage(i,true); }
+  await planTripSeq(); trip.stages=keep.concat(trip.stages); trip.from=from; drawTrip(); saveTrip(); renderTrip(); selStage(i,true);
+  const st=trip.stages[i], got=st&&(st.len||0)/1000;
+  if(st&&got<km*0.8) toast(trip.maxUp&&(st.up||0)>trip.maxUp*0.75?`La etapa se queda en ${Math.round(got)} km para no pasar de ${trip.maxUp} m de subida en un día. Si quieres más km, sube el «Desnivel máximo».`:`La etapa se queda en ${Math.round(got)} km: es donde hay un pueblo para dormir.`,7000);
+  else if(st&&got>km*1.25) toast(`La etapa sale de ${Math.round(got)} km: es el pueblo más cercano para dormir.`,6000); }
 // tocar una etapa: se marca en amarillo en el mapa y su ficha sale en el panel (al lado del mapa, no encima)
 function selStage(i,keep){ if(!trip||!trip.stages[i]) return; trip.sel=(!keep&&trip.sel===i)?null:i; drawTrip(); renderTrip();
   if(trip.sel==null) return; const s=trip.stages[i], b=L.latLngBounds(s.coords.map(c=>[c[0],c[1]])), mob=matchMedia('(max-width:760px)').matches, sh=$('sheet');
