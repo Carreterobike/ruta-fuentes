@@ -1,0 +1,23 @@
+# Cada martes de madrugada lee el calendario de la Federació Catalana de Ciclisme y deja las carreras listas para Ichnos
+name: Carreras
+on:
+  schedule:
+    - cron: '41 3 * * 2'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: carreras
+  cancel-in-progress: false
+jobs:
+  carreras:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 .github/scripts/carreras.py
+      - run: |
+          git config user.name "ichnos-bot"
+          git config user.email "ichnos-bot@users.noreply.github.com"
+          git add datos/carreras
+          git diff --cached --quiet || (git commit -m "Carreras actualizadas (Federació Catalana de Ciclisme)" && git pull --rebase && git push)
