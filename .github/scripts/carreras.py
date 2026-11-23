@@ -258,7 +258,9 @@ def carreras_pie(hoy, geo):
             if len(dists) > 1 or re.search(r'\(\s*[\d.,]+\s*km\s*\)', c['n'], re.I): c['n'] = re.sub(r'\s*\((?=[^)]*\d)[\d.,\sKkmMiIy-]+\)', '', c['n']).strip(' -')
             if dists: c['km'] = round(max(dists)) if max(dists) >= 3 else max(dists)
             if len(dists) > 1: c['dists'] = [round(x, 1) if x < 3 else round(x) for x in dists]
-            c['lv'] = nivel_pie(ds_, dists, c['esp'])
+            c['n'] = re.sub(r'\s*\+\s*$', '', re.sub(r'\s*\+\s*\+', ' +', c['n'])).strip()
+            if len(c['n']) < 6 and c['camp']: c['n'] = c['camp'][0]
+            c['lv'] = nivel_pie(ds_, dists, c['esp'] + (' vertical' if re.search(r'vertical', c['n'], re.I) else ''))
             c['comp'] = False
             esp = c.pop('esp')
             c['mod'] = ('Trail' + (' · ' + esp if esp and esp.lower() not in ('trail running',) else '')) if ds_ == 'trail' else ('Carrera en asfalto' + (' · ' + esp if esp and 'homolog' not in esp.lower() else ''))
