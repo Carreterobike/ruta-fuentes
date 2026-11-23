@@ -199,7 +199,8 @@ def km_de(nombre, esp):
     if re.search(r'\bmarat[oó]\b', n) and not re.search(r'mitja|mini|quart', n): ds.append(42)
     if re.search(r'mitja', n): ds.append(21)
     if re.search(r'\bmilla\b', n): ds.append(1.6)
-    for a, b in re.findall(r'(\d+(?:[.,]\d+)?)\s*(?:\s-\s|-|\si\s|\sy\s|,\s)\s*(\d+(?:[.,]\d+)?)\s*k', n): ds += [float(a.replace(',', '.')), float(b.replace(',', '.'))]
+    for grp in re.findall(r'((?:\d+(?:[.,]\d+)?\s*k?m?\s*(?:-|\bi\b|\by\b|,\s)\s*)+\d+(?:[.,]\d+)?)\s*k', n):
+        ds += [float(x.replace(',', '.')) for x in re.findall(r'\d+(?:[.,]\d+)?', grp)]
     for a in re.findall(r'(\d+(?:[.,]\d+)?)\s*km', n): ds.append(float(a.replace(',', '.')))
     for a in re.findall(r'\b(\d+)k\b', n): ds.append(float(a))
     ds = sorted(set(d for d in ds if 0.5 < d < 400))
@@ -220,8 +221,8 @@ def nivel_pie(ds_, dists, esp):
 def parse_fca(txt, ds_, year, url):
     out, mes, yy, last = [], None, year, None
     for ln in txt.splitlines():
-        m = re.match(r'\s*(GENER|FEBRER|MAR[ÇC]|ABRIL|MAIG|JUNY|JULIOL|AGOST|SETEMBRE|OCTUBRE|NOVEMBRE|DESEMBRE)\s+(\d{4})', ln)
-        if m: mes, yy = MESOS[m.group(1).replace('C', 'Ç') if m.group(1) == 'MARC' else m.group(1)], int(m.group(2)); continue
+        m = re.match(r'\s*(GENER|FEBRER|MAR[ÇC]|ABRIL|MAIG|JUNY|JULIOL|AGOST|SETEMBRE|OCTUBRE|NOVEMBRE|DESEMBRE)\b\s*(\d{4})?', ln)
+        if m and not re.match(r'\s*\d', ln): mes, yy = MESOS[m.group(1)], int(m.group(2) or year); continue
         m = re.match(r'\s*(\d{1,2})(?:\s*-\s*\d{1,2})?\s+(\S.*)$', ln)
         if mes and m:
             parts = [p.strip() for p in re.split(r'\s{2,}', m.group(2).strip()) if p.strip()]
@@ -254,6 +255,7 @@ def carreras_pie(hoy, geo):
             c['camp'] += [x.strip() for x in re.findall(r'\((Campionat[^)]*)\)', c['n'])]
             dists = km_de(c['n'], c['esp'])
             c['n'] = re.sub(r'\s*\((?:TRS|CMT|CCP|RFEA|FCA|Campionat[^)]*)\)', '', c['n']).strip(' -')
+            if len(dists) > 1 or re.search(r'\(\s*[\d.,]+\s*km\s*\)', c['n'], re.I): c['n'] = re.sub(r'\s*\((?=[^)]*\d)[\d.,\sKkmMiIy-]+\)', '', c['n']).strip(' -')
             if dists: c['km'] = round(max(dists)) if max(dists) >= 3 else max(dists)
             if len(dists) > 1: c['dists'] = [round(x, 1) if x < 3 else round(x) for x in dists]
             c['lv'] = nivel_pie(ds_, dists, c['esp'])
