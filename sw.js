@@ -13,6 +13,10 @@ self.addEventListener('fetch',e=>{
     e.respondWith(caches.open(APP).then(c=>c.match(r).then(m=>{ const n=fetch(r).then(x=>{ if(x.ok||x.type==='opaque') c.put(r,x.clone()); return x; }).catch(()=>m); return m||n; })));
     return; }
   const url=new URL(u);
+  if(url.origin===location.origin&&/\/datos\/carreras\//.test(url.pathname)){   // carreras: siempre lo último (lo guardado solo sin cobertura)
+    e.respondWith(caches.open(APP).then(c=>fetch(r,{cache:'no-cache'}).then(x=>{ if(x.ok) c.put(r,x.clone()); return x; }).catch(()=>c.match(r).then(m=>m||Response.error()))));
+    return;
+  }
   if(url.origin===location.origin&&/\/datos\//.test(url.pathname)){   // fuentes: lo guardado al momento y se refresca por detrás
     e.respondWith(caches.open(APP).then(c=>c.match(r).then(m=>{ const n=fetch(r).then(x=>{ if(x.ok) c.put(r,x.clone()); return x; }).catch(()=>m); return m||n; })));
     return; }
