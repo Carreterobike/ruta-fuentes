@@ -537,6 +537,13 @@ export default {
           if (r.pby !== me.id) await notify(KV, r.pby, { k: b.ok ? 'propok' : 'propno', u: me.id, x: r.x });
           return J({ ok: true, l: r.l, f: r.f, t: r.t, c: r.c });
         }
+        if (P === '/admin/diag' && req.method === 'POST') {   // estado de la cuenta de un usuario, para ayudarle (sin sus datos personales)
+          const uid = String(b.uid || ''); const u = JSON.parse(await KV.get('u:' + uid) || 'null'); if (!u) return J({ error: 'no existe' }, 404);
+          const icu = JSON.parse(await KV.get('icu:' + uid) || 'null'), subs = JSON.parse(await KV.get('push:' + uid) || '[]');
+          let acts = null; if (icu) { try { const r = await fetch('https://intervals.icu/api/v1/athlete/0/activities?oldest=' + new Date(Date.now() - 21 * 864e5).toISOString().slice(0, 10) + '&newest=' + new Date(Date.now() + 864e5).toISOString().slice(0, 10), { headers: { Authorization: icu.b ? 'Bearer ' + icu.b : 'Basic ' + btoa('API_KEY:' + icu.k) } });
+            acts = r.ok ? (await r.json()).map(a => ({ d: String(a.start_date_local || '').slice(0, 10), src: a.source || '', type: a.type || '' })) : 'error ' + r.status; } catch (e) { acts = 'error'; } }
+          return J({ name: u.name, strava: !!(await KV.get('tok:' + uid)), icu: icu ? (icu.b ? 'oauth' : 'clave') : null, acts, push: subs.map(x => ({ d: x.d || '?', h: new URL(x.endpoint).host, t: x.t })), pushlast: JSON.parse(await KV.get('pushlast:' + uid) || 'null'), prefs: await pPrefs(KV, uid), dm: JSON.parse(await KV.get('dml:' + uid) || '{}'), sync: (await KV.list({ prefix: 's:' + uid + ':', limit: 1000 })).keys.length });
+        }
         if (P === '/admin/propuestas' && req.method === 'POST') {
           const PR = JSON.parse(await KV.get('g:p') || '{}'), pr = PR[b.pid];
           if (!pr) return J({ error: 'Esa propuesta ya no está.' }, 404);
