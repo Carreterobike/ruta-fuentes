@@ -859,6 +859,16 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 
 /* ===== móvil: barra de 5 con el + en medio, mapa más despejado ===== */
 .bnav .m-only{display:none}
+.bnav .plus i{width:56px;height:56px;border-radius:28px;background:var(--accent);color:var(--accent-ink,#12160A);display:grid;place-items:center;margin-top:-22px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.bnav .plus i svg{width:28px;height:28px}
+.bnav .plus .pl-b,.bnav .plus .pl-t{display:none}
+body.crear-on .bnav .plus .pl-a{display:none} body.crear-on .bnav .plus .pl-b{display:block} body.crear-on .bnav .plus .pl-t{display:block}
+.bnav .plus .pl-t{font-size:11px;color:#B6E22E}
+.lbar{display:none!important}
+.sal-tabs{display:flex;gap:6px;margin:4px auto 10px;width:calc(100% - 32px);max-width:440px;box-sizing:border-box;background:rgba(255,255,255,.06);border-radius:12px;padding:4px}
+.sal-tabs[hidden]{display:none}
+.sal-tabs button{flex:1;border:0;background:none;color:#c9d0d6;font:inherit;font-weight:700;padding:9px;border-radius:9px;cursor:pointer}
+.sal-tabs button.on{background:#B6E22E;color:#12160A}
 /* orden: Mapa · Salidas · (+) · Grupeta · Perfil, en el móvil y en el Mac */
 @media (max-width:760px){
   :root{--navh:76px}
@@ -1200,6 +1210,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 </main>
 <main class="page off" id="pgSalidas">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno">Entreno</button></div>
   <section class="pblock sal-top">
     <div class="pb-h"><h3>Tus salidas</h3></div>
     <div class="big-sum"><div><b id="hN">0</b><small>Salidas</small></div><div><b id="hKm">0</b><small>Km en total</small></div></div>
@@ -1230,6 +1241,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <!-- ============ ENTRENO (solo el administrador) ============ -->
 <main class="page off" id="pgEntreno">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno">Entreno</button></div>
   <section class="pblock">
     <div class="pb-h"><h3 id="enWkT">Esta semana</h3><div class="en-nav"><button id="enPrev" aria-label="Semana anterior">‹</button><button id="enNext" aria-label="Semana siguiente">›</button></div></div>
     <div class="en-sum" id="enWkSum"></div>
@@ -1361,7 +1373,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 
   <div class="dest" id="destCard" hidden>
     <div class="dest-t"><b id="destName"></b><button id="destX" aria-label="Cerrar">×</button></div>
-    <div class="dest-b"><button class="btn-main" id="destGo">Crear ruta desde casa</button><button class="btn-ghost" id="destRound">Ida y vuelta</button></div>
+    <div class="dest-b"><button class="btn-main" id="destGo">Ir aquí</button><button class="btn-ghost" id="destRound" hidden>Ida y vuelta</button></div>
     <small id="destMode"></small>
   </div>
 
@@ -1523,9 +1535,8 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <nav class="bnav" id="bnav">
   <button data-pg="pgMapa" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Mapa</span></button>
   <button data-pg="pgSalidas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>Salidas</span></button>
-  <button class="plus m-only" id="navPlus" aria-label="Crear ruta"><i><svg class="pl-a" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><svg class="pl-b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span class="pl-t">Terminar</span></button>
+  <button class="plus" id="navPlus" aria-label="Crear ruta"><i><svg class="pl-a" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><svg class="pl-b" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span class="pl-t">Terminar</span></button>
   <button data-pg="pgGrupeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 14.4c.6-.3 1.3-.4 2-.4 2.8 0 4 2 4 5"/></svg><span>Social</span></button>
-  <button data-pg="pgEntreno" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg><span>Entreno</span></button>
   <button data-pg="pgPerfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Perfil</span></button>
 </nav>
 
@@ -1682,7 +1693,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795440923';   // versión de la app (la pone build.py)
+const BUILD='1795442582';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1993,7 +2004,8 @@ if(!perfil.apodo && !perfil.foto) editPerfil(true);
 let mapCentered=false;
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
-  document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
+  document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===(id==='pgEntreno'?'pgSalidas':id)));
+  document.querySelectorAll('.sal-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.st===id));
   if(id==='pgPerfil') try{ paintYear(); }catch(e){}
   if(id==='pgEntreno') try{ enPaint(); }catch(e){ console.warn(e); }
   if(id==='pgAjustes'&&window.paintPush) paintPush();
@@ -2358,7 +2370,7 @@ function updateSheet(){
   $('addF').hidden=!T.fuentes;
   $('secViaje').hidden=!trip||crearClosed||wz.on||!$('rideOn').hidden;
   $('tripBack').hidden=!(trip&&trip.open!=null);
-  $('tripBtn').hidden=!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
+  $('tripBtn').hidden=true||!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
   $('secSeg').hidden=!T.segmentos;
   $('secCapas').hidden=!capasOpen;
   $('almBtn').hidden=true;   // el almuerzo se pide arriba, en "Añadir a tu ruta"
@@ -2945,7 +2957,7 @@ map.on('click', e => {
   if(addingP){ addMyPlaceAt(e.latlng); return; }
   if(T.crear){ points.push([e.latlng.lat,e.latlng.lng]); drawPins(); calc(); return; }
   if(trailClick(e.latlng)) return;
-  if(!hintShown){ hintShown=true; toast('Para hacer una ruta, toca "Crear ruta" abajo'); }
+  if(!hintShown){ hintShown=true; toast('Para hacer una ruta, toca el ＋ de abajo'); }
 });
 
 // ================= CREAR RUTA =================
@@ -3246,20 +3258,21 @@ async function routeThroughFountains(list,single){
 
 // ---------- crear ruta paso a paso ----------
 // 2 destino o dibujar · 3 paradas · 4 cuándo y dónde · 45 elegir bar · 5 ¿desvío? · 6 resumen y guardar
-const WZ_ORDER=[2,3,4,45,5,6];
-function wzStart(st){ wz={on:true,used:true,step:st||2,round:wz.round!==false,f:false,a:false,bar:null,ichnos:true,stops:null}; crearClosed=false; wzRender(); updateSheet(); }
+const WZ_ORDER=[2,25,3,4,45,5,6];
+const wzOneWay=()=>points.length>=2&&dist(points[0],points[points.length-1])>2000;
+function wzStart(st){ wz={on:true,used:true,et:false,step:st||2,round:wz.round!==false,f:false,a:false,bar:null,ichnos:true,stops:null}; crearClosed=false; wzRender(); updateSheet(); }
 function wzEnd(){ wz.on=false; updateSheet(); }
 function wzGo(st){ wz.step=st; wzRender(); updateSheet(); try{ $('sheet').querySelector('.sheet-body').scrollTop=0; }catch(e){} }
 function wzNextStep(){ const s=wz.step;
-  if(s===2) return 3; if(s===3) return (wz.f||wz.a)?4:6; if(s===4) return wz.a?45:5; if(s===45) return 5; if(s===5) return 6; return 6; }
+  if(s===2) return wzOneWay()?25:3; if(s===25) return 3; if(s===3) return (wz.f||wz.a)?4:6; if(s===4) return wz.a?45:5; if(s===45) return 5; if(s===5) return 6; return 6; }
 function wzPrevStep(){ const s=wz.step;
-  if(s===3) return 2; if(s===4) return 3; if(s===45) return 4; if(s===5) return wz.a?45:4; if(s===6) return (wz.f||wz.a)?5:3; return 2; }
+  if(s===3) return wzOneWay()?25:2; if(s===25) return 2; if(s===4) return 3; if(s===45) return 4; if(s===5) return wz.a?45:4; if(s===6) return (wz.f||wz.a)?5:3; return 2; }
 const kmTxt=()=>route?`${fmtKm(route.length/1000)} km · +${n0(route.up||0)} m · ${fmtDur(estTime(route.length,route.up||0))} aprox.`:'';
 function wzOp(id,on,txt,sm){ return `<button class="wz-op${on?' on':''}" data-o="${id}">${txt}${sm?`<small>${sm}</small>`:''}</button>`; }
 function wzRender(){
   if(!wz.on) return;
   const step=wz.step, idx=Math.max(0,WZ_ORDER.indexOf(step));
-  $('wzSt').innerHTML=[2,3,4,5,6,7].map((x,i)=>`<i class="${i<=Math.min(idx,5)?'on':''}"></i>`).join('');
+  $('wzSt').innerHTML=WZ_ORDER.map((x,i)=>`<i class="${i<=idx?'on':''}"></i>`).join('');
   $('secWiz').classList.toggle('wz-last',step===6); $('wzBack').hidden=step===2; $('wzNext').hidden=false; $('wzNext').disabled=false; $('wzNext').textContent='Siguiente';
   const B=$('wzB'); let h='';
   if(step===2){ $('wzT').textContent='¿A dónde vas?';
@@ -3269,13 +3282,25 @@ function wzRender(){
       <div class="segc"><button data-r="1" class="${wz.round?'on':''}">Ida y vuelta</button><button data-r="0" class="${wz.round?'':'on'}">Solo ida</button></div>
       <div class="sub">${route&&points.length>=2?'Tu ruta: <b>'+kmTxt()+'</b>':'Todavía no hay ruta. Busca un destino o toca el mapa.'}</div>`;
     B.innerHTML=h; $('wzNext').disabled=!(route&&points.length>=2);
-    B.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ wz.round=b.dataset.r==='1'; wzRender(); });
+    B.querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{ wz.round=b.dataset.r==='1'; wzRender(); if(dest&&points.length>=2&&dist([dest.lat,dest.lon],points[1])<500&&perfil.home){ await routeFromHome(wz.round); wzRender(); } });
     const go=async()=>{ const q=$('wzQ').value.trim(); if(!q) return; $('wzRes').innerHTML='<div class="sub">Buscando…</div>';
       try{ const j=await (await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5&lat=41.54&lon=2.21`)).json();
         const fs=(j.features||[]); $('wzRes').innerHTML=fs.length?fs.map((f,i)=>{ const pr=f.properties||{}; return `<button class="wz-op" data-i="${i}">${esc(pr.name||q)}<small>${esc([pr.city||pr.town||pr.village,pr.county||pr.state].filter(Boolean).join(' · '))}</small></button>`; }).join(''):'<div class="sub">No lo encuentro. Prueba con otro nombre.</div>';
         $('wzRes').querySelectorAll('[data-i]').forEach(b=>b.onclick=async()=>{ const f=fs[+b.dataset.i]; dest={lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],name:(f.properties||{}).name||q}; $('wzRes').innerHTML='<div class="sub">Calculando la ruta…</div>'; await routeFromHome(wz.round); });
       }catch(e){ $('wzRes').innerHTML='<div class="sub">No hay conexión ahora. Prueba otra vez.</div>'; } };
     $('wzQb').onclick=go; $('wzQ').onkeydown=e=>{ if(e.key==='Enter') go(); };
+    return; }
+  if(step===25){ $('wzT').textContent='¿En un día o por etapas?';
+    const kd=store.get('ichnos-kmdia',defaultKmDay()), up=+store.get('ichnos-upmax',0), km=route?route.length/1000:0;
+    B.innerHTML=`<div class="sub">${route?'Tu ruta: <b>'+kmTxt()+'</b>.':''}${km>130?' Es larga: por etapas la reparto en días y acabo cada día en un pueblo.':''}</div>
+      ${wzOp('d1',!wz.et,'En un día')}${wzOp('et',wz.et,'Por etapas','Varios días, durmiendo en pueblos')}
+      ${wz.et?`<div class="sub" style="margin-top:6px"><b>Km por día</b></div><div class="segc" id="wzKd">${KM_OPTS.map(k=>`<button data-k="${k}" class="${k===kd?'on':''}">${k} km</button>`).join('')}</div>
+      <div class="sub" style="margin-top:6px"><b>Desnivel máximo por día</b></div><div class="segc" id="wzUp">${UP_OPTS.map(u=>`<button data-u="${u}" class="${u===up?'on':''}">${u?u+' m':'Sin límite'}</button>`).join('')}</div>
+      <div class="sub">Luego puedes tocar cada etapa y cambiarle los km.</div>`:''}`;
+    if(wz.et) $('wzNext').textContent='Crear el viaje';
+    B.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ wz.et=b.dataset.o==='et'; wzRender(); });
+    B.querySelectorAll('#wzKd [data-k]').forEach(b=>b.onclick=()=>{ store.set('ichnos-kmdia',+b.dataset.k); wzRender(); });
+    B.querySelectorAll('#wzUp [data-u]').forEach(b=>b.onclick=()=>{ store.set('ichnos-upmax',+b.dataset.u); wzRender(); });
     return; }
   if(step===3){ $('wzT').textContent='¿Quieres paradas?';
     B.innerHTML=`<div class="sub">Puedes elegir una, las dos o ninguna.</div>${wzOp('f',wz.f,'<i class="ico ico-drop"></i>Fuentes')}${wzOp('a',wz.a,'<i class="ico ico-fork"></i>Almuerzo')}${wzOp('n',!wz.f&&!wz.a,'Sin paradas')}`;
@@ -3349,7 +3374,9 @@ function wzRender(){
     if($('wzProp')) $('wzProp').onclick=()=>$('gpropBtn').click();
     return; }
 }
-$('wzNext').onclick=async()=>{ if(wz.step===6){ askedVer=routeVer; fPlanVer=routeVer; wz.on=false; if(T.crear) await setToggle('crear',false); updateSheet(); return; } wzGo(wzNextStep()); };
+$('wzNext').onclick=async()=>{ if(wz.step===25&&wz.et&&points.length>=2){ const A=points[0], B=points[points.length-1], via=points.slice(1,-1);
+    wz.on=false; trip=null; await startTrip(A,B,{to:dest&&dist([dest.lat,dest.lon],B)<500?dest.name:null},via); return; }
+  if(wz.step===6){ askedVer=routeVer; fPlanVer=routeVer; wz.on=false; if(T.crear) await setToggle('crear',false); updateSheet(); return; } wzGo(wzNextStep()); };
 $('wzBack').onclick=()=>wzGo(wzPrevStep());
 $('wzX').onclick=async()=>{ const was=wz.on; wz.on=false; if(was) await $('crearX').onclick(); updateSheet(); };
 
@@ -7213,7 +7240,7 @@ authInit(); socialStart(); gLoad(); updateSheet(); loadWeather(); loadRides().th
       if(dy>120&&dx<80){ el.style.transform='translateY(100%)'; setTimeout(()=>{ $(b).click(); el.style.transition=el.style.transform=el.style.opacity=''; },180); }
       else { el.style.transform=''; el.style.opacity=''; setTimeout(()=>el.style.transition='',220); } });
   });
-  const ORDER=['pgMapa','pgSalidas','pgGrupeta',...(me&&me.admin?['pgEntreno']:[]),'pgPerfil'], cur=()=>ORDER.find(id=>!$(id).classList.contains('off'));
+  const ORDER=['pgMapa','pgSalidas','pgGrupeta','pgPerfil'], cur=()=>ORDER.find(id=>!$(id).classList.contains('off'));
   const refresh=async id=>{ try{ if(id==='pgSalidas'){ if(typeof svAuto==='function') await svAuto(); renderRides&&renderRides(); } if(id==='pgGrupeta'||id==='pgSalidas'){ await loadFeed(true); } if(id==='pgGrupeta'&&typeof loadGroupData==='function') await loadGroupData(); if(id==='pgPerfil'){ paintYear(); if(typeof loadAvisos==='function') await loadAvisos(); } }catch(e){} };
   ORDER.slice(1).forEach(id=>{ const pg=$(id); let s=null;
     pg.addEventListener('touchstart',e=>{ if(e.touches.length>1||e.target.closest('input,textarea,select,.chart1,.chips,.tabs2,[data-noswipe],svg')) { s=null; return; } s={x:e.touches[0].clientX,y:e.touches[0].clientY,top:pg.scrollTop<=0,t:Date.now()}; },{passive:true});
@@ -7510,7 +7537,8 @@ async function enSend(x,dev='ciclo'){ const w=enById(x.w); if(!w) return;
   $('enPrev').onclick=()=>{ enWk--; enPaintWeek(); }; $('enNext').onclick=()=>{ enWk++; enPaintWeek(); };
   $('enBack').onclick=()=>{ $('enView').hidden=true; };
 })();
-function enShowTab(){ const b=document.querySelector('#bnav [data-pg="pgEntreno"]'); if(b) b.hidden=!(me&&me.admin); }
+function enShowTab(){ document.querySelectorAll('.sal-tabs').forEach(t=>t.hidden=!(me&&me.admin)); if(!(me&&me.admin)&&!$('pgEntreno').classList.contains('off')) showPage('pgSalidas'); }
+document.querySelectorAll('.sal-tabs button').forEach(b=>b.onclick=()=>showPage(b.dataset.st));
 
 // ================= PLAN A TU MEDIDA: eliges días, qué y cuánto tiempo; la app reparte los entrenos =================
 const EN_DN=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
