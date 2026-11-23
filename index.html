@@ -1727,7 +1727,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795468204';   // versión de la app (la pone build.py)
+const BUILD='1795469301';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7645,6 +7645,7 @@ const CR_LVP=[null,
   {t:'Media',c:'#1c7ed6',d:'Hasta media maratón, o un trail de hasta 25 km.'},
   {t:'Larga',c:'#e67700',d:'Maratón, trail largo o cursa vertical: hay que llevarla bien preparada.'},
   {t:'Muy dura',c:'#c92a2a',d:'Más que una maratón o ultra trail.'}];
+const crAdm=()=>!!(me&&me.admin);
 const crLvl=c=>((CR_GRP.pie.includes(c.ds)?CR_LVP:CR_LV)[c.lv]||CR_LV[2]);
 const CR_MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 let crData=null, crBusy=null, crOpenId=null, crShowId=null, crF={grp:'bici',ds:'',lv:0,dist:0,old:false,...store.get('ichnos-crf',{})};
@@ -7679,10 +7680,11 @@ async function crRender(){
   $('crOld').onchange=()=>{ crF.old=$('crOld').checked; crSave(); crRender(); };
   const L0=$('crList');
   if(!crData){ L0.innerHTML='<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div>'; await crLoad(); if(!crData){ L0.innerHTML='<p class="svp">No se ha podido cargar el calendario ahora. Prueba más tarde.</p>'; return; } return crRender(); }
+  $('crSec').querySelector('.cr-src').hidden=!crAdm();
   const up=new Date(crData.upd); $('crUpd').textContent=isNaN(up)?'':` · actualizado el ${up.toLocaleDateString('es-ES',{day:'numeric',month:'long'})}`;
   const list=crFiltered(false), t0=crToday();
   if(!list.length){ const fut=crData.items.some(c=>crDay(c)>=t0);
-    L0.innerHTML=`<div class="cr-empty"><b>${fut?'No hay carreras con estos filtros':'Todavía no han salido las del año que viene'}</b><p class="svp">${fut?'Prueba a quitar algún filtro.':'La federación publica el calendario en invierno. Ichnos lo mira cada semana y las añadirá solas. Mientras, puedes ver las de este año marcando «Ver también las que ya han pasado».'}</p></div>`; return; }
+    L0.innerHTML=`<div class="cr-empty"><b>${fut?'No hay carreras con estos filtros':'Todavía no han salido las del año que viene'}</b>${crAdm()?`<p class="svp">${fut?'Prueba a quitar algún filtro.':'La federación publica el calendario en invierno. Ichnos lo mira cada semana y las añadirá solas. Mientras, puedes ver las de este año marcando «Ver también las que ya han pasado».'}</p>`:''}</div>`; return; }
   let h='', mk='';
   list.forEach(c=>{ const d=crDay(c), m=CR_MES[d.getMonth()]+' '+d.getFullYear(); if(m!==mk){ mk=m; h+=`<div class="cr-month">${m}</div>`; }
     const hk=crHomeKm(c), past=d<t0;
@@ -7706,8 +7708,8 @@ function crDetail(c){ const d=crDay(c), lv=crLvl(c), fca=c.src==='fca';
     ${c.dists?`<p><b>Distancias:</b> ${crDists(c)}</p>`:c.km?`<p><b>Distancia:</b> ${c.km} km${c.tipus?' · '+esc(c.tipus.toLowerCase()):''}</p>`:c.kmc?`<p><b>Circuito:</b> vueltas de ${c.kmc} km</p>`:''}
     <p><b>Tipo:</b> ${tipo}${c.mod?' · '+esc(c.mod):''}</p>
     ${c.camp&&c.camp.length?`<p><b>Puntúa para:</b> ${c.camp.map(esc).join(', ')}</p>`:''}
-    <p class="cr-lvx" style="border-color:${lv.c}"><b style="color:${lv.c}">Nivel ${c.lv} · ${lv.t}.</b> ${lv.d}</p>
-    ${c.tr?'':fca?'<p class="svp">La federación no publica la hora ni el recorrido. En el mapa sale el pueblo; búscala por su nombre para ver los detalles.</p>':'<p class="svp">El organizador no ha puesto el recorrido en su web en un archivo que Ichnos pueda leer. En el mapa sale el punto de salida.</p>'}
+    <p class="cr-lvx" style="border-color:${lv.c}"><b style="color:${lv.c}">Nivel ${c.lv} · ${lv.t}.</b>${crAdm()?' '+lv.d:''}</p>
+    ${c.tr||!crAdm()?'':fca?'<p class="svp">La federación no publica la hora ni el recorrido. En el mapa sale el pueblo; búscala por su nombre para ver los detalles.</p>':'<p class="svp">El organizador no ha puesto el recorrido en su web en un archivo que Ichnos pueda leer. En el mapa sale el punto de salida.</p>'}
     <div class="cr-btns"><button class="btn-main" data-a="map">${c.tr?'Ver el recorrido en el mapa':'Ver dónde sale en el mapa'}</button>
       ${c.web?`<a class="pb-btn" href="${esc(c.web)}" target="_blank" rel="noopener">Web de la prueba</a>`:''}
       ${fca?`<a class="pb-btn" href="https://www.google.com/search?q=${encodeURIComponent(c.n+' '+c.pob+' '+crDay(c).getFullYear())}" target="_blank" rel="noopener">Buscar su web</a>`:''}
@@ -7715,7 +7717,7 @@ function crDetail(c){ const d=crDay(c), lv=crLvl(c), fca=c.src==='fca';
   </div>`; }
 function crPopup(c){ const d=crDay(c), ds=CR_DS[c.ds]||{t:''};
   return `<div class="cr-pop"><b>${esc(c.n)}</b><small>${d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'})} · ${esc(c.pob)}${c.km?' · '+c.km+' km':''}</small>${crTags(c)}
-    ${c.aprox?'<small>Punto aproximado: el centro del pueblo.</small>':''}
+    ${c.aprox&&crAdm()?'<small>Punto aproximado: el centro del pueblo.</small>':''}
     <div class="cr-btns"><button class="pb-btn" data-cr="ficha" data-id="${esc(c.id)}">Ver ficha</button>${c.tr?`<button class="pb-btn" data-cr="tr" data-id="${esc(c.id)}">${crTrackLayer.getLayers().length&&crTrackLayer._id===c.id?'Quitar recorrido':'Ver recorrido'}</button>`:''}</div></div>`; }
 function crPaintMap(){ crLayer.clearLayers(); for(const k in crMk) delete crMk[k]; if(!T.carreras){ crTrackLayer.clearLayers(); crTrackLayer._id=null; return; }
   if(!map.hasLayer(crLayer)) crLayer.addTo(map); if(!map.hasLayer(crTrackLayer)) crTrackLayer.addTo(map);
