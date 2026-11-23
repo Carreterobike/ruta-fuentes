@@ -452,7 +452,7 @@ details.help p{margin:6px 0 0}
 .tbusy b{font-size:17px}.tbusy small{color:#c9ced3;font-size:13.5px}.tbusy button{margin-top:6px;border:1px solid #555e66;background:transparent;color:#fff;border-radius:999px;padding:6px 16px;font-weight:700}
 .tspin{width:34px;height:34px;border-radius:50%;border:4px solid rgba(182,226,46,.25);border-top-color:#B6E22E;animation:tsp .9s linear infinite}@keyframes tsp{to{transform:rotate(360deg)}}
 @media (min-width:761px){.tbusy{left:calc(50% + 200px)}}
-.stg.sel{outline:3px solid #FFD400;outline-offset:-3px}.stg-ed{width:100%;display:flex;flex-direction:column;gap:6px;margin-top:8px}.stg-ed label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700}.stg-ed input{width:90px;font-size:16px;padding:6px 8px;border-radius:8px;border:1px solid var(--line,#ccc)}.stg-ed small{color:var(--muted)}
+.stg.sel{outline:3px solid #FFD400;outline-offset:-3px}.stg-ed{grid-column:1/-1;width:100%;display:flex;flex-direction:column;gap:6px;margin-top:8px}.stg-ed label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700}.stg-ed input{width:90px;font-size:16px;padding:6px 8px;border-radius:8px;border:1px solid var(--line,#ccc)}.stg-ed small{color:var(--muted)}
 .routes.stages li.stg{flex-wrap:wrap}
 /* entreno */
 .en-nav{display:flex;gap:6px}.en-nav button{width:34px;height:34px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font-size:20px;font-weight:700;line-height:1}
@@ -1681,7 +1681,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795413534';   // versión de la app (la pone build.py)
+const BUILD='1795413649';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
