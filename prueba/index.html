@@ -1681,7 +1681,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795413295';   // versión de la app (la pone build.py)
+const BUILD='1795413415';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -4561,7 +4561,8 @@ async function planTrip(){
   const f=1.3, n=Math.max(1,Math.round(line*f/k)), step=line/n;
   const at=d=>{ let P=S0, i=0; for(;i<targets.length;i++){ const t=targets[i], seg=dist([P.lat,P.lon],[t.lat,t.lon]); if(d<=seg) return {P:towards(P,t,d),i}; d-=seg; P=t; } return {P:[E.lat,E.lon],i:targets.length-1}; };
   const cuts=[]; for(let j=1;j<n;j++) cuts.push(at(step*j));
-  const ends=await Promise.all(cuts.map(async c=>{ const town=await townNear(c.P,Math.max(6000,k*0.12)); return {pt:town||{lat:c.P[0],lon:c.P[1],name:null},i:c.i}; }));
+  // el pueblo más cercano al punto del día; si el punto cae en el mar o en medio del monte, se busca más lejos
+  const ends=await Promise.all(cuts.map(async c=>{ let town=null; for(const r of [Math.max(6000,k*0.12),k*0.3,45000]){ town=await townNear(c.P,r); if(town) break; } return {pt:town||{lat:c.P[0],lon:c.P[1],name:null},i:c.i}; }));
   if(my!==tripReq) return;
   const pts=[{pt:S0,i:0},...ends,{pt:E,i:targets.length-1}];
   const specs=[]; for(let j=0;j<pts.length-1;j++){ const A=pts[j], B=pts[j+1]; specs.push({a:A.pt,b:B.pt,via:targets.slice(A.i,B.i).filter(t=>t!==E).map(t=>[t.lat,t.lon]),left:targets.slice(B.i,-1).map(t=>[t.lat,t.lon])}); }
