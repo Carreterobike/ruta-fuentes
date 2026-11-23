@@ -9,7 +9,7 @@ OUT = 'datos/carreras'
 DELAY = 10
 SECCIONES = ['btt', 'pedalades', 'carretera', 'cicloturisme', 'gravel', 'brevet']
 # lo que no es para nosotros (categorías de chavales, pista, etc.)
-FUERA = re.compile(r'promoci|cadet|junior|infantil|kids|escolar|alev|benjam|pumptrack|bmx|trial|pista|dhi|enduro|ciclocr|paraciclisme', re.I)
+FUERA = re.compile(r'ruta permanent|permanent|promoci|cadet|junior|infantil|kids|escolar|alev|benjam|pumptrack|bmx|trial|pista|dhi|enduro|ciclocr|paraciclisme', re.I)
 MAX_FICHAS = int(os.environ.get('MAX_FICHAS', '260'))
 MAX_TRACKS = int(os.environ.get('MAX_TRACKS', '80'))
 last_req = [0.0]
@@ -235,6 +235,20 @@ def main():
         c['mod'] = (c.pop('m1', '') + (' · ' + c['m2'] if c.get('m2') else '')).strip()
         c.pop('m2', None); c.pop('anul', None)
         c['url'] = BASE + c['url'] if c['url'].startswith('/') else c['url']
+    # una carrera con varias categorías (Màster 30-40, Màster 50-60, Elit…) sale una sola vez
+    CAT = re.compile(r'\s*[-–(]?\s*\b(m[aà]ster|elit|sub[ -]?23|f[eè]mines|femen\w*|mascul\w*)\b[\d\s/+-]*\)?\s*$', re.I)
+    junt = {}
+    for c in items:
+        k = (c['d'][:10], c['pob'].lower(), CAT.sub('', c['n']).strip().lower())
+        if k in junt:
+            j = junt[k]
+            j['camp'] = sorted(set(j['camp']) | set(c['camp']))
+            if c.get('km') and c['km'] > (j.get('km') or 0): j['km'] = c['km']
+            if 'tr' in c and 'tr' not in j: j['tr'] = c['tr']
+            j['n'] = CAT.sub('', j['n']).strip() or j['n']
+        else:
+            junt[k] = c
+    items = list(junt.values())
     items.sort(key=lambda c: c['d'])
     json.dump({'upd': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%MZ'), 'src': 'Federació Catalana de Ciclisme (ciclisme.cat)', 'items': items},
               open(OUT + '/carreras.json', 'w'), ensure_ascii=False, separators=(',', ':'))
