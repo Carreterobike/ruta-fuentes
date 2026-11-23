@@ -69,9 +69,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bnav .plus{color:#1E2328!important}.bnav .plus.on::after{display:none}
 
 /* perfil */
-#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,#pgEntreno,.rideview{background-color:#14181c;background-image:radial-gradient(120% 55% at 92% 0%,rgba(182,226,46,.36),rgba(182,226,46,0) 62%),radial-gradient(95% 50% at 0% 30%,rgba(29,158,117,.30),rgba(29,158,117,0) 66%);background-attachment:scroll;background-repeat:no-repeat}
-#pgPerfil>.phead,#pgGrupeta>.phead,#pgSalidas>.phead,#pgAjustes>.phead,#pgEntreno>.phead{background-color:transparent}
-#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,#pgEntreno{overflow-y:auto;padding:0 0 28px}
+#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,#pgEntreno,#pgCarreras,.rideview{background-color:#14181c;background-image:radial-gradient(120% 55% at 92% 0%,rgba(182,226,46,.36),rgba(182,226,46,0) 62%),radial-gradient(95% 50% at 0% 30%,rgba(29,158,117,.30),rgba(29,158,117,0) 66%);background-attachment:scroll;background-repeat:no-repeat}
+#pgPerfil>.phead,#pgGrupeta>.phead,#pgSalidas>.phead,#pgAjustes>.phead,#pgEntreno>.phead,#pgCarreras>.phead{background-color:transparent}
+#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,#pgEntreno,#pgCarreras{overflow-y:auto;padding:0 0 28px}
 .phead.short{padding-bottom:18px}
 .bk-old-h{margin:10px 0 2px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .bike.old{opacity:.75}
@@ -868,6 +868,7 @@ body.crear-on .bnav .plus .pl-a{display:none} body.crear-on .bnav .plus .pl-b{di
 .lbar{display:none!important}
 .mode-c>section:not(#crSec){display:none!important}
 #crSec .cr-seg{flex-wrap:wrap;margin:6px 0}
+#crSec .cr-grp{margin:0 0 12px}#crSec .cr-grp button{font-size:15px;padding:10px}
 #crSec .cr-seg em{display:inline-block;width:9px;height:9px;border-radius:5px;margin-right:5px;vertical-align:0}
 .cr-old{display:flex;gap:8px;align-items:center;font-size:14px;margin:8px 0 4px;color:var(--muted)}
 .cr-month{font-weight:800;font-size:15px;margin:16px 0 4px}
@@ -1149,12 +1150,6 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <main class="page off" id="pgGrupeta">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
   <div class="grtabs" id="grTabs"></div>
-  <section class="pblock" id="crSec" hidden>
-    <div class="pb-h"><h3>Carreras y marchas</h3></div>
-    <p class="svp cr-src">Calendario de la Federació Catalana de Ciclisme. Ichnos lo mira solo cada semana<span id="crUpd"></span>.</p>
-    <div id="crFil"></div>
-    <div id="crList"></div>
-  </section>
   <section class="pblock so-setup" id="soSetup" hidden></section>
   <section class="pblock" id="grNone">
     <div class="pb-h"><h3>Tu grupeta</h3><button class="pb-btn ghost" id="grNoneX" hidden>Cancelar</button></div>
@@ -1236,7 +1231,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 </main>
 <main class="page off" id="pgSalidas">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
-  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno">Entreno</button></div>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgCarreras">Carreras</button></div>
   <section class="pblock sal-top">
     <div class="pb-h"><h3>Tus salidas</h3></div>
     <div class="big-sum"><div><b id="hN">0</b><small>Salidas</small></div><div><b id="hKm">0</b><small>Km en total</small></div></div>
@@ -1265,9 +1260,21 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 </main>
 
 <!-- ============ ENTRENO (solo el administrador) ============ -->
+<main class="page off" id="pgCarreras">
+  <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgCarreras">Carreras</button></div>
+  <section class="pblock" id="crSec">
+    <div class="segc cr-grp" id="crGrp"><button data-v="bici">En bici</button><button data-v="pie">A pie</button></div>
+    <div class="pb-h"><h3 id="crT">Carreras y marchas</h3></div>
+    <p class="svp cr-src"><span id="crSrc"></span><span id="crUpd"></span>.</p>
+    <div id="crFil"></div>
+    <div id="crList"></div>
+  </section>
+</main>
+
 <main class="page off" id="pgEntreno">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
-  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno">Entreno</button></div>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgCarreras">Carreras</button></div>
   <section class="pblock">
     <div class="pb-h"><h3 id="enWkT">Esta semana</h3><div class="en-nav"><button id="enPrev" aria-label="Semana anterior">‹</button><button id="enNext" aria-label="Semana siguiente">›</button></div></div>
     <div class="en-sum" id="enWkSum"></div>
@@ -1720,7 +1727,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795465392';   // versión de la app (la pone build.py)
+const BUILD='1795468204';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2031,7 +2038,8 @@ if(!perfil.apodo && !perfil.foto) editPerfil(true);
 let mapCentered=false;
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
-  document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===(id==='pgEntreno'?'pgSalidas':id)));
+  document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===(id==='pgEntreno'||id==='pgCarreras'?'pgSalidas':id)));
+  if(id==='pgCarreras') try{ crRender(); }catch(e){ console.warn(e); }
   document.querySelectorAll('.sal-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.st===id));
   if(id==='pgPerfil') try{ paintYear(); }catch(e){}
   if(id==='pgEntreno') try{ enPaint(); }catch(e){ console.warn(e); }
@@ -7117,14 +7125,13 @@ async function soSetupPaint(){ const box=$('soSetup'); if(!box||!me) return; let
   box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ ajFrom='pgGrupeta'; showPage('pgAjustes'); setTimeout(()=>$(b.dataset.go).scrollIntoView({behavior:'smooth'}),80); }); }
 function renderGroup(){
   if(gMode==='g'&&me&&typeof groups!=='undefined'&&!groups.length&&groupsLoaded) gMode='a';
-  const g=curGroup(), am=gMode==='a', cm=gMode==='c'; try{ renderFeed(); }catch(e){} soSetupPaint();
-  $('pgGrupeta').classList.toggle('mode-c',cm); $('crSec').hidden=!cm;
+  if(gMode==='c') gMode='a';
+  const g=curGroup(), am=gMode==='a', cm=false; try{ renderFeed(); }catch(e){} soSetupPaint();
   $('grFriends').hidden=!am||!me; $('grOne').hidden=am||cm||!g; $('grNone').hidden=am||cm||!!g||!me; $('grNoneX').hidden=!g;
-  $('grTabs').innerHTML=me?`<button data-g="__a" class="${am?'on':''}">Amigos</button><button data-g="__c" class="${cm?'on':''}">Carreras</button>`+groups.map(x=>`<button data-g="${x.id}" class="${!am&&!cm&&x.id===gCur?'on':''}">${esc(x.name)}</button>`).join('')+`<button data-g="" aria-label="Crear o unirme a otra grupeta">＋</button>`:'';
+  $('grTabs').innerHTML=me?`<button data-g="__a" class="${am?'on':''}">Amigos</button>`+groups.map(x=>`<button data-g="${x.id}" class="${!am&&!cm&&x.id===gCur?'on':''}">${esc(x.name)}</button>`).join('')+`<button data-g="" aria-label="Crear o unirme a otra grupeta">＋</button>`:'';
   $('grTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.g==='__c'){ gMode='c'; store.set('ichnos-gmode','c'); renderGroup(); return; }
     if(b.dataset.g==='__a'){ gMode='a'; store.set('ichnos-gmode','a'); renderGroup(); try{ loadFriends(); }catch(e){} return; }
     if(!b.dataset.g){ if(gMode==='a'||gMode==='c'){ gMode='g'; store.set('ichnos-gmode','g'); renderGroup(); $('grNone').hidden=false; $('grNone').scrollIntoView({behavior:'smooth'}); return; } const op=$('grNone').hidden; $('grNone').hidden=!op; b.classList.toggle('on',op); if(op) $('grNone').scrollIntoView({behavior:'smooth'}); return; } gCur=b.dataset.g; gMode='g'; store.set('ichnos-gmode','g'); syncRaw.set('ichnos-gcur',gCur); invClose(); renderGroup(); loadGroupData(); });
-  if(cm){ try{ crRender(); }catch(e){ console.warn(e); } return; }
   if(!g) return;
   $('grName').textContent=g.name; const lead=!!(me&&g.admin===me.id); $('grRen').hidden=!lead; $('grDel').hidden=!lead;
   $('grMem').innerHTML=g.members.map(u=>`<button data-u="${u}"><i>${initial(uName(u))}</i>${esc(uName(u))}${u===g.admin?' ★':''}</button>`).join('');
@@ -7572,7 +7579,7 @@ async function enSend(x,dev='ciclo'){ const w=enById(x.w); if(!w) return;
   $('enPrev').onclick=()=>{ enWk--; enPaintWeek(); }; $('enNext').onclick=()=>{ enWk++; enPaintWeek(); };
   $('enBack').onclick=()=>{ $('enView').hidden=true; };
 })();
-function enShowTab(){ document.querySelectorAll('.sal-tabs').forEach(t=>t.hidden=!(me&&me.admin)); if(!(me&&me.admin)&&!$('pgEntreno').classList.contains('off')) showPage('pgSalidas'); }
+function enShowTab(){ document.querySelectorAll('.sal-tabs').forEach(t=>t.hidden=!me); document.querySelectorAll('.sal-tabs .st-en').forEach(b=>b.hidden=!(me&&me.admin)); if(!(me&&me.admin)&&!$('pgEntreno').classList.contains('off')) showPage('pgSalidas'); }
 document.querySelectorAll('.sal-tabs button').forEach(b=>b.onclick=()=>showPage(b.dataset.st));
 
 // ================= PLAN A TU MEDIDA: eliges días, qué y cuánto tiempo; la app reparte los entrenos =================
@@ -7631,9 +7638,16 @@ const CR_LV=[null,
   {t:'Marcha larga',c:'#1c7ed6',d:'Marcha más larga, sin competir o con cronómetro para todos. Hay que tener fondo.'},
   {t:'Exigente',c:'#e67700',d:'Maratón, gran fondo, brevet u open: muchas horas encima de la bici.'},
   {t:'Competición',c:'#c92a2a',d:'Carrera federada (normalmente con licencia) o prueba muy dura.'}];
-const CR_DS={btt:{t:'BTT',c:'#2f9e44'},carretera:{t:'Carretera',c:'#1c7ed6'},gravel:{t:'Gravel',c:'#a0753a'}};
+const CR_DS={btt:{t:'BTT',c:'#2f9e44'},carretera:{t:'Carretera',c:'#1c7ed6'},gravel:{t:'Gravel',c:'#a0753a'},correr:{t:'Correr',c:'#e8590c'},trail:{t:'Trail',c:'#7048e8'}};
+const CR_GRP={bici:['btt','carretera','gravel'],pie:['correr','trail']};
+const CR_LVP=[null,
+  {t:'Corta',c:'#2f9e44',d:'Hasta 10 km en asfalto o un trail corto. Para empezar o ir a tu ritmo.'},
+  {t:'Media',c:'#1c7ed6',d:'Hasta media maratón, o un trail de hasta 25 km.'},
+  {t:'Larga',c:'#e67700',d:'Maratón, trail largo o cursa vertical: hay que llevarla bien preparada.'},
+  {t:'Muy dura',c:'#c92a2a',d:'Más que una maratón o ultra trail.'}];
+const crLvl=c=>((CR_GRP.pie.includes(c.ds)?CR_LVP:CR_LV)[c.lv]||CR_LV[2]);
 const CR_MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let crData=null, crBusy=null, crOpenId=null, crShowId=null, crF={ds:'',lv:0,dist:0,old:false,...store.get('ichnos-crf',{})};
+let crData=null, crBusy=null, crOpenId=null, crShowId=null, crF={grp:'bici',ds:'',lv:0,dist:0,old:false,...store.get('ichnos-crf',{})};
 const crLayer=L.layerGroup(), crTrackLayer=L.layerGroup(), crMk={};
 async function crLoad(force){
   if(crData&&!force) return crData; if(crBusy) return crBusy;
@@ -7643,16 +7657,20 @@ const crDay=c=>new Date(c.d);
 const crToday=()=>{ const t=new Date(); t.setHours(0,0,0,0); return t; };
 const crHomeKm=c=>(perfil&&perfil.home&&c.lat!=null)?dist([perfil.home.lat,perfil.home.lon],[c.lat,c.lon])/1000:null;
 function crFiltered(forMap){ if(!crData) return []; const t0=crToday();
-  return crData.items.filter(c=>(forMap&&c.id===crShowId)||((!crF.ds||c.ds===crF.ds)&&(!crF.lv||c.lv===crF.lv)&&(crF.old||crDay(c)>=t0)
-    &&(!crF.dist||(crHomeKm(c)!=null&&crHomeKm(c)<=crF.dist)))); }
-function crTags(c){ const ds=CR_DS[c.ds]||{t:c.ds,c:'#666'}, lv=CR_LV[c.lv]||CR_LV[2];
+  return crData.items.filter(c=>(forMap&&c.id===crShowId)||(CR_GRP[crF.grp].includes(c.ds)&&(!crF.ds||c.ds===crF.ds)&&(!crF.lv||c.lv===crF.lv)&&(crF.old||crDay(c)>=t0)
+    &&(!crF.dist||(crHomeKm(c)!=null&&crHomeKm(c)<=crF.dist)))).sort((x,y)=>crDay(x)-crDay(y)); }
+function crTags(c){ const ds=CR_DS[c.ds]||{t:c.ds,c:'#666'}, lv=crLvl(c);
   return `<span class="cr-tags"><i style="background:${ds.c}">${ds.t}</i><i style="background:${lv.c}">${c.lv} · ${lv.t}</i>${c.tr?'<i class="cr-tr">Recorrido</i>':''}</span>`; }
 function crSave(){ store.set('ichnos-crf',crF); }
 async function crRender(){
   const box=$('crSec'); if(!box) return;
   const seg=(id,opts,cur)=>`<div class="segc cr-seg" id="${id}">${opts.map(([v,t])=>`<button data-v="${v}" class="${String(v)===String(cur)?'on':''}">${t}</button>`).join('')}</div>`;
-  $('crFil').innerHTML=seg('crDs',[['','Todas'],['btt','BTT'],['carretera','Carretera'],['gravel','Gravel']],crF.ds)
-    +seg('crLv',[[0,'Todos los niveles'],...[1,2,3,4].map(n=>[n,`<em style="background:${CR_LV[n].c}"></em>${n} · ${CR_LV[n].t}`])],crF.lv)
+  const pie=crF.grp==='pie', LV=pie?CR_LVP:CR_LV;
+  $('crGrp').querySelectorAll('button').forEach(b=>{ b.classList.toggle('on',b.dataset.v===crF.grp); b.onclick=()=>{ if(crF.grp===b.dataset.v) return; crF.grp=b.dataset.v; crF.ds=''; crF.lv=0; crOpenId=null; crSave(); crRender(); crPaintMap(); }; });
+  $('crT').textContent=pie?'Carreras a pie':'Carreras y marchas en bici';
+  $('crSrc').textContent=pie?'Calendarios de la Federació Catalana d\'Atletisme (asfalto y trail). Ichnos los mira solo cada semana':'Calendario de la Federació Catalana de Ciclisme. Ichnos lo mira solo cada semana';
+  $('crFil').innerHTML=seg('crDs',pie?[['','Todas'],['correr','Asfalto'],['trail','Trail']]:[['','Todas'],['btt','BTT'],['carretera','Carretera'],['gravel','Gravel']],crF.ds)
+    +seg('crLv',[[0,'Todos los niveles'],...[1,2,3,4].map(n=>[n,`<em style="background:${LV[n].c}"></em>${n} · ${LV[n].t}`])],crF.lv)
     +(perfil&&perfil.home?seg('crDist',[[0,'Toda Cataluña'],[50,'A menos de 50 km'],[100,'A menos de 100 km']],crF.dist):'')
     +`<label class="cr-old"><input type="checkbox" id="crOld"${crF.old?' checked':''}> Ver también las que ya han pasado</label>`;
   $('crFil').querySelectorAll('#crDs [data-v]').forEach(b=>b.onclick=()=>{ crF.ds=b.dataset.v; crOpenId=null; crSave(); crRender(); crPaintMap(); });
@@ -7670,7 +7688,7 @@ async function crRender(){
     const hk=crHomeKm(c), past=d<t0;
     h+=`<div class="cr-row${past?' cr-past':''}${crOpenId===c.id?' open':''}" data-id="${esc(c.id)}"><button class="cr-it">
       <div class="cr-d"><b>${d.getDate()}</b><small>${d.toLocaleDateString('es-ES',{weekday:'short'}).replace('.','')}</small></div>
-      <div class="cr-m"><b>${esc(c.n)}</b><small>${esc(c.pob)}${c.km?' · '+c.km+' km':c.kmc?' · vuelta de '+c.kmc+' km':''}${hk!=null?' · a '+Math.round(hk)+' km de casa':''}</small>${crTags(c)}</div></button>
+      <div class="cr-m"><b>${esc(c.n)}</b><small>${esc(c.pob)}${c.dists?' · '+crDists(c):c.km?' · '+c.km+' km':c.kmc?' · vuelta de '+c.kmc+' km':''}${hk!=null?' · a '+Math.round(hk)+' km de casa':''}</small>${crTags(c)}</div></button>
       ${crOpenId===c.id?crDetail(c):''}</div>`; });
   L0.innerHTML=h;
   L0.querySelectorAll('.cr-row').forEach(r=>{ const c=crData.items.find(x=>x.id===r.dataset.id);
@@ -7678,20 +7696,22 @@ async function crRender(){
     const mapB=r.querySelector('[data-a="map"]'); if(mapB) mapB.onclick=()=>crShowOnMap(c); });
   const op=L0.querySelector('.cr-row.open'); if(op) op.scrollIntoView({block:'nearest'});
 }
-function crDetail(c){ const d=crDay(c), lv=CR_LV[c.lv]||CR_LV[2];
+const crDists=c=>{ const l=c.dists.map(x=>x===1.6?'milla':String(x).replace('.',',')+(x===21?' (media)':x===42?' (maratón)':'')); return l.slice(0,-1).join(', ')+' y '+l[l.length-1]+' km'; };
+function crDetail(c){ const d=crDay(c), lv=crLvl(c), fca=c.src==='fca';
   const fecha=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const tipo=c.comp?'Competición (con cronómetro y clasificación)':'Marcha, sin competir';
+  const tipo=fca?(c.ds==='trail'?'Carrera de trail':'Carrera en asfalto'):c.comp?'Competición (con cronómetro y clasificación)':'Marcha, sin competir';
   return `<div class="cr-det">
-    <p><b>Cuándo:</b> ${fecha}${c.h&&c.h!=='00:00'?', salida a las '+c.h:''}</p>
-    <p><b>Dónde sale:</b> ${c.dir?esc(c.dir.charAt(0)+c.dir.slice(1).toLowerCase())+', ':''}${esc(c.pob)} (${esc(c.prov)})</p>
-    ${c.km?`<p><b>Distancia:</b> ${c.km} km${c.tipus?' · '+esc(c.tipus.toLowerCase()):''}</p>`:c.kmc?`<p><b>Circuito:</b> vueltas de ${c.kmc} km</p>`:''}
+    <p><b>Cuándo:</b> ${fecha}${!fca&&c.h&&c.h!=='00:00'?', salida a las '+c.h:''}</p>
+    <p><b>Dónde${fca?'':' sale'}:</b> ${c.dir?esc(c.dir.charAt(0)+c.dir.slice(1).toLowerCase())+', ':''}${esc(c.pob)}${c.prov?' ('+esc(c.prov)+')':''}</p>
+    ${c.dists?`<p><b>Distancias:</b> ${crDists(c)}</p>`:c.km?`<p><b>Distancia:</b> ${c.km} km${c.tipus?' · '+esc(c.tipus.toLowerCase()):''}</p>`:c.kmc?`<p><b>Circuito:</b> vueltas de ${c.kmc} km</p>`:''}
     <p><b>Tipo:</b> ${tipo}${c.mod?' · '+esc(c.mod):''}</p>
     ${c.camp&&c.camp.length?`<p><b>Puntúa para:</b> ${c.camp.map(esc).join(', ')}</p>`:''}
     <p class="cr-lvx" style="border-color:${lv.c}"><b style="color:${lv.c}">Nivel ${c.lv} · ${lv.t}.</b> ${lv.d}</p>
-    ${c.tr?'':'<p class="svp">El organizador no ha puesto el recorrido en su web en un archivo que Ichnos pueda leer. En el mapa sale el punto de salida.</p>'}
+    ${c.tr?'':fca?'<p class="svp">La federación no publica la hora ni el recorrido. En el mapa sale el pueblo; búscala por su nombre para ver los detalles.</p>':'<p class="svp">El organizador no ha puesto el recorrido en su web en un archivo que Ichnos pueda leer. En el mapa sale el punto de salida.</p>'}
     <div class="cr-btns"><button class="btn-main" data-a="map">${c.tr?'Ver el recorrido en el mapa':'Ver dónde sale en el mapa'}</button>
       ${c.web?`<a class="pb-btn" href="${esc(c.web)}" target="_blank" rel="noopener">Web de la prueba</a>`:''}
-      <a class="pb-btn ghost" href="${esc(c.url)}" target="_blank" rel="noopener">Ficha en la federación</a></div>
+      ${fca?`<a class="pb-btn" href="https://www.google.com/search?q=${encodeURIComponent(c.n+' '+c.pob+' '+crDay(c).getFullYear())}" target="_blank" rel="noopener">Buscar su web</a>`:''}
+      <a class="pb-btn ghost" href="${esc(c.url)}" target="_blank" rel="noopener">${fca?'Calendario de la federación':'Ficha en la federación'}</a></div>
   </div>`; }
 function crPopup(c){ const d=crDay(c), ds=CR_DS[c.ds]||{t:''};
   return `<div class="cr-pop"><b>${esc(c.n)}</b><small>${d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'})} · ${esc(c.pob)}${c.km?' · '+c.km+' km':''}</small>${crTags(c)}
@@ -7701,9 +7721,9 @@ function crPaintMap(){ crLayer.clearLayers(); for(const k in crMk) delete crMk[k
   if(!map.hasLayer(crLayer)) crLayer.addTo(map); if(!map.hasLayer(crTrackLayer)) crTrackLayer.addTo(map);
   if(!crData){ crLoad().then(()=>{ if(crData) crPaintMap(); else toast('No se ha podido cargar el calendario de carreras ahora.',4000); }); return; }
   const list=crFiltered(true).filter(c=>c.lat!=null);
-  if(!list.length) toast(crData.items.some(c=>crDay(c)>=crToday())?'No hay carreras con los filtros que tienes en Social → Carreras.':'Todavía no han salido las carreras del año que viene.',4500);
+  if(!list.length) toast(crData.items.some(c=>crDay(c)>=crToday())?'No hay carreras con los filtros que tienes en Salidas → Carreras.':'Todavía no han salido las carreras del año que viene.',4500);
   list.forEach(c=>{ const ds=CR_DS[c.ds]||{c:'#666'};
-    const mk=L.marker([c.lat,c.lon],{icon:L.divIcon({className:'',html:pinSvg(ds.c,'copa',CR_LV[c.lv]?CR_LV[c.lv].c:null),iconSize:[30,38],iconAnchor:[15,37],popupAnchor:[0,-32]}),title:c.n})
+    const mk=L.marker([c.lat,c.lon],{icon:L.divIcon({className:'',html:pinSvg(ds.c,'copa',crLvl(c).c),iconSize:[30,38],iconAnchor:[15,37],popupAnchor:[0,-32]}),title:c.n})
       .bindPopup(()=>crPopup(c),{minWidth:220}).addTo(crLayer); crMk[c.id]=mk; }); }
 async function crTrack(c,fit){ crTrackLayer.clearLayers(); crTrackLayer._id=null; if(!c.tr) return false;
   try{ const j=await (await fetch(CR_URL+'tracks/'+c.tr+'.json')).json(); const ds=CR_DS[c.ds]||{c:'#666'};
@@ -7713,7 +7733,7 @@ async function crShowOnMap(c){ crShowId=c.id; showPage('pgMapa'); if(!T.carreras
   const ok=c.tr&&await crTrack(c,true); if(!ok&&c.lat!=null) map.setView([c.lat,c.lon],12);
   setTimeout(()=>{ if(crMk[c.id]) crMk[c.id].openPopup(); },350); }
 document.addEventListener('click',async e=>{ const b=e.target.closest('[data-cr]'); if(!b||!crData) return; const c=crData.items.find(x=>x.id===b.dataset.id); if(!c) return;
-  if(b.dataset.cr==='ficha'){ map.closePopup(); crOpenId=c.id; crF.old=crF.old||crDay(c)<crToday(); gMode='c'; store.set('ichnos-gmode','c'); showPage('pgGrupeta'); renderGroup(); }
+  if(b.dataset.cr==='ficha'){ map.closePopup(); crOpenId=c.id; crF.old=crF.old||crDay(c)<crToday(); crF.grp=CR_GRP.pie.includes(c.ds)?'pie':'bici'; crSave(); showPage('pgCarreras'); }
   else if(b.dataset.cr==='tr'){ if(crTrackLayer._id===c.id){ crTrackLayer.clearLayers(); crTrackLayer._id=null; b.textContent='Ver recorrido'; } else { if(await crTrack(c,false)) b.textContent='Quitar recorrido'; } } });
 </script>
 <script>
