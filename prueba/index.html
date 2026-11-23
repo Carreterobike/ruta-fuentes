@@ -1681,7 +1681,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795413415';   // versión de la app (la pone build.py)
+const BUILD='1795413534';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -4525,17 +4525,21 @@ async function planTripSeq(){
       if(nLeft===1){ B=E; passed=targets.length-1; res=await routeLL([[S.lat,S.lon],...targets.map(x=>[x.lat,x.lon])],{deadline:Date.now()+90000}); }
       else{
         let d=t/f;
-        for(let attempt=0;attempt<(maxUp?3:2);attempt++){
-          const w=walk(d); passed=w.passed;
-          const town=await townNear(w.P,Math.max(6000,t*0.15));
-          B=town||{lat:w.P[0],lon:w.P[1],name:(await placeName(w.P[0],w.P[1]))||'Punto de paso'};
-          res=await routeLL([[S.lat,S.lon],...targets.slice(0,passed).map(x=>[x.lat,x.lon]),[B.lat,B.lon]],{deadline:Date.now()+90000});
+        let best=null;   // de los intentos, el que cumple el desnivel máximo y más se acerca a los km; si ninguno, el que menos sube
+        const better=(x,y)=>{ if(!y) return true; const ox=!maxUp||x.res.up<=maxUp*1.05, oy=!maxUp||y.res.up<=maxUp*1.05; if(ox!==oy) return ox; return ox?Math.abs(x.res.len-t)<Math.abs(y.res.len-t):x.res.up<y.res.up; };
+        for(let attempt=0;attempt<(maxUp?4:2);attempt++){
+          const w=walk(d); const pas=w.passed;
+          let town=null; for(const r of [Math.max(6000,t*0.15),t*0.3,45000]){ town=await townNear(w.P,r); if(town) break; }
+          const Bx=town||{lat:w.P[0],lon:w.P[1],name:(await placeName(w.P[0],w.P[1]))||'Punto de paso'};
+          const rx=await routeLL([[S.lat,S.lon],...targets.slice(0,pas).map(x=>[x.lat,x.lon]),[Bx.lat,Bx.lon]],{deadline:Date.now()+90000});
           if(my!==tripReq) return;
-          const ratio=res.len/t, tooUp=maxUp&&res.up>maxUp*1.05;
-          if(tooUp){ d=d*Math.max(0.45,maxUp/res.up*0.95); continue; }   // demasiada subida para un día: etapa más corta
+          const cand={B:Bx,res:rx,passed:pas}; if(better(cand,best)) best=cand;
+          const ratio=rx.len/t, tooUp=maxUp&&rx.up>maxUp*1.05;
+          if(tooUp){ d=d*Math.max(0.35,maxUp/rx.up*0.9); continue; }   // demasiada subida para un día: etapa más corta
           if(ratio>=0.85&&ratio<=1.15) break;
           d=d/ratio;                                   // corrige y prueba otra vez para clavar los km del día
         }
+        B=best.B; res=best.res; passed=best.passed;
       }
     }catch(e){ res=null; }
     if(my!==tripReq) return;
