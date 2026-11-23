@@ -1,0 +1,16 @@
+# temporal: ver cómo sale el texto de los calendarios de la FCA
+name: Prueba FCA
+on: workflow_dispatch
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -qq poppler-utils >/dev/null
+      - run: |
+          for q in calendari-trail calendari-ruta; do
+            curl -s "https://fcatletisme.cat/wp-json/wp/v2/media?search=$q&per_page=20&orderby=date&order=desc" | python3 -c "import sys,json; [print(x['date'],x['source_url']) for x in json.load(sys.stdin)]"
+          done
+          U=$(curl -s "https://fcatletisme.cat/wp-json/wp/v2/media?search=calendari-trail&per_page=20&orderby=date&order=desc" | python3 -c "import sys,json; l=[x['source_url'] for x in json.load(sys.stdin) if 'nota' not in x['source_url']]; print(l[0])")
+          curl -s -o t.pdf "$U"; echo "== $U"; pdftotext -layout t.pdf - | head -90
+          U=$(curl -s "https://fcatletisme.cat/wp-json/wp/v2/media?search=calendari-ruta&per_page=20&orderby=date&order=desc" | python3 -c "import sys,json; l=[x['source_url'] for x in json.load(sys.stdin)]; print(l[0])")
+          curl -s -o r.pdf "$U"; echo "== $U"; pdftotext -layout r.pdf - | head -120
