@@ -425,6 +425,7 @@ details.help p{margin:6px 0 0}
 
 
 .grn{display:flex;align-items:center;gap:6px}.grren{border:0;background:transparent;color:var(--muted);font-size:18px;padding:2px 6px;cursor:pointer}
+#tripClose{color:#c92a2a;border-color:#e3a3a3}
 .gr-x{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.gr-x .danger{color:#c92a2a;border-color:#e3a3a3}
 
 /* mensajes privados */
@@ -1464,7 +1465,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
           <button id="tripAll" class="primary" hidden>Descargar o pasar todo el viaje</button>
           <button id="tripRetry" hidden>Reintentar</button>
           <button id="tripCancel" hidden>Cancelar</button>
-          <button id="tripClose" hidden>Cerrar viaje</button>
+          <button id="tripClose" class="danger" hidden>Borrar viaje</button>
         </div>
       </section>
       <section class="sec" id="secFuentes" hidden>
@@ -1681,7 +1682,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795414130';   // versión de la app (la pone build.py)
+const BUILD='1795440890';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2355,7 +2356,7 @@ function updateSheet(){
   $('secFuentes').hidden=!(route && fuentesAsked) || crearClosed || wz.on;
   $('lgBox').hidden=!(T.trialeras && (!T.crear || trailsMode()));
   $('addF').hidden=!T.fuentes;
-  $('secViaje').hidden=!trip||crearClosed||wz.on||!$('rideOn').hidden||store.get('ichnos-viajeX',false);
+  $('secViaje').hidden=!trip||crearClosed||wz.on||!$('rideOn').hidden;
   $('tripBack').hidden=!(trip&&trip.open!=null);
   $('tripBtn').hidden=!(points.length>=2 && !(trip&&trip.open!=null) && $('calcCancel').hidden && (T.crear||!!route));
   $('secSeg').hidden=!T.segmentos;
@@ -2960,7 +2961,7 @@ $('clear').onclick = () => {
 $('done').onclick = () => setToggle('crear',false);
 $('secViaje').querySelector('.sec-h h3').onclick=()=>$('secViaje').classList.toggle('mini');
 $('offRoute').onclick=()=>{ if(route) saveOffline(route.coords,'la ruta',$('offRoute')); };
-$('viajeX').onclick = () => { store.set('ichnos-viajeX',true); updateSheet(); };   // cerrada se queda cerrada hasta que abras otro viaje
+$('viajeX').onclick = () => $('tripClose').onclick();   // la ✕ borra el viaje de verdad (preguntando antes); antes solo escondía la ventana y el viaje se quedaba en el mapa sin forma de quitarlo
 $('crearX').onclick = async () => {
   // cerrar = quitar la ruta del mapa (si no está guardada, te avisa antes)
   if(route||points.length){ const cur=JSON.stringify(points.map(q=>q.slice(0,3)));
@@ -4691,7 +4692,7 @@ $('tripRetry').onclick=()=>{ if(!trip) return; if(trip.stages.length){ const las
 async function continueTrip(S){   // sigue desde la última etapa buena sin repetir las anteriores
   const keep=trip.stages.slice(); const from=trip.from; trip.from=S; planVia=trip.viaLeft||(keep.length&&keep[keep.length-1].viaLeft)||[]; await planTripSeq(); trip.stages=keep.concat(trip.stages); trip.from=from; drawTrip(); saveTrip(); renderTrip();
 }
-$('tripClose').onclick=async()=>{ if(!(await ask('¿Cerrar el viaje?','Se borran las etapas de la pantalla. Puedes volver a crearlo cuando quieras.','Sí, cerrar','No'))) return;
+$('tripClose').onclick=async()=>{ if(!(await ask('¿Borrar el viaje?','Se quita el viaje del mapa y de tus aparatos. Las etapas que ya pasaste al ciclocomputador siguen allí. Puedes volver a crearlo cuando quieras.','Sí, borrar','No'))) return;
   ++tripReq; closeStage(false); trip=null; tripLayer.clearLayers(); tripArrowLayer.clearLayers(); store.del('ichnos-viaje'); updateSheet(); };
 $('tripAll').onclick=()=>carryTrip();
 $('tripBack').onclick=()=>{ closeStage(true); };
@@ -4720,6 +4721,7 @@ function syncOpenStage(coords,up){
   s.coords=c; s.len=lenOf(c); s.up=up; saveTrip(); renderTrip();
 }
 // recuperar el último viaje guardado
+(function(){ if(!store.get('ichnos-limpia-val',false)){ const o=store.get('ichnos-viaje',null); if(o&&o.to&&o.to.name==='Valencia'&&o.from&&o.from.name==='Mollet'){ store.del('ichnos-viaje'); syncMark('ichnos-viaje'); } store.set('ichnos-limpia-val',true); } })();   // viaje de prueba de Claude (23-nov)
 (function(){ const v=store.get('ichnos-viaje',null); if(v&&v.stages&&v.stages.length){ trip={...v,state:'ready',open:null}; setTimeout(()=>{ drawTrip(); renderTrip(); },0); } })();
 
 // ================= LLEVAR LA RUTA (descargar, compartir, código QR) =================
