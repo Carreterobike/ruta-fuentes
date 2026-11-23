@@ -432,6 +432,7 @@ details.help p{margin:6px 0 0}
 .dm-b{border:0;background:var(--soft)!important;color:var(--ink)!important;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;position:relative;flex:none;padding:0!important;font-size:18px}
 .dm-n{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#e5484d;color:#fff;font:700 11px/18px var(--body);font-style:normal;text-align:center;padding:0 4px}
 #dmRecentL li{position:relative}#dmRecentL .dm-n{position:static;margin-left:auto}#dmRecentL small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw;display:block}
+#grTabs button{position:relative}#grTabs .dm-nb{top:-5px;left:auto;right:-5px}
 #bnav button{position:relative}.dm-nb{position:absolute;top:2px;left:calc(50% + 6px);min-width:17px;height:17px;border-radius:9px;background:#e5484d;color:#fff;font:700 10.5px/17px var(--body);font-style:normal;text-align:center;padding:0 4px}
 .dmview{display:flex;flex-direction:column;z-index:2600!important}.dmview .rv-h{display:flex;align-items:center;gap:10px}.dm-hint{text-transform:none!important;text-align:center;max-width:80%}.dmview .rv-h .av{width:34px;height:34px;border-radius:50%;background:#2a3238;color:#B6E22E;display:grid;place-items:center;font-weight:800}.dmview .rv-h>div:nth-child(3){flex:1}
 .dm-more{border:0;background:transparent;color:inherit;font-size:22px;padding:4px 10px}
@@ -865,6 +866,25 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 body.crear-on .bnav .plus .pl-a{display:none} body.crear-on .bnav .plus .pl-b{display:block} body.crear-on .bnav .plus .pl-t{display:block}
 .bnav .plus .pl-t{font-size:11px;color:#B6E22E}
 .lbar{display:none!important}
+.mode-c>section:not(#crSec){display:none!important}
+#crSec .cr-seg{flex-wrap:wrap;margin:6px 0}
+#crSec .cr-seg em{display:inline-block;width:9px;height:9px;border-radius:5px;margin-right:5px;vertical-align:0}
+.cr-old{display:flex;gap:8px;align-items:center;font-size:14px;margin:8px 0 4px;color:var(--muted)}
+.cr-month{font-weight:800;font-size:15px;margin:16px 0 4px}
+.cr-row{border-top:1px solid var(--line,#e5e7eb)}
+.cr-it{display:flex;gap:12px;width:100%;text-align:left;border:0;background:none;padding:10px 0;cursor:pointer;font:inherit;color:inherit;align-items:flex-start}
+.cr-d{min-width:46px;text-align:center;border-radius:10px;background:rgba(0,0,0,.06);padding:5px 0}
+.cr-d b{display:block;font-size:20px;line-height:1.1}.cr-d small{font-size:11px;text-transform:uppercase;color:var(--muted)}
+.cr-m{flex:1;min-width:0}.cr-m>b{display:block;line-height:1.25}.cr-m>small{display:block;color:var(--muted);margin-top:2px}
+.cr-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.cr-tags i{font-style:normal;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff}
+.cr-tags i.cr-tr{background:#1E2328}
+.cr-past{opacity:.55}
+.cr-det{padding:0 0 14px 58px;font-size:14px}.cr-det p{margin:4px 0}
+.cr-lvx{border-left:4px solid;padding:4px 0 4px 10px!important;margin:10px 0!important}
+.cr-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.cr-btns a{text-decoration:none}
+.cr-empty{padding:14px 0}
+.cr-pop{display:flex;flex-direction:column;gap:3px}.cr-pop small{color:var(--muted)}
+@media (max-width:760px){.cr-det{padding-left:0}}
 .sal-tabs{display:flex;gap:6px;margin:4px auto 10px;width:calc(100% - 32px);max-width:440px;box-sizing:border-box;background:rgba(255,255,255,.06);border-radius:12px;padding:4px}
 .sal-tabs[hidden]{display:none}
 .sal-tabs button{flex:1;border:0;background:none;color:#c9d0d6;font:inherit;font-weight:700;padding:9px;border-radius:9px;cursor:pointer}
@@ -1129,6 +1149,12 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <main class="page off" id="pgGrupeta">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
   <div class="grtabs" id="grTabs"></div>
+  <section class="pblock" id="crSec" hidden>
+    <div class="pb-h"><h3>Carreras y marchas</h3></div>
+    <p class="svp cr-src">Calendario de la Federació Catalana de Ciclisme. Ichnos lo mira solo cada semana<span id="crUpd"></span>.</p>
+    <div id="crFil"></div>
+    <div id="crList"></div>
+  </section>
   <section class="pblock so-setup" id="soSetup" hidden></section>
   <section class="pblock" id="grNone">
     <div class="pb-h"><h3>Tu grupeta</h3><button class="pb-btn ghost" id="grNoneX" hidden>Cancelar</button></div>
@@ -1388,6 +1414,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
           <button data-t="fuentes"><span class="ic" data-pin="fuente"></span>Fuentes<i class="lupa" data-s="fuentes" role="button" tabindex="0" aria-label="Buscar por nombre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg></i></button>
           <button data-t="trialeras"><span class="ic" data-pin="trial"></span>Trialeras</button>
           <button data-t="segmentos"><span class="ic" data-pin="crono"></span>Segmentos</button>
+          <button data-t="carreras"><span class="ic" data-pin="copa"></span>Carreras y marchas</button>
           <button data-p="comer"><span class="ic" data-pin="bar"></span>Bares y restaurantes<i class="lupa" data-s="comer" role="button" tabindex="0" aria-label="Buscar por nombre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg></i></button>
           <button data-p="dormir"><span class="ic" data-pin="cama"></span>Hoteles y hostales<i class="lupa" data-s="dormir" role="button" tabindex="0" aria-label="Buscar por nombre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg></i></button>
           <button data-p="salud"><span class="ic" data-pin="hosp"></span>Hospitales y urgencias<i class="lupa" data-s="salud" role="button" tabindex="0" aria-label="Buscar por nombre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg></i></button>
@@ -1693,7 +1720,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795442582';   // versión de la app (la pone build.py)
+const BUILD='1795465392';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2012,6 +2039,7 @@ function showPage(id){
   if((id==='pgGrupeta'||id==='pgAjustes')&&typeof loadAdmin==='function'&&me&&me.admin) loadAdmin();
   if((id==='pgSalidas'||id==='pgAjustes') && typeof svAuto==='function') svAuto();
   if((id==='pgSalidas'||id==='pgGrupeta') && typeof loadFeed==='function') loadFeed(false);
+  if(id==='pgGrupeta'){ try{ if((typeof dmIx!=='undefined'&&dmIx.some(x=>x.unread)&&gMode!=='a')||(gMode==='g'&&!(groups||[]).length)){ gMode='a'; store.set('ichnos-gmode','a'); renderGroup(); try{ loadFriends(); }catch(e){} } }catch(e){} }
   if(id==='pgGrupeta' && typeof loadGroupData==='function') loadGroupData();
   if(id==='pgMapa' && window.map){
     setTimeout(()=>{ map.invalidateSize(); try{ glMap.resize(); }catch(e){} },30);
@@ -2352,6 +2380,7 @@ async function setToggle(k,on){
   if(k==='trialeras'){ store.set('ichnos-trialeras',on); applyTrails(); if(typeof drawTrailFix==='function') drawTrailFix(); }
   if(k==='fuentes'){ if(on) loadViewFountains(); else { renderFountains(); if(addingF) $('addF').click(); } }
   if(k==='segmentos'){ if(!on && segMode) segCancel(); drawSegs(); refreshSegs(); }
+  if(k==='carreras'&&typeof crPaintMap==='function') crPaintMap();
   updateSheet();
 }
 let crearClosed=false;   // la ventana de la ruta cerrada con la ✕
@@ -3862,8 +3891,8 @@ function renderLunch(){
     b.onclick=e=>{ e.stopPropagation(); lunchAt(x.p,almWhere==='final'); };
     li.appendChild(b); li.onclick=()=>map.setView([x.p.lat,x.p.lon],16); ul.appendChild(li); });
 }
-setTimeout(()=>document.querySelectorAll('#secCapas .ic[data-pin]').forEach(e=>{ e.innerHTML=pinSvg(PIN_C[e.dataset.pin],e.dataset.pin); }),0);
-function paintCapas(){ ['fuentes','trialeras','segmentos'].forEach(k=>document.querySelectorAll(`#secCapas [data-t="${k}"]`).forEach(b=>b.classList.toggle('on',!!T[k]))); const n=['fuentes','trialeras','segmentos'].filter(k=>T[k]).length+placesOn.size; $('capasN').textContent=n||''; $('capasBtn').classList.toggle('on',capasOpen); document.querySelectorAll('#secCapas [data-p]').forEach(b=>b.classList.toggle('on',placesOn.has(b.dataset.p))); }
+setTimeout(()=>document.querySelectorAll('#secCapas .ic[data-pin]').forEach(e=>{ e.innerHTML=pinSvg(PIN_C[e.dataset.pin]||PIN_C.carrera,e.dataset.pin); }),0);
+function paintCapas(){ ['fuentes','trialeras','segmentos','carreras'].forEach(k=>document.querySelectorAll(`#secCapas [data-t="${k}"]`).forEach(b=>b.classList.toggle('on',!!T[k]))); const n=['fuentes','trialeras','segmentos','carreras'].filter(k=>T[k]).length+placesOn.size; $('capasN').textContent=n||''; $('capasBtn').classList.toggle('on',capasOpen); document.querySelectorAll('#secCapas [data-p]').forEach(b=>b.classList.toggle('on',placesOn.has(b.dataset.p))); }
 $('capasBtn').onclick=()=>{ capasOpen=!capasOpen; paintCapas(); updateSheet(); };
 $('apBtn').onclick=()=>{ addingP=$('apCat').value; $('map').classList.add('crear'); capasOpen=false; paintCapas(); updateSheet(); toast('Toca en el mapa dónde está el sitio',6000); };
 setTimeout(()=>{ loadMyPlaces(); renderPlaces(); },0);
@@ -3975,7 +4004,8 @@ function hoursEl(p){ const box=document.createElement('div'); box.className='hor
 
 // ================= FUENTES =================
 const ICO={"fuente": "<path d=\"M4 9.5h6V7h4v2.5h3.5A2.5 2.5 0 0 1 20 12v1.5h-3.5V12H4z\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M18.3 16c1 1.4 1.7 2.4 1.7 3.2a1.7 1.7 0 0 1-3.4 0c0-.8.7-1.8 1.7-3.2z\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M12 7V4.5M10 4.5h4\"/>", "trial": "<path d=\"M2.5 19.5 9.5 8l3.5 5.5 2.5-3.5 6 9.5z\" fill=\"currentColor\" stroke=\"none\" opacity=\".35\"/><path d=\"M2.5 19.5 9.5 8l3.5 5.5 2.5-3.5 6 9.5z\"/><path d=\"M8 20l2.5-2.5-1.5-1.5 3-2.5\" stroke-dasharray=\"1.5 1.5\"/>", "crono": "<circle cx=\"12\" cy=\"13.5\" r=\"7\"/><path d=\"M12 13.5l3-3M10 3.5h4M12 3.5v3M18.2 6.8l1.3-1.3\"/>", "bar": "<path d=\"M4.5 10h11v3.5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z\" fill=\"currentColor\" stroke=\"none\"/><path d=\"M15.5 11h1.5a2.5 2.5 0 0 1 0 5h-1.8M3.5 21h14M8 3c-.9 1.3.9 2.3 0 4.5M12 3c-.9 1.3.9 2.3 0 4.5\"/>", "cama": "<path d=\"M3 19V6.5M3 14.5h18V19M21 14.5V13a3.5 3.5 0 0 0-3.5-3.5H11v5\"/><circle cx=\"7\" cy=\"11.5\" r=\"2\" fill=\"currentColor\" stroke=\"none\"/>", "hosp": "<path d=\"M7 5v14M17 5v14M7 12h10\" stroke-width=\"3\"/>", "farm": "<path d=\"M9 3.5h6v5.5h5.5v6H15v5.5H9V15H3.5V9H9z\" fill=\"currentColor\" stroke=\"none\"/>", "taller": "<circle cx=\"7.5\" cy=\"16\" r=\"4.2\"/><path d=\"M7.5 16l3-5.5h4.5\"/><path d=\"M19.8 6.2a3 3 0 0 0-3.8 3.6l-2.7 2.7 1.8 1.8 2.7-2.7a3 3 0 0 0 3.6-3.8l-1.6 1.6-1.6-.4-.4-1.6z\" fill=\"currentColor\" stroke-width=\"1\"/>", "super": "<path d=\"M3.5 10h17l-2 9.5h-13z\" fill=\"currentColor\" stroke=\"none\" opacity=\".35\"/><path d=\"M3.5 10h17l-2 9.5h-13zM8 10l3-6M16 10l-3-6M9 13.5v3M12 13.5v3M15 13.5v3\"/>"};
-const PIN_C={fuente:'#1c7ed6',trial:'#2f9e44',crono:'#495057',bar:'#d9480f',cama:'#7048e8',hosp:'#c92a2a',farm:'#2b8a3e',taller:'#0c8599',super:'#e67700'};
+ICO.copa='<path d="M7 4h10v4a5 5 0 0 1-10 0z" fill="currentColor" stroke="none"/><path d="M7 5.5H4.5a3 3 0 0 0 3 3.5M17 5.5h2.5a3 3 0 0 1-3 3.5M12 13v3.5M8.5 20h7M9.5 16.5h5V20h-5z"/>';
+const PIN_C={carrera:'#a0753a',fuente:'#1c7ed6',trial:'#2f9e44',crono:'#495057',bar:'#d9480f',cama:'#7048e8',hosp:'#c92a2a',farm:'#2b8a3e',taller:'#0c8599',super:'#e67700'};
 function pinSvg(fill,ico,ring){ return `<svg class="pinsvg" viewBox="0 0 36 46"><path d="M18 1.5C8.9 1.5 1.5 8.6 1.5 17.4 1.5 28.6 18 44.5 18 44.5S34.5 28.6 34.5 17.4C34.5 8.6 27.1 1.5 18 1.5z" fill="${fill}" stroke="${ring||'#fff'}" stroke-width="${ring?3.2:2.5}"/><g transform="translate(7 6) scale(.917)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" color="#fff">${ICO[ico]}</g></svg>`; }
 const DROP_SVG='<svg viewBox="0 0 32 40"><path d="M16 2s-13 15.5-13 24a13 13 0 0 0 26 0c0-8.5-13-24-13-24z" fill="#1677c9" stroke="#ffffff" stroke-width="2.2"/><g transform="translate(6.6 16.5) scale(0.78)"><path d="M4 11h9a4 4 0 0 1 4 4v1M4 8v6M9 11V7M6 6h6" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 19.5c0 .8-.7 1.5-1.5 1.5S14 20.3 14 19.5c0-1 1.5-2.5 1.5-2.5S17 18.5 17 19.5z" fill="#ffffff"/></g></svg>';
 // lector mínimo de teselas vectoriales (MVT) para sacar los puntos de una capa
@@ -6842,7 +6872,7 @@ function fwState(id){ const o=fw.out[id], i=fw.in[id];
 async function loadFriends(){
   if(!me) return;
   try{ const j=await api('/amigos'); users=j.users||[]; fw={in:j.in||{},out:j.out||{}}; syncRaw.set('ichnos-usuarios',users); syncRaw.set('ichnos-fw',fw); }catch(e){}
-  renderFriends(); try{ enShowTab(); }catch(e){} if(me.admin&&!favLoad.done){ favLoad.done=1; favLoad(); }
+  renderFriends(); try{ enShowTab(); }catch(e){} if(me&&me.admin&&!favLoad.done){ favLoad.done=1; favLoad(); }
 }
 const EMPTY_ART={"bike": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 56c18-6 30 2 44-4s22-2 34-6\" stroke=\"var(--line)\" stroke-width=\"3\"/><circle cx=\"22\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"62\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M22 40l12-18h18l10 18M34 22l8 18h20M48 14h8\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"70\" cy=\"10\" r=\"5\" fill=\"var(--accent)\"/></svg>", "people": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"30\" cy=\"22\" r=\"10\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M12 56c2-12 10-18 18-18s16 6 18 18\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"58\" cy=\"24\" r=\"8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M50 40c3-2 6-3 8-3 7 0 13 5 15 15\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"74\" cy=\"12\" r=\"6\" fill=\"var(--accent)\"/><path d=\"M74 9v6M71 12h6\" stroke=\"var(--accent-ink)\" stroke-width=\"2\"/></svg>", "chat": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 14h40a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H26l-10 8v-8h-6a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M60 26h14a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6h-2v6l-8-6h-8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"20\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"30\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"40\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/></svg>", "route": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 50c10-4 6-18 18-20s14 10 24 6 8-18 16-22\" stroke=\"var(--ink)\" stroke-width=\"3\" stroke-dasharray=\"1 7\"/><circle cx=\"14\" cy=\"50\" r=\"6\" fill=\"var(--good)\"/><path d=\"M72 14V2m0 0h10l-3 4 3 4H72\" stroke=\"var(--ink)\" stroke-width=\"2.6\" fill=\"var(--accent)\"/><rect x=\"36\" y=\"44\" width=\"30\" height=\"16\" rx=\"3\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/><path d=\"M36 50h30M44 41v6M58 41v6\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/></svg>", "bell": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M28 26a15 15 0 0 1 30 0c0 16 7 20 7 20H21s7-4 7-20\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M38 54a5 5 0 0 0 10 0\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M16 14l-6-4M70 14l6-4M12 30H4M74 30h8\" stroke=\"var(--accent-strong)\" stroke-width=\"3\"/></svg>"};
 const emptyB=(art,title,txt,btn,act)=>`<li class="emptyb">${EMPTY_ART[art]||''}<b>${title}</b><span>${txt}</span>${btn?`<button type="button" data-empty="${act}">${btn}</button>`:''}</li>`;
@@ -7069,9 +7099,10 @@ let groups=store.get('ichnos-grupos',[])||[], gCur=store.get('ichnos-gcur',null)
 const groupMates=()=>{ const st=new Set(); groups.forEach(g=>(g.members||[]).forEach(u=>{ if(!isMe(u)) st.add(u); })); return st; };
 const canView=id=>fw.out[id]==='ok'||groupMates().has(id);
 const curGroup=()=>groups.find(g=>g.id===gCur)||null;
+let groupsLoaded=false;
 async function loadGroups(){
   if(!me) return;
-  try{ const j=await api('/grupos'); groups=j.groups||[]; if(j.users) users=j.users; syncRaw.set('ichnos-grupos',groups); }catch(e){}
+  try{ const j=await api('/grupos'); groups=j.groups||[]; groupsLoaded=true; if(j.users) users=j.users; syncRaw.set('ichnos-grupos',groups); }catch(e){}
   if(!curGroup()){ gCur=groups[0]?groups[0].id:null; syncRaw.set('ichnos-gcur',gCur); }
   renderGroup(); if(gCur) loadGroupData();
   if(typeof route!=='undefined') $('gpropBtn').hidden=!(route&&(groups.length||dmPeople().length));
@@ -7085,11 +7116,15 @@ async function soSetupPaint(){ const box=$('soSetup'); if(!box||!me) return; let
   box.hidden=!items.length; box.innerHTML=items.join('');
   box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ ajFrom='pgGrupeta'; showPage('pgAjustes'); setTimeout(()=>$(b.dataset.go).scrollIntoView({behavior:'smooth'}),80); }); }
 function renderGroup(){
-  const g=curGroup(), am=gMode==='a'; try{ renderFeed(); }catch(e){} soSetupPaint();
-  $('grFriends').hidden=!am||!me; $('grOne').hidden=am||!g; $('grNone').hidden=am||!!g||!me; $('grNoneX').hidden=!g;
-  $('grTabs').innerHTML=me?`<button data-g="__a" class="${am?'on':''}">Amigos</button>`+groups.map(x=>`<button data-g="${x.id}" class="${!am&&x.id===gCur?'on':''}">${esc(x.name)}</button>`).join('')+`<button data-g="" aria-label="Crear o unirme a otra grupeta">＋</button>`:'';
-  $('grTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.g==='__a'){ gMode='a'; store.set('ichnos-gmode','a'); renderGroup(); try{ loadFriends(); }catch(e){} return; }
-    if(!b.dataset.g){ if(gMode==='a'){ gMode='g'; store.set('ichnos-gmode','g'); renderGroup(); $('grNone').hidden=false; $('grNone').scrollIntoView({behavior:'smooth'}); return; } const op=$('grNone').hidden; $('grNone').hidden=!op; b.classList.toggle('on',op); if(op) $('grNone').scrollIntoView({behavior:'smooth'}); return; } gCur=b.dataset.g; gMode='g'; store.set('ichnos-gmode','g'); syncRaw.set('ichnos-gcur',gCur); invClose(); renderGroup(); loadGroupData(); });
+  if(gMode==='g'&&me&&typeof groups!=='undefined'&&!groups.length&&groupsLoaded) gMode='a';
+  const g=curGroup(), am=gMode==='a', cm=gMode==='c'; try{ renderFeed(); }catch(e){} soSetupPaint();
+  $('pgGrupeta').classList.toggle('mode-c',cm); $('crSec').hidden=!cm;
+  $('grFriends').hidden=!am||!me; $('grOne').hidden=am||cm||!g; $('grNone').hidden=am||cm||!!g||!me; $('grNoneX').hidden=!g;
+  $('grTabs').innerHTML=me?`<button data-g="__a" class="${am?'on':''}">Amigos</button><button data-g="__c" class="${cm?'on':''}">Carreras</button>`+groups.map(x=>`<button data-g="${x.id}" class="${!am&&!cm&&x.id===gCur?'on':''}">${esc(x.name)}</button>`).join('')+`<button data-g="" aria-label="Crear o unirme a otra grupeta">＋</button>`:'';
+  $('grTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.g==='__c'){ gMode='c'; store.set('ichnos-gmode','c'); renderGroup(); return; }
+    if(b.dataset.g==='__a'){ gMode='a'; store.set('ichnos-gmode','a'); renderGroup(); try{ loadFriends(); }catch(e){} return; }
+    if(!b.dataset.g){ if(gMode==='a'||gMode==='c'){ gMode='g'; store.set('ichnos-gmode','g'); renderGroup(); $('grNone').hidden=false; $('grNone').scrollIntoView({behavior:'smooth'}); return; } const op=$('grNone').hidden; $('grNone').hidden=!op; b.classList.toggle('on',op); if(op) $('grNone').scrollIntoView({behavior:'smooth'}); return; } gCur=b.dataset.g; gMode='g'; store.set('ichnos-gmode','g'); syncRaw.set('ichnos-gcur',gCur); invClose(); renderGroup(); loadGroupData(); });
+  if(cm){ try{ crRender(); }catch(e){ console.warn(e); } return; }
   if(!g) return;
   $('grName').textContent=g.name; const lead=!!(me&&g.admin===me.id); $('grRen').hidden=!lead; $('grDel').hidden=!lead;
   $('grMem').innerHTML=g.members.map(u=>`<button data-u="${u}"><i>${initial(uName(u))}</i>${esc(uName(u))}${u===g.admin?' ★':''}</button>`).join('');
@@ -7589,6 +7624,99 @@ function enMkShow(weeks){ const d0=enMonday(1);
 
 </script>
 <script>
+// ================= CARRERAS Y MARCHAS (calendario de la Federació Catalana de Ciclisme; GitHub lo actualiza cada semana) =================
+const CR_URL=location.pathname.replace(/\/prueba\/.*$/,'/').replace(/[^/]*$/,'')+'datos/carreras/';
+const CR_LV=[null,
+  {t:'Para disfrutar',c:'#2f9e44',d:'Marcha corta y sin competir. Para ir a tu ritmo.'},
+  {t:'Marcha larga',c:'#1c7ed6',d:'Marcha más larga, sin competir o con cronómetro para todos. Hay que tener fondo.'},
+  {t:'Exigente',c:'#e67700',d:'Maratón, gran fondo, brevet u open: muchas horas encima de la bici.'},
+  {t:'Competición',c:'#c92a2a',d:'Carrera federada (normalmente con licencia) o prueba muy dura.'}];
+const CR_DS={btt:{t:'BTT',c:'#2f9e44'},carretera:{t:'Carretera',c:'#1c7ed6'},gravel:{t:'Gravel',c:'#a0753a'}};
+const CR_MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let crData=null, crBusy=null, crOpenId=null, crShowId=null, crF={ds:'',lv:0,dist:0,old:false,...store.get('ichnos-crf',{})};
+const crLayer=L.layerGroup(), crTrackLayer=L.layerGroup(), crMk={};
+async function crLoad(force){
+  if(crData&&!force) return crData; if(crBusy) return crBusy;
+  crBusy=(async()=>{ try{ const r=await fetch(CR_URL+'carreras.json',{cache:'no-cache'}); if(!r.ok) throw 0; crData=await r.json(); }catch(e){ crData=crData||null; } crBusy=null; return crData; })();
+  return crBusy; }
+const crDay=c=>new Date(c.d);
+const crToday=()=>{ const t=new Date(); t.setHours(0,0,0,0); return t; };
+const crHomeKm=c=>(perfil&&perfil.home&&c.lat!=null)?dist([perfil.home.lat,perfil.home.lon],[c.lat,c.lon])/1000:null;
+function crFiltered(forMap){ if(!crData) return []; const t0=crToday();
+  return crData.items.filter(c=>(forMap&&c.id===crShowId)||((!crF.ds||c.ds===crF.ds)&&(!crF.lv||c.lv===crF.lv)&&(crF.old||crDay(c)>=t0)
+    &&(!crF.dist||(crHomeKm(c)!=null&&crHomeKm(c)<=crF.dist)))); }
+function crTags(c){ const ds=CR_DS[c.ds]||{t:c.ds,c:'#666'}, lv=CR_LV[c.lv]||CR_LV[2];
+  return `<span class="cr-tags"><i style="background:${ds.c}">${ds.t}</i><i style="background:${lv.c}">${c.lv} · ${lv.t}</i>${c.tr?'<i class="cr-tr">Recorrido</i>':''}</span>`; }
+function crSave(){ store.set('ichnos-crf',crF); }
+async function crRender(){
+  const box=$('crSec'); if(!box) return;
+  const seg=(id,opts,cur)=>`<div class="segc cr-seg" id="${id}">${opts.map(([v,t])=>`<button data-v="${v}" class="${String(v)===String(cur)?'on':''}">${t}</button>`).join('')}</div>`;
+  $('crFil').innerHTML=seg('crDs',[['','Todas'],['btt','BTT'],['carretera','Carretera'],['gravel','Gravel']],crF.ds)
+    +seg('crLv',[[0,'Todos los niveles'],...[1,2,3,4].map(n=>[n,`<em style="background:${CR_LV[n].c}"></em>${n} · ${CR_LV[n].t}`])],crF.lv)
+    +(perfil&&perfil.home?seg('crDist',[[0,'Toda Cataluña'],[50,'A menos de 50 km'],[100,'A menos de 100 km']],crF.dist):'')
+    +`<label class="cr-old"><input type="checkbox" id="crOld"${crF.old?' checked':''}> Ver también las que ya han pasado</label>`;
+  $('crFil').querySelectorAll('#crDs [data-v]').forEach(b=>b.onclick=()=>{ crF.ds=b.dataset.v; crOpenId=null; crSave(); crRender(); crPaintMap(); });
+  $('crFil').querySelectorAll('#crLv [data-v]').forEach(b=>b.onclick=()=>{ crF.lv=+b.dataset.v; crOpenId=null; crSave(); crRender(); crPaintMap(); });
+  $('crFil').querySelectorAll('#crDist [data-v]').forEach(b=>b.onclick=()=>{ crF.dist=+b.dataset.v; crOpenId=null; crSave(); crRender(); });
+  $('crOld').onchange=()=>{ crF.old=$('crOld').checked; crSave(); crRender(); };
+  const L0=$('crList');
+  if(!crData){ L0.innerHTML='<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div>'; await crLoad(); if(!crData){ L0.innerHTML='<p class="svp">No se ha podido cargar el calendario ahora. Prueba más tarde.</p>'; return; } return crRender(); }
+  const up=new Date(crData.upd); $('crUpd').textContent=isNaN(up)?'':` · actualizado el ${up.toLocaleDateString('es-ES',{day:'numeric',month:'long'})}`;
+  const list=crFiltered(false), t0=crToday();
+  if(!list.length){ const fut=crData.items.some(c=>crDay(c)>=t0);
+    L0.innerHTML=`<div class="cr-empty"><b>${fut?'No hay carreras con estos filtros':'Todavía no han salido las del año que viene'}</b><p class="svp">${fut?'Prueba a quitar algún filtro.':'La federación publica el calendario en invierno. Ichnos lo mira cada semana y las añadirá solas. Mientras, puedes ver las de este año marcando «Ver también las que ya han pasado».'}</p></div>`; return; }
+  let h='', mk='';
+  list.forEach(c=>{ const d=crDay(c), m=CR_MES[d.getMonth()]+' '+d.getFullYear(); if(m!==mk){ mk=m; h+=`<div class="cr-month">${m}</div>`; }
+    const hk=crHomeKm(c), past=d<t0;
+    h+=`<div class="cr-row${past?' cr-past':''}${crOpenId===c.id?' open':''}" data-id="${esc(c.id)}"><button class="cr-it">
+      <div class="cr-d"><b>${d.getDate()}</b><small>${d.toLocaleDateString('es-ES',{weekday:'short'}).replace('.','')}</small></div>
+      <div class="cr-m"><b>${esc(c.n)}</b><small>${esc(c.pob)}${c.km?' · '+c.km+' km':c.kmc?' · vuelta de '+c.kmc+' km':''}${hk!=null?' · a '+Math.round(hk)+' km de casa':''}</small>${crTags(c)}</div></button>
+      ${crOpenId===c.id?crDetail(c):''}</div>`; });
+  L0.innerHTML=h;
+  L0.querySelectorAll('.cr-row').forEach(r=>{ const c=crData.items.find(x=>x.id===r.dataset.id);
+    r.querySelector('.cr-it').onclick=()=>{ crOpenId=crOpenId===c.id?null:c.id; crRender(); };
+    const mapB=r.querySelector('[data-a="map"]'); if(mapB) mapB.onclick=()=>crShowOnMap(c); });
+  const op=L0.querySelector('.cr-row.open'); if(op) op.scrollIntoView({block:'nearest'});
+}
+function crDetail(c){ const d=crDay(c), lv=CR_LV[c.lv]||CR_LV[2];
+  const fecha=d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const tipo=c.comp?'Competición (con cronómetro y clasificación)':'Marcha, sin competir';
+  return `<div class="cr-det">
+    <p><b>Cuándo:</b> ${fecha}${c.h&&c.h!=='00:00'?', salida a las '+c.h:''}</p>
+    <p><b>Dónde sale:</b> ${c.dir?esc(c.dir.charAt(0)+c.dir.slice(1).toLowerCase())+', ':''}${esc(c.pob)} (${esc(c.prov)})</p>
+    ${c.km?`<p><b>Distancia:</b> ${c.km} km${c.tipus?' · '+esc(c.tipus.toLowerCase()):''}</p>`:c.kmc?`<p><b>Circuito:</b> vueltas de ${c.kmc} km</p>`:''}
+    <p><b>Tipo:</b> ${tipo}${c.mod?' · '+esc(c.mod):''}</p>
+    ${c.camp&&c.camp.length?`<p><b>Puntúa para:</b> ${c.camp.map(esc).join(', ')}</p>`:''}
+    <p class="cr-lvx" style="border-color:${lv.c}"><b style="color:${lv.c}">Nivel ${c.lv} · ${lv.t}.</b> ${lv.d}</p>
+    ${c.tr?'':'<p class="svp">El organizador no ha puesto el recorrido en su web en un archivo que Ichnos pueda leer. En el mapa sale el punto de salida.</p>'}
+    <div class="cr-btns"><button class="btn-main" data-a="map">${c.tr?'Ver el recorrido en el mapa':'Ver dónde sale en el mapa'}</button>
+      ${c.web?`<a class="pb-btn" href="${esc(c.web)}" target="_blank" rel="noopener">Web de la prueba</a>`:''}
+      <a class="pb-btn ghost" href="${esc(c.url)}" target="_blank" rel="noopener">Ficha en la federación</a></div>
+  </div>`; }
+function crPopup(c){ const d=crDay(c), ds=CR_DS[c.ds]||{t:''};
+  return `<div class="cr-pop"><b>${esc(c.n)}</b><small>${d.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'})} · ${esc(c.pob)}${c.km?' · '+c.km+' km':''}</small>${crTags(c)}
+    ${c.aprox?'<small>Punto aproximado: el centro del pueblo.</small>':''}
+    <div class="cr-btns"><button class="pb-btn" data-cr="ficha" data-id="${esc(c.id)}">Ver ficha</button>${c.tr?`<button class="pb-btn" data-cr="tr" data-id="${esc(c.id)}">${crTrackLayer.getLayers().length&&crTrackLayer._id===c.id?'Quitar recorrido':'Ver recorrido'}</button>`:''}</div></div>`; }
+function crPaintMap(){ crLayer.clearLayers(); for(const k in crMk) delete crMk[k]; if(!T.carreras){ crTrackLayer.clearLayers(); crTrackLayer._id=null; return; }
+  if(!map.hasLayer(crLayer)) crLayer.addTo(map); if(!map.hasLayer(crTrackLayer)) crTrackLayer.addTo(map);
+  if(!crData){ crLoad().then(()=>{ if(crData) crPaintMap(); else toast('No se ha podido cargar el calendario de carreras ahora.',4000); }); return; }
+  const list=crFiltered(true).filter(c=>c.lat!=null);
+  if(!list.length) toast(crData.items.some(c=>crDay(c)>=crToday())?'No hay carreras con los filtros que tienes en Social → Carreras.':'Todavía no han salido las carreras del año que viene.',4500);
+  list.forEach(c=>{ const ds=CR_DS[c.ds]||{c:'#666'};
+    const mk=L.marker([c.lat,c.lon],{icon:L.divIcon({className:'',html:pinSvg(ds.c,'copa',CR_LV[c.lv]?CR_LV[c.lv].c:null),iconSize:[30,38],iconAnchor:[15,37],popupAnchor:[0,-32]}),title:c.n})
+      .bindPopup(()=>crPopup(c),{minWidth:220}).addTo(crLayer); crMk[c.id]=mk; }); }
+async function crTrack(c,fit){ crTrackLayer.clearLayers(); crTrackLayer._id=null; if(!c.tr) return false;
+  try{ const j=await (await fetch(CR_URL+'tracks/'+c.tr+'.json')).json(); const ds=CR_DS[c.ds]||{c:'#666'};
+    const ll=j.p.map(p=>[p[0],p[1]]); L.polyline(ll,{color:'#fff',weight:8,opacity:.8,interactive:false}).addTo(crTrackLayer); L.polyline(ll,{color:ds.c,weight:5,interactive:false}).addTo(crTrackLayer); crTrackLayer._id=c.id;
+    if(fit) map.fitBounds(L.latLngBounds(ll),{padding:[50,50]}); return true; }catch(e){ toast('No se ha podido cargar el recorrido ahora.',4000); return false; } }
+async function crShowOnMap(c){ crShowId=c.id; showPage('pgMapa'); if(!T.carreras) await setToggle('carreras',true); else crPaintMap();
+  const ok=c.tr&&await crTrack(c,true); if(!ok&&c.lat!=null) map.setView([c.lat,c.lon],12);
+  setTimeout(()=>{ if(crMk[c.id]) crMk[c.id].openPopup(); },350); }
+document.addEventListener('click',async e=>{ const b=e.target.closest('[data-cr]'); if(!b||!crData) return; const c=crData.items.find(x=>x.id===b.dataset.id); if(!c) return;
+  if(b.dataset.cr==='ficha'){ map.closePopup(); crOpenId=c.id; crF.old=crF.old||crDay(c)<crToday(); gMode='c'; store.set('ichnos-gmode','c'); showPage('pgGrupeta'); renderGroup(); }
+  else if(b.dataset.cr==='tr'){ if(crTrackLayer._id===c.id){ crTrackLayer.clearLayers(); crTrackLayer._id=null; b.textContent='Ver recorrido'; } else { if(await crTrack(c,false)) b.textContent='Quitar recorrido'; } } });
+</script>
+<script>
 // ================= MENSAJES PRIVADOS (chat individual) y proponer ruta a un amigo =================
 let dmIx=[], dmWith=null, dmData=null, dmTimer=null, dmDelSel=null;
 const dmMutual=id=>!!(fw&&fw.in&&fw.out&&fw.in[id]==='ok'&&fw.out[id]==='ok');
@@ -7599,6 +7727,7 @@ const dmUnread=id=>{ const x=dmIx.find(y=>y.u===id); return x?x.unread:0; };
 async function dmLoad(){ if(!me) return; try{ dmIx=await api('/dm')||[]; }catch(e){ return; } dmPaintBadges(); }
 function dmPaintBadges(){ const n=dmIx.reduce((a,x)=>a+(x.unread||0),0);
   const b=document.querySelector('#bnav [data-pg="pgGrupeta"]'); if(b){ let i=b.querySelector('.dm-nb'); if(!i){ i=document.createElement('i'); i.className='dm-nb'; b.appendChild(i); } i.textContent=n>9?'9+':n; i.hidden=!n; }
+  const ta=document.querySelector('#grTabs [data-g="__a"]'); if(ta){ let j=ta.querySelector('.dm-nb'); if(!j){ j=document.createElement('i'); j.className='dm-nb'; ta.appendChild(j); } j.textContent=n>9?'9+':n; j.hidden=!n; }
   try{ renderFriends(); }catch(e){} dmPaintRecent(); }
 function dmPaintRecent(){ const box=$('dmRecent'); if(!box) return; const l=dmIx.slice(0,6);
   box.hidden=!l.length; $('dmRecentL').innerHTML=l.map(x=>`<li data-dm="${x.u}"><div class="av">${initial(uName(x.u))}</div><span><b>${esc(uName(x.u))}</b><small>${x.last.u===me.id?'Tú: ':''}${esc(x.last.x||'')}</small></span>${x.unread?`<i class="dm-n">${x.unread}</i>`:''}</li>`).join('');
