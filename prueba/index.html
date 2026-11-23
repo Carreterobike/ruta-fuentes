@@ -432,6 +432,7 @@ details.help p{margin:6px 0 0}
 .dm-b{border:0;background:var(--soft)!important;color:var(--ink)!important;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;position:relative;flex:none;padding:0!important;font-size:18px}
 .dm-n{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#e5484d;color:#fff;font:700 11px/18px var(--body);font-style:normal;text-align:center;padding:0 4px}
 #dmRecentL li{position:relative}#dmRecentL .dm-n{position:static;margin-left:auto}#dmRecentL small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw;display:block}
+#grTabs button{position:relative}#grTabs .dm-nb{top:-5px;left:auto;right:-5px}
 #bnav button{position:relative}.dm-nb{position:absolute;top:2px;left:calc(50% + 6px);min-width:17px;height:17px;border-radius:9px;background:#e5484d;color:#fff;font:700 10.5px/17px var(--body);font-style:normal;text-align:center;padding:0 4px}
 .dmview{display:flex;flex-direction:column;z-index:2600!important}.dmview .rv-h{display:flex;align-items:center;gap:10px}.dm-hint{text-transform:none!important;text-align:center;max-width:80%}.dmview .rv-h .av{width:34px;height:34px;border-radius:50%;background:#2a3238;color:#B6E22E;display:grid;place-items:center;font-weight:800}.dmview .rv-h>div:nth-child(3){flex:1}
 .dm-more{border:0;background:transparent;color:inherit;font-size:22px;padding:4px 10px}
@@ -1719,7 +1720,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795464824';   // versión de la app (la pone build.py)
+const BUILD='1795465361';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2038,6 +2039,7 @@ function showPage(id){
   if((id==='pgGrupeta'||id==='pgAjustes')&&typeof loadAdmin==='function'&&me&&me.admin) loadAdmin();
   if((id==='pgSalidas'||id==='pgAjustes') && typeof svAuto==='function') svAuto();
   if((id==='pgSalidas'||id==='pgGrupeta') && typeof loadFeed==='function') loadFeed(false);
+  if(id==='pgGrupeta'){ try{ if((typeof dmIx!=='undefined'&&dmIx.some(x=>x.unread)&&gMode!=='a')||(gMode==='g'&&!(groups||[]).length)){ gMode='a'; store.set('ichnos-gmode','a'); renderGroup(); try{ loadFriends(); }catch(e){} } }catch(e){} }
   if(id==='pgGrupeta' && typeof loadGroupData==='function') loadGroupData();
   if(id==='pgMapa' && window.map){
     setTimeout(()=>{ map.invalidateSize(); try{ glMap.resize(); }catch(e){} },30);
@@ -6870,7 +6872,7 @@ function fwState(id){ const o=fw.out[id], i=fw.in[id];
 async function loadFriends(){
   if(!me) return;
   try{ const j=await api('/amigos'); users=j.users||[]; fw={in:j.in||{},out:j.out||{}}; syncRaw.set('ichnos-usuarios',users); syncRaw.set('ichnos-fw',fw); }catch(e){}
-  renderFriends(); try{ enShowTab(); }catch(e){} if(me.admin&&!favLoad.done){ favLoad.done=1; favLoad(); }
+  renderFriends(); try{ enShowTab(); }catch(e){} if(me&&me.admin&&!favLoad.done){ favLoad.done=1; favLoad(); }
 }
 const EMPTY_ART={"bike": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 56c18-6 30 2 44-4s22-2 34-6\" stroke=\"var(--line)\" stroke-width=\"3\"/><circle cx=\"22\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"62\" cy=\"40\" r=\"12\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M22 40l12-18h18l10 18M34 22l8 18h20M48 14h8\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"70\" cy=\"10\" r=\"5\" fill=\"var(--accent)\"/></svg>", "people": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"30\" cy=\"22\" r=\"10\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M12 56c2-12 10-18 18-18s16 6 18 18\" stroke=\"var(--ink)\" stroke-width=\"3\"/><circle cx=\"58\" cy=\"24\" r=\"8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><path d=\"M50 40c3-2 6-3 8-3 7 0 13 5 15 15\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"74\" cy=\"12\" r=\"6\" fill=\"var(--accent)\"/><path d=\"M74 9v6M71 12h6\" stroke=\"var(--accent-ink)\" stroke-width=\"2\"/></svg>", "chat": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 14h40a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H26l-10 8v-8h-6a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M60 26h14a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6h-2v6l-8-6h-8\" stroke=\"var(--muted)\" stroke-width=\"3\"/><circle cx=\"20\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"30\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/><circle cx=\"40\" cy=\"28\" r=\"2.5\" fill=\"var(--accent-strong)\"/></svg>", "route": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 50c10-4 6-18 18-20s14 10 24 6 8-18 16-22\" stroke=\"var(--ink)\" stroke-width=\"3\" stroke-dasharray=\"1 7\"/><circle cx=\"14\" cy=\"50\" r=\"6\" fill=\"var(--good)\"/><path d=\"M72 14V2m0 0h10l-3 4 3 4H72\" stroke=\"var(--ink)\" stroke-width=\"2.6\" fill=\"var(--accent)\"/><rect x=\"36\" y=\"44\" width=\"30\" height=\"16\" rx=\"3\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/><path d=\"M36 50h30M44 41v6M58 41v6\" stroke=\"var(--muted)\" stroke-width=\"2.6\"/></svg>", "bell": "<svg viewBox=\"0 0 86 64\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M28 26a15 15 0 0 1 30 0c0 16 7 20 7 20H21s7-4 7-20\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M38 54a5 5 0 0 0 10 0\" stroke=\"var(--ink)\" stroke-width=\"3\"/><path d=\"M16 14l-6-4M70 14l6-4M12 30H4M74 30h8\" stroke=\"var(--accent-strong)\" stroke-width=\"3\"/></svg>"};
 const emptyB=(art,title,txt,btn,act)=>`<li class="emptyb">${EMPTY_ART[art]||''}<b>${title}</b><span>${txt}</span>${btn?`<button type="button" data-empty="${act}">${btn}</button>`:''}</li>`;
@@ -7097,9 +7099,10 @@ let groups=store.get('ichnos-grupos',[])||[], gCur=store.get('ichnos-gcur',null)
 const groupMates=()=>{ const st=new Set(); groups.forEach(g=>(g.members||[]).forEach(u=>{ if(!isMe(u)) st.add(u); })); return st; };
 const canView=id=>fw.out[id]==='ok'||groupMates().has(id);
 const curGroup=()=>groups.find(g=>g.id===gCur)||null;
+let groupsLoaded=false;
 async function loadGroups(){
   if(!me) return;
-  try{ const j=await api('/grupos'); groups=j.groups||[]; if(j.users) users=j.users; syncRaw.set('ichnos-grupos',groups); }catch(e){}
+  try{ const j=await api('/grupos'); groups=j.groups||[]; groupsLoaded=true; if(j.users) users=j.users; syncRaw.set('ichnos-grupos',groups); }catch(e){}
   if(!curGroup()){ gCur=groups[0]?groups[0].id:null; syncRaw.set('ichnos-gcur',gCur); }
   renderGroup(); if(gCur) loadGroupData();
   if(typeof route!=='undefined') $('gpropBtn').hidden=!(route&&(groups.length||dmPeople().length));
@@ -7113,6 +7116,7 @@ async function soSetupPaint(){ const box=$('soSetup'); if(!box||!me) return; let
   box.hidden=!items.length; box.innerHTML=items.join('');
   box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ ajFrom='pgGrupeta'; showPage('pgAjustes'); setTimeout(()=>$(b.dataset.go).scrollIntoView({behavior:'smooth'}),80); }); }
 function renderGroup(){
+  if(gMode==='g'&&me&&typeof groups!=='undefined'&&!groups.length&&groupsLoaded) gMode='a';
   const g=curGroup(), am=gMode==='a', cm=gMode==='c'; try{ renderFeed(); }catch(e){} soSetupPaint();
   $('pgGrupeta').classList.toggle('mode-c',cm); $('crSec').hidden=!cm;
   $('grFriends').hidden=!am||!me; $('grOne').hidden=am||cm||!g; $('grNone').hidden=am||cm||!!g||!me; $('grNoneX').hidden=!g;
@@ -7723,6 +7727,7 @@ const dmUnread=id=>{ const x=dmIx.find(y=>y.u===id); return x?x.unread:0; };
 async function dmLoad(){ if(!me) return; try{ dmIx=await api('/dm')||[]; }catch(e){ return; } dmPaintBadges(); }
 function dmPaintBadges(){ const n=dmIx.reduce((a,x)=>a+(x.unread||0),0);
   const b=document.querySelector('#bnav [data-pg="pgGrupeta"]'); if(b){ let i=b.querySelector('.dm-nb'); if(!i){ i=document.createElement('i'); i.className='dm-nb'; b.appendChild(i); } i.textContent=n>9?'9+':n; i.hidden=!n; }
+  const ta=document.querySelector('#grTabs [data-g="__a"]'); if(ta){ let j=ta.querySelector('.dm-nb'); if(!j){ j=document.createElement('i'); j.className='dm-nb'; ta.appendChild(j); } j.textContent=n>9?'9+':n; j.hidden=!n; }
   try{ renderFriends(); }catch(e){} dmPaintRecent(); }
 function dmPaintRecent(){ const box=$('dmRecent'); if(!box) return; const l=dmIx.slice(0,6);
   box.hidden=!l.length; $('dmRecentL').innerHTML=l.map(x=>`<li data-dm="${x.u}"><div class="av">${initial(uName(x.u))}</div><span><b>${esc(uName(x.u))}</b><small>${x.last.u===me.id?'Tú: ':''}${esc(x.last.x||'')}</small></span>${x.unread?`<i class="dm-n">${x.unread}</i>`:''}</li>`).join('');
