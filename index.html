@@ -446,6 +446,14 @@ details.help p{margin:6px 0 0}
 
 .so-setup{border:2px solid #B6E22E}.so-setup .sst{display:flex;align-items:center;gap:10px;padding:6px 0}.so-setup .sst span{flex:1}.so-setup .sst small{display:block;color:var(--muted)}
 .so-info summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:8px}.so-info summary::-webkit-details-marker{display:none}.so-info summary small{color:var(--muted)}.so-info ul{margin:4px 0 10px;padding-left:20px;display:flex;flex-direction:column;gap:5px;line-height:1.45}.so-info p{margin:10px 0 2px}
+
+/* viaje por etapas: aviso de que está trabajando y etapa elegida */
+.tbusy{position:absolute;z-index:1200;left:50%;top:46%;transform:translate(-50%,-50%);background:rgba(20,24,28,.92);color:#fff;border-radius:18px;padding:18px 22px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:240px;max-width:86vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.tbusy b{font-size:17px}.tbusy small{color:#c9ced3;font-size:13.5px}.tbusy button{margin-top:6px;border:1px solid #555e66;background:transparent;color:#fff;border-radius:999px;padding:6px 16px;font-weight:700}
+.tspin{width:34px;height:34px;border-radius:50%;border:4px solid rgba(182,226,46,.25);border-top-color:#B6E22E;animation:tsp .9s linear infinite}@keyframes tsp{to{transform:rotate(360deg)}}
+@media (min-width:761px){.tbusy{left:calc(50% + 200px)}}
+.stg.sel{outline:3px solid #FFD400;outline-offset:-3px}.stg-ed{grid-column:1/-1;width:100%;display:flex;flex-direction:column;gap:6px;margin-top:8px}.stg-ed label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700}.stg-ed input{width:90px;font-size:16px;padding:6px 8px;border-radius:8px;border:1px solid var(--line,#ccc)}.stg-ed small{color:var(--muted)}
+.routes.stages li.stg{flex-wrap:wrap}
 /* entreno */
 .en-nav{display:flex;gap:6px}.en-nav button{width:34px;height:34px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font-size:20px;font-weight:700;line-height:1}
 .en-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}.en-sum div{background:var(--soft);border-radius:12px;padding:8px 4px}.en-sum b{display:block;font-size:17px}.en-sum small{color:var(--muted);font-size:11.5px}.en-sum .lime{color:#6f8f00}
@@ -1356,6 +1364,8 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <small id="destMode"></small>
   </div>
 
+  <div class="tbusy" id="tripBusy" hidden role="status" aria-live="polite"><i class="tspin"></i><b>Creando el viaje por etapas…</b><small id="tripBusyT"></small><button id="tripBusyX">Cancelar</button></div>
+  <div class="tbusy" id="calcBusy" hidden role="status" aria-live="polite"><i class="tspin"></i><b>Creando la ruta…</b><small>Buscando el mejor camino</small><button id="calcBusyX">Cancelar</button></div>
   <aside class="sheet" id="sheet" hidden>
     <button class="handle" id="handle" aria-label="Abrir o plegar la ficha"><i></i></button>
     <div class="sheet-body">
@@ -1446,6 +1456,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
         <div class="sec-h"><h3>Viaje por etapas</h3><button class="qbtn x" id="viajeX" aria-label="Cerrar">✕</button></div>
         <div class="tripsum" id="tripSum"></div>
         <div class="opts"><label>Km por día</label><div class="segc" id="tripKm"></div></div>
+        <div class="opts"><label>Desnivel máximo por día</label><div class="segc" id="tripUp"></div></div>
         <p class="prog" id="tripProg" hidden></p>
         <div class="bar" id="tripBar" hidden><i></i></div>
         <ul class="routes stages" id="tripList"></ul>
@@ -1670,7 +1681,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795413078';   // versión de la app (la pone build.py)
+const BUILD='1795414252';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -3076,7 +3087,7 @@ async function calc(){
     }
   }
   skipLong=false;
-  setStatus('Calculando…'); $('calcCancel').hidden=false; updateSheet();
+  setStatus('Calculando…'); $('calcCancel').hidden=false; $('calcBusy').hidden=false; updateSheet();
   try{
     const res=await routeLL(points,{deadline:Date.now()+60000});
     if(my!==reqId) return;
@@ -3086,9 +3097,10 @@ async function calc(){
     if(res.maxScale!=null && res.mx!=null && res.mx>res.maxScale) toast(`Ojo: no había otro camino y la ruta pasa por un tramo ${LEVELS[levelOf(res.mx)].col}, más difícil que tu nivel.`,6000);
   }catch(err){
     if(my===reqId) setStatus(err.message==='timeout'?'Está tardando demasiado. Pon puntos intermedios o hazla por etapas.':'No se ha podido calcular la ruta. Comprueba internet y prueba otra vez.');
-  }finally{ if(my===reqId){ $('calcCancel').hidden=true; updateSheet(); } }
+  }finally{ if(my===reqId){ $('calcCancel').hidden=true; $('calcBusy').hidden=true; updateSheet(); } }
 }
-$('calcCancel').onclick=()=>{ ++reqId; cancelAll(); $('calcCancel').hidden=true; setStatus('Cálculo cancelado.'); updateSheet(); };
+$('tripBusyX').onclick=()=>$('tripCancel').click(); $('calcBusyX').onclick=()=>$('calcCancel').click();
+$('calcCancel').onclick=()=>{ ++reqId; cancelAll(); $('calcCancel').hidden=true; $('calcBusy').hidden=true; setStatus('Cálculo cancelado.'); updateSheet(); };
 $('tripBtn').onclick=()=>{ if(points.length>=2) startTrip(points[0],points[points.length-1],{to:dest&&dist([dest.lat,dest.lon],points[points.length-1])<500?dest.name:null},points.slice(1,-1)); };
 
 // la ruta dividida en tramos (entre cada dos puntos que has puesto)
@@ -4482,14 +4494,15 @@ async function startTrip(A,B,names={},via=[]){ crearClosed=false; store.set('ich
   points=[]; route=null; drawPins(); routeLayer.clearLayers(); arrowLayer.clearLayers(); windLayer.clearLayers(); fLayer.clearLayers();
   askedIds=new Set(); fuentesAsked=false;
   trip={kmDay:trip&&trip.kmDay||store.get('ichnos-kmdia',defaultKmDay()),mode,
-        from:{lat:A[0],lon:A[1],name:names.from||null},to:{lat:B[0],lon:B[1],name:names.to||null},via:(via||[]).map(p=>[+p[0],+p[1]]),stages:[],state:'calc',open:null};
+        maxUp:store.get('ichnos-upmax',0),from:{lat:A[0],lon:A[1],name:names.from||null},to:{lat:B[0],lon:B[1],name:names.to||null},via:(via||[]).map(p=>[+p[0],+p[1]]),stages:[],state:'calc',open:null};
   updateSheet(); $('sheet').classList.remove('closed');
   map.fitBounds(L.latLngBounds([A,B]),{padding:[40,40]});
   planTrip();
 }
 let planVia=null;
-async function planTrip(){
-  const my=++tripReq, k=trip.kmDay*1000;
+// planificador etapa a etapa (el de siempre): más lento pero clava los km de cada día y el desnivel máximo
+async function planTripSeq(){
+  const my=++tripReq, k=trip.kmDay*1000, maxUp=+trip.maxUp||0; let kFirst=trip.kmFirst?trip.kmFirst*1000:0; trip.kmFirst=null;
   trip.stages=[]; trip.state='calc'; trip.err=null; tripLayer.clearLayers(); renderTrip();
   if(!trip.from.name) trip.from.name=perfil.home&&dist([trip.from.lat,trip.from.lon],[perfil.home.lat,perfil.home.lon])<300?(perfil.ciudad||'Casa'):(await placeName(trip.from.lat,trip.from.lon))||'Salida';
   if(!trip.to.name) trip.to.name=(await placeName(trip.to.lat,trip.to.lon))||'Llegada';
@@ -4503,36 +4516,94 @@ async function planTrip(){
   const walk=d=>{ let P=S, k=0; for(;k<targets.length;k++){ const t=targets[k], seg=dist([P.lat,P.lon],[t.lat,t.lon]); if(d<=seg) return {P:towards(P,t,d),passed:k}; d-=seg; P=t; } return {P:[E.lat,E.lon],passed:targets.length-1}; };
   for(let n=1;n<=40;n++){
     const R=pathLen()*f;
-    // reparte lo que queda en días iguales para que no quede una última etapa ridícula
-    const nLeft=Math.max(1,Math.round(R/k)), t=R/nLeft;
-    trip.prog=`Calculando etapa ${n} de unas ${n-1+nLeft}…`; renderTrip();
+    // reparte lo que queda en días iguales para que no quede una última etapa ridícula (o los km que has pedido para esta etapa)
+    let nLeft=Math.max(1,Math.round(R/k)), t=R/nLeft;
+    if(kFirst){ t=kFirst; nLeft=R<=kFirst*1.1?1:2; kFirst=0; }
+    trip.prog=`Creando la etapa ${n} de unas ${n-1+Math.max(1,Math.round(R/k))}…`; renderTrip();
     let B=null, res=null, passed=0;
     try{
       if(nLeft===1){ B=E; passed=targets.length-1; res=await routeLL([[S.lat,S.lon],...targets.map(x=>[x.lat,x.lon])],{deadline:Date.now()+90000}); }
       else{
         let d=t/f;
-        for(let attempt=0;attempt<2;attempt++){
-          const w=walk(d); passed=w.passed;
-          const town=await townNear(w.P,Math.max(6000,t*0.15));
-          B=town||{lat:w.P[0],lon:w.P[1],name:(await placeName(w.P[0],w.P[1]))||'Punto de paso'};
-          res=await routeLL([[S.lat,S.lon],...targets.slice(0,passed).map(x=>[x.lat,x.lon]),[B.lat,B.lon]],{deadline:Date.now()+90000});
+        let best=null;   // de los intentos, el que cumple el desnivel máximo y más se acerca a los km; si ninguno, el que menos sube
+        const better=(x,y)=>{ if(!y) return true; const ox=!maxUp||x.res.up<=maxUp*1.05, oy=!maxUp||y.res.up<=maxUp*1.05; if(ox!==oy) return ox; return ox?Math.abs(x.res.len-t)<Math.abs(y.res.len-t):x.res.up<y.res.up; };
+        let hint=null;   // punto a los km pedidos sobre la ruta real (cuando la línea recta cae en el mar o en un sitio sin pueblos)
+        for(let attempt=0;attempt<(maxUp?5:3);attempt++){
+          const w=hint||walk(d); const pas=w.passed;
+          let town=null; for(const r of (hint?[6000,15000,t*0.3]:[Math.max(6000,t*0.15),t*0.3,45000])){ town=await townNear(w.P,r); if(town) break; }
+          hint=null;
+          const Bx=town||{lat:w.P[0],lon:w.P[1],name:(await placeName(w.P[0],w.P[1]))||'Punto de paso'};
+          const rx=await routeLL([[S.lat,S.lon],...targets.slice(0,pas).map(x=>[x.lat,x.lon]),[Bx.lat,Bx.lon]],{deadline:Date.now()+90000});
           if(my!==tripReq) return;
-          const ratio=res.len/t;
+          const cand={B:Bx,res:rx,passed:pas}; if(better(cand,best)) best=cand;
+          const ratio=rx.len/t, tooUp=maxUp&&rx.up>maxUp*1.05;
+          const goal=tooUp?Math.min(t,rx.len*maxUp/rx.up*0.9):t;
+          if((tooUp||ratio>1.15)&&rx.coords&&rx.coords.length>2){ const c=rx.coords; let acc=0; for(let j=1;j<c.length;j++){ acc+=dist([c[j-1][0],c[j-1][1]],[c[j][0],c[j][1]]); if(acc>=goal){ hint={P:[c[j][0],c[j][1]],passed:pas}; break; } } }
+          if(tooUp){ d=d*Math.max(0.35,maxUp/rx.up*0.9); continue; }   // demasiada subida para un día: etapa más corta
           if(ratio>=0.85&&ratio<=1.15) break;
           d=d/ratio;                                   // corrige y prueba otra vez para clavar los km del día
         }
+        B=best.B; res=best.res; passed=best.passed;
       }
     }catch(e){ res=null; }
     if(my!==tripReq) return;
     if(!res){ trip.state='error'; trip.viaLeft=targets.slice(0,-1).map(x=>[x.lat,x.lon]); trip.err=`No he podido calcular la etapa ${n}${B&&B.name?' (hasta '+B.name+')':''}. Las anteriores están bien.`; renderTrip(); return; }
     const straight=dist([S.lat,S.lon],[B.lat,B.lon]); if(straight>1000){ fs.push(res.len/straight); f=Math.min(2,Math.max(1.05,fs.reduce((x,y)=>x+y,0)/fs.length)); }
-    trip.stages.push(stageFrom(S,B,res)); drawTrip(); renderTrip();
-    targets=targets.slice(passed);
+    const stg=stageFrom(S,B,res); trip.stages.push(stg); targets=targets.slice(passed); stg.viaLeft=targets.slice(0,-1).map(x=>[x.lat,x.lon]); drawTrip(); renderTrip();
     if(B===E) break;
     S=B;
   }
   trip.state='ready'; trip.prog=''; saveTrip(); drawTrip(); renderTrip(); fitTrip();
 }
+// planificador rápido: decide dónde acaba cada día en línea recta, busca los pueblos y calcula todas las etapas a la vez (de 3 en 3).
+// Si alguna etapa sale muy distinta de lo pedido (o sube más del máximo), sigue desde ahí con el planificador etapa a etapa.
+async function planTrip(){
+  if(trip.kmFirst) return planTripSeq();
+  const my=++tripReq, k=trip.kmDay*1000, maxUp=+trip.maxUp||0;
+  trip.stages=[]; trip.state='calc'; trip.err=null; trip.sel=null; tripLayer.clearLayers(); trip.prog='Buscando dónde dormir cada día…'; renderTrip();
+  if(!trip.from.name) trip.from.name=perfil.home&&dist([trip.from.lat,trip.from.lon],[perfil.home.lat,perfil.home.lon])<300?(perfil.ciudad||'Casa'):(await placeName(trip.from.lat,trip.from.lon))||'Salida';
+  if(!trip.to.name) trip.to.name=(await placeName(trip.to.lat,trip.to.lon))||'Llegada';
+  if(my!==tripReq) return;
+  const S0=trip.from, E=trip.to, targets=(planVia||trip.via||[]).map(p=>({lat:p[0],lon:p[1]})).concat([E]); planVia=null;
+  let line=0, P=S0; targets.forEach(t=>{ line+=dist([P.lat,P.lon],[t.lat,t.lon]); P=t; });
+  const f=1.3, n=Math.max(1,Math.round(line*f/k)), step=line/n;
+  const at=d=>{ let P=S0, i=0; for(;i<targets.length;i++){ const t=targets[i], seg=dist([P.lat,P.lon],[t.lat,t.lon]); if(d<=seg) return {P:towards(P,t,d),i}; d-=seg; P=t; } return {P:[E.lat,E.lon],i:targets.length-1}; };
+  const cuts=[]; for(let j=1;j<n;j++) cuts.push(at(step*j));
+  // el pueblo más cercano al punto del día; si el punto cae en el mar o en medio del monte, se busca más lejos
+  const ends=await Promise.all(cuts.map(async c=>{ let town=null; for(const r of [Math.max(6000,k*0.12),k*0.3,45000]){ town=await townNear(c.P,r); if(town) break; } return {pt:town||{lat:c.P[0],lon:c.P[1],name:null},i:c.i}; }));
+  if(my!==tripReq) return;
+  const pts=[{pt:S0,i:0},...ends,{pt:E,i:targets.length-1}];
+  const specs=[]; for(let j=0;j<pts.length-1;j++){ const A=pts[j], B=pts[j+1]; specs.push({a:A.pt,b:B.pt,via:targets.slice(A.i,B.i).filter(t=>t!==E).map(t=>[t.lat,t.lon]),left:targets.slice(B.i,-1).map(t=>[t.lat,t.lon])}); }
+  const out=new Array(specs.length); let done=0, next=0;
+  trip.prog=`Creando ${specs.length} etapas a la vez… (0 de ${specs.length})`; renderTrip();
+  const worker=async()=>{ while(next<specs.length){ const j=next++, sp=specs[j];
+      let res=null; try{ res=await routeLL([[sp.a.lat,sp.a.lon],...sp.via,[sp.b.lat,sp.b.lon]],{deadline:Date.now()+90000}); }catch(e){}
+      if(my!==tripReq) return;
+      if(res){ if(!sp.b.name) sp.b.name=(await placeName(sp.b.lat,sp.b.lon))||'Punto de paso'; const st=stageFrom(sp.a,sp.b,res); st.viaLeft=sp.left; out[j]=st; }
+      done++; trip.prog=`Creando ${specs.length} etapas a la vez… (${done} de ${specs.length})`;
+      trip.stages=out.filter(Boolean); drawTrip(); renderTrip(); } };
+  await Promise.all([worker(),worker(),worker()]);
+  if(my!==tripReq) return;
+  let bad=-1; for(let j=0;j<specs.length;j++){ const st=out[j]; if(!st||(n>1&&j<specs.length-1&&(st.len>k*1.3||st.len<k*0.65))||(maxUp&&st.up>maxUp*1.1)){ bad=j; break; } }
+  if(bad<0){ trip.stages=out; trip.state='ready'; trip.prog=''; saveTrip(); drawTrip(); renderTrip(); fitTrip(); return; }
+  const keep=out.slice(0,bad), from=trip.from;
+  trip.from=bad?keep[bad-1].b:S0; planVia=bad?keep[bad-1].viaLeft:(trip.via||[]);
+  await planTripSeq();
+  trip.stages=keep.concat(trip.stages); trip.from=from; drawTrip(); saveTrip(); renderTrip(); fitTrip();
+}
+// cambiar los km de una etapa: se queda lo de antes, esa etapa se hace con esos km y las siguientes se recalculan
+async function stageKm(i,km){ if(!trip||trip.state==='calc') return; closeStage(false);
+  const keep=trip.stages.slice(0,i), from=trip.from, S=i?keep[i-1].b:trip.from;
+  trip.from=S; planVia=i?keep[i-1].viaLeft||[]:(trip.via||[]); trip.kmFirst=km; trip.sel=null;
+  await planTripSeq(); trip.stages=keep.concat(trip.stages); trip.from=from; drawTrip(); saveTrip(); renderTrip(); selStage(i,true); setTimeout(()=>{ if(trip&&trip.sel===i) selStage(i,true); },700);
+  const st=trip.stages[i], got=st&&(st.len||0)/1000;
+  if(st&&got<km*0.8) toast(trip.maxUp&&(st.up||0)>trip.maxUp*0.75?`La etapa se queda en ${Math.round(got)} km para no pasar de ${trip.maxUp} m de subida en un día. Si quieres más km, sube el «Desnivel máximo».`:`La etapa se queda en ${Math.round(got)} km: es donde hay un pueblo para dormir.`,7000);
+  else if(st&&got>km*1.25) toast(`La etapa sale de ${Math.round(got)} km: es el pueblo más cercano para dormir.`,6000); }
+// tocar una etapa: se marca en amarillo en el mapa y su ficha sale en el panel (al lado del mapa, no encima)
+function selStage(i,keep){ if(!trip||!trip.stages[i]) return; trip.sel=(!keep&&trip.sel===i)?null:i; drawTrip(); renderTrip();
+  if(trip.sel==null) return; const s=trip.stages[i], b=L.latLngBounds(s.coords.map(c=>[c[0],c[1]])), mob=matchMedia('(max-width:760px)').matches, sh=$('sheet');
+  try{ map.fitBounds(b,mob?{paddingTopLeft:[20,90],paddingBottomRight:[20,(sh?sh.offsetHeight:300)+20]}:{paddingTopLeft:[(sh?sh.offsetWidth:380)+40,40],paddingBottomRight:[70,40]}); }catch(e){}
+  setTimeout(()=>{ const li=$('tripList').querySelector('.stg.sel'); if(li) li.scrollIntoView({block:'nearest',behavior:'smooth'}); },60); }
 // rehacer un viaje con las etapas ya decididas (por ejemplo al abrirlo con el código QR en el móvil)
 async function tripFromEnds(ends,kmDay){ crearClosed=false; store.set('ichnos-viajeX',false);
   if(T.crear) await setToggle('crear',false);
@@ -4565,8 +4636,10 @@ function drawTrip(){
     const ll=s.coords.map(c=>[c[0],c[1]]), surf=hasSurf(s.coords);
     L.polyline(ll,{color:'#1E2328',weight:9,opacity:.85,interactive:false}).addTo(tripLayer);
     if(surf) drawSurf(s.coords,tripLayer);
-    L.polyline(ll,{color:stageCol(i),weight:surf?14:5,opacity:surf?0:1,bubblingMouseEvents:false}).bindPopup(()=>stagePopup(i),{minWidth:210}).addTo(tripLayer);
-    if(i>0) L.marker(ll[0],{icon:numPin(i+1,stageCol(i)),keyboard:false}).bindPopup(()=>stagePopup(i),{minWidth:210}).addTo(tripLayer);
+    const sel=trip.sel===i;
+    if(sel) L.polyline(ll,{color:'#FFD400',weight:12,opacity:.9,interactive:false}).addTo(tripLayer);
+    L.polyline(ll,{color:stageCol(i),weight:surf?14:(sel?6:5),opacity:surf?0:1,bubblingMouseEvents:false}).on('click',()=>selStage(i)).addTo(tripLayer);
+    if(i>0) L.marker(ll[0],{icon:numPin(i+1,stageCol(i)),keyboard:false}).on('click',()=>selStage(i)).addTo(tripLayer);
   });
   const st=trip.stages;
   if(trip.open!==0) L.marker([trip.from.lat,trip.from.lon],{icon:START_ICON,keyboard:false}).bindPopup(`<b>Salida</b><br>${esc(trip.from.name||'')}`).addTo(tripLayer);
@@ -4587,6 +4660,8 @@ function renderTrip(){
   $('tripSum').innerHTML=`<b>${esc(trip.from.name||'Salida')} → ${esc(trip.to.name||'Llegada')}</b>`+
     (st.length?`<span>${fmtKm(tripKm())} km · +${Math.round(tripUp()).toLocaleString('es-ES')} m · ${st.length} ${st.length===1?'día':'días'}${busy?' (calculando)':''}</span>`+surfBar(st.flatMap(x=>x.coords)):'');
   $('tripKm').querySelectorAll('button').forEach(b=>{ b.classList.toggle('on',+b.dataset.k===trip.kmDay); b.disabled=busy; });
+  $('tripUp').querySelectorAll('button').forEach(b=>{ b.classList.toggle('on',+b.dataset.u===(+trip.maxUp||0)); b.disabled=busy; });
+  $('tripBusy').hidden=!busy; if(busy) $('tripBusyT').textContent=trip.prog||'Creando el viaje…';
   $('tripProg').hidden=!busy&&!trip.err; $('tripProg').textContent=busy?trip.prog:(trip.err||''); $('tripProg').classList.toggle('err',!!trip.err&&!busy);
   $('tripBar').hidden=!busy;
   $('tripCancel').hidden=!busy; $('tripRetry').hidden=trip.state!=='error'; $('tripAll').hidden=trip.state!=='ready'; $('tripClose').hidden=busy;
@@ -4597,16 +4672,24 @@ function renderTrip(){
     const o=document.createElement('button'); o.textContent=trip.open===i?'Abierta':'Abrir'; o.disabled=trip.open===i||busy; o.onclick=e=>{ e.stopPropagation(); openStage(i); };
     const g=document.createElement('button'); g.textContent='Llevar'; g.disabled=busy; g.onclick=e=>{ e.stopPropagation(); carryStage(i); };
     li.append(o,g);
-    li.onclick=()=>map.fitBounds(L.latLngBounds(s.coords.map(c=>[c[0],c[1]])),{padding:[40,40]});
+    if(trip.sel===i){ li.classList.add('sel'); const ed=document.createElement('div'); ed.className='stg-ed';
+      ed.innerHTML=`<label>Km de esta etapa <input type="number" min="10" max="400" step="5" inputmode="numeric" value="${Math.round(s.len/1000)}"></label><button class="primary">Recalcular desde aquí</button><small>Esta etapa se hace con esos km y las siguientes se vuelven a calcular. Las de antes no cambian.</small>`;
+      ed.onclick=e=>e.stopPropagation(); ed.querySelector('button').disabled=busy;
+      ed.querySelector('button').onclick=()=>{ const v=+ed.querySelector('input').value; if(!(v>=10&&v<=400)){ toast('Pon entre 10 y 400 km.'); return; } stageKm(i,v); };
+      li.appendChild(ed); }
+    li.onclick=()=>selStage(i);
     ul.appendChild(li);
   });
 }
+const UP_OPTS=[0,800,1200,1600,2000,2500];
+$('tripUp').innerHTML=UP_OPTS.map(u=>`<button data-u="${u}">${u?u+' m':'Sin límite'}</button>`).join('');
+$('tripUp').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!trip||trip.state==='calc') return; trip.maxUp=+b.dataset.u; store.set('ichnos-upmax',trip.maxUp); closeStage(false); planTrip(); });
 $('tripKm').innerHTML=KM_OPTS.map(k=>`<button data-k="${k}">${k} km</button>`).join('');
 $('tripKm').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(!trip||trip.state==='calc') return; trip.kmDay=+b.dataset.k; store.set('ichnos-kmdia',trip.kmDay); closeStage(false); planTrip(); });
 $('tripCancel').onclick=()=>{ ++tripReq; cancelAll(); trip.state=trip.stages.length?'error':'error'; trip.err=trip.stages.length?`Cancelado. Tienes ${trip.stages.length} etapa${trip.stages.length>1?'s':''} calculada${trip.stages.length>1?'s':''}.`:'Cancelado.'; renderTrip(); };
 $('tripRetry').onclick=()=>{ if(!trip) return; if(trip.stages.length){ const last=trip.stages[trip.stages.length-1]; continueTrip(last.b); } else planTrip(); };
 async function continueTrip(S){   // sigue desde la última etapa buena sin repetir las anteriores
-  const keep=trip.stages.slice(); const from=trip.from; trip.from=S; planVia=trip.viaLeft||[]; await planTrip(); trip.stages=keep.concat(trip.stages); trip.from=from; drawTrip(); saveTrip(); renderTrip();
+  const keep=trip.stages.slice(); const from=trip.from; trip.from=S; planVia=trip.viaLeft||(keep.length&&keep[keep.length-1].viaLeft)||[]; await planTripSeq(); trip.stages=keep.concat(trip.stages); trip.from=from; drawTrip(); saveTrip(); renderTrip();
 }
 $('tripClose').onclick=async()=>{ if(!(await ask('¿Cerrar el viaje?','Se borran las etapas de la pantalla. Puedes volver a crearlo cuando quieras.','Sí, cerrar','No'))) return;
   ++tripReq; closeStage(false); trip=null; tripLayer.clearLayers(); tripArrowLayer.clearLayers(); store.del('ichnos-viaje'); updateSheet(); };
