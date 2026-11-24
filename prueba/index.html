@@ -6,6 +6,7 @@ function sunTimes(d,la,lo){ const rad=Math.PI/180, n=Math.floor((d-Date.UTC(d.ge
   const eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g)), dec=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g);
   const ha=Math.acos(Math.max(-1,Math.min(1,Math.cos(90.833*rad)/(Math.cos(la*rad)*Math.cos(dec))-Math.tan(la*rad)*Math.tan(dec))))/rad, noon=720-4*lo-eq, day=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());
   return {up:day+(noon-4*ha)*6e4, down:day+(noon+4*ha)*6e4}; }
+const LASTPG0=(()=>{ try{ return JSON.parse(localStorage.getItem('ichnos-lastpg')||'null'); }catch(e){ return null; } })();   // página donde estabas (se lee antes de que nada la cambie)
 function themeNow(){ let t='auto'; try{ t=JSON.parse(localStorage.getItem('ichnos-tema2')||'"auto"'); }catch(e){}
   if(t==='dark'||t==='light') return t; let la=41.54, lo=2.21; try{ const p=JSON.parse(localStorage.getItem('ichnos-perfil')||'{}'); if(p&&p.home){ la=p.home.lat; lo=p.home.lon; } }catch(e){}
   const now=new Date(), s=sunTimes(now,la,lo); return (now<s.up||now>s.down)?'dark':'light'; }
@@ -360,6 +361,7 @@ details.help p{margin:6px 0 0}
 #trTimes .tpop{max-width:none}#trTimes .tpop>b:first-child,#trTimes .tpop>br:first-of-type,#trTimes .tpop>small:first-of-type{display:none}
 .rv-big{display:flex;gap:10px;margin:2px 0 10px}.rv-big>div{flex:1;min-width:0}.rv-big b{display:block;font:800 28px/1.05 var(--display,system-ui);font-variant-numeric:tabular-nums;white-space:nowrap}.rv-big small{font-size:11.5px;color:var(--muted,#777)}
 #secViaje.mini>:not(.sec-h){display:none!important}#secViaje.mini .sec-h h3{cursor:pointer}#secViaje.mini .sec-h h3::after{content:' ▸';opacity:.6}
+.updbar[hidden]{display:none}.updbar .upd-x{background:none;border:0;color:#9aa3ab;font-size:18px;padding:4px 6px;cursor:pointer}
 .updbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:3500;display:flex;align-items:center;gap:10px;justify-content:space-between;background:#1E2328;color:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700}
 .updbar button{background:#B6E22E;color:#1E2328;border:0;border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
 .mpill{display:inline-block!important;width:auto!important;flex:none!important;font-size:11px;font-weight:700;line-height:1.5;padding:0 8px;border-radius:999px;margin-right:6px;vertical-align:1px;font-style:normal}
@@ -1740,7 +1742,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795502005';   // versión de la app (la pone build.py)
+const BUILD='1795542089';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1925,7 +1927,9 @@ async function syncNow(manual){
   if(typeof paintStrava==='function') paintStrava();
   if(gotSettings){
     let last=0; try{ last=+sessionStorage.getItem('ichnos-syncrl')||0; }catch(e){}
-    if(Date.now()-last>600000){ try{ sessionStorage.setItem('ichnos-syncrl',Date.now()); }catch(e){} toast('Cambios traídos de tu otro aparato. Recargando…',2500); setTimeout(()=>location.reload(),1200); return; }
+    if(Date.now()-last>600000){ try{ sessionStorage.setItem('ichnos-syncrl',Date.now()); }catch(e){}
+      if(canAutoReload()&&!T.crear){ reloadKeep(); return; }
+      showUpdBar(false,'Hay cambios de tu otro aparato'); return; }
   }
   if(gotRides) toast('Salidas traídas de tu otro aparato.',3500);
   else if(manual&&!err) toast('Todo igual en tus aparatos.',3000);
@@ -2053,6 +2057,7 @@ let mapCentered=false;
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
   document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===(id==='pgEntreno'||id==='pgCarreras'?'pgSalidas':id)));
+  try{ localStorage.setItem('ichnos-lastpg',JSON.stringify({id,t:Date.now()})); }catch(e){}
   if(id==='pgCarreras') try{ crRender(); }catch(e){ console.warn(e); }
   document.querySelectorAll('.sal-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.st===id));
   if(id==='pgPerfil') try{ paintYear(); }catch(e){}
@@ -6348,16 +6353,22 @@ setTimeout(async()=>{ if(!me||!me.admin||store.get('ichnos-testv','')===String(t
 // ¿hay una versión nueva de Ichnos? (GitHub guarda la vieja hasta 10 min): se mira al abrir y al volver a la app
 /* BUILD va arriba del todo */
 // barra "Hay una versión nueva" (toca para actualizar)
-function showUpdBar(force){ let b=$('updBar'); if(!b){ b=document.createElement('div'); b.id='updBar'; b.className='updbar';
-    b.innerHTML='<span>Hay una versión nueva de Ichnos</span><button>Actualizar</button>'; b.querySelector('button').onclick=()=>location.replace(location.pathname+'?v='+Date.now()); document.body.appendChild(b); }
-  b.hidden=false; if(force) toast('Tu Ichnos es una versión vieja: pulsa «Actualizar» abajo.',6000); }
+let userActed=false; ['pointerdown','keydown','wheel','touchstart'].forEach(ev=>addEventListener(ev,()=>{ userActed=true; },{capture:true,passive:true}));
+const canAutoReload=()=>!userActed&&performance.now()<12000;
+function reloadKeep(url){ try{ const pg=document.querySelector('.page:not(.off)'); sessionStorage.setItem('ichnos-backpg',JSON.stringify({id:pg?pg.id:'pgMapa',t:Date.now()})); }catch(e){} if(url) location.replace(url); else location.reload(); }
+function showUpdBar(force,txt){ let b=$('updBar'); if(!b){ b=document.createElement('div'); b.id='updBar'; b.className='updbar';
+    b.innerHTML='<span></span><button>Actualizar</button><button class="upd-x" aria-label="Cerrar">✕</button>'; b.querySelector('button').onclick=()=>reloadKeep(location.pathname+'?v='+Date.now()); b.querySelector('.upd-x').onclick=()=>{ b.hidden=true; }; document.body.appendChild(b); }
+  b.querySelector('span').textContent=txt||'Hay una versión nueva de Ichnos'; b.hidden=false; if(force) toast('Tu Ichnos es una versión vieja: pulsa «Actualizar» abajo.',6000); }
 async function checkUpdate(){ try{ const t=await (await fetch('index.html?nc='+Date.now(),{cache:'no-store'})).text(); const m=t.match(/const BUILD='(\d+)'/);
   if(m&&m[1]!==BUILD&&+m[1]>+BUILD){ const k='ichnos-upd-'+m[1];
-    if(T.crear||!$('rideView').hidden){ showUpdBar(); return; }   // no te corta lo que estás haciendo: aviso para actualizar cuando quieras
-    if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1');
-    location.replace(location.pathname+'?v='+m[1]); } }catch(e){} }
+    if(T.crear||!$('rideView').hidden||!canAutoReload()){ showUpdBar(); return; }   // si ya estás usando la app no te corta: aviso abajo para actualizar cuando quieras
+    if(sessionStorage.getItem(k)){ showUpdBar(); return; } sessionStorage.setItem(k,'1');
+    reloadKeep(location.pathname+'?v='+m[1]); } }catch(e){} }
 setTimeout(checkUpdate,3000);
-setTimeout(()=>{ if(!document.querySelector('.page:not(.off)')||!$('pgPerfil').classList.contains('off')){ showPage('pgMapa'); try{ map.invalidateSize(); }catch(e){} } },0);   // la app abre en el Mapa document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkUpdate(); });
+setTimeout(()=>{ let back=null; try{ back=JSON.parse(sessionStorage.getItem('ichnos-backpg')||'null'); sessionStorage.removeItem('ichnos-backpg'); }catch(e){}
+  if(!back){ back=LASTPG0&&Date.now()-LASTPG0.t<300000?LASTPG0:null; }   // el móvil o el Mac han cerrado la app por detrás hace poco: vuelves donde estabas
+  if(back&&Date.now()-back.t<300000&&$(back.id)&&back.id!=='pgMapa'&&back.id!=='pgAjustes'){ showPage(back.id); return; }
+  if(!document.querySelector('.page:not(.off)')||!$('pgPerfil').classList.contains('off')){ showPage('pgMapa'); try{ map.invalidateSize(); }catch(e){} } },0);   // la app abre en el Mapa document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkUpdate(); });
 setTimeout(devBackfill,8000); setInterval(devBackfill,15*60*1000);
 async function svSweep(){
   if(!svOn()||sxBusy||document.hidden||T.crear) return; sxBusy=true;
