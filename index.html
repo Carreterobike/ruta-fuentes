@@ -1742,7 +1742,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795542122';   // versión de la app (la pone build.py)
+const BUILD='1795542892';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -6171,7 +6171,7 @@ function dirLabels(res,segDz){
 function timesBlock(res,segDz){
   const lb=dirLabels(res,segDz), d=document.createElement('div'); d.className='tms';
   if(!rides.some(r=>r.times)){ d.innerHTML='<small>Todavía no hay tiempos. Graba tus salidas con Ichnos o trae tus archivos de Strava/Coros en "Rutas realizadas".</small>'; return d; }
-  const groups=byTp(res), many=groups.length>1;
+  const groups=byTp(res), many=groups.length>1||groups.some(([t])=>t==='ebike');   // la e-bike siempre se ve: no compite con la muscular
   const one=(k,res)=>{
     const a=res[k]; if(!a.length) return '';   // si no la has hecho en ese sentido, no se pone nada
     const last=a.reduce((x,y)=>(y.date||0)>(x.date||0)?y:x);
@@ -6406,7 +6406,7 @@ function ssPopup(sg){
   d.innerHTML=`<b>${esc(niceName(sg.name)||sg.name)}</b><br><small>Segmento de Strava · ${fmtKm(sg.km||lenOf(c)/1000)} km${sg.gr!=null?` · ${String(Math.round(sg.gr*10)/10).replace('.',',')} %`:''} · solo lo ves tú</small>`;
   const sb=stravaBest(sg.id);
   if(sb.length){ const gs=byTp({f:sb,b:[]});   // cada disciplina por separado
-    d.insertAdjacentHTML('beforeend',`<div class="tms"><div class="tms-h">Tus tiempos en Strava</div>${gs.map(([t,g])=>{ const l=g.f; return `<div class="tm">${gs.length>1?`<b>${esc(tpLbl(t))}</b>`:''}<span>Mejor <b class="best">${fmtT(l[0].t)}</b> · ${l.length} ${l.length===1?'vez':'veces'} · último ${fmtD(l.reduce((x,y)=>y.date>x.date?y:x).date)}</span></div>`; }).join('')}</div>`); }
+    d.insertAdjacentHTML('beforeend',`<div class="tms"><div class="tms-h">Tus tiempos en Strava</div>${gs.map(([t,g])=>{ const l=g.f; return `<div class="tm">${gs.length>1||t==='ebike'?`<b>${esc(tpLbl(t))}</b>`:''}<span>Mejor <b class="best">${fmtT(l[0].t)}</b> · ${l.length} ${l.length===1?'vez':'veces'} · último ${fmtD(l.reduce((x,y)=>y.date>x.date?y:x).date)}</span></div>`; }).join('')}</div>`); }
   else d.appendChild(timesBlock(effortsFor('ss:'+sg.id,c),segDz(c)));
   d.insertAdjacentHTML('beforeend',`<a class="sv-link" href="https://www.strava.com/segments/${esc(sg.id)}" target="_blank" rel="noopener">Ver en Strava</a>`);
   if(me&&!gData.t['st'+sg.id]){ const cb=document.createElement('button'); cb.className='segbtn'; cb.textContent=me.admin?'Ponerle color':'Proponer color';
@@ -6472,7 +6472,7 @@ function gtPopup(id,tr){
     const add=(u,t)=>{ if(!t) return; if(t.m) Object.entries(t.m).forEach(([tp,x])=>add1(u,tp==='?'?null:tp,x)); else add1(u,'old',t); };
     add(me.id,mine); Object.entries(ft).forEach(([u,tt])=>add(u,tt[id]));
     const lb=dirLabels(effortsFor('gt:'+id,c),segDz(c));
-    const keys=[...G.keys()].sort((a,b)=>{ const ia=TP_ORD.indexOf(a), ib=TP_ORD.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); }), many=keys.length>1;
+    const keys=[...G.keys()].sort((a,b)=>{ const ia=TP_ORD.indexOf(a), ib=TP_ORD.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); }), many=keys.length>1||keys.includes('ebike');
     const one=(rows,k)=>rows[k].length?`<div class="tm"><b>${lb[k]}</b><ol>${rows[k].sort((a,b)=>a.t-b.t).map(x=>`<li><b>${fmtT(x.t)}</b> ${esc(uName(x.u))}</li>`).join('')}</ol></div>`:'';
     const html=keys.map(tp=>{ const g=G.get(tp), x=one(g,'f')+one(g,'b'); return x?(many?`<div class="tp-h">${tp==='old'?'Sin modalidad (app sin actualizar)':esc(tpLbl(tp))}</div>`:'')+x:''; }).join('');
     cl.innerHTML='<div class="tms-h">Clasificación de la grupeta</div>'+(html||'<small>Todavía nadie tiene tiempo aquí. Cuentan las salidas subidas con archivo o directas del ciclocomputador (las de Strava no se pueden enseñar a otros).</small>');
