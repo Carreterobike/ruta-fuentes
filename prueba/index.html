@@ -298,6 +298,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .big-sum div b{display:block;font-family:var(--display);font-weight:800;font-size:28px;line-height:1}
 .big-sum div small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
 .col-row{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px}.col-row button{width:36px;height:36px;border-radius:50%;border:3px solid rgba(0,0,0,.15);padding:0;cursor:pointer}.col-row button.on{border-color:var(--accent,#B6E22E);box-shadow:0 0 0 2px #fff inset}
+.mp-ter{border-top:1px solid rgba(127,127,127,.25);margin-top:6px;padding-top:6px}.mp-ter[hidden]{display:none}.mp-ter small{display:block;opacity:.7;font-size:11.5px;margin:2px 0}
+.mp-ter label{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font-weight:600}.mp-ter label i{width:14px;height:14px;border-radius:50%;flex:none}
+.mp-ter .sw{margin-left:auto;width:32px;height:18px;border-radius:9px;background:#8a939b;position:relative;flex:none}.mp-ter .sw b{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.15s}
+.mp-ter label.on .sw{background:#7fae12}.mp-ter label.on .sw b{left:16px}
 .col-pv{border-radius:10px;overflow:hidden;margin:4px 0 10px}
 .leaflet-control-layers .perso{display:inline-block;width:18px;height:4px;border-radius:2px;background:var(--heat-col,#ff6a00);vertical-align:middle;margin:0 6px 0 2px}
 .rec-live{display:flex;align-items:center;gap:10px;background:#fdecea;color:#b71c1c;border-radius:12px;padding:10px 12px;font-weight:700}
@@ -1314,10 +1318,12 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <div class="pb-h"><h3>Colores del mapa</h3></div>
     <p class="svp">Color de la salida (la que estás viendo en el mapa)</p>
     <div class="col-row" id="colRide"></div>
-    <p class="svp">Color del mapa personal (por donde has pasado)</p>
-    <div class="col-row" id="colHeat"></div>
+    <p class="svp">Mapa personal: color del asfalto</p>
+    <div class="col-row" id="colAsf"></div>
+    <p class="svp">Mapa personal: color de la tierra</p>
+    <div class="col-row" id="colTie"></div>
     <div class="col-pv"><svg viewBox="0 0 340 120" width="100%" aria-hidden="true"><rect width="340" height="120" fill="#2b3a2e"/><path d="M0 30 C60 15 120 45 200 34 S300 10 340 22" stroke="#3a4b3c" stroke-width="10" fill="none"/>
-      <g id="colPvH" fill="none" stroke-width="3" opacity=".6" stroke-linecap="round"><path d="M10 100 C80 95 140 108 220 98 S310 76 335 72"/><path d="M60 98 C70 68 50 45 100 38 S180 52 230 30"/><path d="M150 104 C160 76 200 68 260 84"/></g>
+      <g id="colPvA" fill="none" stroke-width="3" opacity=".7" stroke-linecap="round"><path d="M10 100 C80 95 140 108 220 98 S310 76 335 72"/></g><g id="colPvT" fill="none" stroke-width="3" opacity=".7" stroke-linecap="round"><path d="M60 98 C70 68 50 45 100 38 S180 52 230 30"/><path d="M150 104 C160 76 200 68 260 84"/></g>
       <g fill="none" stroke-linecap="round"><path d="M60 98 C70 68 50 45 100 38 S150 60 170 52" stroke="#1E2328" stroke-width="8"/><path id="colPvR" d="M60 98 C70 68 50 45 100 38 S150 60 170 52" stroke-width="4.5"/></g></svg></div>
     <div class="actions"><button id="colReset">Volver a los de siempre</button></div>
   </section>
@@ -1742,7 +1748,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795542861';   // versión de la app (la pone build.py)
+const BUILD='1795543737';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -2079,16 +2085,17 @@ let ajFrom='pgPerfil';
 document.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>{ const cur=[...document.querySelectorAll('.page')].find(p=>!p.classList.contains('off')); ajFrom=cur&&cur.id!=='pgAjustes'?cur.id:'pgPerfil'; showPage('pgAjustes'); $('pgAjustes').scrollTop=0; });
 $('ajBack').onclick=()=>showPage(ajFrom);
 // colores del mapa (Ajustes): salida y mapa personal; se copian entre tus aparatos
-const COL_RIDE=['#B6E22E','#ffffff','#22b8cf','#ff3b7f','#ffd43b','#4dabf7'], COL_HEAT=['#ff6a00','#e64980','#7048e8','#15aabf','#fab005','#f8f9fa'];
+const COL_RIDE=['#B6E22E','#ffffff','#22b8cf','#ff3b7f','#ffd43b','#4dabf7'], COL_HEAT=['#ff6a00','#e64980','#7048e8','#15aabf','#fab005','#f8f9fa'],
+  COL_ASF=['#4dabf7','#ffffff','#B6E22E','#ff3b7f','#ffd43b','#7048e8'], COL_TIE=['#ff6a00','#c98a3a','#e64980','#fab005','#7048e8','#15aabf'];
 (function(){ if(!store.get('ichnos-col-limpia',false)){ const c=store.get('ichnos-colores',null); if(c&&c.ride==='#ff3b7f'&&c.heat==='#15aabf') store.set('ichnos-colores',{ride:'#B6E22E',heat:'#ff6a00'}); store.set('ichnos-col-limpia',true); } })();   // colores de prueba de Claude (24-nov)
-const colGet=()=>({ride:COL_RIDE[0],heat:COL_HEAT[0],...(store.get('ichnos-colores',null)||{})});
+const colGet=()=>{ const c={ride:COL_RIDE[0],heat:COL_HEAT[0],...(store.get('ichnos-colores',null)||{})}; c.asf=c.asf||COL_ASF[0]; c.tie=c.tie||(c.heat!==COL_HEAT[0]?c.heat:COL_TIE[0]); return c; };
 function colPaint(){ const c=colGet();
-  [['colRide',COL_RIDE,'ride'],['colHeat',COL_HEAT,'heat']].forEach(([id,L0,k])=>{ const r=$(id); if(!r) return; r.innerHTML=L0.map(x=>`<button data-c="${x}" class="${x===c[k]?'on':''}" style="background:${x}" aria-label="color"></button>`).join('');
+  [['colRide',COL_RIDE,'ride'],['colAsf',COL_ASF,'asf'],['colTie',COL_TIE,'tie']].forEach(([id,L0,k])=>{ const r=$(id); if(!r) return; r.innerHTML=L0.map(x=>`<button data-c="${x}" class="${x===c[k]?'on':''}" style="background:${x}" aria-label="color"></button>`).join('');
     r.querySelectorAll('button').forEach(b=>b.onclick=()=>{ store.set('ichnos-colores',{...colGet(),[k]:b.dataset.c}); colApply(); }); });
-  const pr=$('colPvR'), ph=$('colPvH'); if(pr) pr.setAttribute('stroke',c.ride); if(ph) ph.setAttribute('stroke',c.heat); }
-function colApply(){ colPaint(); document.documentElement.style.setProperty('--heat-col',colGet().heat);
+  const pr=$('colPvR'); if(pr) pr.setAttribute('stroke',c.ride); if($('colPvA')) $('colPvA').setAttribute('stroke',c.asf); if($('colPvT')) $('colPvT').setAttribute('stroke',c.tie); try{ mptPaint(); }catch(e){} }
+function colApply(){ colPaint(); document.documentElement.style.setProperty('--heat-col',colGet().tie);
   try{ if(map.hasLayer(hLayer)) drawHeat(); }catch(e){} try{ if(rideOnMap&&rideOnMap.coords) drawRideLine(rideOnMap); }catch(e){} }
-setTimeout(()=>{ try{ colApply(); $('colReset').onclick=()=>{ store.set('ichnos-colores',{ride:COL_RIDE[0],heat:COL_HEAT[0]}); colApply(); }; }catch(e){ console.warn(e); } },0);
+setTimeout(()=>{ try{ colApply(); $('colReset').onclick=()=>{ store.set('ichnos-colores',{ride:COL_RIDE[0],heat:COL_HEAT[0],asf:COL_ASF[0],tie:COL_TIE[0]}); colApply(); }; }catch(e){ console.warn(e); } },0);
 function paintTema(){ let t='auto'; try{ t=JSON.parse(localStorage.getItem('ichnos-tema2')||'"auto"'); }catch(e){} document.querySelectorAll('#temaBtns button').forEach(b=>b.classList.toggle('primary',b.dataset.tema===t)); }
 document.querySelectorAll('#temaBtns button').forEach(b=>b.onclick=()=>{ try{ localStorage.setItem('ichnos-tema2',JSON.stringify(b.dataset.tema)); }catch(e){} document.documentElement.dataset.theme=themeNow(); paintTema(); });
 paintTema();
@@ -2259,6 +2266,10 @@ const layersCtl=L.control.layers(base,{'Nombres de pueblos, calles y montañas':
   a.addEventListener('mousedown',()=>{ was=c.classList.contains('leaflet-control-layers-expanded'); });
   a.addEventListener('touchstart',()=>{ was=c.classList.contains('leaflet-control-layers-expanded'); },{passive:true});
   a.addEventListener('click',()=>{ if(was) setTimeout(()=>layersCtl.collapse(),0); });
+  const ov=c.querySelector('.leaflet-control-layers-overlays'); if(ov){ const t=document.createElement('div'); t.id='mpTer'; t.className='mp-ter'; t.hidden=true;
+    t.innerHTML='<small>Mapa personal por suelo</small><label data-k="a"><i></i>Asfalto<span class="sw"><b></b></span></label><label data-k="t"><i></i>Tierra<span class="sw"><b></b></span></label><small id="mpTerP"></small>';
+    t.querySelectorAll('label').forEach(l=>l.onclick=e=>{ e.preventDefault(); e.stopPropagation(); const v=mptGet(); v[l.dataset.k]=!v[l.dataset.k]; store.set('ichnos-mpt',v); mptPaint(); drawHeat(); });
+    ov.after(t); }
 })();
 // botón "Capas" (fuentes, trialeras, bares…) justo debajo del de Satélite/Mapa
 const CapasCtl=L.Control.extend({onAdd(){ const d=L.DomUtil.create('div','capas-ctl');
@@ -2383,8 +2394,8 @@ function toggle3D(){ const host=$('map'), btn=$('b3d');
   map3d.once('load',()=>map3d.easeTo({pitch:62,bearing:-20,duration:1400}));
   toast('Con dos dedos: inclinar y girar.',3500); }
 if(store.get('ichnos-mapaper',false)) hLayer.addTo(map);
-map.on('overlayadd',e=>{ if(e.layer===hLayer){ store.set('ichnos-mapaper',true); drawHeat(); if(!rides.length) toast('Todavía no tienes salidas. Tráelas o grábalas en la página Salidas.',4500); } });
-map.on('overlayremove',e=>{ if(e.layer===hLayer) store.set('ichnos-mapaper',false); });
+map.on('overlayadd',e=>{ if(e.layer===hLayer){ store.set('ichnos-mapaper',true); mptPaint(); drawHeat(); if(!rides.length) toast('Todavía no tienes salidas. Tráelas o grábalas en la página Salidas.',4500); } });
+map.on('overlayremove',e=>{ if(e.layer===hLayer){ store.set('ichnos-mapaper',false); mptPaint(); } });
 
 // ---------- estado ----------
 // T = pestañas encendidas. Se pueden tener varias a la vez; se apagan tocándolas otra vez.
@@ -4988,13 +4999,49 @@ function thinFull(c,ts,es,ex={}){
   const has=a=>a.filter(x=>x!=null).length>out.length*0.6;
   return {coords:out,times:has(tt)?tt:null,eles:has(ee)?ee:null,hr:has(hr)?hr:null,cad:has(cad)?cad:null,pw:has(pw)?pw:null,upRaw:gainOf(es)};
 }
+// mapa personal: cada salida pintada por tramos según el suelo (asfalto / tierra); por donde más pasas, más intenso
+const mptGet=()=>({a:true,t:true,...(store.get('ichnos-mpt',null)||{})});
+function mptPaint(){ const t=$('mpTer'); if(!t) return; t.hidden=!map.hasLayer(hLayer); const v=mptGet(), c=colGet();
+  t.querySelectorAll('label').forEach(l=>{ l.classList.toggle('on',!!v[l.dataset.k]); l.querySelector('i').style.background=l.dataset.k==='a'?c.asf:c.tie; }); }
+const surfMemo=new Map(); let surfRun=null;
 function drawHeat(){
-  hLayer.clearLayers();
-  // cada ruta se pinta semitransparente: por donde más veces pasas, más intenso sale
-  // un salto del GPS de más de 300 m no se pinta como raya recta: se corta ahí
-  const cut=c=>{ const out=[]; let cur=[]; for(let i=0;i<c.length;i++){ if(i&&dist(c[i-1],c[i])>300){ if(cur.length>1) out.push(cur); cur=[]; } cur.push(c[i]); } if(cur.length>1) out.push(cur); return out; };
-  rides.forEach(r=>{ if(r._dup||!r.coords) return; const runs=privacyTrim(r.coords).flatMap(cut); if(runs.length) L.polyline(runs,{renderer:heatRenderer,color:colGet().heat,weight:3.4,opacity:.55,interactive:false,lineJoin:'round'}).addTo(hLayer); });
-}
+  hLayer.clearLayers(); if(!map.hasLayer(hLayer)) return;
+  const v=mptGet(), col=colGet(), pr=+perfil.priv||0, h=pr&&perfil.home&&perfil.homeExact?[perfil.home.lat,perfil.home.lon]:null, ok=p=>!h||dist(p,h)>pr;
+  const opt=c=>({renderer:heatRenderer,color:c,weight:3.4,opacity:.55,interactive:false,lineJoin:'round'});
+  let falta=0;
+  rides.forEach(r=>{ if(r._dup||!r.coords||r.coords.length<2) return; const c=r.coords, sf=surfMemo.get(r.id);
+    if(!sf) falta++;
+    const runs={a:[],t:[]}; let cur=null, ck=null;
+    for(let i=0;i<c.length;i++){ const p=[c[i][0],c[i][1]];
+      if(!ok(c[i])||(i&&dist(c[i-1],c[i])>300)){ if(cur&&cur.length>1) runs[ck].push(cur); cur=null; if(!ok(c[i])) continue; }
+      const k=sf?(sf[i]==='p'?'a':sf[i]==='u'?'t':(ck||'t')):'t';   // sin datos: como el tramo de antes (o tierra)
+      if(k!==ck&&cur){ if(cur.length>1) runs[ck].push(cur); cur=[cur[cur.length-1]]; }
+      if(!cur) cur=[]; cur.push(p); ck=k; }
+    if(cur&&cur.length>1) runs[ck].push(cur);
+    if(v.a&&runs.a.length) L.polyline(runs.a,opt(col.asf)).addTo(hLayer);
+    if(v.t&&runs.t.length) L.polyline(runs.t,opt(col.tie)).addTo(hLayer); });
+  if(falta) surfAll(); }
+// el suelo de todas tus salidas: se mira una vez (con el mapa de calles) y queda guardado en el aparato
+async function rideSurfPts(r){ const c=r.coords, kx=Math.cos(c[0][0]*Math.PI/180)*111320, M=111320, keys=new Set();
+  c.forEach(p=>keys.add(t2xy(p[0],p[1]).join('/'))); if(keys.size>150) return null;
+  const grid=new Map(), G=40, put=(gx,gy,sg)=>{ const k=gx+','+gy; if(!grid.has(k)) grid.set(k,[]); grid.get(k).push(sg); };
+  for(const k of keys){ const [x,y]=k.split('/').map(Number); for(const f of await tileRoads(x,y)) for(let i=1;i<f.line.length;i++){ const a=f.line[i-1], b=f.line[i];
+    const sg=[a[1]*kx,a[0]*M,b[1]*kx,b[0]*M,f.s]; const x0=Math.floor(Math.min(sg[0],sg[2])/G), x1=Math.floor(Math.max(sg[0],sg[2])/G), y0=Math.floor(Math.min(sg[1],sg[3])/G), y1=Math.floor(Math.max(sg[1],sg[3])/G);
+    if((x1-x0+1)*(y1-y0+1)>400) continue; for(let gx=x0;gx<=x1;gx++) for(let gy=y0;gy<=y1;gy++) put(gx,gy,sg); } }
+  let out=''; for(const p of c){ const qx=p[1]*kx, qy=p[0]*M, gx=Math.floor(qx/G), gy=Math.floor(qy/G); let bd=20, s='-';
+    for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ const L_=grid.get((gx+dx)+','+(gy+dy)); if(!L_) continue;
+      for(const [ax,ay,bx,by,t] of L_){ const ex=bx-ax, ey=by-ay, L2=ex*ex+ey*ey; let tt=L2?((qx-ax)*ex+(qy-ay)*ey)/L2:0; tt=Math.max(0,Math.min(1,tt)); const d=Math.hypot(qx-ax-tt*ex,qy-ay-tt*ey); if(d<bd){ bd=d; s=t; } } }
+    out+=s; } return out; }
+function surfAll(){ if(surfRun) return surfRun;
+  surfRun=(async()=>{ const todo=rides.filter(r=>!r._dup&&r.coords&&r.coords.length>1&&!surfMemo.has(r.id)); let n=0, lastDraw=Date.now();
+    for(const r of todo){ if(!map.hasLayer(hLayer)) break;
+      const k='rsf:'+r.id+':'+r.coords.length; let sf=await tcGet(k);
+      if(!sf){ try{ sf=await rideSurfPts(r); }catch(e){ sf=null; } if(sf) tcPut(k,sf); await new Promise(z=>setTimeout(z,0)); }
+      surfMemo.set(r.id,sf||'-'.repeat(r.coords.length)); n++;
+      const pg=$('mpTerP'); if(pg) pg.textContent=n<todo.length?`Mirando el suelo de tus salidas… ${n} de ${todo.length}`:'';
+      if(Date.now()-lastDraw>4000){ lastDraw=Date.now(); drawHeat(); } }
+    const pg=$('mpTerP'); if(pg) pg.textContent=''; surfRun=null; if(map.hasLayer(hLayer)) drawHeat(); })();
+  return surfRun; }
 // la misma salida que llega por Strava y por Intervals.icu: se queda la de Intervals (con los tiempos exactos de Strava)
 function markDups(){ const o=rides.filter(r=>!/^strava-/.test(r.id||'')), sv=rides.filter(r=>/^strava-/.test(r.id||''));
   rides.forEach(r=>{ r._dup=/^strava-/.test(r.id||'')&&o.some(x=>Math.abs((x.date||0)-(r.date||0))<180000); });
