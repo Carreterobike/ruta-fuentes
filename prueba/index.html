@@ -1748,7 +1748,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795543737';   // versión de la app (la pone build.py)
+const BUILD='1795543968';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -4149,6 +4149,7 @@ const poiCache=new Map();
 // lo que ya se ha cargado se guarda en el aparato 14 días: la segunda vez sale al momento
 const tcDB=new Promise(res=>{ try{ const r=indexedDB.open('ichnos-cache',1); r.onupgradeneeded=()=>r.result.createObjectStore('t'); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } });
 async function tcGet(k){ const db=await tcDB; if(!db) return null; return new Promise(res=>{ try{ const q=db.transaction('t').objectStore('t').get(k); q.onsuccess=()=>{ const v=q.result; res(v&&Date.now()-v.t<14*86400000?v.d:null); }; q.onerror=()=>res(null); }catch(e){ res(null); } }); }
+async function tcGetKeep(k){ const db=await tcDB; if(!db) return null; return new Promise(res=>{ try{ const q=db.transaction('t').objectStore('t').get(k); q.onsuccess=()=>{ const v=q.result; res(v?v.d:null); }; q.onerror=()=>res(null); }catch(e){ res(null); } }); }   // sin caducar
 async function tcPut(k,d){ const db=await tcDB; if(!db) return; try{ db.transaction('t','readwrite').objectStore('t').put({t:Date.now(),d},k); }catch(e){} }
 function tilePois(x,y){
   const k=x+'/'+y;
@@ -5020,7 +5021,7 @@ function drawHeat(){
     if(cur&&cur.length>1) runs[ck].push(cur);
     if(v.a&&runs.a.length) L.polyline(runs.a,opt(col.asf)).addTo(hLayer);
     if(v.t&&runs.t.length) L.polyline(runs.t,opt(col.tie)).addTo(hLayer); });
-  if(falta) surfAll(); }
+  if(falta&&!surfRun) surfAll(); }
 // el suelo de todas tus salidas: se mira una vez (con el mapa de calles) y queda guardado en el aparato
 async function rideSurfPts(r){ const c=r.coords, kx=Math.cos(c[0][0]*Math.PI/180)*111320, M=111320, keys=new Set();
   c.forEach(p=>keys.add(t2xy(p[0],p[1]).join('/'))); if(keys.size>150) return null;
@@ -5032,13 +5033,19 @@ async function rideSurfPts(r){ const c=r.coords, kx=Math.cos(c[0][0]*Math.PI/180
     for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ const L_=grid.get((gx+dx)+','+(gy+dy)); if(!L_) continue;
       for(const [ax,ay,bx,by,t] of L_){ const ex=bx-ax, ey=by-ay, L2=ex*ex+ey*ey; let tt=L2?((qx-ax)*ex+(qy-ay)*ey)/L2:0; tt=Math.max(0,Math.min(1,tt)); const d=Math.hypot(qx-ax-tt*ex,qy-ay-tt*ey); if(d<bd){ bd=d; s=t; } } }
     out+=s; } return out; }
+// solo las salidas que se ven en pantalla (así no se baja el mapa de todos los sitios donde has estado); al mover el mapa, las nuevas
+const rBB=r=>{ if(!r._bb){ let a=90,b=180,c=-90,d=-180; r.coords.forEach(p=>{ if(p[0]<a) a=p[0]; if(p[0]>c) c=p[0]; if(p[1]<b) b=p[1]; if(p[1]>d) d=p[1]; }); Object.defineProperty(r,'_bb',{value:[a,b,c,d],enumerable:false,configurable:true,writable:true}); } return r._bb; };
+map.on('moveend',()=>{ if(map.hasLayer(hLayer)&&!surfRun&&map.getZoom()>=10) setTimeout(()=>{ if(!surfRun) surfAll(); },400); });
 function surfAll(){ if(surfRun) return surfRun;
-  surfRun=(async()=>{ const todo=rides.filter(r=>!r._dup&&r.coords&&r.coords.length>1&&!surfMemo.has(r.id)); let n=0, lastDraw=Date.now();
+  surfRun=(async()=>{ let n=0, lastDraw=Date.now(), total=0;
+    const pick=()=>{ if(map.getZoom()<10) return []; const B=map.getBounds().pad(0.2), s_=B.getSouth(), w=B.getWest(), nn=B.getNorth(), e=B.getEast();
+      return rides.filter(r=>!r._dup&&r.coords&&r.coords.length>1&&!surfMemo.has(r.id)&&(([a,b,c,d])=>!(c<s_||a>nn||d<w||b>e))(rBB(r))); };
+    const todo=pick(); total=todo.length;
     for(const r of todo){ if(!map.hasLayer(hLayer)) break;
-      const k='rsf:'+r.id+':'+r.coords.length; let sf=await tcGet(k);
+      const k='rsf:'+r.id+':'+r.coords.length; let sf=await tcGetKeep(k);
       if(!sf){ try{ sf=await rideSurfPts(r); }catch(e){ sf=null; } if(sf) tcPut(k,sf); await new Promise(z=>setTimeout(z,0)); }
       surfMemo.set(r.id,sf||'-'.repeat(r.coords.length)); n++;
-      const pg=$('mpTerP'); if(pg) pg.textContent=n<todo.length?`Mirando el suelo de tus salidas… ${n} de ${todo.length}`:'';
+      const pg=$('mpTerP'); if(pg) pg.textContent=n<total?`Mirando el suelo de las salidas de esta zona… ${n} de ${total}`:'';
       if(Date.now()-lastDraw>4000){ lastDraw=Date.now(); drawHeat(); } }
     const pg=$('mpTerP'); if(pg) pg.textContent=''; surfRun=null; if(map.hasLayer(hLayer)) drawHeat(); })();
   return surfRun; }
