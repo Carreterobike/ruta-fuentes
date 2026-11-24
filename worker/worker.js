@@ -70,6 +70,7 @@ export default {
         if (await KV.get('login:' + b.user.toLowerCase())) return J({ error: 'Ese usuario ya existe. Elige otro.' }, 400);
         const u = await newUser(KV, b, false);
         inv.used = { uid: u.id, t: Date.now() };
+        if (inv.admin) await KV.put('admin', u.id);   // el administrador que borró su cuenta para hacerse una nueva
         if (inv.g) { const g = JSON.parse(await KV.get('gr:' + inv.g) || 'null'); if (g) { g.members[u.id] = Date.now(); await KV.put('gr:' + g.id, JSON.stringify(g)); await ugAdd(KV, u.id, g.id); } }
         await KV.put('inv:' + code.toLowerCase(), JSON.stringify(inv));
         // quien invita y el invitado se siguen el uno al otro desde el principio
@@ -181,6 +182,30 @@ export default {
       { const bld = +(req.headers.get('X-Ichnos-Build') || 0); if (bld && Math.random() < 0.1) ctx.waitUntil(KV.put('bld:' + me.id, JSON.stringify({ b: bld, t: Date.now() }), { expirationTtl: 90 * 86400 })); }
       const canSee = async (uid) => uid === me.id || (await getFw(KV, uid)).in[me.id] === 'ok' || await mates(KV, me.id, uid);
 
+      // ---------- borrar cuenta (cada uno la suya) y borrar a cualquiera (solo el administrador) ----------
+      if (P === '/cuenta/borrar' && req.method === 'POST') {
+        const b = await body(), modo = b.modo === 'todo' ? 'todo' : 'cuenta';
+        if (String(b.confirm || '').trim().toLowerCase() !== String(me.user || '').toLowerCase()) return J({ error: 'Escribe tu usuario tal cual para confirmar.' }, 400);
+        if (isAdmin && modo === 'todo') return J({ error: 'Eres el administrador de Ichnos: si te borras de todo, Ichnos se queda sin nadie que lo lleve. Usa «Borrar cuenta» (te da un código y tu cuenta nueva sigue siendo la del administrador).' }, 400);
+        const code = await wipeUser(env, KV, me.id, modo, isAdmin);
+        return J({ ok: true, code });
+      }
+      if (P === '/admin/usuarios' && req.method === 'GET') {
+        if (!isAdmin) return J({ error: 'Solo el administrador.' }, 403);
+        const l = await usersList(KV), out = [];
+        for (const x of l) { const u = JSON.parse(await KV.get('u:' + x.id) || 'null'); if (!u) continue;
+          out.push({ id: u.id, user: u.user, name: u.name, t: u.t || u.created || null, strava: !!u.strava, icu: !!(await KV.get('icu:' + u.id)), admin: u.id === me.id }); }
+        return J(out);
+      }
+      if (P === '/admin/borrar' && req.method === 'POST') {
+        if (!isAdmin) return J({ error: 'Solo el administrador.' }, 403);
+        const b = await body(), u = JSON.parse(await KV.get('u:' + String(b.uid || '')) || 'null');
+        if (!u) return J({ error: 'Ese usuario ya no existe.' }, 404);
+        if (u.id === me.id) return J({ error: 'Para tu propia cuenta usa «Borrar cuenta» en Tu cuenta.' }, 400);
+        if (String(b.confirm || '').trim().toLowerCase() !== String(u.user || '').toLowerCase()) return J({ error: 'Escribe su usuario tal cual para confirmar.' }, 400);
+        await wipeUser(env, KV, u.id, 'todo', false);
+        return J({ ok: true });
+      }
       if (P === '/yo' && req.method === 'GET') return J({ ...pubUser(me), admin: isAdmin, strava: !!me.strava, icu: !!(await KV.get('icu:' + me.id)) });
 
       // Intervals.icu con la clave personal de cada uno (mientras no esté la conexión oficial)
@@ -782,6 +807,37 @@ async function pollIcu(env, KV) {
 
 // ---------- grupetas ----------
 const dmKey = (a, b) => 'dm:' + [a, b].sort().join('|');
+// Borra a una persona de Ichnos. modo 'cuenta': su cuenta y todo lo suyo (y le da un código para hacerse otra).
+// modo 'todo': además quita el permiso de Ichnos en Strava e Intervals. Las fuentes, sitios y trialeras que aportó al mapa de todos se quedan.
+async function delPrefix(KV, prefix) { let cur; do { const l = await KV.list({ prefix, cursor: cur }); for (const k of l.keys) await KV.delete(k.name); cur = l.list_complete ? null : l.cursor; } while (cur); }
+async function wipeUser(env, KV, uid, modo, wasAdmin) {
+  const u = JSON.parse(await KV.get('u:' + uid) || 'null'); if (!u) return null;
+  // Strava: en «todo» se retira el permiso que se le dio a Ichnos
+  const tok = JSON.parse(await KV.get('tok:' + uid) || 'null');
+  if (modo === 'todo' && tok) { try { const t = await stravaTok(env, KV, uid); if (t && t.a) await fetch('https://www.strava.com/oauth/deauthorize', { method: 'POST', headers: { Authorization: 'Bearer ' + t.a } }); } catch (e) {} }
+  const ath = (tok && tok.ath) || u.strava; if (ath && (await KV.get('ath:' + ath)) === uid) await KV.delete('ath:' + ath);
+  // amigos: se le quita de los demás
+  const fw = await getFw(KV, uid);
+  for (const o of new Set([...Object.keys(fw.in), ...Object.keys(fw.out)])) { const f = await getFw(KV, o); delete f.in[uid]; delete f.out[uid]; await KV.put('fw:' + o, JSON.stringify(f)); }
+  // grupetas: sale de todas; si llevaba una, pasa al miembro más antiguo; si se queda vacía, se borra
+  for (const gid of JSON.parse(await KV.get('ug:' + uid) || '[]')) { const g = JSON.parse(await KV.get('gr:' + gid) || 'null'); if (!g) continue;
+    delete g.members[uid]; const rest = Object.entries(g.members).sort((a, b) => a[1] - b[1]);
+    if (!rest.length) { await KV.delete('gr:' + gid); if (g.code) await KV.delete('gcode:' + String(g.code).toLowerCase()); await KV.delete('gs:' + gid); await KV.delete('gc:' + gid); continue; }
+    if (g.admin === uid) { g.admin = rest[0][0]; await notify(KV, g.admin, { k: 'gadmin', x: g.name }); }
+    await KV.put('gr:' + gid, JSON.stringify(g)); }
+  // mensajes privados y chats (en el Durable Object y lo viejo de KV)
+  if (env.GSTORE) { try { await env.GSTORE.get(env.GSTORE.idFromName('g')).fetch('https://g/', { method: 'POST', body: JSON.stringify({ act: 'purge', uid, gids: JSON.parse(await KV.get('ug:' + uid) || '[]') }) }); } catch (e) {} }
+  for (const o of Object.keys(JSON.parse(await KV.get('dml:' + uid) || '{}'))) { const k = 'dm:' + [uid, o].sort().join('|'); await KV.delete(k); const ix = JSON.parse(await KV.get('dml:' + o) || '{}'); delete ix[uid]; await KV.put('dml:' + o, JSON.stringify(ix)); }
+  // todo lo suyo
+  for (const k of ['u:', 'tok:', 'icu:', 'fw:', 'ug:', 'push:', 'pushlast:', 'pp:', 'nt:', 'soc:', 'bld:', 'dml:', 'pown:']) await KV.delete(k + uid);
+  await KV.delete('login:' + String(u.user || '').toLowerCase());
+  await delPrefix(KV, 's:' + uid + ':'); await delPrefix(KV, 'p:' + uid + ':');
+  await KV.put('users', JSON.stringify((await usersList(KV)).filter(x => x.id !== uid)));
+  // «Borrar cuenta»: código para hacerse una cuenta nueva (si era el administrador, la nueva también lo será)
+  if (modo === 'cuenta') { const code = (String(u.user || 'ichnos').replace(/[^a-z0-9]/gi, '').slice(0, 10) || 'ichnos') + '-' + rnd(4);
+    await KV.put('inv:' + code.toLowerCase(), JSON.stringify({ code, tipo: 'alta', t: Date.now(), admin: !!wasAdmin, nuevo: true }), { expirationTtl: 30 * 86400 }); return code; }
+  return null;
+}
 async function ugAdd(KV, uid, gid) { const l = JSON.parse(await KV.get('ug:' + uid) || '[]'); if (!l.includes(gid)) { l.push(gid); await KV.put('ug:' + uid, JSON.stringify(l)); } }
 async function ugDel(KV, uid, gid) { const l = JSON.parse(await KV.get('ug:' + uid) || '[]'); if (l.includes(gid)) await KV.put('ug:' + uid, JSON.stringify(l.filter(x => x !== gid))); }
 async function mates(KV, a, b) {   // ¿están los dos en alguna grupeta?
@@ -827,6 +883,13 @@ export class GStore {
         for (const [a, c] of [[b.me, b.other], [b.other, b.me]]) { const ix = await getIx(a); ix[c] = b.msg.t; await this.s.put('dml:' + a, ix); }
         return out(view()); }
       return out({ error: 'op' });
+    }
+    if (b.act === 'purge') {
+      const ix = (await this.s.get('dml:' + b.uid)) || {};
+      for (const o of Object.keys(ix)) { await this.s.delete('dm:' + [b.uid, o].sort().join('|')); const io = (await this.s.get('dml:' + o)) || {}; delete io[b.uid]; await this.s.put('dml:' + o, io); }
+      await this.s.delete('dml:' + b.uid);
+      for (const gid of b.gids || []) { const C = await this.s.get('gc:' + gid); if (C) await this.s.put('gc:' + gid, C.filter(x => x.u !== b.uid)); }
+      return out({ ok: true });
     }
     if (b.act === 'gc') {
       const k = 'gc:' + b.gid; let C = await this.s.get(k); if (!C) { C = JSON.parse(await this.env.KV.get(k) || '[]'); await this.s.put(k, C); }
