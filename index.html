@@ -365,6 +365,8 @@ details.help p{margin:6px 0 0}
 #trTimes .tpop{max-width:none}#trTimes .tpop>b:first-child,#trTimes .tpop>br:first-of-type,#trTimes .tpop>small:first-of-type{display:none}
 .rv-big{display:flex;gap:10px;margin:2px 0 10px}.rv-big>div{flex:1;min-width:0}.rv-big b{display:block;font:800 28px/1.05 var(--display,system-ui);font-variant-numeric:tabular-nums;white-space:nowrap}.rv-big small{font-size:11.5px;color:var(--muted,#777)}
 #secViaje.mini>:not(.sec-h){display:none!important}#secViaje.mini .sec-h h3{cursor:pointer}#secViaje.mini .sec-h h3::after{content:' ▸';opacity:.6}
+.del-b{border-color:#e03131!important;color:#e03131!important}.del-c{margin-top:10px;padding:10px;border-radius:10px;background:rgba(224,49,49,.08)}.del-c p{margin:0 0 8px;font-size:14px}.del-c input{width:100%;box-sizing:border-box;margin-bottom:8px}
+#admUsL li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between}#admUsL li>span{flex:1;min-width:0}#admUsL li .del-c{flex-basis:100%}
 .updbar[hidden]{display:none}.updbar .upd-x{background:none;border:0;color:#9aa3ab;font-size:18px;padding:4px 6px;cursor:pointer}
 .updbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:3500;display:flex;align-items:center;gap:10px;justify-content:space-between;background:#1E2328;color:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700}
 .updbar button{background:#B6E22E;color:#1E2328;border:0;border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
@@ -1333,11 +1335,18 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
     <details class="help"><summary>Cambiar la contraseña</summary>
       <div class="acpw"><input type="password" id="acOld" placeholder="Contraseña actual" autocomplete="current-password"><input type="password" id="acNew" placeholder="Contraseña nueva" autocomplete="new-password"><input type="password" id="acNew2" placeholder="Repite la nueva" autocomplete="new-password"><button class="btn-main" id="acSave">Cambiar contraseña</button></div>
     </details>
+    <details class="help" id="acDel"><summary>Borrar cuenta</summary>
+      <p class="svp"><b>Borrar cuenta:</b> se borra tu cuenta de Ichnos y todo lo que hay en ella (salidas, bicis, fotos, comentarios, mensajes y tiempos). Al terminar te doy un código por si quieres hacerte una cuenta nueva.</p>
+      <p class="svp"><b>Borrarme de todo:</b> lo mismo y además quito el permiso que le diste a Ichnos en Strava e Intervals, y sales de grupetas, amigos y avisos. No queda nada tuyo en Ichnos.</p>
+      <div class="actions"><button class="del-b" data-m="cuenta">Borrar cuenta</button><button class="del-b" data-m="todo">Borrarme de todo</button></div>
+      <div class="del-c" id="acDelC" hidden><p id="acDelT"></p><input id="acDelU" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="actions"><button id="acDelNo">Cancelar</button><button class="del-b" id="acDelGo">Borrar para siempre</button></div></div>
+    </details>
   </section>
   <section class="pblock" id="ajAdmin" hidden>
     <div class="pb-h"><h3>Administrar</h3></div>
     <details class="help"><summary>¿Alguien ha olvidado la contraseña?</summary><p class="svp">Toca su nombre y te doy un código para que se ponga una contraseña nueva.</p><ul class="invlist" id="invUsers"></ul></details>
     <details class="help"><summary>Códigos de invitación creados</summary><ul class="invlist" id="invList"></ul></details>
+    <details class="help" id="admUs"><summary>Usuarios</summary><p class="svp">Borrar a alguien lo saca de todo Ichnos (como su «Borrarme de todo»). No se puede deshacer.</p><ul class="invlist" id="admUsL"><li>Cargando…</li></ul></details>
   </section>
   <section class="pblock" id="pushBox" hidden>
     <div class="pb-h"><h3>Avisos en el móvil</h3></div>
@@ -1748,7 +1757,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795544503';   // versión de la app (la pone build.py)
+const BUILD='1795549564';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7128,7 +7137,7 @@ function paintBell(){ $('bell').hidden=!me; const seen=store.get('ichnos-avisto'
 function avText(a){ const w=`<b>${esc(uName(a.u))}</b>`, rn=a.n?` «${esc(a.n)}»`:'';
   return {seg:`${w} quiere seguirte.`,acep:`${w} ha aceptado que le sigas. Ya ves sus salidas.`,alta:`${w} se ha unido a Ichnos con tu invitación.`,
     like:`A ${w} le gusta tu salida${rn}.`,com:`${w} ha comentado en tu salida${rn}: “${esc(a.x||'')}”`,
-    gjoin:`${w} se ha unido a tu grupeta «${esc(a.x||'')}».`,gdel:`${w} ha borrado la grupeta «${esc(a.x||'')}».`,gsal:`${w} propone una salida en «${esc(a.n||'tu grupeta')}»: ${esc(a.x||'')}.`,gvoy:`${w} se apunta a tu salida «${esc(a.x||'')}».`,
+    gjoin:`${w} se ha unido a tu grupeta «${esc(a.x||'')}».`,gdel:`${w} ha borrado la grupeta «${esc(a.x||'')}».`,gadmin:`Ahora llevas tú la grupeta «${esc(a.x||'')}»: quien la llevaba ha borrado su cuenta.`,gsal:`${w} propone una salida en «${esc(a.n||'tu grupeta')}»: ${esc(a.x||'')}.`,gvoy:`${w} se apunta a tu salida «${esc(a.x||'')}».`,
     prop:`${w} ${esc(a.x||'te ha mandado un aviso')}. Míralo en tu Perfil, en Invitar amigos.`,bug:`<i class="ico ico-alert"></i>${w} dice que algo va mal: “${esc(a.x||'')}”`,propok:`${w} ha aceptado lo que mandaste: ${esc(a.x||'')}.`,propno:`${w} ha visto lo que mandaste y lo deja como está: ${esc(a.x||'')}.`}[a.k]||`${w}`; }
 $('bell').onclick=()=>{
   const seen=store.get('ichnos-avisto',0);
@@ -7148,6 +7157,28 @@ $('avClose').onclick=()=>$('avModal').hidden=true;
 function paintAdmin(){ $('ajAdmin').hidden=!(me&&me.admin); $('frInvite').hidden=!(me&&me.admin); if(!(me&&me.admin)) $('grRev').hidden=true; }
 const invMsg=code=>`¡Hola! Te invito a Ichnos, la app de bici 🚴\n\n1) Abre este enlace en el móvil: ${APP_URL}\n   · iPhone: en Safari pulsa Compartir (el cuadrado con la flecha) → «Añadir a pantalla de inicio» → Añadir.\n   · Android: en Chrome, los tres puntos → «Añadir a pantalla de inicio».\n   Te queda un icono como una app. Ábrela siempre desde ahí.\n2) Pulsa «Crear cuenta» y pon este código: ${code}\n3) Elige tu usuario y tu contraseña.\n4) En Ajustes (la rueda) → Intervals.icu sigue los 4 pasos: crear cuenta gratis, conectar tu Garmin o COROS, copiar la clave y pegarla. Así nos vemos las salidas. Son 5 minutos y solo se hace una vez.\n5) En Ajustes → «Conectar con Strava» → Autorizar. Para tus tiempos en los segmentos (esos solo los ves tú).\n6) En Ajustes → «Activar avisos».\n\nVídeo con todos los pasos (minuto y medio): https://carreterobike.github.io/ruta-fuentes/video/ichnos-empezar.mp4`;
 async function copyTxt(t,ok){ try{ await navigator.clipboard.writeText(t); toast(ok,4500); }catch(e){ await ask('Copia este mensaje',t,'Vale','Cerrar'); } }
+// ---------- borrar cuenta ----------
+let delMode=null;
+document.querySelectorAll('#acDel .del-b[data-m]').forEach(b=>b.onclick=()=>{ delMode=b.dataset.m; $('acDelC').hidden=false; $('acDelU').value='';
+  $('acDelT').innerHTML=(delMode==='todo'?'<b>¿Seguro que quieres borrarte de todo?</b>':'<b>¿Seguro que quieres borrar tu cuenta?</b>')+` No se puede deshacer. Escribe tu usuario (<b>${esc(me&&me.user||'')}</b>) para confirmar:`; $('acDelU').focus(); });
+$('acDelNo').onclick=()=>{ delMode=null; $('acDelC').hidden=true; };
+$('acDelGo').onclick=async()=>{ if(!delMode||!me) return; const b=$('acDelGo'); b.disabled=true;
+  try{ const r=await api('/cuenta/borrar',{method:'POST',body:{modo:delMode,confirm:$('acDelU').value}}); await wipeLocal();
+    if(r.code){ const cp=await ask('Tu cuenta se ha borrado',`Si quieres hacerte una cuenta nueva, usa este código al registrarte: ${r.code} (vale 30 días).`,'Copiar el código','Cerrar'); if(cp){ try{ await navigator.clipboard.writeText(r.code); }catch(e){} } }
+    else await ask('Te has borrado de Ichnos','Ya no queda nada tuyo en Ichnos. Gracias por haberla usado.','Cerrar',null);
+    location.replace(location.pathname); }
+  catch(e){ toast(e.message||'No se ha podido borrar ahora.',6000); b.disabled=false; } };
+async function wipeLocal(){ try{ Object.keys(localStorage).forEach(k=>{ if(/^ichnos|^rf-/.test(k)&&k!=='ichnos-tema2'&&k!=='ichnos-bienvenida') localStorage.removeItem(k); }); }catch(e){}
+  try{ sessionStorage.clear(); }catch(e){}
+  for(const n of ['ichnos','ichnos-cache']) await new Promise(r=>{ try{ const q=indexedDB.deleteDatabase(n); q.onsuccess=q.onerror=q.onblocked=()=>r(); }catch(e){ r(); } }); }
+async function loadAdmUsers(){ const L0=$('admUsL'); if(!L0) return;
+  try{ const l=await api('/admin/usuarios'); L0.innerHTML=l.map(u=>`<li data-id="${esc(u.id)}"><span><b>${esc(u.name||u.user)}</b> <small>${esc(u.user)}${u.strava?' · Strava':''}${u.icu?' · Intervals':''}${u.t?' · desde '+fmtD(u.t):''}</small></span>${u.admin?'<small>tú</small>':'<button class="del-b">Borrar</button>'}</li>`).join('')||'<li>No hay nadie más.</li>';
+    L0.querySelectorAll('li[data-id] .del-b').forEach(b=>b.onclick=()=>{ const li=b.closest('li'), u=l.find(x=>x.id===li.dataset.id); if(li.querySelector('.del-c')) return;
+      li.insertAdjacentHTML('beforeend',`<div class="del-c"><p>¿Borrar a <b>${esc(u.name||u.user)}</b> de todo Ichnos? No se puede deshacer. Escribe su usuario (<b>${esc(u.user)}</b>):</p><input autocomplete="off" autocapitalize="off" spellcheck="false"><div class="actions"><button class="no">Cancelar</button><button class="del-b go">Borrar para siempre</button></div></div>`);
+      const c=li.querySelector('.del-c'); c.querySelector('.no').onclick=()=>c.remove();
+      c.querySelector('.go').onclick=async()=>{ try{ await api('/admin/borrar',{method:'POST',body:{uid:u.id,confirm:c.querySelector('input').value}}); toast(`${u.name||u.user} se ha borrado de Ichnos.`,4000); loadAdmUsers(); }catch(e){ toast(e.message||'No se ha podido borrar.',5000); } }; }); }
+  catch(e){ L0.innerHTML='<li>No se ha podido cargar la lista.</li>'; } }
+$('admUs').addEventListener('toggle',()=>{ if($('admUs').open) loadAdmUsers(); });
 async function loadAdmin(){
   if(!me||!me.admin) return; let j;
   try{ j=await api('/admin'); }catch(e){ return; }
@@ -7841,7 +7872,7 @@ const dmMate=id=>(groups||[]).some(g=>g.members&&g.members.includes(id)&&me&&g.m
 const dmCan=id=>!!me&&id!==me.id&&(dmMutual(id)||dmMate(id));
 function dmPeople(){ const s=new Set(); Object.keys((fw&&fw.in)||{}).forEach(u=>{ if(dmMutual(u)) s.add(u); }); (groups||[]).forEach(g=>(g.members||[]).forEach(u=>{ if(me&&u!==me.id) s.add(u); })); return [...s]; }
 const dmUnread=id=>{ const x=dmIx.find(y=>y.u===id); return x?x.unread:0; };
-async function dmLoad(){ if(!me) return; try{ dmIx=await api('/dm')||[]; }catch(e){ return; } dmPaintBadges(); }
+async function dmLoad(){ if(!me) return; try{ const r=await api('/dm'); dmIx=Array.isArray(r)?r:[]; }catch(e){ return; } dmPaintBadges(); }
 function dmPaintBadges(){ const n=dmIx.reduce((a,x)=>a+(x.unread||0),0);
   const b=document.querySelector('#bnav [data-pg="pgGrupeta"]'); if(b){ let i=b.querySelector('.dm-nb'); if(!i){ i=document.createElement('i'); i.className='dm-nb'; b.appendChild(i); } i.textContent=n>9?'9+':n; i.hidden=!n; }
   const ta=document.querySelector('#grTabs [data-g="__a"]'); if(ta){ let j=ta.querySelector('.dm-nb'); if(!j){ j=document.createElement('i'); j.className='dm-nb'; ta.appendChild(j); } j.textContent=n>9?'9+':n; j.hidden=!n; }
