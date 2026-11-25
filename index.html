@@ -70,9 +70,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bnav .plus{color:#1E2328!important}.bnav .plus.on::after{display:none}
 
 /* perfil */
-#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,#pgEntreno,#pgCarreras,.rideview{background-color:#14181c;background-image:radial-gradient(120% 55% at 92% 0%,rgba(182,226,46,.36),rgba(182,226,46,0) 62%),radial-gradient(95% 50% at 0% 30%,rgba(29,158,117,.30),rgba(29,158,117,0) 66%);background-attachment:scroll;background-repeat:no-repeat}
-#pgPerfil>.phead,#pgGrupeta>.phead,#pgSalidas>.phead,#pgAjustes>.phead,#pgEntreno>.phead,#pgCarreras>.phead{background-color:transparent}
-#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,#pgEntreno,#pgCarreras{overflow-y:auto;padding:0 0 28px}
+#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,#pgEntreno,#pgCarreras,.rideview,#pgGym{background-color:#14181c;background-image:radial-gradient(120% 55% at 92% 0%,rgba(182,226,46,.36),rgba(182,226,46,0) 62%),radial-gradient(95% 50% at 0% 30%,rgba(29,158,117,.30),rgba(29,158,117,0) 66%);background-attachment:scroll;background-repeat:no-repeat}
+#pgPerfil>.phead,#pgGrupeta>.phead,#pgSalidas>.phead,#pgAjustes>.phead,#pgEntreno>.phead,#pgCarreras>.phead,#pgGym>.phead{background-color:transparent}
+#pgPerfil,#pgGrupeta,#pgSalidas,#pgAjustes,#pgEntreno,#pgCarreras,#pgGym{overflow-y:auto;padding:0 0 28px}
 .phead.short{padding-bottom:18px}
 .bk-old-h{margin:10px 0 2px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .bike.old{opacity:.75}
@@ -1793,7 +1793,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795646456';   // versión de la app (la pone build.py)
+const BUILD='1795646925';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7560,9 +7560,10 @@ const enDsName=(sp,ds)=>sp==='b'?EN_DS[ds]:EN_SP[sp].t;
 // Las clases se graban en el reloj COROS con «Gym Cardio» → llegan a Strava como «Workout» (sin GPS, con pulso).
 const GYM_TYPES=/^(workout|weighttraining|weight training|highintensityintervaltraining|crossfit|elliptical|stairstepper)$/i;
 const gymIs=a=>GYM_TYPES.test(String(a&&(a.sport_type||a.type)||'').replace(/\s+/g,''));
-const GYM_K={cardio:'Cardio',fuerza:'Fuerza',tecnica:'Técnica',flex:'Flexibilidad'};
+const GYM_K={func:'Cardio y fuerza',cardio:'Cardio',fuerza:'Fuerza',tecnica:'Técnica',flex:'Flexibilidad'};
 let gym=store.get('ichnos-gym',null)||{cl:[],del:[]}; if(!Array.isArray(gym.cl)) gym.cl=[]; if(!Array.isArray(gym.del)) gym.del=[];
 const gymSave=()=>store.set('ichnos-gym',gym);
+if(!gym.kv&&gym.cl.length){ gym.cl.forEach(c=>{ if(!c.k||c.k==='cardio') c.k='func'; }); gym.kv=2; gymSave(); }   // en Olympus se hace cardio y fuerza
 const gymAdm=()=>!!(me&&me.admin);
 let gymBusy=false, gymOpenId=null;
 // una clase de Strava → guardada aparte de las salidas (no tiene recorrido): pulso cada 5 s
@@ -7572,7 +7573,7 @@ async function gymImport(a){
   const T=s&&s.time&&s.time.data, H=s&&s.heartrate&&s.heartrate.data, t=[], h=[];
   if(T&&H){ let last=-99; for(let i=0;i<T.length;i++){ if(T[i]-last>=5&&H[i]){ t.push(T[i]); h.push(Math.round(H[i])); last=T[i]; } } }
   let kcal=a.calories||null; try{ if(!kcal){ const det=await svGet(`activities/${a.id}`); kcal=det&&(det.calories||det.kilojoules)?Math.round(det.calories||det.kilojoules):null; } }catch(e){ if(e.message==='limite') throw e; }
-  gym.cl.push({id,d:Date.parse(a.start_date),n:a.name||'',mov:a.moving_time||null,el:a.elapsed_time||null,kcal,k:'cardio',t,h});
+  gym.cl.push({id,d:Date.parse(a.start_date),n:a.name||'',mov:a.moving_time||null,el:a.elapsed_time||null,kcal,k:'func',t,h});
   gym.cl.sort((p,q)=>q.d-p.d); gymSave(); return true;
 }
 // la primera vez: busca en Strava todas las clases antiguas (unas pocas peticiones)
@@ -7627,7 +7628,7 @@ function gymPaint(){ if(!$('gymList')) return;
   $('gymEmpty').hidden=!!gym.cl.length;
   $('gymEmpty').innerHTML=gymBusy?'Buscando tus clases en Strava…':(typeof svOn==='function'&&svOn())?'Todavía no hay clases. Graba la clase en el reloj con «Gym Cardio» y saldrá aquí sola.':'Conecta Strava en Ajustes (Perfil → rueda) y tus clases de «Gym Cardio» saldrán aquí solas.';
   $('gymList').innerHTML=gym.cl.map(c=>{ const v=gymVal(c), s=gymStats(c);
-    return `<li class="gym-it" data-id="${esc(c.id)}"><span class="gym-n" style="--c:${v?gymCol(v.nota):'#5d6870'}">${v?gymF1(v.nota):'–'}</span><span class="gym-tx"><b>${esc(gymDate(c.d))}</b><small>${gymMin(s.dur)}${c.kcal?' · '+c.kcal+' kcal':''}${s.avg?' · pulso medio '+Math.round(s.avg):' · sin pulso'}</small></span><span class="gym-k">${GYM_K[c.k]||'Cardio'}</span>${c.st?`<span class="gym-st">${'★'.repeat(c.st)}</span>`:''}</li>`; }).join('');
+    return `<li class="gym-it" data-id="${esc(c.id)}"><span class="gym-n" style="--c:${v?gymCol(v.nota):'#5d6870'}">${v?gymF1(v.nota):'–'}</span><span class="gym-tx"><b>${esc(gymDate(c.d))}</b><small>${gymMin(s.dur)}${c.kcal?' · '+c.kcal+' kcal':''}${s.avg?' · pulso medio '+Math.round(s.avg):' · sin pulso'}</small></span><span class="gym-k">${GYM_K[c.k]||'Cardio y fuerza'}</span>${c.st?`<span class="gym-st">${'★'.repeat(c.st)}</span>`:''}</li>`; }).join('');
   $('gymList').querySelectorAll('[data-id]').forEach(li=>li.onclick=()=>gymOpen(li.dataset.id)); }
 function gymGraph(c,s){ const W=600,H=180,P=40, T=c.t[c.t.length-1]||1, lo=Math.min(...c.h)-5, hi=Math.max(s.th+8,Math.max(...c.h)+5);
   const X=t=>P+(W-P-6)*t/T, Y=v=>6+(H-30)*(1-(v-lo)/(hi-lo));
@@ -7642,7 +7643,7 @@ function gymOpen(id){ const c=gym.cl.find(x=>x.id===id); if(!c) return; gymOpenI
   const v=gymVal(c), s=gymStats(c), mins=x=>x<90?Math.round(x)+' s':Math.round(x/60)+' min', pc=x=>Math.round(x*100);
   $('gymView').hidden=false; $('gymView').scrollTop=0; $('gymVT').textContent='Clase de Olympus'; $('gymVS').textContent=gymDate(c.d);
   let html=`<div class="rvcard co"><div class="co-h"><div><b>Tu clase</b><br><small>${gymMin(s.dur)}${c.kcal?' · '+c.kcal+' kcal':''}</small></div><span class="co-lock">🔒 Solo lo ves tú</span></div>
-    <div class="gym-kc" role="group" aria-label="Tipo de clase">${Object.entries(GYM_K).map(([k,n])=>`<button data-k="${k}" class="${(c.k||'cardio')===k?'on':''}">${n}</button>`).join('')}</div>`;
+    <div class="gym-kc" role="group" aria-label="Tipo de clase">${Object.entries(GYM_K).map(([k,n])=>`<button data-k="${k}" class="${(c.k||'func')===k?'on':''}">${n}</button>`).join('')}</div>`;
   if(v){ const n=v.nota, col=gymCol(n), CIRC=226.2, th=s.th, thTxt=s.lim?'tu límite':'la zona dura';
     const frase=n>=8.5&&s.over<120?'Muy bien: clase controlada':n>=7?'Bien, aunque algo intensa':n>=5?'Clase dura para ahora':'Demasiado dura para tu recuperación';
     let res=`Clase de ${gymMin(s.dur)} con el pulso medio en <b>${Math.round(s.avg)} ppm</b> y el más alto en <b>${s.mx}</b>. `;
@@ -7824,7 +7825,7 @@ function enPaintWeek(){ const m0=enMonday(enWk), DN=['Lun','Mar','Mié','Jue','V
     its.forEach(x=>{ const w=enById(x.w); if(!w) return; const mm=enMins(w,x.m), r=enRideFor(x), gk=enGymOk(x), ok=x.ok||!!r||gk; n++; plan+=mm; if(ok){ nDone++; if(!r&&!gk) done+=mm; }
       html+=`<div class="en-it${ok?' ok':''}" data-k="${x.k}"><i class="ti ${EN_SP[w.sp].ic}" aria-hidden="true"></i><span><b>${esc(w.n)}</b><small>${w.sp==='f'?'Fuerza':enFmt(mm)}${r?(()=>{ const c=enComply(x,r); return ` · hecho: ${enFmt((rideStats(r).moving||0)/60)}${c?` · <b class="en-pc">${c.pct} %</b>`:''}`; })():x.ok&&w.sp!=='f'?' · hecho':''}${x.ev?(x.dv==='reloj'?' · en el reloj':' · en el ciclocomputador'):''}</small></span>${ok?'<i class="ti ti-circle-check en-ok" aria-hidden="true"></i>':''}</div>`; });
     const gc=gymOnDay(d.getTime()); gc.forEach(c=>{ const st=gymStats(c), v=gymVal(c); done+=(st.dur||0)/60; if(st.z){ tot+=st.tot; easy+=st.z[0]+st.z[1]; }
-      html+=`<div class="en-it ok" data-gym="${esc(c.id)}"><i class="ti ti-barbell" aria-hidden="true"></i><span><b>Olympus · ${GYM_K[c.k]||'Cardio'}</b><small>${gymMin(st.dur)}${v?' · nota '+gymF1(v.nota):''}</small></span></div>`; });
+      html+=`<div class="en-it ok" data-gym="${esc(c.id)}"><i class="ti ti-barbell" aria-hidden="true"></i><span><b>Olympus · ${GYM_K[c.k]||'Cardio y fuerza'}</b><small>${gymMin(st.dur)}${v?' · nota '+gymF1(v.nota):''}</small></span></div>`; });
     if(!its.length&&!gc.length) html+=rs.length?`<small class="en-mut">${rs.map(r=>esc(r.name)).join(', ')}</small>`:'<small class="en-mut">—</small>';
     html+=`</div><button class="en-add" data-d="${k}" aria-label="Añadir entreno">＋</button></div>`; }
   $('enWeek').innerHTML=html;
