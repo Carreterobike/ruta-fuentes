@@ -705,6 +705,17 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .cl-go{margin-top:10px;width:100%}
 .rvcard.co{background:#13171b;color:#e8ecef;--muted:#8b959e;display:flex;flex-direction:column;gap:12px}
 .co-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.co-h b{font-size:17px}.co-h small{font-size:12px;color:#8b959e}
+.gym-sum{grid-template-columns:repeat(3,1fr)}
+.gym-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.gym-it{display:flex;align-items:center;gap:12px;background:var(--card);color:var(--ink);border-radius:14px;padding:10px 12px;cursor:pointer;box-shadow:var(--shadow)}
+.gym-n{flex:none;width:44px;height:44px;border-radius:50%;border:3px solid var(--c);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.gym-tx{flex:1;min-width:0;display:flex;flex-direction:column}.gym-tx small{color:var(--muted);font-size:13px}
+.gym-k{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;background:rgba(182,226,46,.18);color:#5b7a00}.gym-st{color:#f5a623;font-size:13px}
+.gym-kc{display:flex;gap:6px;flex-wrap:wrap}.gym-kc button{border:1px solid #2c343b;background:#1a2025;color:#cfd6dc;border-radius:999px;padding:7px 12px;font:inherit;font-size:14px;cursor:pointer}.gym-kc button.on{border-color:#B6E22E;color:#B6E22E}
+.gym-z{display:grid;grid-template-columns:28px minmax(0,1fr) 56px;gap:8px;align-items:center;font-size:12.5px;margin:6px 0}.gym-z>div{height:12px;border-radius:6px;background:#232a30;overflow:hidden}.gym-z i{display:block;height:100%}.gym-z small{color:#8b959e;text-align:right}
+.gym-stars{display:flex;gap:6px;margin-bottom:8px}.gym-stars button{border:0;background:none;font-size:28px;color:#3a434b;cursor:pointer;padding:0 2px;line-height:1}.gym-stars button.on{color:#f5a623}
+#gymNote{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #2c343b;background:#0f1215;color:#e8ecef;font:inherit;font-size:16px;padding:9px 10px}
+.gym-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.gym-act .btn{background:#232a30;color:#e8ecef;border-color:#2c343b}.gym-act .danger{color:#ff7b74;border-color:#7a3430}
 .co-lock{font-size:12px;background:#232a30;border-radius:999px;padding:5px 10px;color:#b9c2ca;white-space:nowrap}
 .co-v{text-align:center;border-radius:14px;padding:16px 12px;border:2px solid var(--c)}.co-v .ic{font-size:40px;line-height:1}.co-v b{display:block;font-size:22px;color:var(--c);margin-top:6px}.co-v span{display:block;font-size:14.5px;color:#cfd6dc;margin-top:4px;line-height:1.45}
 .co-l{display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.5;padding:9px 0}.co-l+.co-l{border-top:1px solid #232a30}.co-l>i{font-style:normal;font-size:20px;flex:none;width:24px;text-align:center}
@@ -1248,7 +1259,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 </main>
 <main class="page off" id="pgSalidas">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
-  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgCarreras">Carreras</button></div>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgGym" class="st-en">Olympus</button><button data-st="pgCarreras">Carreras</button></div>
   <section class="pblock sal-top">
     <div class="pb-h"><h3>Tus salidas</h3></div>
     <div class="big-sum"><div><b id="hN">0</b><small>Salidas</small></div><div><b id="hKm">0</b><small>Km en total</small></div></div>
@@ -1277,9 +1288,22 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 </main>
 
 <!-- ============ ENTRENO (solo el administrador) ============ -->
+<main class="page off" id="pgGym">
+  <header class="phead short"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAMAAADDpiTIAAAAkFBMVEX////z9PPY7Jy24i614i624i3Q0dK04C2z3i2x3C2v2i2r1S2mzy2hyCydwiy1t7iVuCyQsiuRqFWFpSuUlpl9myt2kit3kyp0hkhviSp4e35mfipgdypfdClebUJWailQYTBJVy9EUDQ6Rio3QS0zPSsvOCksNCkpLywmLSkkKykiKCggJigfJCgeIygeIyfVXB2HAAAN1UlEQVR42u2da3PiuBJAw2jD+1kOUGCIIQYcMIj//+9udmZ2Z2aBRBaGi7rP+T5T5fRB6taj9WRBNU/8CRAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAAfgTIAAgACAA3Jm36fSlV61WKtVq72U6fUMAReSvL5Wn/1B5ec0RQAPv095J9H860Ju+I4D08L9ciP4/48A7Akge+6efhv+7AtMcAYRy+Dr8PxQ4IIBEptUnR6qvCCCOfe+pAL09AghL/grF/8OAdwQQFf/qU0Gq7wggh7fC8f8w4A0BpPBaefKg8oYAWsf/u80CCHCP8r/35EnvgAACeHny5gUBBKz/PF3BFAGCTwCvif/NE0EEuDX7ylUCPFX3CKB3Arj9JIAAt64AK9cKUNkhgM4K4C6VAALclnXlegEqawTQPADcdghAgJuyKiP+T5UVAmgtAW5eCCDATemVI0APAbTWgD/ngHcE0DwD3HIOQIAAZoBb1gEIcEsqZQlQQQCrbh/wD14RQHMKcMMkAAHsgy8D3jgJQAAEgIcvAm64FIQAN6RangBVBNBcBd6wDkQABAAEgBuwm1TIAfRySNoGAfSy7BpjvlEGKmUdGVOuACwEBcR2XDdlC8BeQDDsZy1jEEDv5N8xvyhPgDcECIJNZH6HAyG6yOPGH/Evbw7gSFhwo3+5ArwiwMOTReaUsmaAHAEenXnrTPzLGgK4GPLwKz8DY24oAFfDHrz0/2/yV/YcwOXQhybtmot843q4dHajmvkEGkRIr/3a5lO+0SJGMtuh+YrKA18NRoBrZ//Ol/G/fgigTdzDJv+TunGg8shd4hDgitq/b9x41FVgBLhu6a/pGP/rJgGaRdtwVv5vYADt4h+0+GsZcw8DeDDiMbO/kSlIhSdjJA3/fWPuYgCPRj1m8d8y5i4GVFcWAR6PuG68KJwH9HYWAR6ObWR8+fZg+T8CeLDqGHMXAyqvvB7+iNVf84r4t+I3554xvZVFgMdjVvMPf32UffwPr05dY6qv9/smBHDmMLzi5x/9c6hj+qUC1ek9vwoBnNO/gX/4u8tf/0/+8mlFWJnmFgEekI1/+tea/7mg+z7tXXCg0pu+3/m7EOCWqz8/Jv/tmenk9eVkKqi+vB7u/2EI4ERS943/4GI+//42nb70qpVKtfcynb69/3++DAFcmPuGv7N49E9DAAdi39F/klsECJ+JZ/z7aQAfhwBfMvYLf3N2sAgQPkfP5Z/BJozvQ4CbxL+VhPKBCPA5fvEfbi0CiGDkVfstA/pCBCi9/hvvLALoXf9pL8P6RgS4TOKx/R9lFgGEsKwLTv4R4EvSRvGlv41FACmsC+//NuKDRQApbAuf/+ikQX4oApzlUPj812BrEcCq3QCsxUeLAIIKwKLZ/zLYT0WAEgqAELN/BLhMVrAAGOcWAQSxL3b9v54E/bUIcGUC2EotAshKAArtAHQ2FgFkJQBtDdU/Alyk0ArQ6GARwOo9AhAL+GAE8F8BmFkEkFYBdrXFHwGs7xnAuUUAaawKnAFKLAJI4+i+BFiTEn8E+I2ZwvgjwC82TWX5HwJYzyWgsUUAq/gQyOCAAPLInfcAujuLAIqXANqZRQB5ZK4ZYDO1CGD19gGoLy0CCCTVtAGIAKe4rgEOjgiguQQUlgAiwE/2jhcBa6lFAM0DQGwRQPMA0D8ggOYBoJVZBJDIwXEAWFgE0DwADCwCaB4AmhsEUD0AzC0CyMTtJHj/iAAyWbrtAaUWAWTi9hj0xCKATDKny+CdHAGs5m4QC4sAQmtAp3ZAfYsAQlk4DQApAljNdwEGFgGEsqlpHwCUC+CUAkYWAYSyd0kB6xsEUJ0Cji0CWMWrgLUNAkhl21CfAegWIFFfAigXwGUG6FoEEDsD1BX1gkIA69UUtL1HAKt5GTi2CGAVnwRobBFAdQ0wtgigugZIEUAsB4eeMB2LAFbzaeAYAeQychBggwBy6eg+CqhegLXi22AIYJ06g9e3CKC6CIwsAqguAhMEsJobQ9Z3CGA17wT2LQKoTgFiBBBMi30A1QI4rAK0jghgNW8FRxYBrObXARIEsKo3AjYIIJeM4+C6BXB4IGqEAFb1+yALBFA9A5gMAazmdWA1KYBKAQacB1ctgMudwAQBrOobIRkCqK4BOhYBrOYLAWME0P1IaIIAut8H2CKA6gGgbxFA9QAQI4BV3R16gwBWc2/QrkUAoWQtZgDNAhydJgCzQgCr9iCIthlAlQBp3RhuhesVIHd7I7S5QwCrtimMrn0AXQI4PhKt5UqYOgHmjvHvWwTQHH89x4F1CeAc/84RATTHX9NJAEUCxM7x7xwQQF79HxkGAMUCbPqGAUCvAMd50z3+6koA+QKsC/z8hT8TrlGAfdwoEv/GGgFEkXZNISYWAQSRDWvF4t/OEUDS6N8yBVlYBBDDolM0/Gr6wmkQIO0XDr9pbxFACKuoePhNLbUIIKPyj2oe8dd1FFywAJth3Sf8pn9AAAmV37jhFX7TziwChP/r9w2/aa4sAoQ/+PuG39SWFgFCz/w95/7vzCwChM1yYK5gaBEgaBb9a8JvogMCBMw+6Rrir1aAfNY2V8Z/bxEgVLbFd/xO4p9bBAg1/JOrw2+GB4sAYZJNmub6+B8tAoQZ/lEJ4dfzLIw0AbKRKYOY6AcpQDZqlBH+5pLghyjAtoy5/+9OUGtiH6AA+axVSvhNtCP0AQqQtMsJv7JGYFIESPslhb+7Iu7hCVD4nsfF3f9JTtiDEyCPmyX9/DspQQ9PAI97Huep8/MPUIBsUFL4TZ+ff3gCHOcllX6mOWPvJzwB1mXl/rVhRriDE+BQWvLH6B+iAJuyfv6dBaEOUIBFSbN/a0buH6AAu2FJ4Y9Z+A9RgLSc2r812RLlEAVIytn1J/xhCpAP+fVrFiDrlzL3E/5ABUhLyP7bpH7BCrC4fvrvJhR+wQqQXL3x319w4D9cASbXrvlHLPoGLMDhyvS/MeS4b8gC5NF1Zf9oQ0hDFmDbp+zXLMC2S9mvWYBdn/BrFiAfEH7NAhwidnw0C+Ad/8aIs34SBPCs/+tDCj8RAsR+8Y9Y9pEhwMJr/b/Loq8QAVY+h7/bCVs+QgTYetz7b3DLT4wAB48FoAG5nxwBxtzzUC3AnDveqgVI6+T+mgXIC+4ANmLueIsSYESDJ9UCLAu292X2lyXAtkV7V9UCFNoC7LDwL02ApNDaD7v+0gTIWrzuoFeAfL3sPz//9fz8THd/bQJs5lH39x//hwR/fXHdJyFUQgTYLydnl34+HQkapP9CBPj0ob+LDhB/IQLs519s/J9XoE78RQhwSBzaPp1RoMberwQBjgvHXZ8TBcj/JAjgf+2X510kCOB/7XdCjAQIkHlf+x2w+y9AgI1308826/8CBNh4nPr+kQk2Of0lQIDcv+0DBaAEASKe91YtgHfbt+cO578ECJAY3nfXLEDhU/+/7wGRAoYvwOUCsDWIxpPJOBpcvhncJT6hC3Dp2ldzuPx3gs8X0SUH2AYIXIC87dbVaTs53yC8TRoYtgDnG7+ce8ExO98jaEaEQhbg7LWPxqLAKwEtloJDFuDcEkD7YmqfttkMFCbAmQGgvSm2Z9AiROEKsCxa2qdnZoE3YhSsAKPCuzsL5gBJApwuAg1t4X6hXWIUqgCr0wngy66+m9NJgHZgoQoQ+wznE5YCxAhw0v6/5fCU4+6kEhgQpEAFaHrlcxMKQSEC7E8G86Vf7UiQwhRgc3LFz2lnZ3dygID3IMIUIPUs6E6OkHIsJEwBlp7Z3MBr5oCHEyApvApkz68FcSokTAFiz0XdCQsBMgSYIQBTAFMASSBJIGXgT/qUgaoEyE72Ancu/yxvsBAkZC+g5nXX9+RMSI0gBSpAyysLPMkB2wRJynZw02Ewz05mgIggBSrAvJwDIXQJC1WAtSk+BJwOAOSAkg6FjoofJO4SI0HHwmtfLOosaxwLl30xpPXpq2/pmWvirAMGfDWsef3VsCYhCliAEZdDlV8Pb3I9nAYRp0RnpoF1RKMwPS1iGqP/togZ0SJGV5OoxmD2bz2QzgYNmkRJbRP3SZ/gZjcajaJu09AmTnKjyIZ/o0h6hUtoFbvwF4A1IN3NoqkAdLeL5xyA7gcjulSAqp+MadMZRtCjUVnhR+P6HAMR9Wxc0WcjI8Z/aS+HxgXCXyP/F/h28MJ5RajBW2EiXw9fO04DEemf0Ofj7ZtDPdhl+VeuAPaYfFEQtpMjIREswEcPsPiTzb9mTPIvXYAPBRbjsy+JdUaLHeFQIMD3fHD+5zthzWi+JhSKBPibbJ0ukjhOFumaVT+NAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAiAAfwIEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABIDH43+aqu9lWAOw9wAAAABJRU5ErkJggg==" alt=""><b>ICH<span>NOS</span></b></header>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgGym" class="st-en">Olympus</button><button data-st="pgCarreras">Carreras</button></div>
+  <section class="pblock">
+    <div class="pb-h"><h3>Olympus</h3><span class="co-lock">🔒 Solo lo ves tú</span></div>
+    <div class="en-sum gym-sum" id="gymSum"></div>
+  </section>
+  <section class="pblock">
+    <div class="pb-h"><h3>Tus clases</h3></div>
+    <p class="empty" id="gymEmpty"></p>
+    <ul class="gym-list" id="gymList"></ul>
+  </section>
+</main>
 <main class="page off" id="pgCarreras">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
-  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgCarreras">Carreras</button></div>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgGym" class="st-en">Olympus</button><button data-st="pgCarreras">Carreras</button></div>
   <section class="pblock" id="crSec">
     <div class="segc cr-grp" id="crGrp"><button data-v="bici">En bici</button><button data-v="pie">A pie</button></div>
     <div class="pb-h"><h3 id="crT">Carreras y marchas</h3></div>
@@ -1291,7 +1315,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 
 <main class="page off" id="pgEntreno">
   <header class="phead short"><img src="data:image/png;base64,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" alt=""><b>ICH<span>NOS</span></b></header>
-  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgCarreras">Carreras</button></div>
+  <div class="sal-tabs" hidden><button data-st="pgSalidas">Salidas</button><button data-st="pgEntreno" class="st-en">Entreno</button><button data-st="pgGym" class="st-en">Olympus</button><button data-st="pgCarreras">Carreras</button></div>
   <section class="pblock">
     <div class="pb-h"><h3 id="enWkT">Esta semana</h3><div class="en-nav"><button id="enPrev" aria-label="Semana anterior">‹</button><button id="enNext" aria-label="Semana siguiente">›</button></div></div>
     <div class="en-sum" id="enWkSum"></div>
@@ -1683,6 +1707,10 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
   <ul class="dm-list" id="dmList"></ul>
   <form class="dm-form" id="dmForm"><button type="button" class="dm-route" id="dmRoute" aria-label="Proponer una ruta"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8 18h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7"/></svg></button><input id="dmText" placeholder="Escribe un mensaje…" maxlength="1000" autocomplete="off"><button class="btn-main">Enviar</button></form>
 </div>
+<div class="rideview" id="gymView" hidden role="dialog" aria-modal="true" aria-labelledby="gymVT">
+  <header class="rv-h"><button id="gymBack" aria-label="Volver">←</button><div><b id="gymVT"></b><small id="gymVS"></small></div></header>
+  <div class="rv-body" id="gymVB"></div>
+</div>
 <div class="rideview" id="enView" hidden role="dialog" aria-modal="true" aria-labelledby="enVT">
   <header class="rv-h"><button id="enBack" aria-label="Volver">←</button><div><b id="enVT"></b><small id="enVS"></small></div></header>
   <div class="rv-body" id="enVB"></div>
@@ -1765,7 +1793,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795554462';   // versión de la app (la pone build.py)
+const BUILD='1795646153';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -1872,7 +1900,7 @@ $('acSave').onclick=async()=>{
 
 // ================= COPIA ENTRE APARATOS (Mac ↔ iPhone) =================
 // Lo que cambias en un aparato se guarda en tu puente de Cloudflare y el otro lo coge al abrir Ichnos.
-const SYNC_KEYS=['ichnos-colores','ichnos-misrutas','ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-ssegs','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap','ichnos-lugares','ichnos-entreno'];
+const SYNC_KEYS=['ichnos-colores','ichnos-misrutas','ichnos-perfil','ichnos-nombres','ichnos-fuentes','ichnos-segmentos','ichnos-ssegs','ichnos-viaje','ichnos-bicis','ichnos-enviadas','ichnos-kmdia','ichnos-gap','ichnos-lugares','ichnos-entreno','ichnos-gym'];
 const syncRaw={set:store.set.bind(store),del:store.del.bind(store)};
 let syncTimer=null, syncBusy=false, syncReady=false;
 function syncMeta(){ const m=store.get('ichnos-sync',null)||{}; m.mt=m.mt||{}; m.seen=m.seen||{}; m.dirty=m.dirty||[]; return m; }
@@ -1910,6 +1938,7 @@ async function syncNow(manual){
           Object.entries(R).forEach(([id,sg])=>{ if(!ssegs[id]) ssegs[id]=sg; else if(sg.st&&(!ssegs[id].st||sg.st.t>ssegs[id].st.t)) ssegs[id].st=sg.st; });
           syncRaw.set(k,segsPack(ssegs)); m.mt[k]=extra?Date.now():rt; continue; }
         if(k==='ichnos-colores'){ syncRaw.set(k,o.v||{}); m.mt[k]=rt; try{ colApply(); }catch(e){} continue; }
+        if(k==='ichnos-gym'){ syncRaw.set(k,o.v||{}); m.mt[k]=rt; try{ gym=o.v||{cl:[],del:[]}; if(!Array.isArray(gym.cl)) gym.cl=[]; if(!Array.isArray(gym.del)) gym.del=[]; gymMemo.clear(); gymPaint(); }catch(e){} continue; }
         if(k==='ichnos-entreno'){ syncRaw.set(k,o.v||{}); m.mt[k]=rt; try{ enSt=o.v||{it:[],pl:null}; if(!Array.isArray(enSt.it)) enSt.it=[]; enPaint(); }catch(e){} continue; }
         if(k==='ichnos-misrutas'){ syncRaw.set(k,o.v||[]); m.mt[k]=rt; try{ misRutas=o.v||[]; renderMisRutas(); }catch(e){} continue; }
         if(o.v==null) syncRaw.del(k); else syncRaw.set(k,o.v); m.mt[k]=rt; gotSettings=true; } }
@@ -2079,12 +2108,13 @@ if(!perfil.apodo && !perfil.foto) editPerfil(true);
 let mapCentered=false;
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('off',p.id!==id));
-  document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===(id==='pgEntreno'||id==='pgCarreras'?'pgSalidas':id)));
+  document.querySelectorAll('#bnav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===(id==='pgEntreno'||id==='pgCarreras'||id==='pgGym'?'pgSalidas':id)));
   try{ localStorage.setItem('ichnos-lastpg',JSON.stringify({id,t:Date.now()})); }catch(e){}
   if(id==='pgCarreras') try{ crRender(); }catch(e){ console.warn(e); }
   document.querySelectorAll('.sal-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.st===id));
   if(id==='pgPerfil') try{ paintYear(); }catch(e){}
   if(id==='pgEntreno') try{ enPaint(); }catch(e){ console.warn(e); }
+  if(id==='pgGym') try{ gymPaint(); gymBackfill(); }catch(e){ console.warn(e); }
   if(id==='pgAjustes'&&window.paintPush) paintPush();
   if((id==='pgGrupeta'||id==='pgAjustes')&&typeof loadAdmin==='function'&&me&&me.admin) loadAdmin();
   if((id==='pgSalidas'||id==='pgAjustes') && typeof svAuto==='function') svAuto();
@@ -5348,6 +5378,7 @@ function paintStrava(msg){
   paintAccount();
 }
 async function svImport(a,gear){
+  if(gymIs(a)) return gymAdm()?await gymImport(a):false;   // clase de gimnasio (Olympus): aparte, solo el administrador
   const tipo=stravaTipo(a.sport_type||a.type), id='strava-'+a.id;
   if(!tipo||!a.map||!a.map.summary_polyline||rides.some(r=>r.id===id)) return false;
   const s=await svGet(`activities/${a.id}/streams?keys=latlng,time,altitude,heartrate,cadence,watts&key_by_type=true`);
@@ -7525,6 +7556,134 @@ const enObOf=w=>(EN_OB[w.sp].find(o=>o[0]===w.ob)||['','',  '#888']);
 const enDk=(sp,ds)=>sp==='b'?ds:sp;   // clave de disciplina: m, r, c, f
 const enMyLv=k=>((enSt.lv||{})[k])||1;
 const enDsName=(sp,ds)=>sp==='b'?EN_DS[ds]:EN_SP[sp].t;
+// ================= OLYMPUS (clases de gimnasio, solo el administrador) =================
+// Las clases se graban en el reloj COROS con «Gym Cardio» → llegan a Strava como «Workout» (sin GPS, con pulso).
+const GYM_TYPES=/^(workout|weighttraining|weight training|highintensityintervaltraining|crossfit|elliptical|stairstepper)$/i;
+const gymIs=a=>GYM_TYPES.test(String(a&&(a.sport_type||a.type)||'').replace(/\s+/g,''));
+const GYM_K={cardio:'Cardio',fuerza:'Fuerza',tecnica:'Técnica',flex:'Flexibilidad'};
+let gym=store.get('ichnos-gym',null)||{cl:[],del:[]}; if(!Array.isArray(gym.cl)) gym.cl=[]; if(!Array.isArray(gym.del)) gym.del=[];
+const gymSave=()=>store.set('ichnos-gym',gym);
+const gymAdm=()=>!!(me&&me.admin);
+let gymBusy=false, gymOpenId=null;
+// una clase de Strava → guardada aparte de las salidas (no tiene recorrido): pulso cada 5 s
+async function gymImport(a){
+  const id='strava-'+a.id; if(gym.cl.some(c=>c.id===id)||gym.del.includes(id)) return false;
+  const s=await svGet(`activities/${a.id}/streams?keys=time,heartrate&key_by_type=true`);
+  const T=s&&s.time&&s.time.data, H=s&&s.heartrate&&s.heartrate.data, t=[], h=[];
+  if(T&&H){ let last=-99; for(let i=0;i<T.length;i++){ if(T[i]-last>=5&&H[i]){ t.push(T[i]); h.push(Math.round(H[i])); last=T[i]; } } }
+  let kcal=a.calories||null; try{ if(!kcal){ const det=await svGet(`activities/${a.id}`); kcal=det&&(det.calories||det.kilojoules)?Math.round(det.calories||det.kilojoules):null; } }catch(e){ if(e.message==='limite') throw e; }
+  gym.cl.push({id,d:Date.parse(a.start_date),n:a.name||'',mov:a.moving_time||null,el:a.elapsed_time||null,kcal,k:'cardio',t,h});
+  gym.cl.sort((p,q)=>q.d-p.d); gymSave(); return true;
+}
+// la primera vez: busca en Strava todas las clases antiguas (unas pocas peticiones)
+async function gymBackfill(){
+  if(gymBusy||gym.bf||!gymAdm()||typeof svOn!=='function'||!svOn()) return; gymBusy=true; let n=0;
+  try{ for(let p=1;p<=12;p++){ const l=await svGet(`athlete/activities?per_page=200&page=${p}`); if(!Array.isArray(l)) break;
+      for(const a of l) if(gymIs(a)){ if(await gymImport(a)){ n++; if(!$('pgGym').classList.contains('off')) gymPaint(); } }
+      if(l.length<200) break; }
+    gym.bf=1; gymSave(); if(n) toast(`${n} clases de Olympus traídas de Strava.`,3500);
+  }catch(e){ if(e.message==='limite') toast('Strava pide esperar un rato: seguiré trayendo tus clases más tarde.',4000); }
+  gymBusy=false; gymPaint();
+}
+// números de una clase
+function gymZones(c){ const m=hrMax(), z=[0,0,0,0,0]; for(let i=1;i<c.t.length;i++){ const dt=Math.min(30,c.t[i]-c.t[i-1]), p=c.h[i]/m; z[p<0.6?0:p<0.7?1:p<0.8?2:p<0.9?3:4]+=dt; } return z; }
+function gymRecov(c){ const hm=hrMax(), t=c.t, h=c.h, drops=[]; let lastPk=-1e9;
+  for(let i=0;i<t.length;i++){ if(h[i]<hm*0.75||t[i]-lastPk<90) continue; let pk=true; for(let j=i-1;j>=0&&t[i]-t[j]<=60;j--) if(h[j]>h[i]){ pk=false; break; } if(!pk) continue; for(let j=i+1;j<t.length&&t[j]-t[i]<=60;j++) if(h[j]>h[i]){ pk=false; break; } if(!pk) continue;
+    let k=i; while(k<t.length-1&&t[k]-t[i]<60) k++; if(Math.abs(t[k]-t[i]-60)>15) continue; drops.push(h[i]-h[k]); lastPk=t[i]; }
+  return drops.length>=2?drops.reduce((a,b)=>a+b,0)/drops.length:null; }
+const gymMemo=new Map();
+function gymStats(c){ const key=c.id+':'+c.t.length+':'+hrMax()+':'+(coachCfg().lim||0); if(gymMemo.has(key)) return gymMemo.get(key);
+  const hm=hrMax(), lim=coachCfg().lim, th=lim||Math.round(hm*0.8), has=c.h.length>=20;
+  let o={has,th,lim,dur:c.mov||c.el||(c.t.length?c.t[c.t.length-1]:0)};
+  if(has){ const z=gymZones(c), tot=z.reduce((a,b)=>a+b,0)||1; let over=0,avg=0,w=0,mx=0,iMx=0;
+    for(let i=1;i<c.t.length;i++){ const dt=Math.min(30,c.t[i]-c.t[i-1]); avg+=c.h[i]*dt; w+=dt; if(c.h[i]>th) over+=dt; if(c.h[i]>mx){ mx=c.h[i]; iMx=i; } }
+    o=Object.assign(o,{z,tot,easy:(z[0]+z[1])/tot,over,avg:w?avg/w:null,mx,iMx,carga:coachTrimp(z),rec:gymRecov(c)}); }
+  gymMemo.set(key,o); return o; }
+// valoración: como la de las salidas, pensada para la recuperación (premia controlar el pulso, no apretar)
+function gymVal(c){ const s=gymStats(c); if(!s.has) return null;
+  const prev=gym.cl.filter(x=>x.d<c.d&&x.h.length>=20).slice(0,8).map(gymStats);
+  const R1=x=>Math.round(x*2)/2, pc=v=>Math.round(v*100), mins=x=>x<90?Math.round(x)+' s':Math.round(x/60)+' min', rows=[];
+  const pEasy=s.easy<0.6?-R1(Math.min(2.5,(0.6-s.easy)*5)):0; rows.push([`Pulso tranquilo el ${pc(s.easy)} % de la clase (en una clase, con más de la mitad va bien)`,pEasy]);
+  const om=s.over/60, pOver=om>=1?-R1(Math.min(s.lim?4:3,om/(s.lim?8:11))):0; rows.push([s.lim?`${mins(s.over)} por encima de tu límite`:`${mins(s.over)} en zona dura`,pOver]);
+  const recs=prev.map(p=>p.rec).filter(v=>v!=null), recP=recs.length?recs.reduce((a,b)=>a+b,0)/recs.length:null;
+  const pRec=s.rec!=null&&recP!=null?(s.rec>=recP+3?0.5:s.rec<=recP-3?-0.5:0):0; if(s.rec!=null&&recP!=null) rows.push([`Recuperación en los descansos ${pRec>0?'mejor que':pRec<0?'peor que':'igual que'} otras clases`,pRec]);
+  const nota=Math.max(1,Math.min(10,10+rows.reduce((a,q)=>a+q[1],0)));
+  const cargas=prev.map(p=>p.carga).filter(Boolean), cP=cargas.length?cargas.reduce((a,b)=>a+b,0)/cargas.length:null, cRel=cP?s.carga/cP:null;
+  return {s,rows,nota,recP,cRel,nPrev:prev.length}; }
+const gymCol=n=>n>=8.5?'#46c86a':n>=7?'#B6E22E':n>=5?'#f5a623':'#ff5a52';
+const gymF1=x=>String(x).replace('.',',');
+const gymDate=(d,long)=>{ const D=new Date(d), today=new Date(); const same=D.toDateString()===today.toDateString(); const y=new Date(today); y.setDate(y.getDate()-1);
+  const day=same?'Hoy':D.toDateString()===y.toDateString()?'Ayer':D.toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short',year:D.getFullYear()!==today.getFullYear()?'numeric':undefined});
+  return day.charAt(0).toUpperCase()+day.slice(1)+(long===false?'':' · '+D.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})); };
+const gymMin=s=>s?Math.round(s/60)+' min':'–';
+// en la semana de Entreno: ¿hubo clase ese día?
+const gymOnDay=d0=>gym.cl.filter(c=>c.d>=d0&&c.d<d0+864e5);
+function gymPaint(){ if(!$('gymList')) return;
+  const now=new Date(), m0=new Date(now.getFullYear(),now.getMonth(),1).getTime(), y0=new Date(now.getFullYear(),0,1).getTime();
+  const vals=gym.cl.slice(0,8).map(gymVal).filter(Boolean), media=vals.length?Math.round(vals.reduce((a,v)=>a+v.nota,0)/vals.length*2)/2:null;
+  const nm=gym.cl.filter(c=>c.d>=m0).length, ny=gym.cl.filter(c=>c.d>=y0).length;
+  $('gymSum').innerHTML=`<div><b>${nm}</b><small>${nm===1?'clase':'clases'} este mes</small></div><div><b style="color:${media!=null?gymCol(media):'inherit'}">${media!=null?gymF1(media):'–'}</b><small>nota media (últimas 8)</small></div><div><b>${ny}</b><small>este año</small></div>`;
+  $('gymEmpty').hidden=!!gym.cl.length;
+  $('gymEmpty').innerHTML=gymBusy?'Buscando tus clases en Strava…':(typeof svOn==='function'&&svOn())?'Todavía no hay clases. Graba la clase en el reloj con «Gym Cardio» y saldrá aquí sola.':'Conecta Strava en Ajustes (Perfil → rueda) y tus clases de «Gym Cardio» saldrán aquí solas.';
+  $('gymList').innerHTML=gym.cl.map(c=>{ const v=gymVal(c), s=gymStats(c);
+    return `<li class="gym-it" data-id="${esc(c.id)}"><span class="gym-n" style="--c:${v?gymCol(v.nota):'#5d6870'}">${v?gymF1(v.nota):'–'}</span><span class="gym-tx"><b>${esc(gymDate(c.d))}</b><small>${gymMin(s.dur)}${c.kcal?' · '+c.kcal+' kcal':''}${s.avg?' · pulso medio '+Math.round(s.avg):' · sin pulso'}</small></span><span class="gym-k">${GYM_K[c.k]||'Cardio'}</span>${c.st?`<span class="gym-st">${'★'.repeat(c.st)}</span>`:''}</li>`; }).join('');
+  $('gymList').querySelectorAll('[data-id]').forEach(li=>li.onclick=()=>gymOpen(li.dataset.id)); }
+function gymGraph(c,s){ const W=600,H=150,P=26, T=c.t[c.t.length-1]||1, lo=Math.min(...c.h)-5, hi=Math.max(s.th+8,Math.max(...c.h)+5);
+  const X=t=>P+(W-P-6)*t/T, Y=v=>6+(H-26)*(1-(v-lo)/(hi-lo));
+  const sm=c.h.map((v,i)=>{ let a=0,n=0; for(let j=Math.max(0,i-2);j<=Math.min(c.h.length-1,i+2);j++){ a+=c.h[j]; n++; } return a/n; });
+  let g=`<rect x="${P}" y="6" width="${W-P-6}" height="${Math.max(0,Y(s.th)-6)}" fill="#ff5a52" opacity=".13"/><line x1="${P}" x2="${W-6}" y1="${Y(s.th)}" y2="${Y(s.th)}" stroke="#ff5a52" stroke-dasharray="5 4" stroke-width="1.5"/>`;
+  g+=`<polyline fill="none" stroke="#e8ecef" stroke-width="2" stroke-linejoin="round" points="${c.t.map((t,i)=>X(t).toFixed(1)+','+Y(sm[i]).toFixed(1)).join(' ')}"/>`;
+  g+=`<circle cx="${X(c.t[s.iMx])}" cy="${Y(sm[s.iMx])}" r="4.5" fill="#ff5a52"/>`;
+  for(let m=0;m*60<=T;m+=10) g+=`<text x="${X(m*60)}" y="${H-4}" font-size="11" fill="#8b959e" text-anchor="middle">${m}'</text>`;
+  [Math.ceil(lo/20)*20].concat([Math.ceil(lo/20)*20+40,Math.ceil(lo/20)*20+80]).filter(v=>v<hi).forEach(v=>g+=`<text x="${P-4}" y="${Y(v)+4}" font-size="11" fill="#8b959e" text-anchor="end">${v}</text>`);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;margin-top:8px" role="img" aria-label="Pulso de la clase">${g}</svg>`; }
+function gymOpen(id){ const c=gym.cl.find(x=>x.id===id); if(!c) return; gymOpenId=id;
+  const v=gymVal(c), s=gymStats(c), mins=x=>x<90?Math.round(x)+' s':Math.round(x/60)+' min', pc=x=>Math.round(x*100);
+  $('gymView').hidden=false; $('gymView').scrollTop=0; $('gymVT').textContent='Clase de Olympus'; $('gymVS').textContent=gymDate(c.d);
+  let html=`<div class="rvcard co"><div class="co-h"><div><b>Tu clase</b><br><small>${gymMin(s.dur)}${c.kcal?' · '+c.kcal+' kcal':''}</small></div><span class="co-lock">🔒 Solo lo ves tú</span></div>
+    <div class="gym-kc" role="group" aria-label="Tipo de clase">${Object.entries(GYM_K).map(([k,n])=>`<button data-k="${k}" class="${(c.k||'cardio')===k?'on':''}">${n}</button>`).join('')}</div>`;
+  if(v){ const n=v.nota, col=gymCol(n), CIRC=226.2, th=s.th, thTxt=s.lim?'tu límite':'la zona dura';
+    const frase=n>=8.5&&s.over<120?'Muy bien: clase controlada':n>=7?'Bien, aunque algo intensa':n>=5?'Clase dura para ahora':'Demasiado dura para tu recuperación';
+    let res=`Clase de ${gymMin(s.dur)} con el pulso medio en <b>${Math.round(s.avg)} ppm</b> y el más alto en <b>${s.mx}</b>. `;
+    res+=s.over<60?`No has pasado de ${thTxt} (${th} ppm).`:`Has pasado <b>${mins(s.over)}</b> por encima de ${thTxt} (${th} ppm).`;
+    const good=[], bad=[], tips=[];
+    if(s.over<60) good.push(`Has controlado el pulso: nada por encima de ${th}.`);
+    if(s.easy>=0.6) good.push(`El ${pc(s.easy)} % de la clase con el pulso tranquilo.`);
+    if(s.rec!=null&&s.rec>=12&&v.recP!=null&&s.rec>=v.recP-2) good.push(`En los descansos el pulso te baja <b>${Math.round(s.rec)} ppm</b> en un minuto${s.rec>=v.recP+3?', mejor que otras clases':''}.`);
+    else if(s.rec!=null&&s.rec>=12&&v.recP==null) good.push(`En los descansos el pulso te baja ${Math.round(s.rec)} ppm en un minuto.`);
+    if(s.over>=60) bad.push(`${mins(s.over)} por encima de ${th} ppm${s.over>=300?': es mucho para ahora':''}.`);
+    if(s.easy<0.6) bad.push(`Solo el ${pc(s.easy)} % con el pulso tranquilo.`);
+    if(s.rec!=null&&v.recP!=null&&s.rec<=v.recP-3) bad.push(`Has recuperado peor que otras clases en los descansos (${Math.round(s.rec)} ppm frente a ${Math.round(v.recP)}): puede ser cansancio.`);
+    if(v.cRel&&v.cRel>1.3) bad.push(`Ha sido de tus clases con más carga (un ${Math.round((v.cRel-1)*100)} % más que la media).`);
+    if(!good.length) good.push('Has hecho la clase entera.');
+    if(!bad.length) bad.push('Nada importante. Sigue así.');
+    if(s.over>=60) tips.push(`En los ejercicios fuertes, si ves más de <b>${th} ppm</b> en el reloj, baja el ritmo o haz menos repeticiones: parar 20-30 s no pasa nada.`);
+    else tips.push('<b>Así, perfecto.</b> Repite este ritmo en las próximas clases.');
+    if(v.cRel&&v.cRel>1.3) tips.push('Mañana mejor suave o descanso.');
+    tips.push(['Pon el pulso en grande en la pantalla de «Gym Cardio» del reloj, para verlo sin pensar.','Bebe agua entre ejercicios aunque no tengas sed.','Si un ejercicio te dispara el pulso, dile al monitor que te dé una versión más suave.'][c.d%3]);
+    html+=`<div class="vl-k"><div class="vl-top"><svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true"><circle cx="43" cy="43" r="36" fill="none" stroke="#262e35" stroke-width="9"/><circle cx="43" cy="43" r="36" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" transform="rotate(-90 43 43)" stroke-dasharray="${(CIRC*n/10).toFixed(1)} ${CIRC}"/><text x="43" y="50" text-anchor="middle" font-size="26" font-weight="800" fill="#e8ecef">${gymF1(n)}</text><text x="43" y="66" text-anchor="middle" font-size="11" fill="#8b959e">de 10</text></svg>
+      <div><b class="vl-t">Valoración de la clase</b><span style="color:${col}">${frase}</span></div></div>
+      <p>${res}</p><div class="vl-h" style="color:#46c86a">✓ Lo bueno</div><p>${good.join(' ')}</p>
+      <div class="vl-h" style="color:#f5a623">⚠ Lo que mejorar</div><p>${bad.join(' ')}</p>
+      <div class="vl-h" style="color:#B6E22E">➜ Para la próxima</div><p style="margin:0">${tips.join(' ')}</p>
+      <details class="vl-why"><summary>¿De dónde sale el ${gymF1(n)}?</summary><div class="co-row"><span>Empiezas con</span><b>10</b></div>${v.rows.map(q=>`<div class="co-row"><span>${q[0]}</span><b style="color:${q[1]<0?'#ff5a52':q[1]>0?'#46c86a':'#cfd6dc'}">${q[1]>0?'+':q[1]<0?'−':''}${gymF1(Math.abs(q[1]))}</b></div>`).join('')}<div class="co-row"><span><b>Nota</b></span><b>${gymF1(n)}</b></div>
+        <p style="font-size:12.5px;color:#8b959e;margin:8px 0 0">Premia controlar el pulso, no apretar. Pulso tranquilo: por debajo del 70 % de tu máximo (${hrMax()} ppm). ${s.lim?'Límite: el que te ha dado tu médico.':'Zona dura: más del 80 % de tu máximo.'} La recuperación es lo que baja el pulso en el primer minuto después de cada pico; se compara con tus últimas ${v.nPrev||0} clases.</p></details></div>
+    <div class="co-box"><div class="t">Tu pulso <small>${s.lim?'límite':'zona dura'} ${th} ppm</small></div>
+      <div class="co-g"><div><small>Pulso medio</small><b>${Math.round(s.avg)} ppm</b></div><div><small>Más alto</small><b>${s.mx} ppm</b></div>
+        <div><small>Por encima de ${th}</small><b style="color:${s.over>=60?'#ff5a52':'#46c86a'}">${mins(s.over)}</b></div><div><small>Carga</small><b>${v.cRel?(v.cRel>=1.05?'+':v.cRel<=0.95?'−':'')+Math.abs(Math.round((v.cRel-1)*100))+' %':'–'}</b><small>${v.cRel?'frente a tu media':'faltan clases para comparar'}</small></div></div>
+      ${gymGraph(c,s)}
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#cfd6dc;margin-top:4px"><span><i style="display:inline-block;width:16px;border-top:2px dashed #ff5a52;vertical-align:middle;margin-right:5px"></i>${s.lim?'Tu límite':'Zona dura'}: ${th} ppm</span><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ff5a52;vertical-align:-1px;margin-right:5px"></i>El más alto</span></div></div>
+    <div class="co-box"><div class="t">Zonas de pulso</div>${s.z.map((t,i)=>`<div class="gym-z"><span>Z${i+1}</span><div><i style="width:${(t/s.tot*100).toFixed(1)}%;background:${['#8fa3b0','#46c86a','#B6E22E','#f5a623','#ff5a52'][i]}"></i></div><small>${Math.round(t/60)} min</small></div>`).join('')}</div>`; }
+  else html+=`<p class="co-p">Esta clase no tiene pulso: no puedo valorarla. Ponte el reloj con el sensor de pulso y graba con «Gym Cardio».</p>`;
+  html+=`<div class="co-box"><div class="t">Cómo te has sentido</div><div class="gym-stars" role="group" aria-label="Estrellas">${[1,2,3,4,5].map(i=>`<button data-s="${i}" class="${(c.st||0)>=i?'on':''}" aria-label="${i} estrellas">★</button>`).join('')}</div>
+      <textarea id="gymNote" rows="3" placeholder="Circuito con kettlebell, piernas cargadas…">${esc(c.nt||'')}</textarea>
+      <div class="gym-act"><button class="btn" id="gymSaveN">Guardar nota</button><button class="btn danger" id="gymDel">Quitar esta clase</button></div></div></div>`;
+  $('gymVB').innerHTML=html;
+  $('gymVB').querySelectorAll('.gym-kc button').forEach(b=>b.onclick=()=>{ c.k=b.dataset.k; gymSave(); $('gymVB').querySelectorAll('.gym-kc button').forEach(x=>x.classList.toggle('on',x===b)); $('gymVS').textContent=gymDate(c.d); gymPaint(); });
+  $('gymVB').querySelectorAll('.gym-stars button').forEach(b=>b.onclick=()=>{ const n=+b.dataset.s; c.st=c.st===n?0:n; gymSave(); $('gymVB').querySelectorAll('.gym-stars button').forEach(x=>x.classList.toggle('on',+x.dataset.s<=c.st)); gymPaint(); });
+  $('gymSaveN').onclick=()=>{ c.nt=$('gymNote').value.trim(); gymSave(); toast('Nota guardada.'); };
+  $('gymDel').onclick=async()=>{ if(!await ask('¿Quitar esta clase?','Se quita de Ichnos (en Strava sigue). No volverá a salir.','Quitar','Cancelar')) return; gym.cl=gym.cl.filter(x=>x.id!==c.id); gym.del.push(c.id); gymSave(); $('gymView').hidden=true; gymPaint(); toast('Clase quitada.'); };
+}
 let enSt=store.get('ichnos-entreno',null)||{it:[],pl:null}; if(!Array.isArray(enSt.it)) enSt.it=[];
 let enF={sp:'b',ds:'r',ob:'',lv:0}, enQ={sp:'b',ds:'r',t:90,ob:'fondo'}, enWk=0;
 const enById=id=>EN_WK.find(w=>w.id===id);
@@ -7644,7 +7803,8 @@ const EN_RIDE={b:['road','gravel','mtb','ebike'],c:['run','trail'],m:['mtb','ebi
 function enRideFor(x){ const w=enById(x.w); if(!w||w.sp==='f') return null; const d0=enDate(x.d).getTime(), d1=d0+864e5, tp=EN_RIDE[w.sp==='b'?(w.ds||'b'):w.sp];
   const l=rides.filter(r=>r.date>=d0&&r.date<d1&&tp.includes(rideTipo(r))&&!r._dup).map(r=>({r,mv:(rideStats(r).moving||0)/60})).sort((a,b)=>b.mv-a.mv);
   const plan=enMins(w,x.m); return l.length&&(l[0].mv>=20||l[0].mv>=plan*0.4)?l[0].r:null; }
-const enDone=x=>x.ok||!!enRideFor(x);
+const enGymOk=x=>{ const w=enById(x.w); return !!(w&&w.sp==='f'&&gymOnDay(enDate(x.d).getTime()).length); };
+const enDone=x=>x.ok||!!enRideFor(x)||enGymOk(x);
 // ¿cuánto lo has cumplido? minutos previstos en cada zona de pulso frente a los que has hecho de verdad
 function enComply(x,r){ const w=enById(x.w); if(!w||w.sp==='f'||!r) return null; const z=coachZones(r); if(!z) return null;
   const pz=[0,0,0,0,0]; enFlat(w,x.m).forEach(s=>pz[s.z-1]+=s.m*60);
@@ -7660,19 +7820,23 @@ function enPaintWeek(){ const m0=enMonday(enWk), DN=['Lun','Mar','Mié','Jue','V
     const rs=rides.filter(r=>r.date>=d.getTime()&&r.date<d.getTime()+864e5&&!r._dup&&(EN_RIDE.b.concat(EN_RIDE.c)).includes(rideTipo(r)));
     rs.forEach(r=>{ done+=(rideStats(r).moving||0)/60; const z=coachZones(r); if(z){ const t=z.reduce((a,b)=>a+b,0); tot+=t; easy+=z[0]+z[1]; } });
     html+=`<div class="en-day${k===today?' today':''}"><div class="en-dh"><b>${DN[i]}</b><small>${d.getDate()}</small></div><div class="en-di">`;
-    its.forEach(x=>{ const w=enById(x.w); if(!w) return; const mm=enMins(w,x.m), r=enRideFor(x), ok=x.ok||!!r; n++; plan+=mm; if(ok){ nDone++; if(!r) done+=mm; }
+    its.forEach(x=>{ const w=enById(x.w); if(!w) return; const mm=enMins(w,x.m), r=enRideFor(x), gk=enGymOk(x), ok=x.ok||!!r||gk; n++; plan+=mm; if(ok){ nDone++; if(!r&&!gk) done+=mm; }
       html+=`<div class="en-it${ok?' ok':''}" data-k="${x.k}"><i class="ti ${EN_SP[w.sp].ic}" aria-hidden="true"></i><span><b>${esc(w.n)}</b><small>${w.sp==='f'?'Fuerza':enFmt(mm)}${r?(()=>{ const c=enComply(x,r); return ` · hecho: ${enFmt((rideStats(r).moving||0)/60)}${c?` · <b class="en-pc">${c.pct} %</b>`:''}`; })():x.ok&&w.sp!=='f'?' · hecho':''}${x.ev?(x.dv==='reloj'?' · en el reloj':' · en el ciclocomputador'):''}</small></span>${ok?'<i class="ti ti-circle-check en-ok" aria-hidden="true"></i>':''}</div>`; });
-    if(!its.length) html+=rs.length?`<small class="en-mut">${rs.map(r=>esc(r.name)).join(', ')}</small>`:'<small class="en-mut">—</small>';
+    const gc=gymOnDay(d.getTime()); gc.forEach(c=>{ const st=gymStats(c), v=gymVal(c); done+=(st.dur||0)/60; if(st.z){ tot+=st.tot; easy+=st.z[0]+st.z[1]; }
+      html+=`<div class="en-it ok" data-gym="${esc(c.id)}"><i class="ti ti-barbell" aria-hidden="true"></i><span><b>Olympus · ${GYM_K[c.k]||'Cardio'}</b><small>${gymMin(st.dur)}${v?' · nota '+gymF1(v.nota):''}</small></span></div>`; });
+    if(!its.length&&!gc.length) html+=rs.length?`<small class="en-mut">${rs.map(r=>esc(r.name)).join(', ')}</small>`:'<small class="en-mut">—</small>';
     html+=`</div><button class="en-add" data-d="${k}" aria-label="Añadir entreno">＋</button></div>`; }
   $('enWeek').innerHTML=html;
   $('enWkSum').innerHTML=`<div><b>${enFmt(plan)}</b><small>previsto</small></div><div><b>${enFmt(done)}</b><small>hecho</small></div><div><b>${nDone}/${n}</b><small>entrenos</small></div><div><b class="lime">${tot?Math.round(easy/tot*100)+' %':'—'}</b><small>suave</small></div>`;
   $('enWeek').querySelectorAll('[data-k]').forEach(el=>el.onclick=()=>{ const x=enSt.it.find(y=>y.k===el.dataset.k); if(x) enOpen(x.w,x.m,x); });
+  $('enWeek').querySelectorAll('[data-gym]').forEach(el=>el.onclick=()=>gymOpen(el.dataset.gym));
   $('enWeek').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{ enPick=b.dataset.d; $('enLibBlock').scrollIntoView({behavior:'smooth'}); toast('Elige un entreno de la lista y pulsa «A mi semana».',4000); });
   enPaintTrend(); }
 let enPick=null;
 function enPaintTrend(){ const wks=[]; for(let i=-5;i<=0;i++){ const m0=enMonday(i).getTime(), m1=m0+7*864e5; const o={b:0,c:0,f:0};
     rides.forEach(r=>{ if(r.date<m0||r.date>=m1||r.dupOf) return; const t=rideTipo(r), s=(rideStats(r).moving||0)/3600; if(EN_RIDE.b.includes(t)) o.b+=s; else if(EN_RIDE.c.includes(t)) o.c+=s; });
-    enSt.it.forEach(x=>{ const d=enDate(x.d).getTime(); if(d<m0||d>=m1||!x.ok) return; const w=enById(x.w); if(w&&w.sp==='f') o.f+=enMins(w)/60; });
+    enSt.it.forEach(x=>{ const d=enDate(x.d).getTime(); if(d<m0||d>=m1||!x.ok) return; const w=enById(x.w); if(w&&w.sp==='f'&&!gymOnDay(d).length) o.f+=enMins(w)/60; });
+    gym.cl.forEach(c=>{ if(c.d>=m0&&c.d<m1) o.f+=(gymStats(c).dur||0)/3600; });
     wks.push(o); }
   const mx=Math.max(1,...wks.map(o=>o.b+o.c+o.f));
   $('enTrend').innerHTML=wks.map((o,i)=>`<div class="en-tb"><div class="en-tc">${['f','c','b'].map(k=>o[k]?`<i class="en-${k}" style="height:${o[k]/mx*100}%"></i>`:'').join('')}</div><small>${i===5?'esta':(5-i)+' sem'}</small></div>`).join('');
@@ -7757,8 +7921,9 @@ async function enSend(x,dev='ciclo'){ const w=enById(x.w); if(!w) return;
   $('enMode').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const all=b.dataset.v==='todos'; $('enMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); $('enQuick').hidden=all; $('enAll').hidden=!all; });
   $('enPrev').onclick=()=>{ enWk--; enPaintWeek(); }; $('enNext').onclick=()=>{ enWk++; enPaintWeek(); };
   $('enBack').onclick=()=>{ $('enView').hidden=true; };
+  $('gymBack').onclick=()=>{ $('gymView').hidden=true; gymOpenId=null; };
 })();
-function enShowTab(){ document.querySelectorAll('.sal-tabs').forEach(t=>t.hidden=!me); document.querySelectorAll('.sal-tabs .st-en').forEach(b=>b.hidden=!(me&&me.admin)); if(!(me&&me.admin)&&!$('pgEntreno').classList.contains('off')) showPage('pgSalidas'); }
+function enShowTab(){ document.querySelectorAll('.sal-tabs').forEach(t=>t.hidden=!me); document.querySelectorAll('.sal-tabs .st-en').forEach(b=>b.hidden=!(me&&me.admin)); if(!(me&&me.admin)&&(!$('pgEntreno').classList.contains('off')||!$('pgGym').classList.contains('off'))) showPage('pgSalidas'); }
 document.querySelectorAll('.sal-tabs button').forEach(b=>b.onclick=()=>showPage(b.dataset.st));
 
 // ================= PLAN A TU MEDIDA: eliges días, qué y cuánto tiempo; la app reparte los entrenos =================
@@ -7918,6 +8083,7 @@ document.addEventListener('click',async e=>{ const b=e.target.closest('[data-cr]
   else if(b.dataset.cr==='tr'){ if(crTrackLayer._id===c.id){ crTrackLayer.clearLayers(); crTrackLayer._id=null; b.textContent='Ver recorrido'; } else { if(await crTrack(c,false)) b.textContent='Quitar recorrido'; } } });
 </script>
 <script>
+
 // ================= MENSAJES PRIVADOS (chat individual) y proponer ruta a un amigo =================
 let dmIx=[], dmWith=null, dmData=null, dmTimer=null, dmDelSel=null;
 const dmMutual=id=>!!(fw&&fw.in&&fw.out&&fw.in[id]==='ok'&&fw.out[id]==='ok');
