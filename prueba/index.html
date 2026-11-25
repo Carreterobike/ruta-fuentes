@@ -1793,7 +1793,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795646153';   // versión de la app (la pone build.py)
+const BUILD='1795646318';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7607,8 +7607,9 @@ function gymVal(c){ const s=gymStats(c); if(!s.has) return null;
   const om=s.over/60, pOver=om>=1?-R1(Math.min(s.lim?4:3,om/(s.lim?8:11))):0; rows.push([s.lim?`${mins(s.over)} por encima de tu límite`:`${mins(s.over)} en zona dura`,pOver]);
   const recs=prev.map(p=>p.rec).filter(v=>v!=null), recP=recs.length?recs.reduce((a,b)=>a+b,0)/recs.length:null;
   const pRec=s.rec!=null&&recP!=null?(s.rec>=recP+3?0.5:s.rec<=recP-3?-0.5:0):0; if(s.rec!=null&&recP!=null) rows.push([`Recuperación en los descansos ${pRec>0?'mejor que':pRec<0?'peor que':'igual que'} otras clases`,pRec]);
+  const cargas=prev.map(p=>p.carga).filter(Boolean), cP=cargas.length>=3?cargas.reduce((a,b)=>a+b,0)/cargas.length:null, cRel=cP?s.carga/cP:null;
+  if(cRel) rows.push([`Carga ${cRel>1.3?'un '+Math.round((cRel-1)*100)+' % más alta que':cRel<0.95?'más baja que':'parecida a'} tu media de clases`,cRel>1.3?-0.5:0]);
   const nota=Math.max(1,Math.min(10,10+rows.reduce((a,q)=>a+q[1],0)));
-  const cargas=prev.map(p=>p.carga).filter(Boolean), cP=cargas.length?cargas.reduce((a,b)=>a+b,0)/cargas.length:null, cRel=cP?s.carga/cP:null;
   return {s,rows,nota,recP,cRel,nPrev:prev.length}; }
 const gymCol=n=>n>=8.5?'#46c86a':n>=7?'#B6E22E':n>=5?'#f5a623':'#ff5a52';
 const gymF1=x=>String(x).replace('.',',');
