@@ -712,10 +712,19 @@ details.svsegs{margin-top:12px}details.svsegs>summary{cursor:pointer;font-weight
 .gym-tx{flex:1;min-width:0;display:flex;flex-direction:column}.gym-tx small{color:var(--muted);font-size:13px}
 .gym-k{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;border:1.5px solid #B6E22E;color:var(--ink)}.gym-st{color:#f5a623;font-size:13px}
 .gym-kc{display:flex;gap:6px;flex-wrap:wrap}.gym-kc button{border:1px solid #2c343b;background:#1a2025;color:#cfd6dc;border-radius:999px;padding:7px 12px;font:inherit;font-size:14px;cursor:pointer}.gym-kc button.on{border-color:#B6E22E;color:#B6E22E}
-.gym-z{display:grid;grid-template-columns:28px minmax(0,1fr) 56px;gap:8px;align-items:center;font-size:12.5px;margin:6px 0}.gym-z>div{height:12px;border-radius:6px;background:#232a30;overflow:hidden}.gym-z i{display:block;height:100%}.gym-z small{color:#8b959e;text-align:right}
+.gym-z{display:grid;grid-template-columns:28px minmax(0,1fr) 92px;gap:8px;align-items:center;font-size:12.5px;margin:6px 0}.gym-z>div{height:12px;border-radius:6px;background:#232a30;overflow:hidden}.gym-z i{display:block;height:100%}.gym-z small{color:#8b959e;text-align:right}
 .gym-stars{display:flex;gap:6px;margin-bottom:8px}.gym-stars button{border:0;background:none;font-size:28px;color:#3a434b;cursor:pointer;padding:0 2px;line-height:1}.gym-stars button.on{color:#f5a623}
 #gymNote{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #2c343b;background:#0f1215;color:#e8ecef;font:inherit;font-size:16px;padding:9px 10px}
 .gym-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.gym-act .btn{background:#232a30;color:#e8ecef;border-color:#2c343b}.gym-act .danger{color:#ff7b74;border-color:#7a3430}
+.gym-ph{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin-top:6px}.gym-ph i{display:block}
+.gym-phl{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:#cfd6dc;margin-top:6px}.gym-phl i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.gym-rv{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:4px 0 10px}.gym-rv>b{font-size:26px;font-weight:800}.gym-rv span{color:#cfd6dc;font-size:14px}
+.gym-sc{position:relative;display:flex;height:10px;border-radius:5px;overflow:visible;gap:2px}.gym-sc i{display:block;height:100%}.gym-sc i:first-child{border-radius:5px 0 0 5px}.gym-sc i:nth-child(4){border-radius:0 5px 5px 0}
+.gym-sc b{position:absolute;top:-5px;width:4px;height:20px;margin-left:-2px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #14181c}
+.gym-scl{display:grid;grid-template-columns:12fr 8fr 10fr 10fr;font-size:11.5px;color:#8b959e;margin:6px 0 4px;line-height:1.25}
+.gym-bl{display:flex;flex-direction:column;font-size:13.5px}.gym-bh,.gym-br{display:grid;grid-template-columns:30px 48px minmax(0,1.2fr) minmax(0,1.1fr) minmax(0,1fr);gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid #232a30}
+.gym-bh{color:#8b959e;font-size:12px;padding-top:0}.gym-br small{display:block;color:#8b959e;font-size:11.5px}.gym-bn{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#14181c}
+.gym-zt{font-size:11.5px;color:#8b959e;margin:-4px 0 6px 36px}
 .co-lock{font-size:12px;background:#232a30;border-radius:999px;padding:5px 10px;color:#b9c2ca;white-space:nowrap}
 .co-v{text-align:center;border-radius:14px;padding:16px 12px;border:2px solid var(--c)}.co-v .ic{font-size:40px;line-height:1}.co-v b{display:block;font-size:22px;color:var(--c);margin-top:6px}.co-v span{display:block;font-size:14.5px;color:#cfd6dc;margin-top:4px;line-height:1.45}
 .co-l{display:flex;gap:12px;align-items:flex-start;font-size:15.5px;line-height:1.5;padding:9px 0}.co-l+.co-l{border-top:1px solid #232a30}.co-l>i{font-style:normal;font-size:20px;flex:none;width:24px;text-align:center}
@@ -1793,7 +1802,7 @@ html[data-theme="dark"] .leaflet-container a.leaflet-popup-close-button{backgrou
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const BUILD='1795646925';   // versión de la app (la pone build.py)
+const BUILD='1795712251';   // versión de la app (la pone build.py)
 const store = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
@@ -7587,31 +7596,63 @@ async function gymBackfill(){
   gymBusy=false; gymPaint();
 }
 // números de una clase
-function gymZones(c){ const m=hrMax(), z=[0,0,0,0,0]; for(let i=1;i<c.t.length;i++){ const dt=Math.min(30,c.t[i]-c.t[i-1]), p=c.h[i]/m; z[p<0.6?0:p<0.7?1:p<0.8?2:p<0.9?3:4]+=dt; } return z; }
-function gymRecov(c){ const hm=hrMax(), t=c.t, h=c.h, drops=[]; let lastPk=-1e9;
-  for(let i=0;i<t.length;i++){ if(h[i]<hm*0.75||t[i]-lastPk<90) continue; let pk=true; for(let j=i-1;j>=0&&t[i]-t[j]<=60;j--) if(h[j]>h[i]){ pk=false; break; } if(!pk) continue; for(let j=i+1;j<t.length&&t[j]-t[i]<=60;j++) if(h[j]>h[i]){ pk=false; break; } if(!pk) continue;
-    let k=i; while(k<t.length-1&&t[k]-t[i]<60) k++; if(Math.abs(t[k]-t[i]-60)>15) continue; drops.push(h[i]-h[k]); lastPk=t[i]; }
-  return drops.length>=2?drops.reduce((a,b)=>a+b,0)/drops.length:null; }
+// —— análisis fino de la clase (solo pulso, un punto cada 5 s) ——
+// quita picos sueltos del sensor de muñeca (muy típicos en ejercicios de agarre o fuerza)
+function gymClean(h){ const o=h.slice(); let n=0; for(let i=2;i<h.length-2;i++){ const w=[h[i-2],h[i-1],h[i+1],h[i+2]].sort((a,b)=>a-b), med=(w[1]+w[2])/2; if(Math.abs(h[i]-med)>22){ o[i]=Math.round(med); n++; } } return {h:o,n}; }
+function gymZones(c,hh){ const m=hrMax(), z=[0,0,0,0,0], h=hh||c.h; for(let i=1;i<c.t.length;i++){ const dt=Math.min(30,c.t[i]-c.t[i-1]), p=h[i]/m; z[p<0.6?0:p<0.7?1:p<0.8?2:p<0.9?3:4]+=dt; } return z; }
+// valor del pulso a un tiempo dado (interpolado)
+function gymAt(t,h,x){ if(x<=t[0]) return h[0]; for(let i=1;i<t.length;i++) if(t[i]>=x){ const f=(x-t[i-1])/((t[i]-t[i-1])||1); return h[i-1]+(h[i]-h[i-1])*f; } return h[h.length-1]; }
+// nota de una bajada de pulso en 1 minuto (referencia: prueba de esfuerzo, Cole 1999 → 12 o menos es poco)
+const GYM_RC=[{min:30,t:'Muy buena',c:'#46c86a'},{min:20,t:'Buena',c:'#B6E22E'},{min:12,t:'Normal',c:'#f5a623'},{min:-99,t:'Mala',c:'#ff5a52'}];
+const gymRc=v=>GYM_RC.find(r=>v>=r.min);
+function gymAnalyze(c){ const t=c.t, hm=hrMax(), cl=gymClean(c.h), h=cl.h, N=t.length;
+  const sm=h.map((_,i)=>{ let a=0,n=0; for(let j=Math.max(0,i-2);j<=Math.min(N-1,i+2);j++){ a+=h[j]; n++; } return a/n; });   // media de ~25 s
+  // picos: el más alto en ±45 s, por encima del 65 % del máximo
+  let pk=[]; for(let i=1;i<N-1;i++){ if(sm[i]<hm*0.65) continue; let ok=true; for(let j=i-1;j>=0&&t[i]-t[j]<=45;j--) if(sm[j]>sm[i]){ ok=false; break; } if(!ok) continue; for(let j=i+1;j<N&&t[j]-t[i]<=45;j++) if(sm[j]>=sm[i]){ ok=false; break; } if(ok) pk.push(i); }
+  // cada pico tiene que bajar al menos 10 ppm antes del siguiente (si no, es el mismo esfuerzo: se queda el más alto)
+  const minBetween=(a,b)=>{ let m=1e9,mi=a; for(let k=a;k<=b;k++) if(sm[k]<m){ m=sm[k]; mi=k; } return mi; };
+  for(let changed=true;changed;){ changed=false; for(let k=0;k<pk.length-1;k++){ const v=minBetween(pk[k],pk[k+1]); if(Math.min(sm[pk[k]],sm[pk[k+1]])-sm[v]<10){ pk.splice(sm[pk[k]]>=sm[pk[k+1]]?k+1:k,1); changed=true; break; } } }
+  const blocks=pk.map((p,k)=>{ const v0=k?minBetween(pk[k-1],p):minBetween(Math.max(0,p-Math.round(240/5)),p), v1=k<pk.length-1?minBetween(p,pk[k+1]):minBetween(p,N-1);
+    const rest=t[v1]-t[p], d30=sm[p]-gymAt(t,sm,t[p]+30), d60=sm[p]-gymAt(t,sm,t[p]+60), d120=sm[p]-gymAt(t,sm,t[p]+120);
+    let av=0,w=0; for(let i=v0+1;i<=p;i++){ const dt=t[i]-t[i-1]; av+=sm[i]*dt; w+=dt; }
+    return {i:p,t0:t[v0],tp:t[p],t1:t[v1],up:t[p]-t[v0],peak:Math.round(sm[p]),from:Math.round(sm[v0]),low:Math.round(sm[v1]),rest,
+      d30:Math.round(d30),d60:rest>=55?Math.round(d60):null,d120:rest>=110?Math.round(d120):null,dRest:Math.round(sm[p]-sm[v1]),avg:w?av/w:sm[p]}; });
+  // partes de la sesión
+  const T=t[N-1]||0, warmEnd=blocks.length?blocks[0].t0:Math.min(T,600), lastPk=blocks.length?blocks[blocks.length-1].tp:T;
+  const avgOf=(a,b)=>{ let s=0,w=0; for(let i=1;i<N;i++) if(t[i]>a&&t[i]<=b){ const dt=t[i]-t[i-1]; s+=sm[i]*dt; w+=dt; } return w?s/w:null; };
+  const coolDur=T-lastPk>=150?T-lastPk:0;
+  const warm={dur:warmEnd,avg:avgOf(0,warmEnd)}, main={t0:warmEnd,t1:coolDur?lastPk:T,avg:avgOf(warmEnd,coolDur?lastPk:T)}, cool={dur:coolDur,avg:coolDur?avgOf(lastPk,T):null};
+  // recuperación
+  const val=blocks.filter(b=>b.d60!=null).map(b=>b.d60), med=a=>{ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y); return s.length%2?s[(s.length-1)/2]:(s[s.length/2-1]+s[s.length/2])/2; };
+  const third=Math.max(1,Math.floor(blocks.length/3)), early=blocks.slice(0,third), late=blocks.slice(-third);
+  const eR=med(early.filter(b=>b.d60!=null).map(b=>b.d60)), lR=med(late.filter(b=>b.d60!=null).map(b=>b.d60));
+  const eP=med(early.map(b=>b.peak)), lP=med(late.map(b=>b.peak)), eL=med(early.map(b=>b.low)), lL=med(late.map(b=>b.low));
+  const fin=coolDur?{d60:Math.round(sm[blocks.length?blocks[blocks.length-1].i:0]-gymAt(t,sm,lastPk+60)),d120:T-lastPk>=120?Math.round(sm[blocks.length?blocks[blocks.length-1].i:0]-gymAt(t,sm,lastPk+120)):null,end:Math.round(sm[N-1])}:null;
+  let work=0,restT=0; blocks.forEach(b=>{ work+=b.up; restT+=b.rest; });
+  const lows=blocks.map(b=>b.low);
+  return {sm,blocks,spikes:cl.n,warm,main,cool,fin,rec:med(val),nRec:val.length,eR,lR,eP,lP,eL,lL,work,restT,lowAvg:lows.length?lows.reduce((a,b)=>a+b,0)/lows.length:null,shortRest:blocks.filter(b=>b.rest<55).length}; }
 const gymMemo=new Map();
 function gymStats(c){ const key=c.id+':'+c.t.length+':'+hrMax()+':'+(coachCfg().lim||0); if(gymMemo.has(key)) return gymMemo.get(key);
   const hm=hrMax(), lim=coachCfg().lim, th=lim||Math.round(hm*0.8), has=c.h.length>=20;
   let o={has,th,lim,dur:c.mov||c.el||(c.t.length?c.t[c.t.length-1]:0)};
-  if(has){ const z=gymZones(c), tot=z.reduce((a,b)=>a+b,0)||1; let over=0,avg=0,w=0,mx=0,iMx=0;
-    for(let i=1;i<c.t.length;i++){ const dt=Math.min(30,c.t[i]-c.t[i-1]); avg+=c.h[i]*dt; w+=dt; if(c.h[i]>th) over+=dt; if(c.h[i]>mx){ mx=c.h[i]; iMx=i; } }
-    o=Object.assign(o,{z,tot,easy:(z[0]+z[1])/tot,over,avg:w?avg/w:null,mx,iMx,carga:coachTrimp(z),rec:gymRecov(c)}); }
+  if(has){ const an=gymAnalyze(c), h=an.sm, z=gymZones(c,h), tot=z.reduce((a,b)=>a+b,0)||1; let over=0,avg=0,w=0,mx=0,iMx=0,run=0,longest=0,longAt=0;
+    for(let i=1;i<c.t.length;i++){ const dt=Math.min(30,c.t[i]-c.t[i-1]); avg+=h[i]*dt; w+=dt; if(h[i]>th){ over+=dt; run+=dt; if(run>longest){ longest=run; longAt=c.t[i]-run; } } else run=0; if(h[i]>mx){ mx=h[i]; iMx=i; } }
+    o=Object.assign(o,{an,z,tot,easy:(z[0]+z[1])/tot,over,longest,longAt,avg:w?avg/w:null,mx:Math.round(mx),iMx,carga:coachTrimp(z),rec:an.rec}); }
   gymMemo.set(key,o); return o; }
-// valoración: como la de las salidas, pensada para la recuperación (premia controlar el pulso, no apretar)
-function gymVal(c){ const s=gymStats(c); if(!s.has) return null;
+// valoración: pensada para la recuperación (premia controlar el pulso y recuperar bien, no apretar)
+function gymVal(c){ const s=gymStats(c); if(!s.has) return null; const an=s.an;
   const prev=gym.cl.filter(x=>x.d<c.d&&x.h.length>=20).slice(0,8).map(gymStats);
   const R1=x=>Math.round(x*2)/2, pc=v=>Math.round(v*100), mins=x=>x<90?Math.round(x)+' s':Math.round(x/60)+' min', rows=[];
   const pEasy=s.easy<0.6?-R1(Math.min(2.5,(0.6-s.easy)*5)):0; rows.push([`Pulso tranquilo el ${pc(s.easy)} % de la clase (en una clase, con más de la mitad va bien)`,pEasy]);
   const om=s.over/60, pOver=om>=1?-R1(Math.min(s.lim?4:3,om/(s.lim?8:11))):0; rows.push([s.lim?`${mins(s.over)} por encima de tu límite`:`${mins(s.over)} en zona dura`,pOver]);
-  const recs=prev.map(p=>p.rec).filter(v=>v!=null), recP=recs.length?recs.reduce((a,b)=>a+b,0)/recs.length:null;
-  const pRec=s.rec!=null&&recP!=null?(s.rec>=recP+3?0.5:s.rec<=recP-3?-0.5:0):0; if(s.rec!=null&&recP!=null) rows.push([`Recuperación en los descansos ${pRec>0?'mejor que':pRec<0?'peor que':'igual que'} otras clases`,pRec]);
+  let pRec=0; if(an.rec!=null&&an.nRec>=2){ pRec=an.rec>=30?0.5:an.rec>=20?0:an.rec>=12?-0.5:-1; rows.push([`Recuperación ${gymRc(an.rec).t.toLowerCase()}: bajas ${Math.round(an.rec)} ppm en 1 minuto`,pRec]); }
+  if(an.eR!=null&&an.lR!=null&&an.blocks.length>=6&&an.eR-an.lR>=8) rows.push([`Al final recuperas peor que al principio (${Math.round(an.lR)} frente a ${Math.round(an.eR)} ppm): cansancio`,-0.5]);
   const cargas=prev.map(p=>p.carga).filter(Boolean), cP=cargas.length>=3?cargas.reduce((a,b)=>a+b,0)/cargas.length:null, cRel=cP?s.carga/cP:null;
   if(cRel) rows.push([`Carga ${cRel>1.3?'un '+Math.round((cRel-1)*100)+' % más alta que':cRel<0.95?'más baja que':'parecida a'} tu media de clases`,cRel>1.3?-0.5:0]);
   const nota=Math.max(1,Math.min(10,10+rows.reduce((a,q)=>a+q[1],0)));
-  return {s,rows,nota,recP,cRel,nPrev:prev.length}; }
+  const pm=k=>{ const a=prev.map(k).filter(v=>v!=null&&isFinite(v)); return a.length>=3?a.reduce((x,y)=>x+y,0)/a.length:null; };
+  const hist={avg:pm(p=>p.avg),mx:pm(p=>p.mx),rec:pm(p=>p.an&&p.an.rec),blocks:pm(p=>p.an&&p.an.blocks.length),low:pm(p=>p.an&&p.an.lowAvg),over:pm(p=>p.over),easy:pm(p=>p.easy)};
+  return {s,rows,nota,cRel,nPrev:prev.length,hist}; }
 const gymCol=n=>n>=8.5?'#46c86a':n>=7?'#B6E22E':n>=5?'#f5a623':'#ff5a52';
 const gymF1=x=>String(x).replace('.',',');
 const gymDate=(d,long)=>{ const D=new Date(d), today=new Date(); const same=D.toDateString()===today.toDateString(); const y=new Date(today); y.setDate(y.getDate()-1);
@@ -7630,62 +7671,108 @@ function gymPaint(){ if(!$('gymList')) return;
   $('gymList').innerHTML=gym.cl.map(c=>{ const v=gymVal(c), s=gymStats(c);
     return `<li class="gym-it" data-id="${esc(c.id)}"><span class="gym-n" style="--c:${v?gymCol(v.nota):'#5d6870'}">${v?gymF1(v.nota):'–'}</span><span class="gym-tx"><b>${esc(gymDate(c.d))}</b><small>${gymMin(s.dur)}${c.kcal?' · '+c.kcal+' kcal':''}${s.avg?' · pulso medio '+Math.round(s.avg):' · sin pulso'}</small></span><span class="gym-k">${GYM_K[c.k]||'Cardio y fuerza'}</span>${c.st?`<span class="gym-st">${'★'.repeat(c.st)}</span>`:''}</li>`; }).join('');
   $('gymList').querySelectorAll('[data-id]').forEach(li=>li.onclick=()=>gymOpen(li.dataset.id)); }
-function gymGraph(c,s){ const W=600,H=180,P=40, T=c.t[c.t.length-1]||1, lo=Math.min(...c.h)-5, hi=Math.max(s.th+8,Math.max(...c.h)+5);
+function gymGraph(c,s){ const an=s.an, h=an.sm, W=600,H=200,P=40, T=c.t[c.t.length-1]||1, lo=Math.min(...h)-5, hi=Math.max(s.th+8,Math.max(...h)+14);
   const X=t=>P+(W-P-6)*t/T, Y=v=>6+(H-30)*(1-(v-lo)/(hi-lo));
-  const sm=c.h.map((v,i)=>{ let a=0,n=0; for(let j=Math.max(0,i-2);j<=Math.min(c.h.length-1,i+2);j++){ a+=c.h[j]; n++; } return a/n; });
-  let g=`<rect x="${P}" y="6" width="${W-P-6}" height="${Math.max(0,Y(s.th)-6)}" fill="#ff5a52" opacity=".13"/><line x1="${P}" x2="${W-6}" y1="${Y(s.th)}" y2="${Y(s.th)}" stroke="#ff5a52" stroke-dasharray="5 4" stroke-width="1.5"/>`;
-  g+=`<polyline fill="none" stroke="#e8ecef" stroke-width="2" stroke-linejoin="round" points="${c.t.map((t,i)=>X(t).toFixed(1)+','+Y(sm[i]).toFixed(1)).join(' ')}"/>`;
-  g+=`<circle cx="${X(c.t[s.iMx])}" cy="${Y(sm[s.iMx])}" r="4.5" fill="#ff5a52"/>`;
+  let g='';
+  if(an.warm.dur) g+=`<rect x="${P}" y="6" width="${X(an.warm.dur)-P}" height="${H-30}" fill="#8fa3b0" opacity=".08"/>`;
+  if(an.cool.dur) g+=`<rect x="${X(T-an.cool.dur)}" y="6" width="${X(T)-X(T-an.cool.dur)}" height="${H-30}" fill="#5DCAA5" opacity=".08"/>`;
+  g+=`<rect x="${P}" y="6" width="${W-P-6}" height="${Math.max(0,Y(s.th)-6)}" fill="#ff5a52" opacity=".13"/><line x1="${P}" x2="${W-6}" y1="${Y(s.th)}" y2="${Y(s.th)}" stroke="#ff5a52" stroke-dasharray="5 4" stroke-width="1.5"/>`;
+  g+=`<polyline fill="none" stroke="#e8ecef" stroke-width="2" stroke-linejoin="round" points="${c.t.map((t,i)=>X(t).toFixed(1)+','+Y(h[i]).toFixed(1)).join(' ')}"/>`;
+  an.blocks.forEach((b,k)=>{ const col=b.d60!=null?gymRc(b.d60).c:'#8b959e'; g+=`<circle cx="${X(b.tp).toFixed(1)}" cy="${Y(b.peak).toFixed(1)}" r="9" fill="${col}"/><text x="${X(b.tp).toFixed(1)}" y="${(Y(b.peak)+4).toFixed(1)}" font-size="12" font-weight="800" fill="#14181c" text-anchor="middle">${k+1}</text>`; });
   for(let m=0;m*60<=T;m+=10) g+=`<text x="${X(m*60)}" y="${H-4}" font-size="17" fill="#8b959e" text-anchor="middle">${m}'</text>`;
-  [Math.ceil(lo/20)*20].concat([Math.ceil(lo/20)*20+40,Math.ceil(lo/20)*20+80]).filter(v=>v<hi).forEach(v=>g+=`<text x="${P-6}" y="${Y(v)+6}" font-size="17" fill="#8b959e" text-anchor="end">${v}</text>`);
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;margin-top:8px" role="img" aria-label="Pulso de la clase">${g}</svg>`; }
+  [0,40,80].map(d=>Math.ceil(lo/20)*20+d).filter(v=>v<hi).forEach(v=>g+=`<text x="${P-6}" y="${Y(v)+6}" font-size="17" fill="#8b959e" text-anchor="end">${v}</text>`);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;margin-top:8px" role="img" aria-label="Pulso de la clase con los esfuerzos numerados">${g}</svg>`; }
+const gymMM=x=>{ const m=Math.floor(x/60), s=Math.round(x%60); return m?`${m}:${String(s).padStart(2,'0')}`:`${s} s`; };
 function gymOpen(id){ const c=gym.cl.find(x=>x.id===id); if(!c) return; gymOpenId=id;
-  const v=gymVal(c), s=gymStats(c), mins=x=>x<90?Math.round(x)+' s':Math.round(x/60)+' min', pc=x=>Math.round(x*100);
+  const v=gymVal(c), s=gymStats(c), mins=x=>x<90?Math.round(x)+' s':Math.round(x/60)+' min', pc=x=>Math.round(x*100), R=Math.round, hm=hrMax();
   $('gymView').hidden=false; $('gymView').scrollTop=0; $('gymVT').textContent='Clase de Olympus'; $('gymVS').textContent=gymDate(c.d);
   let html=`<div class="rvcard co"><div class="co-h"><div><b>Tu clase</b><br><small>${gymMin(s.dur)}${c.kcal?' · '+c.kcal+' kcal':''}</small></div><span class="co-lock">🔒 Solo lo ves tú</span></div>
     <div class="gym-kc" role="group" aria-label="Tipo de clase">${Object.entries(GYM_K).map(([k,n])=>`<button data-k="${k}" class="${(c.k||'func')===k?'on':''}">${n}</button>`).join('')}</div>`;
-  if(v){ const n=v.nota, col=gymCol(n), CIRC=226.2, th=s.th, thTxt=s.lim?'tu límite':'la zona dura';
+  if(v){ const an=s.an, B=an.blocks, n=v.nota, col=gymCol(n), CIRC=226.2, th=s.th, thTxt=s.lim?'tu límite':'la zona dura', H=v.hist;
     const frase=n>=8.5&&s.over<120?'Muy bien: clase controlada':n>=7?'Bien, aunque algo intensa':n>=5?'Clase dura para ahora':'Demasiado dura para tu recuperación';
-    let res=`Clase de ${gymMin(s.dur)} con el pulso medio en <b>${Math.round(s.avg)} ppm</b> y el más alto en <b>${s.mx}</b>. `;
-    res+=s.over<60?`No has pasado de ${thTxt} (${th} ppm).`:`Has pasado <b>${mins(s.over)}</b> por encima de ${thTxt} (${th} ppm).`;
+    let res=`Clase de ${gymMin(s.dur)} con el pulso medio en <b>${R(s.avg)} ppm</b> y el más alto en <b>${s.mx}</b>. `;
+    res+=s.over<60?`No has pasado de ${thTxt} (${th} ppm). `:`Has pasado <b>${mins(s.over)}</b> por encima de ${thTxt} (${th} ppm). `;
+    if(an.rec!=null&&an.nRec>=2) res+=`Tu recuperación ha sido <b>${gymRc(an.rec).t.toLowerCase()}</b>.`;
     const good=[], bad=[], tips=[];
     if(s.over<60) good.push(`Has controlado el pulso: nada por encima de ${th}.`);
     if(s.easy>=0.6) good.push(`El ${pc(s.easy)} % de la clase con el pulso tranquilo.`);
-    if(s.rec!=null&&s.rec>=12&&v.recP!=null&&s.rec>=v.recP-2) good.push(`En los descansos el pulso te baja <b>${Math.round(s.rec)} ppm</b> en un minuto${s.rec>=v.recP+3?', mejor que otras clases':''}.`);
-    else if(s.rec!=null&&s.rec>=12&&v.recP==null) good.push(`En los descansos el pulso te baja ${Math.round(s.rec)} ppm en un minuto.`);
-    if(s.over>=60) bad.push(`${mins(s.over)} por encima de ${th} ppm${s.over>=300?': es mucho para ahora':''}.`);
+    if(an.rec!=null&&an.nRec>=2&&an.rec>=20) good.push(`Recuperas bien: después de cada esfuerzo el pulso te baja de media <b>${R(an.rec)} ppm</b> en un minuto.`);
+    if(H.rec!=null&&an.rec!=null&&an.rec>=H.rec+4) good.push(`Recuperas mejor que en tus últimas clases (${R(H.rec)} ppm de media).`);
+    if(H.low!=null&&an.lowAvg!=null&&an.lowAvg<=H.low-4) good.push(`En los descansos el pulso te baja más abajo que otras veces (${R(an.lowAvg)} frente a ${R(H.low)}): buena señal de forma.`);
+    if(s.over>=60) bad.push(`${mins(s.over)} por encima de ${th} ppm${s.longest>=120?` (el rato más largo seguido, ${mins(s.longest)} hacia el minuto ${R(s.longAt/60)})`:''}${s.over>=300?': es mucho para ahora':''}.`);
     if(s.easy<0.6) bad.push(`Solo el ${pc(s.easy)} % con el pulso tranquilo.`);
-    if(s.rec!=null&&v.recP!=null&&s.rec<=v.recP-3) bad.push(`Has recuperado peor que otras clases en los descansos (${Math.round(s.rec)} ppm frente a ${Math.round(v.recP)}): puede ser cansancio.`);
-    if(v.cRel&&v.cRel>1.3) bad.push(`Ha sido de tus clases con más carga (un ${Math.round((v.cRel-1)*100)} % más que la media).`);
+    if(an.rec!=null&&an.nRec>=2&&an.rec<12) bad.push(`Recuperas poco: el pulso solo te baja ${R(an.rec)} ppm en un minuto después de cada esfuerzo.`);
+    if(an.eR!=null&&an.lR!=null&&B.length>=6&&an.eR-an.lR>=8) bad.push(`Al final de la clase recuperabas peor que al principio (${R(an.lR)} frente a ${R(an.eR)} ppm): te ibas cansando.`);
+    if(an.shortRest>=3&&an.shortRest>=B.length/2) bad.push(`En ${an.shortRest} de ${B.length} esfuerzos empezaste el siguiente antes de que bajara el pulso (menos de 55 s de descanso).`);
+    if(v.cRel&&v.cRel>1.3) bad.push(`Ha sido de tus clases con más carga (un ${R((v.cRel-1)*100)} % más que la media).`);
     if(!good.length) good.push('Has hecho la clase entera.');
     if(!bad.length) bad.push('Nada importante. Sigue así.');
     if(s.over>=60) tips.push(`En los ejercicios fuertes, si ves más de <b>${th} ppm</b> en el reloj, baja el ritmo o haz menos repeticiones: parar 20-30 s no pasa nada.`);
     else tips.push('<b>Así, perfecto.</b> Repite este ritmo en las próximas clases.');
+    if(an.shortRest>=3&&an.shortRest>=B.length/2) tips.push(`Antes de empezar el siguiente ejercicio, espera a ver el pulso por debajo de <b>${R(hm*0.7)}</b>.`);
+    if(an.eR!=null&&an.lR!=null&&B.length>=6&&an.eR-an.lR>=8) tips.push('En la última parte de la clase, coge los ejercicios en su versión más suave.');
     if(v.cRel&&v.cRel>1.3) tips.push('Mañana mejor suave o descanso.');
-    tips.push(['Pon el pulso en grande en la pantalla de «Gym Cardio» del reloj, para verlo sin pensar.','Bebe agua entre ejercicios aunque no tengas sed.','Si un ejercicio te dispara el pulso, dile al monitor que te dé una versión más suave.'][c.d%3]);
+    tips.push(['Pon el pulso en grande en la pantalla de «Gym Cardio» del reloj, para verlo sin pensar.','Bebe agua entre ejercicios aunque no tengas sed.','Si un ejercicio te dispara el pulso, dile al monitor que te dé una versión más suave.','Lleva la correa del reloj algo más apretada en la clase: el pulso de muñeca falla menos.'][c.d%4]);
+    // 1) valoración
     html+=`<div class="vl-k"><div class="vl-top"><svg width="86" height="86" viewBox="0 0 86 86" aria-hidden="true"><circle cx="43" cy="43" r="36" fill="none" stroke="#262e35" stroke-width="9"/><circle cx="43" cy="43" r="36" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" transform="rotate(-90 43 43)" stroke-dasharray="${(CIRC*n/10).toFixed(1)} ${CIRC}"/><text x="43" y="50" text-anchor="middle" font-size="26" font-weight="800" fill="#e8ecef">${gymF1(n)}</text><text x="43" y="66" text-anchor="middle" font-size="11" fill="#8b959e">de 10</text></svg>
       <div><b class="vl-t">Valoración de la clase</b><span style="color:${col}">${frase}</span></div></div>
       <p>${res}</p><div class="vl-h" style="color:#46c86a">✓ Lo bueno</div><p>${good.join(' ')}</p>
       <div class="vl-h" style="color:#f5a623">⚠ Lo que mejorar</div><p>${bad.join(' ')}</p>
       <div class="vl-h" style="color:#B6E22E">➜ Para la próxima</div><p style="margin:0">${tips.join(' ')}</p>
       <details class="vl-why"><summary>¿De dónde sale el ${gymF1(n)}?</summary><div class="co-row"><span>Empiezas con</span><b>10</b></div>${v.rows.map(q=>`<div class="co-row"><span>${q[0]}</span><b style="color:${q[1]<0?'#ff5a52':q[1]>0?'#46c86a':'#cfd6dc'}">${q[1]>0?'+':q[1]<0?'−':''}${gymF1(Math.abs(q[1]))}</b></div>`).join('')}<div class="co-row"><span><b>Nota</b></span><b>${gymF1(n)}</b></div>
-        <p style="font-size:12.5px;color:#8b959e;margin:8px 0 0">Premia controlar el pulso, no apretar. Pulso tranquilo: por debajo del 70 % de tu máximo (${hrMax()} ppm). ${s.lim?'Límite: el que te ha dado tu médico.':'Zona dura: más del 80 % de tu máximo.'} La recuperación es lo que baja el pulso en el primer minuto después de cada pico; se compara con tus últimas ${v.nPrev||0} clases.</p></details></div>
-    <div class="co-box"><div class="t">Tu pulso <small>${s.lim?'límite':'zona dura'} ${th} ppm</small></div>
-      <div class="co-g"><div><small>Pulso medio</small><b>${Math.round(s.avg)} ppm</b></div><div><small>Más alto</small><b>${s.mx} ppm</b></div>
-        <div><small>Por encima de ${th}</small><b style="color:${s.over>=60?'#ff5a52':'#46c86a'}">${mins(s.over)}</b></div><div><small>Carga</small><b>${v.cRel?(v.cRel>=1.05?'+':v.cRel<=0.95?'−':'')+Math.abs(Math.round((v.cRel-1)*100))+' %':'–'}</b><small>${v.cRel?'frente a tu media':'faltan clases para comparar'}</small></div></div>
+        <p style="font-size:12.5px;color:#8b959e;margin:8px 0 0">Premia controlar el pulso y recuperar bien, no apretar. Pulso tranquilo: por debajo del 70 % de tu máximo (${hm} ppm). ${s.lim?'Límite: el que te ha dado tu médico.':'Zona dura: más del 80 % de tu máximo.'} Se compara con tus últimas ${v.nPrev||0} clases.</p></details></div>`;
+    // 2) así fue la sesión
+    const segs=[[an.warm.dur,'#8fa3b0','Calentamiento'],[an.main.t1-an.main.t0,'#B6E22E','Parte principal'],[an.cool.dur,'#5DCAA5','Vuelta a la calma']].filter(x=>x[0]>=30), TT=segs.reduce((a,x)=>a+x[0],0)||1;
+    let nar=`<b>Calentamiento:</b> ${mins(an.warm.dur)}${an.warm.avg?`, el pulso fue subiendo hasta unos ${R(an.warm.avg)} ppm de media`:''}. `;
+    nar+=B.length?`<b>Parte principal:</b> ${mins(an.main.t1-an.main.t0)} con <b>${B.length} esfuerzos</b> (subidas de pulso de más de 10 ppm). El más alto, el ${B.reduce((a,b,k)=>b.peak>B[a].peak?k:a,0)+1}.º, llegó a ${Math.max(...B.map(b=>b.peak))} ppm. Esfuerzo y descanso: ${R(an.work/60)} min subiendo y ${R(an.restT/60)} min bajando el pulso${an.lowAvg?`; en los descansos bajabas de media a ${R(an.lowAvg)} ppm`:''}. `:'<b>Parte principal:</b> sin esfuerzos marcados: el pulso se quedó bastante estable. ';
+    if(an.eP!=null&&an.lP!=null&&B.length>=6) nar+=an.lP-an.eP>=6?`Al final, los esfuerzos te subían el pulso más (${R(an.lP)} frente a ${R(an.eP)} ppm al principio): normal si los últimos ejercicios eran más duros; si eran iguales, es señal de cansancio. `:an.eP-an.lP>=6?`Los últimos esfuerzos fueron más suaves que los primeros (${R(an.lP)} frente a ${R(an.eP)} ppm). `:`Los esfuerzos del principio y del final subieron el pulso parecido (unos ${R((an.eP+an.lP)/2)} ppm): has aguantado bien el ritmo. `;
+    nar+=an.cool.dur?`<b>Vuelta a la calma:</b> ${mins(an.cool.dur)}; acabaste a ${an.fin.end} ppm.`:'Sin vuelta a la calma: la clase acabó casi en el último esfuerzo.';
+    html+=`<div class="co-box"><div class="t">Así fue la sesión</div><div class="gym-ph">${segs.map(x=>`<i style="flex:${x[0]/TT};background:${x[1]}" title="${x[2]}"></i>`).join('')}</div>
+      <div class="gym-phl">${segs.map(x=>`<span><i style="background:${x[1]}"></i>${x[2]} · ${mins(x[0])}</span>`).join('')}</div><p class="co-p" style="margin:8px 0 0">${nar}</p></div>`;
+    // 3) recuperación
+    if(an.nRec>=1){ const rc=gymRc(an.rec), mark=Math.max(0,Math.min(100,an.rec/40*100));
+      const means={'Muy buena':'Tu corazón baja muy rápido cuando paras: señal de buena forma y de que la clase no te ha pasado factura.','Buena':'Tu corazón baja bien cuando paras: lo normal en alguien que entrena.','Normal':'Bajas, pero despacio: puede ser cansancio, poco descanso entre ejercicios, calor o falta de agua.','Mala':'El pulso apenas baja cuando paras: el cuerpo va justo. Hoy convenía aflojar; si te pasa a menudo, coméntaselo al médico.'};
+      let trend=''; if(an.eR!=null&&an.lR!=null&&B.length>=6) trend=an.eR-an.lR>=8?`<p class="co-p"><b style="color:#f5a623">Se va cansando:</b> al principio bajabas ${R(an.eR)} ppm en un minuto y al final ${R(an.lR)}.</p>`:an.lR-an.eR>=5?`<p class="co-p"><b style="color:#46c86a">Mejor al final:</b> al principio bajabas ${R(an.eR)} ppm y al final ${R(an.lR)} (ya estabas bien caliente).</p>`:`<p class="co-p"><b style="color:#46c86a">Igual toda la clase:</b> unos ${R((an.eR+an.lR)/2)} ppm en un minuto del principio al final: no te has ido cansando.</p>`;
+      const hist=v.hist.rec!=null?`<p class="co-p">Frente a tus últimas clases: <b>${R(v.hist.rec)} ppm</b> de media → hoy ${an.rec>=v.hist.rec+4?'<b style="color:#46c86a">mejor</b>':an.rec<=v.hist.rec-4?'<b style="color:#f5a623">peor</b>':'<b>parecido</b>'}.</p>`:'';
+      const fin=an.fin&&an.fin.d60!=null?`<p class="co-p">Al acabar la clase: el pulso bajó <b>${an.fin.d60} ppm</b> en el primer minuto${an.fin.d120!=null?` y ${an.fin.d120} en dos`:''} (${gymRc(an.fin.d60).t.toLowerCase()}).</p>`:'';
+      html+=`<div class="co-box"><div class="t">Tu recuperación</div>
+        <div class="gym-rv"><b style="color:${rc.c}">${rc.t}</b><span>bajas <b>${R(an.rec)} ppm</b> en 1 minuto${an.nRec>1?` (mediana de ${an.nRec} esfuerzos)`:''}</span></div>
+        <div class="gym-sc"><i style="background:#ff5a52;flex:12"></i><i style="background:#f5a623;flex:8"></i><i style="background:#B6E22E;flex:10"></i><i style="background:#46c86a;flex:10"></i><b style="left:${mark}%"></b></div>
+        <div class="gym-scl"><span>Mala<br>&lt;12</span><span>Normal<br>12-20</span><span>Buena<br>20-30</span><span>Muy buena<br>30+</span></div>
+        <p class="co-p">${means[rc.t]}</p>${trend}${hist}${fin}
+        <details class="vl-why"><summary>¿Qué es la recuperación del pulso?</summary><p style="font-size:13px;color:#cfd6dc;margin:6px 0 0">Es cuánto te baja el pulso en el primer minuto después de un esfuerzo. Cuanto más baja, mejor se recupera el corazón. Los médicos lo miran en las pruebas de esfuerzo: si baja 12 ppm o menos en un minuto, es poco. Aquí se mide en cada esfuerzo de la clase que tuvo al menos 55 s de descanso detrás; con descansos cortos no se puede medir bien. El sensor de muñeca puede fallar en ejercicios de agarre (pesas, barra): ${an.spikes?`hoy he quitado ${an.spikes} lecturas raras`:'hoy no he visto lecturas raras'}.</p></details></div>`; }
+    // 4) gráfico
+    html+=`<div class="co-box"><div class="t">Tu pulso <small>${s.lim?'límite':'zona dura'} ${th} ppm</small></div>
+      <div class="co-g"><div><small>Pulso medio</small><b>${R(s.avg)} ppm</b></div><div><small>Más alto</small><b>${s.mx} ppm</b></div>
+        <div><small>Por encima de ${th}</small><b style="color:${s.over>=60?'#ff5a52':'#46c86a'}">${mins(s.over)}</b></div><div><small>Carga</small><b>${v.cRel?(v.cRel>=1.05?'+':v.cRel<=0.95?'−':'')+Math.abs(R((v.cRel-1)*100))+' %':'–'}</b><small>${v.cRel?'frente a tu media':'faltan clases para comparar'}</small></div></div>
       ${gymGraph(c,s)}
-      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#cfd6dc;margin-top:4px"><span><i style="display:inline-block;width:16px;border-top:2px dashed #ff5a52;vertical-align:middle;margin-right:5px"></i>${s.lim?'Tu límite':'Zona dura'}: ${th} ppm</span><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ff5a52;vertical-align:-1px;margin-right:5px"></i>El más alto</span></div></div>
-    <div class="co-box"><div class="t">Zonas de pulso</div>${s.z.map((t,i)=>`<div class="gym-z"><span>Z${i+1}</span><div><i style="width:${(t/s.tot*100).toFixed(1)}%;background:${['#8fa3b0','#46c86a','#B6E22E','#f5a623','#ff5a52'][i]}"></i></div><small>${Math.round(t/60)} min</small></div>`).join('')}</div>`; }
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#cfd6dc;margin-top:4px"><span><i style="display:inline-block;width:16px;border-top:2px dashed #ff5a52;vertical-align:middle;margin-right:5px"></i>${s.lim?'Tu límite':'Zona dura'}: ${th} ppm</span><span>Números = esfuerzos, de color según cómo recuperaste</span></div></div>`;
+    // 5) esfuerzo a esfuerzo
+    if(B.length) html+=`<div class="co-box"><div class="t">Esfuerzo a esfuerzo <small>${B.length}</small></div><div class="gym-bl"><div class="gym-bh"><span>#</span><span>Minuto</span><span>Subió</span><span>Bajó en 1 min</span><span>Descanso</span></div>
+      ${B.map((b,k)=>{ const rc=b.d60!=null?gymRc(b.d60):null; return `<div class="gym-br"><span class="gym-bn" style="background:${rc?rc.c:'#5d6870'}">${k+1}</span><span>${R(b.tp/60)}'</span><span><b>${b.from}→${b.peak}</b><small>en ${gymMM(b.up)}</small></span><span>${rc?`<b style="color:${rc.c}">−${b.d60}</b><small>${rc.t}</small>`:`<b>−${b.dRest}</b><small>sin medir</small>`}</span><span>${gymMM(b.rest)}<small>a ${b.low}</small></span></div>`; }).join('')}</div>
+      <p style="font-size:12.5px;color:#8b959e;margin:8px 0 0">«Sin medir»: el siguiente esfuerzo empezó antes de un minuto; sale lo que bajó en ese descanso.</p></div>`;
+    // 6) zonas
+    const zn=['Muy suave','Suave','Moderado','Duro','Máximo'], zr=[[0,60],[60,70],[70,80],[80,90],[90,100]];
+    html+=`<div class="co-box"><div class="t">Zonas de pulso</div>${s.z.map((t,i)=>`<div class="gym-z"><span>Z${i+1}</span><div><i style="width:${(t/s.tot*100).toFixed(1)}%;background:${['#8fa3b0','#46c86a','#B6E22E','#f5a623','#ff5a52'][i]}"></i></div><small>${R(t/60)} min · ${R(t/s.tot*100)} %</small></div><div class="gym-zt">${zn[i]} · ${R(hm*zr[i][0]/100)}-${R(hm*zr[i][1]/100)} ppm</div>`).join('')}
+      <p class="co-p" style="margin-top:8px">${s.easy>=0.75?'La mayor parte de la clase en zonas suaves: ideal para recuperarte y ganar fondo.':s.easy>=0.5?'Mitad suave, mitad más fuerte: normal en una clase de cardio y fuerza.':'Mucho rato en zonas altas: para ahora, mejor más suave.'} ${s.z[4]>=60?`${mins(s.z[4])} en Z5 (máximo): eso, de momento, mejor evitarlo.`:''}</p></div>`;
+    // 7) frente a tus clases
+    if(v.nPrev>=3){ const row=(lab,hoy,med,fmt,lowGood)=>{ if(hoy==null||med==null) return ''; const d=hoy-med, better=lowGood?d<0:d>0, same=Math.abs(d)<(Math.abs(med)*0.05||1);
+        return `<div class="co-row"><span>${lab}</span><b>${fmt(hoy)} <small style="color:#8b959e;font-weight:400">media ${fmt(med)}</small> <span style="color:${same||lowGood===null?'#cfd6dc':better?'#46c86a':'#f5a623'}">${same?'=':d>0?'▲':'▼'}</span></b></div>`; };
+      html+=`<div class="co-box"><div class="t">Hoy frente a tus últimas ${v.nPrev} clases</div>
+        ${row('Pulso medio',s.avg,v.hist.avg,x=>R(x)+' ppm',true)}${row('Pulso más alto',s.mx,v.hist.mx,x=>R(x)+' ppm',true)}${row('Recuperación en 1 min',an.rec,v.hist.rec,x=>R(x)+' ppm',false)}
+        ${row('Pulso en los descansos',an.lowAvg,v.hist.low,x=>R(x)+' ppm',true)}${row('Esfuerzos',B.length,v.hist.blocks,x=>R(x),null)}${row('Por encima de '+th,s.over/60,v.hist.over!=null?v.hist.over/60:null,x=>R(x)+' min',true)}${row('Rato tranquilo',s.easy*100,v.hist.easy!=null?v.hist.easy*100:null,x=>R(x)+' %',false)}
+        <p style="font-size:12.5px;color:#8b959e;margin:8px 0 0">Verde = mejor para tu recuperación; naranja = peor. Los esfuerzos dependen de la clase (no es ni mejor ni peor).</p></div>`; } }
   else html+=`<p class="co-p">Esta clase no tiene pulso: no puedo valorarla. Ponte el reloj con el sensor de pulso y graba con «Gym Cardio».</p>`;
   html+=`<div class="co-box"><div class="t">Cómo te has sentido</div><div class="gym-stars" role="group" aria-label="Estrellas">${[1,2,3,4,5].map(i=>`<button data-s="${i}" class="${(c.st||0)>=i?'on':''}" aria-label="${i} estrellas">★</button>`).join('')}</div>
       <textarea id="gymNote" rows="3" placeholder="Circuito con kettlebell, piernas cargadas…">${esc(c.nt||'')}</textarea>
       <div class="gym-act"><button class="btn" id="gymSaveN">Guardar nota</button><button class="btn danger" id="gymDel">Quitar esta clase</button></div></div></div>`;
   $('gymVB').innerHTML=html;
-  $('gymVB').querySelectorAll('.gym-kc button').forEach(b=>b.onclick=()=>{ c.k=b.dataset.k; gymSave(); $('gymVB').querySelectorAll('.gym-kc button').forEach(x=>x.classList.toggle('on',x===b)); $('gymVS').textContent=gymDate(c.d); gymPaint(); });
+  $('gymVB').querySelectorAll('.gym-kc button').forEach(b=>b.onclick=()=>{ c.k=b.dataset.k; gymSave(); $('gymVB').querySelectorAll('.gym-kc button').forEach(x=>x.classList.toggle('on',x===b)); gymPaint(); });
   $('gymVB').querySelectorAll('.gym-stars button').forEach(b=>b.onclick=()=>{ const n=+b.dataset.s; c.st=c.st===n?0:n; gymSave(); $('gymVB').querySelectorAll('.gym-stars button').forEach(x=>x.classList.toggle('on',+x.dataset.s<=c.st)); gymPaint(); });
   $('gymSaveN').onclick=()=>{ c.nt=$('gymNote').value.trim(); gymSave(); toast('Nota guardada.'); };
   $('gymDel').onclick=async()=>{ if(!await ask('¿Quitar esta clase?','Se quita de Ichnos (en Strava sigue). No volverá a salir.','Quitar','Cancelar')) return; gym.cl=gym.cl.filter(x=>x.id!==c.id); gym.del.push(c.id); gymSave(); $('gymView').hidden=true; gymPaint(); toast('Clase quitada.'); };
 }
+
 let enSt=store.get('ichnos-entreno',null)||{it:[],pl:null}; if(!Array.isArray(enSt.it)) enSt.it=[];
 let enF={sp:'b',ds:'r',ob:'',lv:0}, enQ={sp:'b',ds:'r',t:90,ob:'fondo'}, enWk=0;
 const enById=id=>EN_WK.find(w=>w.id===id);
